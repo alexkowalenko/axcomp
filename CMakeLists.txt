@@ -1,3 +1,9 @@
+#
+# AX compiler
+#
+# Copyright © 2020 Alex Kowalenko
+#
+
 cmake_minimum_required(VERSION 3.16)
 
 # Change compiler here
@@ -9,10 +15,22 @@ project (axcomp LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+### Require out-of-source builds
+file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
+if(EXISTS "${LOC_PATH}")
+    message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
+endif()
+
 add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
 
-add_executable(ax cmd/ax.cc)
+# src dir
+file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
+add_library(libax STATIC ${source_files})
+include_directories(src)
 
+# ax executable
+add_executable(ax cmd/ax.cc)
+target_link_libraries(ax libax)
 
 # install
 set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)

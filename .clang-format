@@ -1,0 +1,12 @@
+# We'll use defaults from the LLVM style, but with 4 columns indentation.
+
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+
+AllowShortFunctionsOnASingleLine: Inline
+AlignTrailingComments: true
+AlignConsecutiveMacros: true
+AlignConsecutiveDeclarations: true
