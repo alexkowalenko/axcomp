@@ -15,6 +15,7 @@ project (axcomp VERSION 0.1
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 ### Require out-of-source builds
 file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
@@ -28,6 +29,15 @@ if(PACKAGE_TESTS)
     include(GoogleTest)
     add_subdirectory(tests)
 endif()
+
+# Docs only available if this is the main app
+find_package(Doxygen)
+if(Doxygen_FOUND)
+    add_subdirectory(docs)
+else()
+    message(STATUS "Doxygen not found, not building docs")
+endif()
+
 
 add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
 
