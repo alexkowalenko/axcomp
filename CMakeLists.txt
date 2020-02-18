@@ -30,6 +30,8 @@ if(PACKAGE_TESTS)
     add_subdirectory(tests)
 endif()
 
+add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
+
 # Docs only available if this is the main app
 find_package(Doxygen)
 if(Doxygen_FOUND)
@@ -45,10 +47,11 @@ add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
 file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
 add_library(libax STATIC ${source_files})
 include_directories(src)
+include_directories(extern/fmt/include)
 
 # ax executable
 add_executable(ax cmd/ax.cc)
-target_link_libraries(ax libax)
+target_link_libraries(ax libax fmt)
 
 # install
 set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)
