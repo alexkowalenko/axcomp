@@ -40,8 +40,9 @@ else()
     message(STATUS "Doxygen not found, not building docs")
 endif()
 
-
 add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 # src dir
 file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)

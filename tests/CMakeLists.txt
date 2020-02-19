@@ -19,6 +19,8 @@ set_target_properties(gtest_main PROPERTIES FOLDER extern)
 # set_target_properties(gmock PROPERTIES FOLDER extern)
 # set_target_properties(gmock_main PROPERTIES FOLDER extern)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})

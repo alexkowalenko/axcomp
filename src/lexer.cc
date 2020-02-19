@@ -16,7 +16,14 @@ char Lexer::get_char() {
         if (c == '\n') {
             lineno++;
             continue;
-        } else if (isspace(c)) {
+        } else if (c == '/' && is.peek() == '/') {
+            c = is.get();
+            while (c != '\n') {
+                c = is.get();
+            }
+            c = is.get();
+        }
+        if (isspace(c)) {
             continue;
         }
         return c;

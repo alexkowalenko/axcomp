@@ -23,12 +23,18 @@ struct LexTests {
 std::vector<LexTests> tests = {
     {"\n", TokenType::eof, ""},
 
+    {"1", TokenType::integer, "1"},
     {"\n1", TokenType::integer, "1"},
     {"\n12", TokenType::integer, "12"},
     {"\n 1234567890", TokenType::integer, "1234567890"},
 
     {"\n;", TokenType::semicolon, ""},
     {";", TokenType::semicolon, ""},
+
+    // comments
+    {"// hello\n1", TokenType::integer, "1"},
+    {"// hello\n 1", TokenType::integer, "1"},
+    // {"//\n1", TokenType::integer, "1"},
 };
 
 TEST(Lexer, Lexer1) {
@@ -38,8 +44,10 @@ TEST(Lexer, Lexer1) {
         std::istringstream is(t.input);
         Lexer              lex(is);
 
+        std::cout << "Scan " << t.input;
         EXPECT_NO_THROW({
             auto token = lex.get_token();
+            std::cout << " get " << token.val << std::endl;
             EXPECT_EQ(token.type, t.token);
             EXPECT_EQ(token.val, t.val);
         });
