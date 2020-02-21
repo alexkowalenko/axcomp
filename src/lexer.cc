@@ -4,24 +4,38 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
-#include "lexer.hh"
+#include <fmt/core.h>
+
 #include "error.hh"
+#include "lexer.hh"
 
 namespace ax {
+
+void Lexer::get_comment() {
+    char c = is.get(); // get asterisk
+    do {
+        c = is.get();
+        if (c == '*' && is.peek() == ')') {
+            c = is.get();
+            return;
+        } else if (c == '(' && is.peek() == '*') {
+            // suport nested comments, call recursively
+            get_comment();
+        }
+    } while (is);
+};
 
 char Lexer::get_char() {
     char c = 0;
     while (is) {
         c = is.get();
+        fmt::print("Char: {} next: {}\n", c, is.peek());
         if (c == '\n') {
             lineno++;
             continue;
-        } else if (c == '/' && is.peek() == '/') {
-            c = is.get();
-            while (c != '\n') {
-                c = is.get();
-            }
-            c = is.get();
+        } else if (c == '(' && is.peek() == '*') {
+            get_comment();
+            continue;
         }
         if (isspace(c)) {
             continue;

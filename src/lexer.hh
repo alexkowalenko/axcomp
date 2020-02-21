@@ -20,6 +20,8 @@ class Lexer {
     Token get_token();
 
   private:
+    void get_comment();
+
     char  get_char();
     Token scan_digit(char c);
 

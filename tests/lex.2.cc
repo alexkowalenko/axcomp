@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 
+#include "error.hh"
 #include "lexer.hh"
 #include "token.hh"
 
@@ -32,9 +33,12 @@ std::vector<LexTests> tests = {
     {";", TokenType::semicolon, ""},
 
     // comments
-    {"// hello\n1", TokenType::integer, "1"},
-    {"// hello\n 1", TokenType::integer, "1"},
-    // {"//\n1", TokenType::integer, "1"},
+    {"(* hello *)1", TokenType::integer, "1"},
+    {"(* hello *) 1", TokenType::integer, "1"},
+    {"(**) 1", TokenType::integer, "1"},
+    {"(* hello (* there! *) *)1", TokenType::integer, "1"},
+    // error in comment
+    {"(* hello (* there! *)1", TokenType::eof, ""},
 };
 
 TEST(Lexer, Lexer1) {
@@ -45,11 +49,17 @@ TEST(Lexer, Lexer1) {
         Lexer              lex(is);
 
         std::cout << "Scan " << t.input;
-        EXPECT_NO_THROW({
+        try {
             auto token = lex.get_token();
             std::cout << " get " << token.val << std::endl;
             EXPECT_EQ(token.type, t.token);
             EXPECT_EQ(token.val, t.val);
-        });
+        } catch (LexicalException &l) {
+            std::cerr << "Exception: " << l.error_msg() << std::endl;
+            FAIL();
+        } catch (...) {
+            std::cerr << "Unknown Exception" << std::endl;
+            FAIL();
+        }
     }
 }
