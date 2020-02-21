@@ -2,16 +2,16 @@
 
 AX compiler
 
-## Lexer 
+## Lexer
 
 * Integers.
-* Comments: `// until to end of line`
+* Comments: `(* hello sunshine! *)`
 * Whitespace: space, tab, newline
 
 ## Grammar
 
-```
-prog -> expr (; expr)*
+```ebnf
+module -> (expr ;)+
 
 expr -> INTEGER
 ```

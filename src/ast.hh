@@ -6,25 +6,15 @@
 
 #pragma once
 
-#include <vector>
-
 namespace ax {
 
-class ASTBase {};
+class ASTVisitor;
 
-class ASTInteger : public ASTBase {
+class ASTBase {
   public:
-    long value;
-};
+    virtual ~ASTBase(){};
 
-class ASTExpr : public ASTBase {
-  public:
-    ASTInteger integer;
-};
-
-class ASTProg : public ASTBase {
-  public:
-    std::vector<ASTExpr> exprs;
+    virtual void accept(ASTVisitor *v) = 0;
 };
 
 } // namespace ax

@@ -10,6 +10,8 @@ namespace ax {
 
 std::ostream &operator<<(std::ostream &os, const Token &t) {
     switch (t.type) {
+    case TokenType::null:
+        return os << "null";
     case TokenType::integer:
         return os << "integer";
     case TokenType::semicolon:

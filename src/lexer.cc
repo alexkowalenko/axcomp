@@ -11,6 +11,10 @@
 
 namespace ax {
 
+static Token nullToken = Token(TokenType::null);
+
+Lexer::Lexer(std::istream &stream) : is(stream), next_token(nullToken){};
+
 void Lexer::get_comment() {
     char c = is.get(); // get asterisk
     do {
@@ -23,13 +27,13 @@ void Lexer::get_comment() {
             get_comment();
         }
     } while (is);
-};
+}
 
 char Lexer::get_char() {
     char c = 0;
     while (is) {
         c = is.get();
-        fmt::print("Char: {} next: {}\n", c, is.peek());
+        // fmt::print("Char: {} next: {}\n", c, is.peek());
         if (c == '\n') {
             lineno++;
             continue;
@@ -57,18 +61,33 @@ Token Lexer::scan_digit(char c) {
 }
 
 Token Lexer::get_token() {
+    // Check if there is already a token
+    if (next_token.type != TokenType::null) {
+        Token s = next_token;
+        next_token = nullToken;
+        return s;
+    }
+
+    // Get next token
     auto c = get_char();
     switch (c) {
     case -1:
         return Token(TokenType::eof);
     case ';':
-        return Token(TokenType::semicolon);
+        return Token(TokenType::semicolon, ";");
     default:
         if (isdigit(c)) {
             return scan_digit(c);
         }
         throw LexicalException(std::string("Unknown character ") + c, lineno);
     }
+}
+
+Token Lexer::peek_token() {
+    if (next_token.type == TokenType::null) {
+        next_token = get_token();
+    }
+    return next_token;
 }
 
 } // namespace ax

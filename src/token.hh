@@ -11,7 +11,12 @@
 
 namespace ax {
 
-enum class TokenType { integer, semicolon, eof };
+enum class TokenType {
+    null,
+    eof,
+    integer,
+    semicolon,
+};
 
 class Token {
   public:

@@ -29,8 +29,8 @@ std::vector<LexTests> tests = {
     {"\n12", TokenType::integer, "12"},
     {"\n 1234567890", TokenType::integer, "1234567890"},
 
-    {"\n;", TokenType::semicolon, ""},
-    {";", TokenType::semicolon, ""},
+    {"\n;", TokenType::semicolon, ";"},
+    {";", TokenType::semicolon, ";"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},

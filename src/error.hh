@@ -26,4 +26,9 @@ class LexicalException : public AXException {
     LexicalException(std::string m, int l) : AXException(m, l){};
 };
 
+class ParseException : public AXException {
+  public:
+    ParseException(std::string m, int l) : AXException(m, l){};
+};
+
 } // namespace ax

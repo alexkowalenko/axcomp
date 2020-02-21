@@ -15,9 +15,12 @@ namespace ax {
 
 class Lexer {
   public:
-    Lexer(std::istream &stream) : is(stream){};
+    Lexer(std::istream &stream);
 
     Token get_token();
+    Token peek_token();
+
+    int lineno = 1;
 
   private:
     void get_comment();
@@ -26,7 +29,7 @@ class Lexer {
     Token scan_digit(char c);
 
     std::istream &is;
-    int           lineno = 1;
+    Token         next_token;
 };
 
 } // namespace ax

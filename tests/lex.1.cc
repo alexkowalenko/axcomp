@@ -32,7 +32,7 @@ TEST(Lexer, Exception) {
         auto token = lex.get_token();
     } catch (LexicalException l) {
         std::cerr << l.error_msg() << std::endl;
-        EXPECT_EQ(l.error_msg(), "Error: Unknown character x in line: 1");
+        EXPECT_EQ(l.error_msg(), "1: Unknown character x");
     }
 }
 
