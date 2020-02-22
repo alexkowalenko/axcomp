@@ -32,6 +32,17 @@ endif()
 
 add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
 
+# LLVM
+set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+
+llvm_map_components_to_libnames(llvm_libs AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens)
+message(STATUS "Using LLVM libs: ${llvm_libs}")
+
 # Docs only available if this is the main app
 find_package(Doxygen)
 if(Doxygen_FOUND)
@@ -40,7 +51,7 @@ else()
     message(STATUS "Doxygen not found, not building docs")
 endif()
 
-add_compile_options(-Wall -Wextra -Wshadow -Wpedantic)
+add_compile_options(-Wall)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
@@ -52,7 +63,7 @@ include_directories(extern/fmt/include)
 
 # ax executable
 add_executable(ax cmd/ax.cc)
-target_link_libraries(ax libax fmt)
+target_link_libraries(ax libax fmt ${llvm_libs})
 
 # install
 set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)

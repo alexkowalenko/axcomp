@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include "codegen.hh"
 #include "error.hh"
 #include "lexer.hh"
 #include "parser.hh"
@@ -20,6 +21,10 @@ int main() {
 
         ax::ASTPrinter printer(std::cout);
         printer.print(ast);
+
+        ax::CodeGenerator code;
+        code.generate(ast);
+
     } catch (ax::AXException &e) {
         std::cerr << e.error_msg() << std::endl;
         return -1;
