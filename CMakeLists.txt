@@ -28,6 +28,7 @@ if(PACKAGE_TESTS)
     enable_testing()
     include(GoogleTest)
     add_subdirectory(tests)
+    add_subdirectory(xtest)
 endif()
 
 add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
