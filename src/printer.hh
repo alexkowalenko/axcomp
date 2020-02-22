@@ -18,7 +18,7 @@ class ASTPrinter : ASTVisitor {
   public:
     ASTPrinter(std::ostream &ostream) : os(ostream){};
 
-    void print(ASTModule *ast) { visit_ASTModule(ast); };
+    void print(std::shared_ptr<ASTModule> ast) { visit_ASTModule(ast.get()); };
 
     void visit_ASTModule(ASTModule *ast);
     void visit_ASTExpr(ASTExpr *ast);

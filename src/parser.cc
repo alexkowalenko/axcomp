@@ -12,12 +12,12 @@
 
 namespace ax {
 
-ASTModule *Parser::parse_module() {
-    ASTModule *module = new ASTModule();
+std::shared_ptr<ASTModule> Parser::parse_module() {
+    std::shared_ptr<ASTModule> module = std::make_shared<ASTModule>();
 
     do {
         // Expr
-        ASTExpr *expr = parse_expr();
+        auto expr = parse_expr();
         module->exprs.push_back(expr);
 
         // ;
@@ -40,23 +40,23 @@ ASTModule *Parser::parse_module() {
     return module;
 }
 
-ASTExpr *Parser::parse_expr() {
-    ASTExpr *expr = new ASTExpr();
+std::shared_ptr<ASTExpr> Parser::parse_expr() {
+    std::shared_ptr<ASTExpr> expr = std::make_shared<ASTExpr>();
     expr->integer = parse_integer();
     return expr;
 }
 
-ASTInteger *Parser::parse_integer() {
+std::shared_ptr<ASTInteger> Parser::parse_integer() {
     auto tok = lexer.get_token();
     if (tok.type != TokenType::integer) {
         throw ParseException("Expecting an integer: " + tok.val, lexer.lineno);
     }
-    ASTInteger *ast = new ASTInteger();
+    std::shared_ptr<ASTInteger> ast = std::make_shared<ASTInteger>();
     ast->value = atol(tok.val.c_str());
     return ast;
 }
 
-ASTModule *Parser::parse() {
+std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();
 }
 

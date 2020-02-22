@@ -24,22 +24,18 @@ class ASTInteger : public ASTBase {
 
 class ASTExpr : public ASTBase {
   public:
-    ~ASTExpr() { delete integer; };
+    ~ASTExpr(){};
 
     void accept(ASTVisitor *v) { v->visit_ASTExpr(this); };
 
-    ASTInteger *integer;
+    std::shared_ptr<ASTInteger> integer;
 };
 
 class ASTModule : public ASTBase {
   public:
-    ~ASTModule() {
-        for (auto x : exprs) {
-            delete x;
-        }
-    }
+    ~ASTModule(){};
     void accept(ASTVisitor *v) { v->visit_ASTModule(this); };
 
-    std::vector<ASTExpr *> exprs;
+    std::vector<std::shared_ptr<ASTExpr>> exprs;
 };
 } // namespace ax

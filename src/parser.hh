@@ -14,12 +14,12 @@ class Parser {
   public:
     Parser(Lexer &l) : lexer(l){};
 
-    ASTModule *parse();
+    std::shared_ptr<ASTModule> parse();
 
   private:
-    ASTModule * parse_module();
-    ASTExpr *   parse_expr();
-    ASTInteger *parse_integer();
+    std::shared_ptr<ASTModule>  parse_module();
+    std::shared_ptr<ASTExpr>    parse_expr();
+    std::shared_ptr<ASTInteger> parse_integer();
 
     Lexer &lexer;
 };

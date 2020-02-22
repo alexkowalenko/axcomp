@@ -56,7 +56,7 @@ TEST(Parser, Tests) {
 
             std::ostringstream outstr;
             ASTPrinter         prt(outstr);
-            prt.visit_ASTModule(ast);
+            prt.print(ast);
             auto result = outstr.str();
             rtrim(result);
             std::cout << result << std::endl;

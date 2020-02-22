@@ -6,13 +6,26 @@
 
 #include <iostream>
 
+#include "error.hh"
 #include "lexer.hh"
+#include "parser.hh"
+#include "printer.hh"
 
 int main() {
-    ax::Lexer lexer(std::cin);
+    ax::Lexer  lexer(std::cin);
+    ax::Parser parser(lexer);
 
-    ax::Token t = lexer.get_token();
+    try {
+        auto ast = parser.parse();
 
-    std::cout << t << std::endl;
+        ax::ASTPrinter printer(std::cout);
+        printer.print(ast);
+    } catch (ax::AXException &e) {
+        std::cerr << e.error_msg() << std::endl;
+        return -1;
+    } catch (...) {
+        std::cerr << "Unknown error " << std::endl;
+        return -1;
+    }
     return 0;
 }
