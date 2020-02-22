@@ -19,8 +19,8 @@ int main() {
     try {
         auto ast = parser.parse();
 
-        ax::ASTPrinter printer(std::cout);
-        printer.print(ast);
+        // ax::ASTPrinter printer(std::cout);
+        // printer.print(ast);
 
         ax::CodeGenerator code;
         code.generate(ast);
