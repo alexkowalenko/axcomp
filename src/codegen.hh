@@ -31,7 +31,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTInteger(ASTInteger *ast);
 
   private:
-    void init();
+    void init(std::string const &module_name);
     void generate_objectcode();
     void print_code();
 

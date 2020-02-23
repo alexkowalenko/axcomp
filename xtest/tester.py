@@ -12,7 +12,8 @@ restore = attr('reset')
 
 
 def do_clang(stem):
-    cmd = f"clang main.c output.o"
+    obj = stem + ".o"
+    cmd = f"clang main.c {obj}"
     os.system(cmd)
     cmd = f"./a.out > result.txt"
     os.system(cmd)
@@ -22,7 +23,7 @@ def do_clang(stem):
     if(ret != 0):
         cmd = f"mv result.txt {fail}"
         os.system(cmd)
-    cmd = "rm -f a.out output.o result.diff.txt result.txt"
+    cmd = f"rm -f a.out {obj} result.diff.txt result.txt"
     os.system(cmd)
     return (ret == 0)
 
@@ -33,15 +34,18 @@ def do_test(t):
     # print(cmd)
     os.system(cmd)
     exp = stem + ".exp"
-    cmd = f"diff --strip-trailing-cr {exp} output.ll > result.diff.txt"
+    asm = stem + ".ll"
+    cmd = f"diff --strip-trailing-cr {exp} {asm} > result.diff.txt"
     # print(cmd)
     ret = os.system(cmd)
     fail = stem + ".fail"
     if(ret != 0):
-        cmd = f"mv output.ll {fail}"
+        cmd = f"mv {asm} {fail}"
+        os.system(cmd)
+        cmd = f"rm {stem}.o"
         os.system(cmd)
     else:
-        cmd = f"rm -f {fail} output.ll"
+        cmd = f"rm -f {fail} {asm}"
         os.system(cmd)
     cmd = "rm -f result.diff.txt"
     os.system(cmd)

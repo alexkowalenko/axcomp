@@ -35,7 +35,7 @@ CodeGenerator::CodeGenerator()
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Set up code generation
-    init();
+    init(ast->name);
 
     // Set up the module as a function
     // Make the function type:  int(void)
@@ -60,6 +60,8 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
 
+    // change the filename to generate module.obj
+    filename = ast->name;
     generate_objectcode();
     print_code();
 }
@@ -72,9 +74,9 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
     last_value = ConstantInt::get(context, APInt(64, ast->value, true));
 }
 
-void CodeGenerator::init() {
-    module = std::make_unique<Module>(filename, context);
-    module->setSourceFileName(filename);
+void CodeGenerator::init(std::string const &module_name) {
+    module = std::make_unique<Module>(module_name, context);
+    module->setSourceFileName(module_name);
 }
 
 void CodeGenerator::print_code() {
@@ -89,7 +91,6 @@ void CodeGenerator::print_code() {
 }
 
 void CodeGenerator::generate_objectcode() {
-
     // Define the target triple
     auto targetTriple = sys::getDefaultTargetTriple();
 
