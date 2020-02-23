@@ -34,6 +34,7 @@ class ParseException : public AXException {
 class CodeGenException : public AXException {
   public:
     CodeGenException(std::string m, int l) : AXException(m, l){};
+    CodeGenException(std::string m) : AXException(m, 0){};
 };
 
 } // namespace ax

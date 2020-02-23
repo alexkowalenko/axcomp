@@ -18,10 +18,18 @@ enum class TokenType {
     ident,
     semicolon,
     period,
+    plus,
+    dash,
+    asterisk,
+    l_paren,
+    r_paren,
+
     // Keywords
     module,
     begin,
     end,
+    div,
+    mod,
 };
 
 std::string to_string(TokenType &t);

@@ -22,6 +22,11 @@ Token Parser::get_token(TokenType t) {
     return tok;
 }
 
+/**
+ * @brief module -> "MODULE" IDENT ";" "BEGIN" statement_seq "END" IDENT "."
+ *
+ * @return std::shared_ptr<ASTModule>
+ */
 std::shared_ptr<ASTModule> Parser::parse_module() {
     std::shared_ptr<ASTModule> module = std::make_shared<ASTModule>();
 
@@ -32,6 +37,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::semicolon);
     get_token(TokenType::begin);
 
+    // statement_seq
     do {
         tok = lexer.peek_token();
         if (tok.type == TokenType::end) {
@@ -71,12 +77,36 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     return module;
 }
 
+/**
+ * @brief @expr -> ('+' | '-' )? INTEGER ( ('+' | '-' ) INTEGER)*
+ *
+ * @return std::shared_ptr<ASTExpr>
+ */
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
     std::shared_ptr<ASTExpr> expr = std::make_shared<ASTExpr>();
+
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
+        lexer.get_token();
+        expr->first_sign = std::optional<TokenType>{tok.type};
+    }
     expr->integer = parse_integer();
+    tok = lexer.peek_token();
+    while (tok.type == TokenType::plus || tok.type == TokenType::dash) {
+        lexer.get_token();
+        Expr_addition add{tok.type};
+        add.integer = parse_integer();
+        expr->rest.push_back(add);
+        tok = lexer.peek_token();
+    }
     return expr;
 }
 
+/**
+ * @brief INTEGER
+ *
+ * @return std::shared_ptr<ASTInteger>
+ */
 std::shared_ptr<ASTInteger> Parser::parse_integer() {
     auto tok = lexer.get_token();
     if (tok.type != TokenType::integer) {

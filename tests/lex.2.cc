@@ -32,6 +32,11 @@ std::vector<LexTests> tests = {
     {"\n;", TokenType::semicolon, ";"},
     {";", TokenType::semicolon, ";"},
     {".", TokenType::period, "."},
+    {"+", TokenType::plus, "+"},
+    {"-", TokenType::dash, "-"},
+    {"*", TokenType::asterisk, "*"},
+    {"(", TokenType::l_paren, "("},
+    {")", TokenType::r_paren, ")"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -45,12 +50,15 @@ std::vector<LexTests> tests = {
     {"MODULE", TokenType::module, "MODULE"},
     {"BEGIN", TokenType::begin, "BEGIN"},
     {"END", TokenType::end, "END"},
+    {"DIV", TokenType::div, "DIV"},
+    {"MOD", TokenType::mod, "MOD"},
 
     // identifiers
     {"a", TokenType::ident, "a"},
     {"a1", TokenType::ident, "a1"},
     {"a1z", TokenType::ident, "a1z"},
     {"IsAlpha", TokenType::ident, "IsAlpha"},
+    {"is_digit", TokenType::ident, "is_digit"},
 };
 
 TEST(Lexer, Lexer1) {

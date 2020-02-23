@@ -67,7 +67,29 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
+
+    // if initial sign exists and is negative, negate the integer
+    if (expr->first_sign && expr->first_sign.value() == TokenType::dash) {
+        expr->integer->negate();
+    }
     visit_ASTInteger(expr->integer.get());
+    Value *L = last_value;
+    for (auto t : expr->rest) {
+        visit_ASTInteger(t.integer.get());
+        Value *R = last_value;
+        switch (t.sign) {
+        case TokenType::plus:
+            last_value = builder.CreateAdd(L, R, "addtmp");
+            break;
+        case TokenType::dash:
+            last_value = builder.CreateSub(L, R, "addtmp");
+            break;
+        default:
+            throw CodeGenException("ASTExpr with sign" + to_string(t.sign));
+        }
+
+        L = last_value;
+    }
 }
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {

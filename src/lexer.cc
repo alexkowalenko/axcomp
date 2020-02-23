@@ -63,7 +63,7 @@ Token Lexer::scan_digit(char c) {
 Token Lexer::scan_ident(char c) {
     std::string ident(1, c);
     c = is.peek();
-    while (std::isalnum(c)) {
+    while (std::isalnum(c) || c == '_') {
         is.get();
         ident += c;
         c = is.peek();
@@ -76,6 +76,12 @@ Token Lexer::scan_ident(char c) {
     }
     if (ident == "END") {
         return Token(TokenType::end, ident);
+    }
+    if (ident == "DIV") {
+        return Token(TokenType::div, ident);
+    }
+    if (ident == "MOD") {
+        return Token(TokenType::mod, ident);
     }
     return Token(TokenType::ident, ident);
 }
@@ -97,6 +103,16 @@ Token Lexer::get_token() {
         return Token(TokenType::semicolon, ";");
     case '.':
         return Token(TokenType::period, ".");
+    case '+':
+        return Token(TokenType::plus, "+");
+    case '-':
+        return Token(TokenType::dash, "-");
+    case '*':
+        return Token(TokenType::asterisk, "*");
+    case '(':
+        return Token(TokenType::l_paren, "(");
+    case ')':
+        return Token(TokenType::r_paren, ")");
     default:
         if (std::isdigit(c)) {
             return scan_digit(c);

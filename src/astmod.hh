@@ -6,11 +6,13 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "ast.hh"
 #include "astvisitor.hh"
+#include "token.hh"
 
 namespace ax {
 
@@ -20,16 +22,29 @@ class ASTInteger : public ASTBase {
 
     void accept(ASTVisitor *v) { v->visit_ASTInteger(this); };
 
+    void negate() { value = -value; };
+
     long value;
 };
 
+struct Expr_addition {
+    TokenType                   sign;
+    std::shared_ptr<ASTInteger> integer;
+};
+
+/**
+ * @brief expr -> ('+' | '-' )? INTEGER ( ('+' | '-' ) INTEGER)*
+ *
+ */
 class ASTExpr : public ASTBase {
   public:
     ~ASTExpr(){};
 
     void accept(ASTVisitor *v) { v->visit_ASTExpr(this); };
 
+    std::optional<TokenType>    first_sign;
     std::shared_ptr<ASTInteger> integer;
+    std::vector<Expr_addition>  rest;
 };
 
 class ASTModule : public ASTBase {

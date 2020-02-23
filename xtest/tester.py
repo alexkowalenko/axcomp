@@ -21,6 +21,8 @@ def do_clang(stem):
     cmd = f"diff --strip-trailing-cr {res} result.txt > result.diff.txt"
     ret = os.system(cmd)
     if(ret != 0):
+        print(red + "run " + restore, end="")
+        fail = stem + ".fail"
         cmd = f"mv result.txt {fail}"
         os.system(cmd)
     cmd = f"rm -f a.out {obj} result.diff.txt result.txt"
@@ -50,6 +52,7 @@ def do_test(t):
     cmd = "rm -f result.diff.txt"
     os.system(cmd)
     if (ret != 0):
+        print(red + "compile " + restore, end="")
         return 0
 
     # compile
