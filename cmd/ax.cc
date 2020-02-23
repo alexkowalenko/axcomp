@@ -28,8 +28,8 @@ int main() {
     } catch (ax::AXException &e) {
         std::cerr << e.error_msg() << std::endl;
         return -1;
-    } catch (...) {
-        std::cerr << "Unknown error " << std::endl;
+    } catch (std::exception &e) {
+        std::cerr << "Exception " << e.what() << std::endl;
         return -1;
     }
     return 0;

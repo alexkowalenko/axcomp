@@ -13,9 +13,11 @@
 namespace ax {
 
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
+    os << fmt::format("MODULE {};\nBEGIN\n", ast->name);
     for (auto x : ast->exprs) {
         visit_ASTExpr(x.get());
     }
+    os << fmt::format("END {}.\n", ast->name);
 }
 
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {

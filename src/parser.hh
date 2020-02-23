@@ -21,6 +21,8 @@ class Parser {
     std::shared_ptr<ASTExpr>    parse_expr();
     std::shared_ptr<ASTInteger> parse_integer();
 
+    Token get_token(TokenType t);
+
     Lexer &lexer;
 };
 

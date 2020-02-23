@@ -27,6 +27,7 @@ class Lexer {
 
     char  get_char();
     Token scan_digit(char c);
+    Token scan_ident(char c);
 
     std::istream &is;
     Token         next_token;

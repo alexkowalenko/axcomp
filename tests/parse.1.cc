@@ -4,6 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
+#include <exception>
 #include <sstream>
 
 #include "gtest/gtest.h"
@@ -21,21 +22,56 @@ struct ParseTests {
     std::string error;
 };
 
-std::vector<ParseTests> tests = {
-    {"1", "1;", ""},
-    {"12", "12;", ""},
+void do_parse_tests(std::vector<ParseTests> &tests);
 
-    {"12;", "12;", ""},
-    {"12;24;", "12;\n24;", ""},
+TEST(Parser, Comments) {
+    std::vector<ParseTests> tests = {
 
-    {"(*hello*) 12;", "12;", ""},
-    {"(*hello*) 12; (*hello*) 24; (*hello*)", "12;\n24;", ""},
-    {"(*hello 12; hello 24; hello*) 36", "36;", ""},
-    {"(*hello*) (* 12; (*hello*) 24; (*hello*) *) 36", "36;", ""},
+        {"(*hello*) MODULE y; BEGIN 12; END y.",
+         "MODULE y;\nBEGIN\n12;\nEND y.", ""},
+        {"(*hello*) MODULE (* hello *) y; (* hello *)BEGIN (* hello *)12; (* "
+         "hello *)END y.(* hello *)",
+         "MODULE y;\nBEGIN\n12;\nEND y.", ""},
+        {"(*hello*) MODULE (* hello *) y; (* hello *)BEGIN (* hello 12; 24; *) "
+         "36; (*hello *) END y.(* hello *)",
+         "MODULE y;\nBEGIN\n36;\nEND y.", ""},
+        {"(*hello*) MODULE (* hello *) y; (* hello *)BEGIN (* hello (* 12; 24; "
+         "*) *) "
+         "36; (*hello *) END y.(* hello *)",
+         "MODULE y;\nBEGIN\n36;\nEND y.", ""},
 
-    // Error
-    {"12;;", "12;\n24;", "1: Expecting an integer: ;"},
-};
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, Module) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; BEGIN 12; END y.", "MODULE y;\nBEGIN\n12;\nEND y.", ""},
+        {"MODULE y; BEGIN 12; 24; END y.", "MODULE y;\nBEGIN\n12;\n24;\nEND y.",
+         ""},
+
+        // Errors
+        {"y; BEGIN 12; END y.", "",
+         "1: Unexpected token: indent(y) - expecting MODULE"},
+        {"MODULE ; BEGIN 12; END y.", "",
+         "1: Unexpected token: semicolon - expecting indent"},
+        {"MODULE y BEGIN 12; END y.", "",
+         "1: Unexpected token: BEGIN - expecting semicolon"},
+        {"MODULE y; 12; END y.", "",
+         "1: Unexpected token: integer(12) - expecting BEGIN"},
+        {"MODULE y; BEGIN ; END y.", "", "1: Expecting an integer: ;"},
+        {"MODULE y; BEGIN 12; y.", "", "1: Expecting an integer: y"},
+        {"MODULE y; BEGIN 12; END .", "",
+         "1: Unexpected token: period - expecting indent"},
+        {"MODULE y; BEGIN 12; END y", "",
+         "1: Unexpected token: EOF - expecting period"},
+
+        {"MODULE x; BEGIN 12; END y.", "",
+         "1: END identifier name: y doesn't match module name: x"},
+    };
+    do_parse_tests(tests);
+}
 
 static inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(),
@@ -44,28 +80,30 @@ static inline void rtrim(std::string &s) {
             s.end());
 }
 
-TEST(Parser, Tests) {
+void do_parse_tests(std::vector<ParseTests> &tests) {
     for (auto t : tests) {
 
         std::istringstream is(t.input);
         Lexer              lex(is);
         Parser             parser(lex);
 
+        std::string result;
         try {
+            std::cout << t.input << std::endl;
             auto ast = parser.parse();
 
             std::ostringstream outstr;
             ASTPrinter         prt(outstr);
             prt.print(ast);
-            auto result = outstr.str();
+            result = outstr.str();
             rtrim(result);
-            std::cout << result << std::endl;
+
             EXPECT_EQ(result, t.output);
         } catch (AXException &e) {
             std::cout << t.error << std::endl;
             EXPECT_EQ(e.error_msg(), t.error);
-        } catch (...) {
-            std::cerr << "Unknown error " << std::endl;
+        } catch (std::exception &e) {
+            std::cerr << "Exception: " << e.what() << std::endl;
             FAIL();
         }
     }

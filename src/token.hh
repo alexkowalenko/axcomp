@@ -15,13 +15,24 @@ enum class TokenType {
     null,
     eof,
     integer,
+    ident,
     semicolon,
+    period,
+    // Keywords
+    module,
+    begin,
+    end,
 };
+
+std::string to_string(TokenType &t);
 
 class Token {
   public:
     Token(TokenType t) : type(t){};
     Token(TokenType t, std::string v) : type(t), val(v){};
+
+    explicit             operator std::string();
+    friend std::ostream &operator<<(std::ostream &os, const Token &t);
 
     TokenType   type;
     std::string val;

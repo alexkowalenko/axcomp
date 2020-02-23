@@ -12,16 +12,39 @@
 
 namespace ax {
 
+Token Parser::get_token(TokenType t) {
+    auto tok = lexer.get_token();
+    if (tok.type != t) {
+        throw ParseException(fmt::format("Unexpected token: {} - expecting {}",
+                                         std::string(tok), to_string(t)),
+                             lexer.lineno);
+    }
+    return tok;
+}
+
 std::shared_ptr<ASTModule> Parser::parse_module() {
     std::shared_ptr<ASTModule> module = std::make_shared<ASTModule>();
 
+    // MODULE ident BEGIN (expr)+ END ident.
+    get_token(TokenType::module);
+    auto tok = get_token(TokenType::ident);
+    module->name = tok.val;
+    get_token(TokenType::semicolon);
+    get_token(TokenType::begin);
+
     do {
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::end) {
+            lexer.get_token();
+            break;
+        }
+
         // Expr
         auto expr = parse_expr();
         module->exprs.push_back(expr);
 
         // ;
-        auto tok = lexer.get_token();
+        tok = lexer.get_token();
         if (tok.type == TokenType::eof) {
             return module;
         }
@@ -37,6 +60,14 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
             break;
         }
     } while (true);
+    tok = get_token(TokenType::ident);
+    if (tok.val != module->name) {
+        throw ParseException(
+            fmt::format("END identifier name: {} doesn't match module name: {}",
+                        tok.val, module->name),
+            lexer.lineno);
+    }
+    get_token(TokenType::period);
     return module;
 }
 

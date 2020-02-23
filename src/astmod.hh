@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "ast.hh"
@@ -36,6 +37,7 @@ class ASTModule : public ASTBase {
     ~ASTModule(){};
     void accept(ASTVisitor *v) { v->visit_ASTModule(this); };
 
+    std::string                           name;
     std::vector<std::shared_ptr<ASTExpr>> exprs;
 };
 } // namespace ax

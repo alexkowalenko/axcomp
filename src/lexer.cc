@@ -52,12 +52,32 @@ char Lexer::get_char() {
 Token Lexer::scan_digit(char c) {
     std::string digit(1, c);
     c = is.peek();
-    while (isdigit(c)) {
+    while (std::isdigit(c)) {
         is.get();
         digit += c;
         c = is.peek();
     }
     return Token(TokenType::integer, digit);
+}
+
+Token Lexer::scan_ident(char c) {
+    std::string ident(1, c);
+    c = is.peek();
+    while (std::isalnum(c)) {
+        is.get();
+        ident += c;
+        c = is.peek();
+    }
+    if (ident == "MODULE") {
+        return Token(TokenType::module, ident);
+    }
+    if (ident == "BEGIN") {
+        return Token(TokenType::begin, ident);
+    }
+    if (ident == "END") {
+        return Token(TokenType::end, ident);
+    }
+    return Token(TokenType::ident, ident);
 }
 
 Token Lexer::get_token() {
@@ -75,9 +95,14 @@ Token Lexer::get_token() {
         return Token(TokenType::eof);
     case ';':
         return Token(TokenType::semicolon, ";");
+    case '.':
+        return Token(TokenType::period, ".");
     default:
-        if (isdigit(c)) {
+        if (std::isdigit(c)) {
             return scan_digit(c);
+        }
+        if (std::isalpha(c)) {
+            return scan_ident(c);
         }
         throw LexicalException(std::string("Unknown character ") + c, lineno);
     }

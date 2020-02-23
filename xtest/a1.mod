@@ -1,1 +1,4 @@
-12;
+MODULE a1;
+BEGIN
+    12;
+END a1.
