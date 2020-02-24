@@ -16,6 +16,7 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << fmt::format("MODULE {};\nBEGIN\n", ast->name);
     for (auto x : ast->exprs) {
         visit_ASTExpr(x.get());
+        os << ";\n";
     }
     os << fmt::format("END {}.\n", ast->name);
 }
@@ -29,7 +30,6 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
         os << to_string(t.sign);
         visit_ASTTerm(t.term.get());
     }
-    os << ";\n";
 }
 
 void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
@@ -48,7 +48,9 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
     if (ast->integer) {
         visit_ASTInteger(ast->integer.get());
     } else {
+        os << " (";
         visit_ASTExpr(ast->expr.get());
+        os << ") ";
     }
 }
 

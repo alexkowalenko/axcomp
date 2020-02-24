@@ -63,9 +63,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
             return module;
         }
         if (tok.type != TokenType::semicolon) {
-            throw ParseException(
-                fmt::format("Unexpected token <{}> : {}", tok.val, tok.type),
-                lexer.lineno);
+            ParseException(fmt::format("Unexpected token: {} - expecting ;",
+                                       std::string(tok)),
+                           lexer.lineno);
         }
 
         // check if anymore

@@ -128,6 +128,26 @@ TEST(Parser, Mult) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, Parentheses) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; BEGIN (2); END y.", "MODULE y;\nBEGIN\n (2) ;\nEND y.", ""},
+        {"MODULE y; BEGIN (2 + 1); END y.",
+         "MODULE y;\nBEGIN\n (2+1) ;\nEND y.", ""},
+        {"MODULE y; BEGIN (2 + (4 * 3)); END y.",
+         "MODULE y;\nBEGIN\n (2+ (4*3) ) ;\nEND y.", ""},
+        {"MODULE y; BEGIN (2 + (4 * (3 DIV 1))); END y.",
+         "MODULE y;\nBEGIN\n (2+ (4* (3 DIV 1) ) ) ;\nEND y.", ""},
+
+        // Errors
+        {"MODULE y; BEGIN (2 ; END y.", "",
+         "1: Unexpected token: semicolon - expecting )"},
+        {"MODULE y; BEGIN (2 + 4) * (3 DIV 1)) ; END y.", "",
+         "1: Unexpected token: semicolon - expecting ( or integer"},
+    };
+    do_parse_tests(tests);
+}
+
 static inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(),
                          [](int ch) { return !std::isspace(ch); })

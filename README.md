@@ -26,7 +26,7 @@ module -> "MODULE" IDENT ";"
           "BEGIN"
                 statement_seq
           "END" IDENT "."
-          
+
 statement_seq -> (expr ";")+
 
 expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
@@ -47,6 +47,6 @@ INTEGER -> digit+
 MODULE test;
 BEGIN
     12;
-    24;
+    (3 * 3) + ((2+ (1+1)) * 4);
 END test.
 ```
