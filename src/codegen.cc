@@ -96,10 +96,10 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 }
 
 void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTInteger(ast->integer.get());
+    visit_ASTFactor(ast->factor.get());
     Value *L = last_value;
     for (auto t : ast->rest) {
-        visit_ASTInteger(t.integer.get());
+        visit_ASTFactor(t.factor.get());
         Value *R = last_value;
         switch (t.sign) {
         case TokenType::asterisk:
@@ -117,7 +117,15 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
 
         L = last_value;
     }
-};
+}
+
+void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
+    if (ast->integer) {
+        visit_ASTInteger(ast->integer.get());
+    } else {
+        visit_ASTExpr(ast->expr.get());
+    }
+}
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
     last_value = ConstantInt::get(context, APInt(64, ast->value, true));

@@ -25,13 +25,27 @@ class ASTInteger : public ASTBase {
     long value;
 };
 
-struct Term_mult {
-    TokenType                   sign;
+/**
+ * @brief factor -> INTEGER | '(' expr ')'
+ *
+ */
+class ASTFactor : public ASTBase {
+  public:
+    ~ASTFactor(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTFactor(this); };
+
     std::shared_ptr<ASTInteger> integer;
+    std::shared_ptr<ASTExpr>    expr;
+};
+
+struct Term_mult {
+    TokenType                  sign;
+    std::shared_ptr<ASTFactor> factor;
 };
 
 /**
- * @brief term -> INTEGER ( ( '*' | 'DIV' | 'MOD' ) INTEGER)*
+ * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
  *
  */
 class ASTTerm : public ASTBase {
@@ -40,8 +54,8 @@ class ASTTerm : public ASTBase {
 
     void accept(ASTVisitor *v) { v->visit_ASTTerm(this); };
 
-    std::shared_ptr<ASTInteger> integer;
-    std::vector<Term_mult>      rest;
+    std::shared_ptr<ASTFactor> factor;
+    std::vector<Term_mult>     rest;
 };
 
 struct Expr_add {

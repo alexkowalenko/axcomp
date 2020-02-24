@@ -26,10 +26,11 @@ class CodeGenerator : ASTVisitor {
         visit_ASTModule(ast.get());
     };
 
-    void visit_ASTModule(ASTModule *ast);
-    void visit_ASTExpr(ASTExpr *ast);
-    void visit_ASTTerm(ASTTerm *ast);
-    void visit_ASTInteger(ASTInteger *ast);
+    void visit_ASTModule(ASTModule *);
+    void visit_ASTExpr(ASTExpr *);
+    void visit_ASTTerm(ASTTerm *);
+    void visit_ASTFactor(ASTFactor *);
+    void visit_ASTInteger(ASTInteger *);
 
   private:
     void init(std::string const &module_name);

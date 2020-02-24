@@ -60,8 +60,10 @@ TEST(Parser, Module) {
          "1: Unexpected token: BEGIN - expecting semicolon"},
         {"MODULE y; 12; END y.", "",
          "1: Unexpected token: integer(12) - expecting BEGIN"},
-        {"MODULE y; BEGIN ; END y.", "", "1: Expecting an integer: ;"},
-        {"MODULE y; BEGIN 12; y.", "", "1: Expecting an integer: y"},
+        {"MODULE y; BEGIN ; END y.", "",
+         "1: Unexpected token: semicolon - expecting ( or integer"},
+        {"MODULE y; BEGIN 12; y.", "",
+         "1: Unexpected token: indent(y) - expecting ( or integer"},
         {"MODULE y; BEGIN 12; END .", "",
          "1: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN 12; END y", "",
@@ -90,10 +92,12 @@ TEST(Parser, Plus) {
          ""},
 
         // Errors
-        {"MODULE y; BEGIN - ; END y.", "", "1: Expecting an integer: ;"},
-        {"MODULE y; BEGIN 1 -; END y.", "", "1: Expecting an integer: ;"},
+        {"MODULE y; BEGIN - ; END y.", "",
+         "1: Unexpected token: semicolon - expecting ( or integer"},
+        {"MODULE y; BEGIN 1 -; END y.", "",
+         "1: Unexpected token: semicolon - expecting ( or integer"},
         {"MODULE y; BEGIN - 1 + 2 + ; END y.", "",
-         "1: Expecting an integer: ;"},
+         "1: Unexpected token: semicolon - expecting ( or integer"},
     };
     do_parse_tests(tests);
 }
@@ -114,10 +118,12 @@ TEST(Parser, Mult) {
          "MODULE y;\nBEGIN\n3*3+4*4;\nEND y.", ""},
 
         // Errors
-        {"MODULE y; BEGIN * ; END y.", "", "1: Expecting an integer: *"},
-        {"MODULE y; BEGIN 1 MOD; END y.", "", "1: Expecting an integer: ;"},
+        {"MODULE y; BEGIN * ; END y.", "",
+         "1: Unexpected token: * - expecting ( or integer"},
+        {"MODULE y; BEGIN 1 MOD; END y.", "",
+         "1: Unexpected token: semicolon - expecting ( or integer"},
         {"MODULE y; BEGIN - 1 + 2 DIV ; END y.", "",
-         "1: Expecting an integer: ;"},
+         "1: Unexpected token: semicolon - expecting ( or integer"},
     };
     do_parse_tests(tests);
 }

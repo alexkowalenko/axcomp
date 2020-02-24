@@ -33,14 +33,22 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
 }
 
 void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTInteger(ast->integer.get());
+    visit_ASTFactor(ast->factor.get());
     for (auto t : ast->rest) {
         if (t.sign == TokenType::div || t.sign == TokenType::mod) {
             os << fmt::format(" {} ", to_string(t.sign));
         } else {
             os << to_string(t.sign);
         }
-        visit_ASTInteger(t.integer.get());
+        visit_ASTFactor(t.factor.get());
+    }
+}
+
+void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
+    if (ast->integer) {
+        visit_ASTInteger(ast->integer.get());
+    } else {
+        visit_ASTExpr(ast->expr.get());
     }
 }
 

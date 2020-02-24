@@ -12,6 +12,14 @@
 
 namespace ax {
 
+inline constexpr bool debug_parser{false};
+
+template <typename... T> inline void debug(const T &... msg) {
+    if constexpr (debug_parser) {
+        std::cerr << fmt::format(msg...) << std::endl;
+    }
+}
+
 Token Parser::get_token(TokenType t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
@@ -83,9 +91,11 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
  * @return std::shared_ptr<ASTExpr>
  */
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
+    debug("Parser::parse_expr");
     std::shared_ptr<ASTExpr> expr = std::make_shared<ASTExpr>();
 
     auto tok = lexer.peek_token();
+    debug("expr: {}", std::string(tok));
     if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
         lexer.get_token();
         expr->first_sign = std::optional<TokenType>{tok.type};
@@ -108,15 +118,16 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
  * @return std::shared_ptr<ASTTerm>
  */
 std::shared_ptr<ASTTerm> Parser::parse_term() {
+    debug("Parser::parse_term");
     std::shared_ptr<ASTTerm> term = std::make_shared<ASTTerm>();
 
-    term->integer = parse_integer();
+    term->factor = parse_factor();
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::asterisk || tok.type == TokenType::div ||
            tok.type == TokenType::mod) {
         lexer.get_token();
         Term_mult mult{tok.type};
-        mult.integer = parse_integer();
+        mult.factor = parse_factor();
         term->rest.push_back(mult);
         tok = lexer.peek_token();
     }
@@ -124,11 +135,41 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 }
 
 /**
+ * @brief factor -> INTEGER | '(' expr ')'
+ *
+ * @return std::shared_ptr<ASTFactor>
+ */
+std::shared_ptr<ASTFactor> Parser::parse_factor() {
+    debug("Parser::parse_factor");
+    std::shared_ptr<ASTFactor> factor = std::make_shared<ASTFactor>();
+    auto                       tok = lexer.peek_token();
+    debug("factor: {}\n", std::string(tok));
+    if (tok.type == TokenType::l_paren) {
+        lexer.get_token(); // get (
+        factor->expr = parse_expr();
+        get_token(TokenType::r_paren);
+        factor->integer = nullptr;
+        return factor;
+    } else if (tok.type == TokenType::integer) {
+        factor->integer = parse_integer();
+        factor->expr = nullptr;
+        return factor;
+    }
+    debug("not factor: {}", to_string(tok.type));
+    throw ParseException(
+        fmt::format("Unexpected token: {} - expecting ( or integer",
+                    std::string(tok)),
+        lexer.lineno);
+    return nullptr; // Not factor
+};
+
+/**
  * @brief INTEGER
  *
  * @return std::shared_ptr<ASTInteger>
  */
 std::shared_ptr<ASTInteger> Parser::parse_integer() {
+    debug("Parser::parse_integer");
     auto tok = lexer.get_token();
     if (tok.type != TokenType::integer) {
         throw ParseException("Expecting an integer: " + tok.val, lexer.lineno);
