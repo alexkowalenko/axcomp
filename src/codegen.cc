@@ -68,21 +68,24 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 
+    visit_ASTTerm(expr->term.get());
+    Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
     if (expr->first_sign && expr->first_sign.value() == TokenType::dash) {
-        expr->integer->negate();
+        L = builder.CreateSub(ConstantInt::get(context, APInt(64, 0, true)), L,
+                              "negtmp");
+        last_value = L;
     }
-    visit_ASTInteger(expr->integer.get());
-    Value *L = last_value;
+
     for (auto t : expr->rest) {
-        visit_ASTInteger(t.integer.get());
+        visit_ASTTerm(t.term.get());
         Value *R = last_value;
         switch (t.sign) {
         case TokenType::plus:
             last_value = builder.CreateAdd(L, R, "addtmp");
             break;
         case TokenType::dash:
-            last_value = builder.CreateSub(L, R, "addtmp");
+            last_value = builder.CreateSub(L, R, "subtmp");
             break;
         default:
             throw CodeGenException("ASTExpr with sign" + to_string(t.sign));
@@ -91,6 +94,30 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
         L = last_value;
     }
 }
+
+void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
+    visit_ASTInteger(ast->integer.get());
+    Value *L = last_value;
+    for (auto t : ast->rest) {
+        visit_ASTInteger(t.integer.get());
+        Value *R = last_value;
+        switch (t.sign) {
+        case TokenType::asterisk:
+            last_value = builder.CreateMul(L, R, "multmp");
+            break;
+        case TokenType::div:
+            last_value = builder.CreateSDiv(L, R, "divtmp");
+            break;
+        case TokenType::mod:
+            last_value = builder.CreateSRem(L, R, "modtmp");
+            break;
+        default:
+            throw CodeGenException("ASTTerm with sign" + to_string(t.sign));
+        }
+
+        L = last_value;
+    }
+};
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
     last_value = ConstantInt::get(context, APInt(64, ast->value, true));

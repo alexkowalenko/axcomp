@@ -78,7 +78,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
 }
 
 /**
- * @brief @expr -> ('+' | '-' )? INTEGER ( ('+' | '-' ) INTEGER)*
+ * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
  *
  * @return std::shared_ptr<ASTExpr>
  */
@@ -90,16 +90,37 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
         lexer.get_token();
         expr->first_sign = std::optional<TokenType>{tok.type};
     }
-    expr->integer = parse_integer();
+    expr->term = parse_term();
     tok = lexer.peek_token();
     while (tok.type == TokenType::plus || tok.type == TokenType::dash) {
         lexer.get_token();
-        Expr_addition add{tok.type};
-        add.integer = parse_integer();
+        Expr_add add{tok.type};
+        add.term = parse_term();
         expr->rest.push_back(add);
         tok = lexer.peek_token();
     }
     return expr;
+}
+
+/**
+ * @brief term -> INTEGER ( ( '*' | 'DIV' | 'MOD' ) INTEGER)*
+ *
+ * @return std::shared_ptr<ASTTerm>
+ */
+std::shared_ptr<ASTTerm> Parser::parse_term() {
+    std::shared_ptr<ASTTerm> term = std::make_shared<ASTTerm>();
+
+    term->integer = parse_integer();
+    auto tok = lexer.peek_token();
+    while (tok.type == TokenType::asterisk || tok.type == TokenType::div ||
+           tok.type == TokenType::mod) {
+        lexer.get_token();
+        Term_mult mult{tok.type};
+        mult.integer = parse_integer();
+        term->rest.push_back(mult);
+        tok = lexer.peek_token();
+    }
+    return term;
 }
 
 /**

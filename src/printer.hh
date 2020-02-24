@@ -22,6 +22,7 @@ class ASTPrinter : ASTVisitor {
 
     void visit_ASTModule(ASTModule *ast);
     void visit_ASTExpr(ASTExpr *ast);
+    void visit_ASTTerm(ASTTerm *ast);
     void visit_ASTInteger(ASTInteger *ast);
 
   private:

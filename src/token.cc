@@ -29,7 +29,7 @@ std::string to_string(TokenType &t) {
     case TokenType::dash:
         return "-";
     case TokenType::asterisk:
-        return "+";
+        return "*";
 
     case TokenType::l_paren:
         return "(";

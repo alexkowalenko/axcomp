@@ -19,6 +19,7 @@ class Parser {
   private:
     std::shared_ptr<ASTModule>  parse_module();
     std::shared_ptr<ASTExpr>    parse_expr();
+    std::shared_ptr<ASTTerm>    parse_term();
     std::shared_ptr<ASTInteger> parse_integer();
 
     Token get_token(TokenType t);

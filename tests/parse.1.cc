@@ -98,6 +98,30 @@ TEST(Parser, Plus) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, Mult) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; BEGIN 2 * 2; END y.", "MODULE y;\nBEGIN\n2*2;\nEND y.", ""},
+        {"MODULE y; BEGIN 4 DIV 2; END y.",
+         "MODULE y;\nBEGIN\n4 DIV 2;\nEND y.", ""},
+        {"MODULE y; BEGIN 7 MOD 2; END y.",
+         "MODULE y;\nBEGIN\n7 MOD 2;\nEND y.", ""},
+
+        {"MODULE y; BEGIN 1 * 2 * 3 * 4; END y.",
+         "MODULE y;\nBEGIN\n1*2*3*4;\nEND y.", ""},
+
+        {"MODULE y; BEGIN 3 * 3 + 4 * 4; END y.",
+         "MODULE y;\nBEGIN\n3*3+4*4;\nEND y.", ""},
+
+        // Errors
+        {"MODULE y; BEGIN * ; END y.", "", "1: Expecting an integer: *"},
+        {"MODULE y; BEGIN 1 MOD; END y.", "", "1: Expecting an integer: ;"},
+        {"MODULE y; BEGIN - 1 + 2 DIV ; END y.", "",
+         "1: Expecting an integer: ;"},
+    };
+    do_parse_tests(tests);
+}
+
 static inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(),
                          [](int ch) { return !std::isspace(ch); })

@@ -24,12 +24,24 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     if (ast->first_sign) {
         os << to_string(ast->first_sign.value());
     }
-    visit_ASTInteger(ast->integer.get());
+    visit_ASTTerm(ast->term.get());
     for (auto t : ast->rest) {
         os << to_string(t.sign);
-        visit_ASTInteger(t.integer.get());
+        visit_ASTTerm(t.term.get());
     }
     os << ";\n";
+}
+
+void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
+    visit_ASTInteger(ast->integer.get());
+    for (auto t : ast->rest) {
+        if (t.sign == TokenType::div || t.sign == TokenType::mod) {
+            os << fmt::format(" {} ", to_string(t.sign));
+        } else {
+            os << to_string(t.sign);
+        }
+        visit_ASTInteger(t.integer.get());
+    }
 }
 
 void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {
