@@ -12,17 +12,47 @@ set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
 project (axcomp VERSION 0.1
                 LANGUAGES CXX)
+include(cmake/StandardProjectSettings.cmake)
+
+# Link this 'library' to set the c++ standard / compile-time options requested
+add_library(project_options INTERFACE)
+target_compile_features(project_options INTERFACE cxx_std_17)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-### Require out-of-source builds
-file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
-if(EXISTS "${LOC_PATH}")
-    message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
+# Link this 'library' to use the warnings specified in CompilerWarnings.cmake
+add_library(project_warnings INTERFACE)
+
+# standard compiler warnings
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
+
+# sanitizer options if supported by compiler
+include(cmake/Sanitizers.cmake)
+enable_sanitizers(project_options)
+
+# enable doxygen
+include(cmake/Doxygen.cmake)
+enable_doxygen()
+
+# allow for static analysis options
+include(cmake/StaticAnalyzers.cmake)
+
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
+option(ENABLE_TESTING "Enable Test Builds" ON)
+
+# Precompiled Headers
+option(ENABLE_PCH "Enable Precompiled Headers" OFF)
+if (ENABLE_PCH)
+  # This sets a global PCH parameter, each project will build its own PCH, which
+  # is a good idea if any #define's change
+  # 
+  target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
 endif()
 
+# Testing
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
     enable_testing()
@@ -31,7 +61,11 @@ if(PACKAGE_TESTS)
     add_subdirectory(xtest)
 endif()
 
+# External libraries
+message("Using fmt")
 add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
+
+message("Using CLI11")
 add_subdirectory(extern/CLI11)
 
 # LLVM
@@ -45,17 +79,8 @@ add_definitions(${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens)
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 
-# Docs only available if this is the main app
-find_package(Doxygen)
-if(Doxygen_FOUND)
-    add_subdirectory(docs)
-else()
-    message(STATUS "Doxygen not found, not building docs")
-endif()
-
-add_compile_options(-Wall)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+# Doxygen docs
+add_subdirectory(docs)
 
 # src dir
 file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
@@ -64,9 +89,9 @@ include_directories(src)
 include_directories(extern/fmt/include)
 include_directories(extern/CLI11/include)
 
-# ax executable
+# ax compiler executable
 add_executable(ax cmd/ax.cc)
-target_link_libraries(ax libax fmt ${llvm_libs})
+target_link_libraries(ax PRIVATE project_options project_warnings libax fmt ${llvm_libs})
 
 # install
 set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)

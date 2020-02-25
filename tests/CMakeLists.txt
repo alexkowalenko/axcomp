@@ -16,8 +16,6 @@ mark_as_advanced(
 
 set_target_properties(gtest PROPERTIES FOLDER extern)
 set_target_properties(gtest_main PROPERTIES FOLDER extern)
-# set_target_properties(gmock PROPERTIES FOLDER extern)
-# set_target_properties(gmock_main PROPERTIES FOLDER extern)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
@@ -39,7 +37,6 @@ endmacro()
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-package_add_test(test1 test1.cc)
 package_add_test(lex.1 lex.1.cc)
 package_add_test(lex.2 lex.2.cc)
 package_add_test(parse.1 parse.1.cc lib_test.cc)

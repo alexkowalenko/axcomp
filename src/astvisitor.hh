@@ -22,6 +22,7 @@ class ASTIdentifier;
 class ASTVisitor {
 
   public:
+    virtual ~ASTVisitor(){};
     virtual void visit_ASTModule(ASTModule *) = 0;
     virtual void visit_ASTDeclaration(ASTDeclaration *) = 0;
     virtual void visit_ASTConst(ASTConst *) = 0;
