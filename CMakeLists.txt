@@ -32,6 +32,7 @@ if(PACKAGE_TESTS)
 endif()
 
 add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
+add_subdirectory(extern/CLI11)
 
 # LLVM
 set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
@@ -61,6 +62,7 @@ file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
 add_library(libax STATIC ${source_files})
 include_directories(src)
 include_directories(extern/fmt/include)
+include_directories(extern/CLI11/include)
 
 # ax executable
 add_executable(ax cmd/ax.cc)

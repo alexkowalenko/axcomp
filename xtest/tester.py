@@ -36,7 +36,7 @@ def do_clang(stem):
 
 def do_test(t):
     stem = Path(t).stem
-    cmd = f"{compiler} < {t}"
+    cmd = f"{compiler} --file {t}"
     # print(cmd)
     os.system(cmd)
     exp = stem + ".exp"
