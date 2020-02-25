@@ -1,8 +1,8 @@
 (* constants *)
-MODULE c01;
+MODULE c02;
 CONST
     x = 1;
     y = 2;
 BEGIN
-    12;
-END c01.
+    y + 2 ;
+END c02.

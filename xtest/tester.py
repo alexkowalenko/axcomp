@@ -13,24 +13,20 @@ restore = attr('reset')
 
 def do_clang(stem):
     obj = stem + ".o"
-    cmd = f"clang main.c {obj}"
-    ret = os.system(cmd)
+    ret = os.system(f"clang main.c {obj}")
     if (ret != 0):
         print(red + "compile " + restore, end="")
         # os.system(f"rm {obj}")
         return 0
-    cmd = f"./a.out > result.txt"
-    os.system(cmd)
+    os.system(f"./a.out > result.txt")
     res = stem + ".res"
-    cmd = f"diff --strip-trailing-cr {res} result.txt > result.diff.txt"
-    ret = os.system(cmd)
+    ret = os.system(
+        f"diff --strip-trailing-cr {res} result.txt > result.diff.txt")
     if(ret != 0):
         print(red + "run " + restore, end="")
         fail = stem + ".fail"
-        cmd = f"mv result.txt {fail}"
-        os.system(cmd)
-    cmd = f"rm -f a.out {obj} result.diff.txt result.txt"
-    os.system(cmd)
+        os.system(f"mv result.txt {fail}")
+    os.system(f"rm -f a.out {obj} result.diff.txt result.txt")
     return (ret == 0)
 
 
@@ -46,19 +42,14 @@ def do_test(t):
     ret = os.system(cmd)
     fail = stem + ".fail"
     if(ret != 0):
-        cmd = f"mv {asm} {fail}"
-        os.system(cmd)
-        cmd = f"rm {stem}.o"
-        os.system(cmd)
+        os.system(f"mv {asm} {fail}")
+        os.system(f"rm {stem}.o")
     else:
-        cmd = f"rm -f {fail} {asm}"
-        os.system(cmd)
-    cmd = "rm -f result.diff.txt"
-    os.system(cmd)
+        os.system(f"rm -f {fail} {asm}")
+    os.system("rm -f result.diff.txt")
     if (ret != 0):
         print(red + "compile " + restore, end="")
         return 0
-
     # compile
     return do_clang(stem)
 

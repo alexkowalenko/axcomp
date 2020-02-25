@@ -4,7 +4,8 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-find_package(PythonInterp REQUIRED)
+set(PYTHON_EXECUTABLE python3)
+find_package(PythonInterp 3.7 REQUIRED)
 
 add_test(NAME xtests 
          COMMAND ${PYTHON_EXECUTABLE} ./tester.py

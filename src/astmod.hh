@@ -35,17 +35,19 @@ class ASTIdentifier : public ASTBase {
 };
 
 /**
- * @brief factor -> INTEGER | '(' expr ')'
+ * @brief factor -> IDENT | INTEGER | '(' expr ')'
  *
  */
 class ASTFactor : public ASTBase {
   public:
+  ASTFactor() : identifier(nullptr), integer(nullptr), expr(nullptr) {}; 
     ~ASTFactor(){};
 
     void accept(ASTVisitor *v) { v->visit_ASTFactor(this); };
 
-    std::shared_ptr<ASTInteger> integer;
-    std::shared_ptr<ASTExpr>    expr;
+    std::shared_ptr<ASTIdentifier> identifier;
+    std::shared_ptr<ASTInteger>    integer;
+    std::shared_ptr<ASTExpr>       expr;
 };
 
 struct Term_mult {

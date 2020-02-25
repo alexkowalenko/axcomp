@@ -186,7 +186,7 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 }
 
 /**
- * @brief factor -> INTEGER | '(' expr ')'
+ * @brief factor -> IDENT | INTEGER | '(' expr ')'
  *
  * @return std::shared_ptr<ASTFactor>
  */
@@ -195,22 +195,24 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     std::shared_ptr<ASTFactor> factor = std::make_shared<ASTFactor>();
     auto                       tok = lexer.peek_token();
     debug("factor: {}\n", std::string(tok));
-    if (tok.type == TokenType::l_paren) {
+    switch (tok.type) {
+    case TokenType::l_paren:
         lexer.get_token(); // get (
         factor->expr = parse_expr();
         get_token(TokenType::r_paren);
-        factor->integer = nullptr;
         return factor;
-    } else if (tok.type == TokenType::integer) {
+    case TokenType::integer:
         factor->integer = parse_integer();
-        factor->expr = nullptr;
         return factor;
+    case TokenType::ident:
+        factor->identifier = parse_identifier();
+        return factor;
+    default:
+        throw ParseException(
+            fmt::format("Unexpected token: {} - expecting ( or integer",
+                        std::string(tok)),
+            lexer.lineno);
     }
-    debug("not factor: {}", string(tok.type));
-    throw ParseException(
-        fmt::format("Unexpected token: {} - expecting ( or integer",
-                    std::string(tok)),
-        lexer.lineno);
     return nullptr; // Not factor
 };
 

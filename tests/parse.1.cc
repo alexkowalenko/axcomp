@@ -50,7 +50,7 @@ TEST(Parser, Module) {
         {"MODULE y; BEGIN ; END y.", "",
          "1: Unexpected token: semicolon - expecting ( or integer"},
         {"MODULE y; BEGIN 12; y.", "",
-         "1: Unexpected token: y - expecting ( or integer"},
+         "1: Unexpected token: EOF - expecting indent"},
         {"MODULE y; BEGIN 12; END .", "",
          "1: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN 12; END y", "",

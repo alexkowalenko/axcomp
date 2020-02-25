@@ -14,6 +14,7 @@
 #include <llvm/IR/Module.h>
 
 #include "astvisitor.hh"
+#include "symboltable.hh"
 
 using namespace llvm;
 
@@ -43,6 +44,8 @@ class CodeGenerator : ASTVisitor {
 
     AllocaInst *createEntryBlockAlloca(Function *   TheFunction,
                                        std::string &VarName);
+
+    SymbolTable symboltable;
 
     std::string             filename;
     LLVMContext             context;

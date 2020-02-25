@@ -41,7 +41,8 @@ inline const std::string file_ext_llvmri = ".ll";
 inline const std::string file_ext_obj = ".o";
 
 CodeGenerator::CodeGenerator()
-    : filename("output"), builder(context), last_value(nullptr){};
+    : symboltable(nullptr), filename("output"), builder(context),
+      last_value(nullptr){};
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Set up code generation
@@ -97,6 +98,8 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         auto function = builder.GetInsertBlock()->getParent();
         auto alloc = createEntryBlockAlloca(function, name);
         builder.CreateStore(val, alloc);
+
+        symboltable.put(name, alloc);
         debug("finish const");
     }
 }
@@ -157,8 +160,10 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
 void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
     if (ast->integer) {
         visit_ASTInteger(ast->integer.get());
-    } else {
+    } else if (ast->expr) {
         visit_ASTExpr(ast->expr.get());
+    } else if (ast->identifier) {
+        visit_ASTIdentifier(ast->identifier.get());
     }
 }
 
@@ -166,7 +171,13 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
     last_value = ConstantInt::get(context, APInt(64, ast->value, true));
 }
 
-void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *){};
+void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
+    if (auto res = symboltable.find(ast->value)) {
+        last_value = builder.CreateLoad(*res, ast->value);
+        return;
+    }
+    throw CodeGenException(fmt::format("identifier {} unknown", ast->value));
+}
 
 /**
  * @brief Create an alloca instruction in the entry block of the function.  This
@@ -180,7 +191,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *   function,
                                                   std::string &name) {
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());
-    return TmpB.CreateAlloca(Type::getDoubleTy(context), nullptr, name);
+    return TmpB.CreateAlloca(Type::getInt64Ty(context), nullptr, name);
 }
 
 void CodeGenerator::init(std::string const &module_name) {

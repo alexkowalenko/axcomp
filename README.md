@@ -40,7 +40,7 @@ expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
 
 term -> factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
 
-factor -> INTEGER | '(' expr ')'
+factor -> IDENT | INTEGER | '(' expr ')'
 
 IDENT -> letter (letter | digit | '_')*
 
@@ -52,8 +52,10 @@ INTEGER -> digit+
 ```pascal
 (* Sample program *)
 MODULE test;
+CONST
+    x = 1;
 BEGIN
     12;
-    (3 * 3) + ((2+ (1+1)) * 4);
+    (3 * x) + ((2+ (x + 1)) * 4);
 END test.
 ```
