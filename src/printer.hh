@@ -20,11 +20,14 @@ class ASTPrinter : ASTVisitor {
 
     void print(std::shared_ptr<ASTModule> ast) { visit_ASTModule(ast.get()); };
 
-    void visit_ASTModule(ASTModule *ast);
-    void visit_ASTExpr(ASTExpr *ast);
-    void visit_ASTTerm(ASTTerm *ast);
-    void visit_ASTFactor(ASTFactor *ast);
-    void visit_ASTInteger(ASTInteger *ast);
+    void visit_ASTModule(ASTModule *);
+    void visit_ASTDeclaration(ASTDeclaration *);
+    void visit_ASTConst(ASTConst *);
+    void visit_ASTExpr(ASTExpr *);
+    void visit_ASTTerm(ASTTerm *);
+    void visit_ASTFactor(ASTFactor *);
+    void visit_ASTInteger(ASTInteger *);
+    void visit_ASTIdentifier(ASTIdentifier *);
 
   private:
     std::ostream &os;

@@ -25,6 +25,15 @@ class ASTInteger : public ASTBase {
     long value;
 };
 
+class ASTIdentifier : public ASTBase {
+  public:
+    ~ASTIdentifier(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTIdentifier(this); };
+
+    std::string value;
+};
+
 /**
  * @brief factor -> INTEGER | '(' expr ')'
  *
@@ -78,12 +87,36 @@ class ASTExpr : public ASTBase {
     std::vector<Expr_add>    rest;
 };
 
+struct ConstDec {
+    std::shared_ptr<ASTIdentifier> indent;
+    std::shared_ptr<ASTExpr>       expr;
+};
+
+class ASTConst : public ASTBase {
+  public:
+    ~ASTConst(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTConst(this); };
+
+    std::vector<ConstDec> consts;
+};
+
+class ASTDeclaration : public ASTBase {
+  public:
+    ~ASTDeclaration(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTDeclaration(this); };
+
+    std::shared_ptr<ASTConst> cnst;
+};
+
 class ASTModule : public ASTBase {
   public:
     ~ASTModule(){};
     void accept(ASTVisitor *v) { v->visit_ASTModule(this); };
 
     std::string                           name;
+    std::shared_ptr<ASTDeclaration>       decs;
     std::vector<std::shared_ptr<ASTExpr>> exprs;
 };
 } // namespace ax

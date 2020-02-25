@@ -9,20 +9,7 @@
 
 #include "gtest/gtest.h"
 
-#include "error.hh"
-#include "lexer.hh"
-#include "parser.hh"
-#include "printer.hh"
-
-using namespace ax;
-
-struct ParseTests {
-    std::string input;
-    std::string output;
-    std::string error;
-};
-
-void do_parse_tests(std::vector<ParseTests> &tests);
+#include "parse_test.hh"
 
 TEST(Parser, Comments) {
     std::vector<ParseTests> tests = {
@@ -53,7 +40,7 @@ TEST(Parser, Module) {
 
         // Errors
         {"y; BEGIN 12; END y.", "",
-         "1: Unexpected token: indent(y) - expecting MODULE"},
+         "1: Unexpected token: y - expecting MODULE"},
         {"MODULE ; BEGIN 12; END y.", "",
          "1: Unexpected token: semicolon - expecting indent"},
         {"MODULE y BEGIN 12; END y.", "",
@@ -63,7 +50,7 @@ TEST(Parser, Module) {
         {"MODULE y; BEGIN ; END y.", "",
          "1: Unexpected token: semicolon - expecting ( or integer"},
         {"MODULE y; BEGIN 12; y.", "",
-         "1: Unexpected token: indent(y) - expecting ( or integer"},
+         "1: Unexpected token: y - expecting ( or integer"},
         {"MODULE y; BEGIN 12; END .", "",
          "1: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN 12; END y", "",
@@ -146,40 +133,4 @@ TEST(Parser, Parentheses) {
          "1: Unexpected token: semicolon - expecting ( or integer"},
     };
     do_parse_tests(tests);
-}
-
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(),
-                         [](int ch) { return !std::isspace(ch); })
-                .base(),
-            s.end());
-}
-
-void do_parse_tests(std::vector<ParseTests> &tests) {
-    for (auto t : tests) {
-
-        std::istringstream is(t.input);
-        Lexer              lex(is);
-        Parser             parser(lex);
-
-        std::string result;
-        try {
-            std::cout << t.input << std::endl;
-            auto ast = parser.parse();
-
-            std::ostringstream outstr;
-            ASTPrinter         prt(outstr);
-            prt.print(ast);
-            result = outstr.str();
-            rtrim(result);
-
-            EXPECT_EQ(result, t.output);
-        } catch (AXException &e) {
-            std::cout << t.error << std::endl;
-            EXPECT_EQ(e.error_msg(), t.error);
-        } catch (std::exception &e) {
-            std::cerr << "Exception: " << e.what() << std::endl;
-            FAIL();
-        }
-    }
 }

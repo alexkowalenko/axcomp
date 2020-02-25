@@ -66,6 +66,20 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     print_code();
 }
 
+void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
+    if (ast->cnst) {
+        visit_ASTConst(ast->cnst.get());
+    }
+}
+
+void CodeGenerator::visit_ASTConst(ASTConst *ast) {
+    for (auto c : ast->consts) {
+        visit_ASTExpr(c.expr.get());
+        auto val = last_value;
+        // builder.CreateStore(val, )
+    }
+}
+
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 
     visit_ASTTerm(expr->term.get());
@@ -130,6 +144,8 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
     last_value = ConstantInt::get(context, APInt(64, ast->value, true));
 }
+
+void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *){};
 
 void CodeGenerator::init(std::string const &module_name) {
     module = std::make_unique<Module>(module_name, context);

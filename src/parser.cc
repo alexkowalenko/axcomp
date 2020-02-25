@@ -31,7 +31,8 @@ Token Parser::get_token(TokenType t) {
 }
 
 /**
- * @brief module -> "MODULE" IDENT ";" "BEGIN" statement_seq "END" IDENT "."
+ * @brief module -> "MODULE" IDENT ";"  declarations "BEGIN" statement_seq "END"
+ * IDENT "."
  *
  * @return std::shared_ptr<ASTModule>
  */
@@ -43,6 +44,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
     get_token(TokenType::semicolon);
+    module->decs = parse_declaration();
     get_token(TokenType::begin);
 
     // statement_seq
@@ -84,6 +86,55 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::period);
     return module;
 }
+
+/**
+ * @brief declarations -> ("CONST" (IDENT "=" expr ";")* )?
+                ("TYPE" (IDENT "=" type ";")* )?
+                ("VAR" (IDENT ":" type ";")* )?
+ *
+ * @return std::shared_ptr<ASTDeclaration>
+ */
+std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
+    debug("Parser::parse_declaration");
+    std::shared_ptr<ASTDeclaration> decs = std::make_shared<ASTDeclaration>();
+    auto                            tok = lexer.peek_token();
+    while (tok.type == TokenType::cnst || tok.type == TokenType::type ||
+           tok.type == TokenType::var) {
+
+        switch (tok.type) {
+        case TokenType::cnst:
+            decs->cnst = parse_const();
+            break;
+        default:
+            throw ParseException(fmt::format("unimplemented {}", tok.val),
+                                 lexer.lineno);
+        }
+        tok = lexer.peek_token();
+    }
+    return decs;
+};
+
+/**
+ * @brief ("CONST" (IDENT "=" expr ";")* )?
+ *
+ * @return std::shared_ptr<ASTConst>
+ */
+std::shared_ptr<ASTConst> Parser::parse_const() {
+    debug("Parser::parse_const");
+    lexer.get_token(); // CONST
+    std::shared_ptr<ASTConst> cnst = std::make_shared<ASTConst>();
+    auto                      tok = lexer.peek_token();
+    while (tok.type == TokenType::ident) {
+        ConstDec dec;
+        dec.indent = parse_identifier();
+        get_token(TokenType::equals);
+        dec.expr = parse_expr();
+        get_token(TokenType::semicolon);
+        cnst->consts.push_back(dec);
+        tok = lexer.peek_token();
+    }
+    return cnst;
+};
 
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
@@ -170,14 +221,24 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
  */
 std::shared_ptr<ASTInteger> Parser::parse_integer() {
     debug("Parser::parse_integer");
-    auto tok = lexer.get_token();
-    if (tok.type != TokenType::integer) {
-        throw ParseException("Expecting an integer: " + tok.val, lexer.lineno);
-    }
+    auto                        tok = get_token(TokenType::integer);
     std::shared_ptr<ASTInteger> ast = std::make_shared<ASTInteger>();
     ast->value = atol(tok.val.c_str());
     return ast;
 }
+
+/**
+ * @brief IDENT
+ *
+ * @return std::shared_ptr<ASTIdentifier>
+ */
+std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
+    debug("Parser::parse_identifier");
+    auto                           tok = get_token(TokenType::ident);
+    std::shared_ptr<ASTIdentifier> ast = std::make_shared<ASTIdentifier>();
+    ast->value = tok.val;
+    return ast;
+};
 
 std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();

@@ -23,6 +23,8 @@ enum class TokenType {
     asterisk,
     l_paren,
     r_paren,
+    equals,
+    colon,
 
     // Keywords
     module,
@@ -30,6 +32,10 @@ enum class TokenType {
     end,
     div,
     mod,
+    cnst,
+    type,
+    var,
+
 };
 
 std::string to_string(TokenType &t);

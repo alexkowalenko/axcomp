@@ -62,7 +62,7 @@ Token::operator std::string() {
     case TokenType::integer:
         return fmt::format("integer({})", val);
     case TokenType::ident:
-        return fmt::format("indent({})", val);
+        return val;
     case TokenType::semicolon:
         return "semicolon";
     case TokenType::period:

@@ -83,6 +83,15 @@ Token Lexer::scan_ident(char c) {
     if (ident == "MOD") {
         return Token(TokenType::mod, ident);
     }
+    if (ident == "CONST") {
+        return Token(TokenType::cnst, ident);
+    }
+    if (ident == "TYPE") {
+        return Token(TokenType::type, ident);
+    }
+    if (ident == "VAR") {
+        return Token(TokenType::var, ident);
+    }
     return Token(TokenType::ident, ident);
 }
 
@@ -113,6 +122,11 @@ Token Lexer::get_token() {
         return Token(TokenType::l_paren, "(");
     case ')':
         return Token(TokenType::r_paren, ")");
+    case '=':
+        return Token(TokenType::equals, "=");
+    case ':':
+        return Token(TokenType::colon, ":");
+
     default:
         if (std::isdigit(c)) {
             return scan_digit(c);

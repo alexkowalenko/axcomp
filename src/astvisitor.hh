@@ -11,19 +11,25 @@
 namespace ax {
 
 class ASTModule;
+class ASTDeclaration;
+class ASTConst;
 class ASTExpr;
 class ASTTerm;
 class ASTFactor;
 class ASTInteger;
+class ASTIdentifier;
 
 class ASTVisitor {
 
   public:
     virtual void visit_ASTModule(ASTModule *) = 0;
+    virtual void visit_ASTDeclaration(ASTDeclaration *) = 0;
+    virtual void visit_ASTConst(ASTConst *) = 0;
     virtual void visit_ASTExpr(ASTExpr *) = 0;
     virtual void visit_ASTTerm(ASTTerm *) = 0;
     virtual void visit_ASTFactor(ASTFactor *) = 0;
     virtual void visit_ASTInteger(ASTInteger *) = 0;
+    virtual void visit_ASTIdentifier(ASTIdentifier *) = 0;
 };
 
 } // namespace ax

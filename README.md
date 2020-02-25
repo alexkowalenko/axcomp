@@ -8,7 +8,7 @@ AX compiler
 * Identifiers - start with letter, should be UTF-8, can contain '_'.
 * Comments: `(* hello sunshine! *)`
 * Whitespace: space, tab, newline. UTF-8 encoding for Unicode characters.
-* Keywords: `MODULE`, `BEGIN`, `END`.
+* Keywords: `MODULE`, `BEGIN`, `END`, `DIV`, `MOD`, `CONST`, `TYPE`, `VAR`.
 
 ## Grammar
 
@@ -23,9 +23,16 @@ Notation:
 
 ```ebnf
 module -> "MODULE" IDENT ";"
+          declarations
           "BEGIN"
                 statement_seq
           "END" IDENT "."
+
+declarations -> ("CONST" (IDENT "=" expr ";")* )?
+                ("TYPE" (IDENT "=" type ";")* )?
+                ("VAR" (IDENT ":" type ";")* )?
+
+type = INDENT
 
 statement_seq -> (expr ";")+
 
