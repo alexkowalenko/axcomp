@@ -105,6 +105,9 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
         case TokenType::cnst:
             decs->cnst = parse_const();
             break;
+        case TokenType::var:
+            decs->var = parse_var();
+            break;
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
                                  lexer.lineno);
@@ -115,7 +118,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
 };
 
 /**
- * @brief ("CONST" (IDENT "=" expr ";")* )?
+ * @brief "CONST" (IDENT "=" expr ";")*
  *
  * @return std::shared_ptr<ASTConst>
  */
@@ -134,7 +137,30 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         tok = lexer.peek_token();
     }
     return cnst;
-};
+}
+
+/**
+ * @brief  "VAR" (IDENT ":" type ";")*
+ *
+ * @return std::shared_ptr<ASTVar>
+ */
+std::shared_ptr<ASTVar> Parser::parse_var() {
+    debug("Parser::parse_var");
+    lexer.get_token(); // VAR
+    std::shared_ptr<ASTVar> var = std::make_shared<ASTVar>();
+    auto                    tok = lexer.peek_token();
+    while (tok.type == TokenType::ident) {
+        VarDec dec;
+        dec.indent = parse_identifier();
+        get_token(TokenType::colon);
+        tok = get_token(TokenType::ident);
+        dec.type = tok.val;
+        get_token(TokenType::semicolon);
+        var->vars.push_back(dec);
+        tok = lexer.peek_token();
+    }
+    return var;
+}
 
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*

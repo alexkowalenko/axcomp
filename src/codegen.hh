@@ -31,6 +31,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTModule(ASTModule *);
     void visit_ASTDeclaration(ASTDeclaration *);
     void visit_ASTConst(ASTConst *);
+    void visit_ASTVar(ASTVar *);
     void visit_ASTExpr(ASTExpr *);
     void visit_ASTTerm(ASTTerm *);
     void visit_ASTFactor(ASTFactor *);

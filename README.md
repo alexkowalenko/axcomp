@@ -9,6 +9,7 @@ AX compiler
 * Comments: `(* hello sunshine! *)`
 * Whitespace: space, tab, newline. UTF-8 encoding for Unicode characters.
 * Keywords: `MODULE`, `BEGIN`, `END`, `DIV`, `MOD`, `CONST`, `TYPE`, `VAR`.
+* Types: INTEGER (64-bit signed).
 
 ## Grammar
 
@@ -54,6 +55,8 @@ INTEGER -> digit+
 MODULE test;
 CONST
     x = 1;
+VAR
+    z : INTEGER;
 BEGIN
     12;
     (3 * x) + ((2+ (x + 1)) * 4);

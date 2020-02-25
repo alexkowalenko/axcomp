@@ -35,6 +35,10 @@ std::string string(TokenType &t) {
         return "(";
     case TokenType::r_paren:
         return ")";
+    case TokenType::colon:
+        return ":";
+    case TokenType::equals:
+        return "=";
 
     // Keywords
     case TokenType::module:
@@ -47,6 +51,12 @@ std::string string(TokenType &t) {
         return "DIV";
     case TokenType::mod:
         return "MOD";
+    case TokenType::cnst:
+        return "CONST";
+    case TokenType::type:
+        return "TYPE";
+    case TokenType::var:
+        return "VAR";
 
     case TokenType::eof:
         return "EOF";
@@ -63,21 +73,7 @@ Token::operator std::string() {
         return fmt::format("integer({})", val);
     case TokenType::ident:
         return val;
-    case TokenType::semicolon:
-        return "semicolon";
-    case TokenType::period:
-        return "period";
 
-    // Keywords
-    case TokenType::module:
-        return "MODULE";
-    case TokenType::begin:
-        return "BEGIN";
-    case TokenType::end:
-        return "END";
-
-    case TokenType::eof:
-        return "EOF";
     default:
         return string(type);
     }

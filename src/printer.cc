@@ -27,6 +27,9 @@ void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
         visit_ASTConst(ast->cnst.get());
     }
+    if (ast->var) {
+        visit_ASTVar(ast->var.get());
+    }
 }
 
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
@@ -37,6 +40,16 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
             os << " = ";
             visit_ASTExpr(c.expr.get());
             os << ";\n";
+        }
+    }
+}
+
+void ASTPrinter::visit_ASTVar(ASTVar *ast) {
+    if (ast->vars.size() > 0) {
+        os << "VAR\n";
+        for (auto c : ast->vars) {
+            visit_ASTIdentifier(c.indent.get());
+            os << fmt::format(": {};\n", c.type);
         }
     }
 }
@@ -67,6 +80,8 @@ void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
 void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
     if (ast->integer) {
         visit_ASTInteger(ast->integer.get());
+    } else if (ast->identifier) {
+        visit_ASTIdentifier(ast->identifier.get());
     } else {
         os << " (";
         visit_ASTExpr(ast->expr.get());

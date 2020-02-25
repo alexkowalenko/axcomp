@@ -84,6 +84,9 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
         visit_ASTConst(ast->cnst.get());
     }
+    if (ast->var) {
+        visit_ASTVar(ast->var.get());
+    }
 }
 
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
@@ -91,7 +94,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         visit_ASTExpr(c.expr.get());
         auto val = last_value;
 
-        // Create global variable for module
+        // Create variable for module
         auto name = c.indent->value;
         debug("create const: {}", name);
 
@@ -100,8 +103,25 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         builder.CreateStore(val, alloc);
 
         symboltable.put(name, alloc);
-        debug("finish const");
     }
+    debug("finish const");
+}
+
+void CodeGenerator::visit_ASTVar(ASTVar *ast) {
+    for (auto c : ast->vars) {
+
+        // Create variable for module
+        auto name = c.indent->value;
+        debug("create var: {}", name);
+
+        auto function = builder.GetInsertBlock()->getParent();
+        auto alloc = createEntryBlockAlloca(function, name);
+        builder.CreateStore(ConstantInt::get(context, APInt(64, 0, true)),
+                            alloc);
+
+        symboltable.put(name, alloc);
+    }
+    debug("finish var");
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {

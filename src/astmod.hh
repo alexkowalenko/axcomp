@@ -40,7 +40,7 @@ class ASTIdentifier : public ASTBase {
  */
 class ASTFactor : public ASTBase {
   public:
-  ASTFactor() : identifier(nullptr), integer(nullptr), expr(nullptr) {}; 
+    ASTFactor() : identifier(nullptr), integer(nullptr), expr(nullptr){};
     ~ASTFactor(){};
 
     void accept(ASTVisitor *v) { v->visit_ASTFactor(this); };
@@ -89,11 +89,33 @@ class ASTExpr : public ASTBase {
     std::vector<Expr_add>    rest;
 };
 
+struct VarDec {
+    std::shared_ptr<ASTIdentifier> indent;
+    std::string                    type;
+};
+
+/**
+ * @brief "VAR" (IDENT ":" type ";")*
+ *
+ */
+class ASTVar : public ASTBase {
+  public:
+    ~ASTVar(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTVar(this); };
+
+    std::vector<VarDec> vars;
+};
+
 struct ConstDec {
     std::shared_ptr<ASTIdentifier> indent;
     std::shared_ptr<ASTExpr>       expr;
 };
 
+/**
+ * @brief "CONST" (IDENT "=" expr ";")*
+ *
+ */
 class ASTConst : public ASTBase {
   public:
     ~ASTConst(){};
@@ -110,6 +132,7 @@ class ASTDeclaration : public ASTBase {
     void accept(ASTVisitor *v) { v->visit_ASTDeclaration(this); };
 
     std::shared_ptr<ASTConst> cnst;
+    std::shared_ptr<ASTVar>   var;
 };
 
 class ASTModule : public ASTBase {
