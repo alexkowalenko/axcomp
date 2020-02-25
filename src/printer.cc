@@ -43,11 +43,11 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
 
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     if (ast->first_sign) {
-        os << to_string(ast->first_sign.value());
+        os << string(ast->first_sign.value());
     }
     visit_ASTTerm(ast->term.get());
     for (auto t : ast->rest) {
-        os << to_string(t.sign);
+        os << string(t.sign);
         visit_ASTTerm(t.term.get());
     }
 }
@@ -56,9 +56,9 @@ void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
     for (auto t : ast->rest) {
         if (t.sign == TokenType::div || t.sign == TokenType::mod) {
-            os << fmt::format(" {} ", to_string(t.sign));
+            os << fmt::format(" {} ", string(t.sign));
         } else {
-            os << to_string(t.sign);
+            os << string(t.sign);
         }
         visit_ASTFactor(t.factor.get());
     }

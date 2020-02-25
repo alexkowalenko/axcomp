@@ -14,7 +14,11 @@ restore = attr('reset')
 def do_clang(stem):
     obj = stem + ".o"
     cmd = f"clang main.c {obj}"
-    os.system(cmd)
+    ret = os.system(cmd)
+    if (ret != 0):
+        print(red + "compile " + restore, end="")
+        # os.system(f"rm {obj}")
+        return 0
     cmd = f"./a.out > result.txt"
     os.system(cmd)
     res = stem + ".res"

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
@@ -39,6 +40,9 @@ class CodeGenerator : ASTVisitor {
     void init(std::string const &module_name);
     void generate_objectcode();
     void print_code();
+
+    AllocaInst *createEntryBlockAlloca(Function *   TheFunction,
+                                       std::string &VarName);
 
     std::string             filename;
     LLVMContext             context;

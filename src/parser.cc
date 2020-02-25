@@ -24,7 +24,7 @@ Token Parser::get_token(TokenType t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
         throw ParseException(fmt::format("Unexpected token: {} - expecting {}",
-                                         std::string(tok), to_string(t)),
+                                         std::string(tok), string(t)),
                              lexer.lineno);
     }
     return tok;
@@ -206,7 +206,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         factor->expr = nullptr;
         return factor;
     }
-    debug("not factor: {}", to_string(tok.type));
+    debug("not factor: {}", string(tok.type));
     throw ParseException(
         fmt::format("Unexpected token: {} - expecting ( or integer",
                     std::string(tok)),

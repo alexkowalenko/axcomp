@@ -20,10 +20,20 @@
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 
+#include <fmt/core.h>
+
 #include "astmod.hh"
 #include "error.hh"
 
 namespace ax {
+
+inline constexpr bool debug_codegen{false};
+
+template <typename... T> inline void debug(const T &... msg) {
+    if constexpr (debug_codegen) {
+        std::cerr << fmt::format(msg...) << std::endl;
+    }
+}
 
 using namespace llvm::sys;
 
@@ -49,6 +59,9 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
     builder.SetInsertPoint(block);
+
+    // Do declarations
+    visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
     for (auto x : ast->exprs) {
@@ -76,7 +89,15 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     for (auto c : ast->consts) {
         visit_ASTExpr(c.expr.get());
         auto val = last_value;
-        // builder.CreateStore(val, )
+
+        // Create global variable for module
+        auto name = c.indent->value;
+        debug("create const: {}", name);
+
+        auto function = builder.GetInsertBlock()->getParent();
+        auto alloc = createEntryBlockAlloca(function, name);
+        builder.CreateStore(val, alloc);
+        debug("finish const");
     }
 }
 
@@ -102,7 +123,7 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
             last_value = builder.CreateSub(L, R, "subtmp");
             break;
         default:
-            throw CodeGenException("ASTExpr with sign" + to_string(t.sign));
+            throw CodeGenException("ASTExpr with sign" + string(t.sign));
         }
 
         L = last_value;
@@ -126,7 +147,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
             last_value = builder.CreateSRem(L, R, "modtmp");
             break;
         default:
-            throw CodeGenException("ASTTerm with sign" + to_string(t.sign));
+            throw CodeGenException("ASTTerm with sign" + string(t.sign));
         }
 
         L = last_value;
@@ -146,6 +167,21 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
 }
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *){};
+
+/**
+ * @brief Create an alloca instruction in the entry block of the function.  This
+ * is used for mutable variables etc.
+ *
+ * @param function
+ * @param name
+ * @return AllocaInst*
+ */
+AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *   function,
+                                                  std::string &name) {
+    IRBuilder<> TmpB(&function->getEntryBlock(),
+                     function->getEntryBlock().begin());
+    return TmpB.CreateAlloca(Type::getDoubleTy(context), nullptr, name);
+}
 
 void CodeGenerator::init(std::string const &module_name) {
     module = std::make_unique<Module>(module_name, context);

@@ -38,7 +38,7 @@ enum class TokenType {
 
 };
 
-std::string to_string(TokenType &t);
+std::string string(TokenType &t);
 
 class Token {
   public:

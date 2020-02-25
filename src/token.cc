@@ -10,7 +10,7 @@
 
 namespace ax {
 
-std::string to_string(TokenType &t) {
+std::string string(TokenType &t) {
 
     switch (t) {
     case TokenType::null:
@@ -79,7 +79,7 @@ Token::operator std::string() {
     case TokenType::eof:
         return "EOF";
     default:
-        return to_string(type);
+        return string(type);
     }
 }
 
