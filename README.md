@@ -67,3 +67,14 @@ BEGIN
     RETURN (3 * x) + ((2+ (x + 1)) * 4);
 END test.
 ```
+
+## Program options
+
+Program `ax`:
+
+* `-f,--file filename` - compile named file.
+* `-m,--main` - the `BEGIN` and `END` part of this module will be executed as the `main()` of the program.
+
+* `-D`string - Debugging options `string` is composed of the following characters:
+
+   `p` - print out parsed tree.

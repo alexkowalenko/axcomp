@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
         ->check(CLI::ExistingFile);
 
     app.add_flag("--main,-m", options.main_module, "compile as main module");
+    app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -54,10 +55,10 @@ int main(int argc, char **argv) {
         code.generate(ast);
 
     } catch (ax::AXException &e) {
-        std::cerr << e.error_msg() << std::endl;
+        std::cout << e.error_msg() << std::endl;
         return -1;
     } catch (std::exception &e) {
-        std::cerr << "Exception " << e.what() << std::endl;
+        std::cout << "Exception " << e.what() << std::endl;
         return -1;
     }
     return 0;

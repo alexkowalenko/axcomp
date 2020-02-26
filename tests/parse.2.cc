@@ -68,3 +68,31 @@ TEST(Parser, Var) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, Assignment) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; VAR x : INTEGER; BEGIN x := 12; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nx := 12;\nEND y.", ""},
+        {"MODULE y; VAR x : INTEGER; y: INTEGER; BEGIN "
+         "x := 3; y := x + 5; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nx := 3;\ny := "
+         "x+5;\nEND y.",
+         ""},
+        {"MODULE y; "
+         "CONST z = 1+10; "
+         "VAR x : INTEGER; y: INTEGER; "
+         "BEGIN x := z * (2 + z); END y.",
+         "MODULE y;\nCONST\nz = 1+10;\nVAR\nx: INTEGER;\ny: "
+         "INTEGER;\nBEGIN\nx := z* (2+z) ;\nEND y.",
+         ""},
+
+        // Errors
+        {"MODULE y; VAR x : INTEGER; BEGIN := 2; END y.", "",
+         "1: Unexpected token: :="},
+        {"MODULE y; VAR x : INTEGER;  BEGIN x 12; END y.", "",
+         "1: Unexpected token: integer(12) - expecting :="},
+
+    };
+    do_parse_tests(tests);
+}

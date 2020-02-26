@@ -129,6 +129,7 @@ Token Lexer::get_token() {
         return Token(TokenType::equals, "=");
     case ':':
         if (is.peek() == '=') {
+            get_char();
             return Token(TokenType::assign, ":=");
         }
         return Token(TokenType::colon, ":");

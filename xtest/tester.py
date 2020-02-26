@@ -32,15 +32,19 @@ def do_clang(stem):
 
 def do_test(t):
     stem = Path(t).stem
-    cmd = f"{compiler} --file {t}"
+    fail = stem + ".fail"
+    cmd = f"{compiler} --file {t} > result.txt"
     # print(cmd)
-    os.system(cmd)
+    ret = os.system(cmd)
+    if ret:
+        os.system(f"mv result.txt {fail}")
+        print(red + "compile " + restore, end="")
+        return 0
     exp = stem + ".exp"
     asm = stem + ".ll"
     cmd = f"diff --strip-trailing-cr {exp} {asm} > result.diff.txt"
     # print(cmd)
     ret = os.system(cmd)
-    fail = stem + ".fail"
     if(ret != 0):
         os.system(f"mv {asm} {fail}")
         os.system(f"rm {stem}.o")
@@ -48,7 +52,7 @@ def do_test(t):
         os.system(f"rm -f {fail} {asm}")
     os.system("rm -f result.diff.txt")
     if (ret != 0):
-        print(red + "compile " + restore, end="")
+        print(red + "llir " + restore, end="")
         return 0
     # compile
     return do_clang(stem)

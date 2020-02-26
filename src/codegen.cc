@@ -72,12 +72,18 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     for (auto x : ast->stats) {
         x->accept(this);
     }
+
+    // Put in return statement at end of function, in case it is missing.
+    // builder.CreateRet(last_value);
+
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
 
     // change the filename to generate module.obj
     filename = ast->name;
-    generate_objectcode();
+    if (!options.only_ll) {
+        generate_objectcode();
+    }
     print_code();
 }
 
@@ -119,14 +125,24 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
         auto alloc = createEntryBlockAlloca(function, name);
         builder.CreateStore(ConstantInt::get(context, APInt(64, 0, true)),
                             alloc);
-
+        alloc->setName(name);
+        debug("set name: {}", name);
         symboltable.put(name, alloc);
     }
     debug("finish var");
 }
 
-void CodeGenerator::visit_ASTAssignment(ASTAssignment *){
+void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
+    visit_ASTExpr(ast->expr.get());
+    auto val = last_value;
 
+    auto var = symboltable.find(ast->indent->value);
+    if (!var) {
+        throw CodeGenException(
+            fmt::format("identifier: {} not found." + ast->indent->value));
+    }
+    debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
+    builder.CreateStore(val, var.value());
 };
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {

@@ -14,6 +14,7 @@ struct Options {
     bool debug_parse = false;
 
     bool        main_module = false;
+    bool        only_ll = false;
     std::string file_name;
 };
 
