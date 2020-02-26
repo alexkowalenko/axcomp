@@ -23,6 +23,8 @@ std::string string(TokenType &t) {
         return "semicolon";
     case TokenType::period:
         return "period";
+    case TokenType::comma:
+        return ",";
 
     case TokenType::plus:
         return "+";
@@ -61,6 +63,8 @@ std::string string(TokenType &t) {
         return "VAR";
     case TokenType::ret:
         return "RETURN";
+    case TokenType::procedure:
+        return "PROCEDURE";
 
     case TokenType::eof:
         return "EOF";

@@ -24,17 +24,16 @@ int main(int argc, char **argv) {
 
     std::string debug_options;
     app.add_option("-D", debug_options, "Debug options : p=parse");
-    if (debug_options.find('p') != std::string::npos) {
-        options.debug_parse = true;
-    }
-
     app.add_option("--file,-f", options.file_name, "file to compile")
         ->check(CLI::ExistingFile);
-
     app.add_flag("--main,-m", options.main_module, "compile as main module");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
 
     CLI11_PARSE(app, argc, argv);
+    if (debug_options.find('p') != std::string::npos) {
+        options.debug_parse = true;
+        std::cout << "Print parsed program.\n";
+    }
 
     std::istream *input{&std::cin};
     if (options.file_name.size() > 0) {

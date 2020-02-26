@@ -14,6 +14,7 @@ class ASTModule;
 class ASTDeclaration;
 class ASTConst;
 class ASTVar;
+class ASTProcedure;
 class ASTStatement;
 class ASTAssignment;
 class ASTReturn;
@@ -31,6 +32,7 @@ class ASTVisitor {
     virtual void visit_ASTDeclaration(ASTDeclaration *) = 0;
     virtual void visit_ASTConst(ASTConst *) = 0;
     virtual void visit_ASTVar(ASTVar *) = 0;
+    virtual void visit_ASTProcedure(ASTProcedure *) = 0;
     virtual void visit_ASTAssignment(ASTAssignment *) = 0;
     virtual void visit_ASTReturn(ASTReturn *) = 0;
     virtual void visit_ASTExpr(ASTExpr *) = 0;

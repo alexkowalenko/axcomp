@@ -18,6 +18,7 @@ enum class TokenType {
     ident,
     semicolon,
     period,
+    comma,
     plus,
     dash,
     asterisk,
@@ -37,6 +38,7 @@ enum class TokenType {
     type,
     var,
     ret,
+    procedure,
 };
 
 std::string string(TokenType &t);

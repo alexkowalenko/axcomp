@@ -24,6 +24,7 @@ class ASTPrinter : ASTVisitor {
     void visit_ASTDeclaration(ASTDeclaration *);
     void visit_ASTConst(ASTConst *);
     void visit_ASTVar(ASTVar *);
+    void visit_ASTProcedure(ASTProcedure *);
     void visit_ASTAssignment(ASTAssignment *);
     void visit_ASTReturn(ASTReturn *);
     void visit_ASTExpr(ASTExpr *);

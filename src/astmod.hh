@@ -16,6 +16,11 @@
 
 namespace ax {
 
+class ASTDeclaration;
+
+////////////////
+// Basic Objects
+
 class ASTInteger : public ASTBase {
   public:
     ~ASTInteger(){};
@@ -33,6 +38,9 @@ class ASTIdentifier : public ASTBase {
 
     std::string value;
 };
+
+/////////////////////
+// Expression Objects
 
 /**
  * @brief factor -> IDENT | INTEGER | '(' expr ')'
@@ -89,6 +97,9 @@ class ASTExpr : public ASTBase {
     std::vector<Expr_add>    rest;
 };
 
+////////////////////
+// Statement objects
+
 class ASTStatement : public ASTBase {};
 
 /**
@@ -116,6 +127,22 @@ class ASTReturn : public ASTStatement {
     void accept(ASTVisitor *v) { v->visit_ASTReturn(this); };
 
     std::shared_ptr<ASTExpr> expr;
+};
+
+//////////////////////
+// Declaration objects
+
+class ASTProcedure : public ASTBase {
+  public:
+    ~ASTProcedure(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTProcedure(this); };
+
+    std::string name;
+    bool        is_external;
+    // std::vector<Params>
+    std::shared_ptr<ASTDeclaration>            decs;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 
 struct VarDec {
@@ -160,8 +187,9 @@ class ASTDeclaration : public ASTBase {
 
     void accept(ASTVisitor *v) { v->visit_ASTDeclaration(this); };
 
-    std::shared_ptr<ASTConst> cnst;
-    std::shared_ptr<ASTVar>   var;
+    std::shared_ptr<ASTConst>                  cnst;
+    std::shared_ptr<ASTVar>                    var;
+    std::vector<std::shared_ptr<ASTProcedure>> procedures;
 };
 
 class ASTModule : public ASTBase {

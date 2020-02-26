@@ -140,7 +140,7 @@ TEST(Parser, Parentheses) {
         {"MODULE y; BEGIN RETURN (2 ; END y.", "",
          "1: Unexpected token: semicolon - expecting )"},
         {"MODULE y; BEGIN RETURN (2 + 4) * (3 DIV 1)) ; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1: Unexpected token: ) - expecting semicolon"},
     };
     do_parse_tests(tests);
 }

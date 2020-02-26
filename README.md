@@ -20,20 +20,33 @@ Notation:
 * `()` grouping.
 * `()*` zero or more times.
 * `()+` one or more times (must at least occur once) (`{}` in EBNF).
-* `()?` zero or one times (optional) (`[]` in EBNF).  
+* `[]` zero or one times (optional)  
 
 ```ebnf
 module = "MODULE" IDENT ";"
-          declarations
-          "BEGIN"
-                statement_seq
-          "END" IDENT "."
+         declarations
+         ["BEGIN"
+                statement_seq]
+         "END" IDENT "."
 
-declarations = ("CONST" (IDENT "=" expr ";")* )?
-                ("TYPE" (IDENT "=" type ";")* )?
-                ("VAR" (IDENT ":" type ";")* )?
+declarations = ["CONST" (IDENT "=" expr ";")* ]
+               ["TYPE" (IDENT "=" type ";")* ]
+               ["VAR" (IDENT ":" type ";")* ]
+               ( procedureDeclaration ";")*
+
+procedureDeclaration = procedureHeading ";" procedureBody
+
+procedureHeading = "PROCEDURE" IDENT [formalParameters]
+
+formalParameters = "(" [fpection {";" fpSection}] ")" [ ":" IDENT ]
+
+fpSection = ["VAR"] identList ":" type
+
+procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT.
 
 type = INDENT
+
+identList = IDENT ("," IDENT)+
 
 statement_seq = (statement ";")+
 

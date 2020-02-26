@@ -21,6 +21,7 @@ class Parser {
     std::shared_ptr<ASTDeclaration> parse_declaration();
     std::shared_ptr<ASTConst>       parse_const();
     std::shared_ptr<ASTVar>         parse_var();
+    std::shared_ptr<ASTProcedure>   parse_procedure();
     std::shared_ptr<ASTStatement>   parse_statement();
     std::shared_ptr<ASTAssignment>  parse_assignment();
     std::shared_ptr<ASTReturn>      parse_return();

@@ -58,17 +58,8 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
         // Statement
         auto stat = parse_statement();
         module->stats.push_back(stat);
-
         // ;
-        tok = lexer.get_token();
-        if (tok.type == TokenType::eof) {
-            return module;
-        }
-        if (tok.type != TokenType::semicolon) {
-            ParseException(fmt::format("Unexpected token: {} - expecting ;",
-                                       std::string(tok)),
-                           lexer.lineno);
-        }
+        get_token(TokenType::semicolon);
 
         // check if anymore
         tok = lexer.peek_token();
@@ -88,9 +79,10 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
 }
 
 /**
- * @brief declarations -> ("CONST" (IDENT "=" expr ";")* )?
-                ("TYPE" (IDENT "=" type ";")* )?
-                ("VAR" (IDENT ":" type ";")* )?
+ * @brief declarations -> ["CONST" (IDENT "=" expr ";")* ]
+                ["TYPE" (IDENT "=" type ";")* ]
+                ["VAR" (IDENT ":" type ";")* ]
+                ( procedureDeclaration ";")*
  *
  * @return std::shared_ptr<ASTDeclaration>
  */
@@ -99,7 +91,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
     std::shared_ptr<ASTDeclaration> decs = std::make_shared<ASTDeclaration>();
     auto                            tok = lexer.peek_token();
     while (tok.type == TokenType::cnst || tok.type == TokenType::type ||
-           tok.type == TokenType::var) {
+           tok.type == TokenType::var || tok.type == TokenType::procedure) {
 
         switch (tok.type) {
         case TokenType::cnst:
@@ -107,6 +99,9 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             break;
         case TokenType::var:
             decs->var = parse_var();
+            break;
+        case TokenType::procedure:
+            decs->procedures.push_back(parse_procedure());
             break;
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
@@ -160,6 +155,55 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         tok = lexer.peek_token();
     }
     return var;
+}
+
+/**
+ * @brief "PROCEDURE" ident [formalParameters]
+ *         declarations ["BEGIN" statement_seq] "END" ident ";"
+ *
+ * @return std::shared_ptr<ASTProcedure>
+ */
+std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
+    debug("Parser::parse_procedure");
+    std::shared_ptr<ASTProcedure> proc = std::make_shared<ASTProcedure>();
+
+    lexer.get_token(); // PROCEDURE
+    auto tok = get_token(TokenType::ident);
+    proc->name = tok.val;
+
+    // Parameters
+    get_token(TokenType::semicolon);
+
+    // Declarations
+    proc->decs = parse_declaration();
+
+    get_token(TokenType::begin);
+
+    // statement_seq
+    do {
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::end) {
+            lexer.get_token();
+            break;
+        }
+
+        // Statement
+        auto stat = parse_statement();
+        proc->stats.push_back(stat);
+        get_token(TokenType::semicolon);
+
+        tok = lexer.peek_token();
+    } while (true);
+    tok = get_token(TokenType::ident);
+    if (tok.val != proc->name) {
+        throw ParseException(
+            fmt::format(
+                "END identifier name: {} doesn't match procedure name: {}",
+                tok.val, proc->name),
+            lexer.lineno);
+    }
+    get_token(TokenType::semicolon);
+    return proc;
 }
 
 /**

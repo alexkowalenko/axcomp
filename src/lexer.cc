@@ -95,6 +95,9 @@ Token Lexer::scan_ident(char c) {
     if (ident == "RETURN") {
         return Token(TokenType::ret, ident);
     }
+    if (ident == "PROCEDURE") {
+        return Token(TokenType::procedure, ident);
+    }
     return Token(TokenType::ident, ident);
 }
 
@@ -115,6 +118,8 @@ Token Lexer::get_token() {
         return Token(TokenType::semicolon, ";");
     case '.':
         return Token(TokenType::period, ".");
+    case ',':
+        return Token(TokenType::comma, ",");
     case '+':
         return Token(TokenType::plus, "+");
     case '-':

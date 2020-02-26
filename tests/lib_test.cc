@@ -45,7 +45,6 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
             EXPECT_EQ(result, t.output);
         } catch (AXException &e) {
-            std::cout << t.error << std::endl;
             EXPECT_EQ(e.error_msg(), t.error);
         } catch (std::exception &e) {
             std::cerr << "Exception: " << e.what() << std::endl;

@@ -132,6 +132,10 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     debug("finish var");
 }
 
+void CodeGenerator::visit_ASTProcedure(ASTProcedure *) {
+    return;
+}
+
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     visit_ASTExpr(ast->expr.get());
     auto val = last_value;

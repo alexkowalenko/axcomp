@@ -30,6 +30,9 @@ void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->var) {
         visit_ASTVar(ast->var.get());
     }
+    for (auto proc : ast->procedures) {
+        proc->accept(this);
+    }
 }
 
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
@@ -52,6 +55,17 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
             os << fmt::format(": {};\n", c.type);
         }
     }
+}
+
+void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
+    os << fmt::format("PROCEDURE {};\n", ast->name);
+    ast->decs->accept(this);
+    os << fmt::format("BEGIN\n");
+    for (auto x : ast->stats) {
+        x->accept(this);
+        os << ";\n";
+    }
+    os << fmt::format("END {}.\n", ast->name);
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {

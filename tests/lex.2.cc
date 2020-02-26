@@ -32,6 +32,7 @@ std::vector<LexTests> tests = {
     {"\n;", TokenType::semicolon, ";"},
     {";", TokenType::semicolon, ";"},
     {".", TokenType::period, "."},
+    {",", TokenType::comma, ","},
     {"+", TokenType::plus, "+"},
     {"-", TokenType::dash, "-"},
     {"*", TokenType::asterisk, "*"},
@@ -59,6 +60,7 @@ std::vector<LexTests> tests = {
     {"TYPE", TokenType::type, "TYPE"},
     {"VAR", TokenType::var, "VAR"},
     {"RETURN", TokenType::ret, "RETURN"},
+    {"PROCEDURE", TokenType::procedure, "PROCEDURE"},
 
     // identifiers
     {"a", TokenType::ident, "a"},
