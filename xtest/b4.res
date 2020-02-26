@@ -1,1 +1,1 @@
-output: 6
+output: 1122

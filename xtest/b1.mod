@@ -1,5 +1,5 @@
 (* negate integer *)
 MODULE b1;
 BEGIN
-    - 12;
+    RETURN - 12;
 END b1.

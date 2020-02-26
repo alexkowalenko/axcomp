@@ -55,9 +55,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
             break;
         }
 
-        // Expr
-        auto expr = parse_expr();
-        module->exprs.push_back(expr);
+        // Statement
+        auto stat = parse_statement();
+        module->stats.push_back(stat);
 
         // ;
         tok = lexer.get_token();
@@ -161,6 +161,53 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
     }
     return var;
 }
+
+/**
+ * @brief assignment
+    | RETURN [expr]
+ *
+ * @return std::shared_ptr<ASTStatement>
+ */
+std::shared_ptr<ASTStatement> Parser::parse_statement() {
+    auto tok = lexer.peek_token();
+    switch (tok.type) {
+    case TokenType::ret:
+        return parse_return();
+    case TokenType::ident:
+        return parse_assignment();
+    default:
+        throw ParseException(
+            fmt::format("Unexpected token: {}", std::string(tok)),
+            lexer.lineno);
+    }
+}
+
+/**
+ * @brief ident ":=" expr
+ *
+ * @return std::shared_ptr<ASTAssignment>
+ */
+std::shared_ptr<ASTAssignment> Parser::parse_assignment() {
+    debug("Parser::parse_assignment");
+    std::shared_ptr<ASTAssignment> assign = std::make_shared<ASTAssignment>();
+    assign->indent = parse_identifier();
+    get_token(TokenType::assign);
+    assign->expr = parse_expr();
+    return assign;
+};
+
+/**
+ * @brief RETURN [expr]
+ *
+ * @return std::shared_ptr<ASTReturn>
+ */
+std::shared_ptr<ASTReturn> Parser::parse_return() {
+    debug("Parser::parse_return");
+    std::shared_ptr<ASTReturn> ret = std::make_shared<ASTReturn>();
+    get_token(TokenType::ret);
+    ret->expr = parse_expr();
+    return ret;
+};
 
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*

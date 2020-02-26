@@ -39,6 +39,8 @@ std::string string(TokenType &t) {
         return ":";
     case TokenType::equals:
         return "=";
+    case TokenType::assign:
+        return ":=";
 
     // Keywords
     case TokenType::module:
@@ -57,6 +59,8 @@ std::string string(TokenType &t) {
         return "TYPE";
     case TokenType::var:
         return "VAR";
+    case TokenType::ret:
+        return "RETURN";
 
     case TokenType::eof:
         return "EOF";

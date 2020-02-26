@@ -92,6 +92,9 @@ Token Lexer::scan_ident(char c) {
     if (ident == "VAR") {
         return Token(TokenType::var, ident);
     }
+    if (ident == "RETURN") {
+        return Token(TokenType::ret, ident);
+    }
     return Token(TokenType::ident, ident);
 }
 
@@ -125,6 +128,9 @@ Token Lexer::get_token() {
     case '=':
         return Token(TokenType::equals, "=");
     case ':':
+        if (is.peek() == '=') {
+            return Token(TokenType::assign, ":=");
+        }
         return Token(TokenType::colon, ":");
 
     default:

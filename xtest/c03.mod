@@ -4,5 +4,5 @@ CONST
     x = 3;
     y = 2;
 BEGIN
-    (y + x) * x;
+    RETURN (y + x) * x;
 END c03.

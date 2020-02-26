@@ -65,11 +65,8 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
-    for (auto x : ast->exprs) {
-        visit_ASTExpr(x.get());
-    }
-    if (last_value) {
-        builder.CreateRet(last_value);
+    for (auto x : ast->stats) {
+        x->accept(this);
     }
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
@@ -123,6 +120,15 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     }
     debug("finish var");
 }
+
+void CodeGenerator::visit_ASTAssignment(ASTAssignment *){
+
+};
+
+void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
+    visit_ASTExpr(ast->expr.get());
+    builder.CreateRet(last_value);
+};
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 

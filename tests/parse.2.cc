@@ -11,13 +11,13 @@
 TEST(Parser, Const) {
     std::vector<ParseTests> tests = {
 
-        {"MODULE y; CONST x = 1; BEGIN 12; END y.",
-         "MODULE y;\nCONST\nx = 1;\nBEGIN\n12;\nEND y.", ""},
-        {"MODULE y; CONST x = 1; y=2; BEGIN 12; END y.",
-         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\n12;\nEND y.", ""},
+        {"MODULE y; CONST x = 1; BEGIN RETURN 12; END y.",
+         "MODULE y;\nCONST\nx = 1;\nBEGIN\nRETURN 12;\nEND y.", ""},
+        {"MODULE y; CONST x = 1; y=2; BEGIN RETURN 12; END y.",
+         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\nRETURN 12;\nEND y.", ""},
 
         // Errors
-        {"MODULE y; x = 1; BEGIN 12; END y.", "",
+        {"MODULE y; x = 1; BEGIN RETURN 12; END y.", "",
          "1: Unexpected token: x - expecting BEGIN"},
 
     };
@@ -27,16 +27,16 @@ TEST(Parser, Const) {
 TEST(Parser, Identifiers) {
     std::vector<ParseTests> tests = {
 
-        {"MODULE y; CONST x = 1; BEGIN x; END y.",
-         "MODULE y;\nCONST\nx = 1;\nBEGIN\nx;\nEND y.", ""},
-        {"MODULE y; CONST x = 1; y=2; BEGIN x - y; END y.",
-         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\nx-y;\nEND y.", ""},
+        {"MODULE y; CONST x = 1; BEGIN RETURN x; END y.",
+         "MODULE y;\nCONST\nx = 1;\nBEGIN\nRETURN x;\nEND y.", ""},
+        {"MODULE y; CONST x = 1; y=2; BEGIN RETURN x - y; END y.",
+         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\nRETURN x-y;\nEND y.", ""},
 
         {"MODULE y; CONST x = 1; y=2; "
-         "BEGIN (aa * bb) + ((zero + (dev + jones)) * 4); "
+         "BEGIN RETURN (aa * bb) + ((zero + (dev + jones)) * 4); "
          "END y.",
 
-         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\n (aa*bb) + ( (zero+ "
+         "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\nRETURN  (aa*bb) + ( (zero+ "
          "(dev+jones) ) *4) ;\nEND y.",
          ""},
     };
@@ -46,22 +46,23 @@ TEST(Parser, Identifiers) {
 TEST(Parser, Var) {
     std::vector<ParseTests> tests = {
 
-        {"MODULE y; VAR x : INTEGER; BEGIN 12; END y.",
-         "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\n12;\nEND y.", ""},
-        {"MODULE y; VAR x : INTEGER; y: INTEGER; BEGIN 12; END y.",
-         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\n12;\nEND y.", ""},
+        {"MODULE y; VAR x : INTEGER; BEGIN RETURN 12; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nRETURN 12;\nEND y.", ""},
+        {"MODULE y; VAR x : INTEGER; y: INTEGER; BEGIN RETURN 12; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nRETURN 12;\nEND y.",
+         ""},
         {"MODULE y; "
-         "CONST z = 1; "
+         "CONST z = 1+10; "
          "VAR x : INTEGER; y: INTEGER; "
-         "BEGIN 12; END y.",
-         "MODULE y;\nCONST\nz = 1;\nVAR\nx: INTEGER;\ny: "
-         "INTEGER;\nBEGIN\n12;\nEND y.",
+         "BEGIN RETURN 12; END y.",
+         "MODULE y;\nCONST\nz = 1+10;\nVAR\nx: INTEGER;\ny: "
+         "INTEGER;\nBEGIN\nRETURN 12;\nEND y.",
          ""},
 
         // Errors
-        {"MODULE y; VAR x : INTEGER BEGIN 12; END y.", "",
+        {"MODULE y; VAR x : INTEGER BEGIN RETURN 12; END y.", "",
          "1: Unexpected token: BEGIN - expecting semicolon"},
-        {"MODULE y; VAR : INTEGER;  BEGIN 12; END y.", "",
+        {"MODULE y; VAR : INTEGER;  BEGIN RETURN 12; END y.", "",
          "1: Unexpected token: : - expecting BEGIN"},
 
     };

@@ -1,1 +1,1 @@
-output: 24
+output: 12

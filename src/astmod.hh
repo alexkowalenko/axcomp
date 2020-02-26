@@ -89,6 +89,35 @@ class ASTExpr : public ASTBase {
     std::vector<Expr_add>    rest;
 };
 
+class ASTStatement : public ASTBase {};
+
+/**
+ * @brief ident ":=" expr
+ *
+ */
+class ASTAssignment : public ASTStatement {
+  public:
+    ~ASTAssignment(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTAssignment(this); };
+
+    std::shared_ptr<ASTIdentifier> indent;
+    std::shared_ptr<ASTExpr>       expr;
+};
+
+/**
+ * @brief RETURN [expr]
+ *
+ */
+class ASTReturn : public ASTStatement {
+  public:
+    ~ASTReturn(){};
+
+    void accept(ASTVisitor *v) { v->visit_ASTReturn(this); };
+
+    std::shared_ptr<ASTExpr> expr;
+};
+
 struct VarDec {
     std::shared_ptr<ASTIdentifier> indent;
     std::string                    type;
@@ -140,8 +169,8 @@ class ASTModule : public ASTBase {
     ~ASTModule(){};
     void accept(ASTVisitor *v) { v->visit_ASTModule(this); };
 
-    std::string                           name;
-    std::shared_ptr<ASTDeclaration>       decs;
-    std::vector<std::shared_ptr<ASTExpr>> exprs;
+    std::string                                name;
+    std::shared_ptr<ASTDeclaration>            decs;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 } // namespace ax

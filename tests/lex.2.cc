@@ -39,6 +39,7 @@ std::vector<LexTests> tests = {
     {")", TokenType::r_paren, ")"},
     {"=", TokenType::equals, "="},
     {":", TokenType::colon, ":"},
+    {":=", TokenType::assign, ":="},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -57,6 +58,7 @@ std::vector<LexTests> tests = {
     {"CONST", TokenType::cnst, "CONST"},
     {"TYPE", TokenType::type, "TYPE"},
     {"VAR", TokenType::var, "VAR"},
+    {"RETURN", TokenType::ret, "RETURN"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

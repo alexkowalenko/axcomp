@@ -1,5 +1,5 @@
 MODULE a2;
 BEGIN
-    12;
-    24;
+    RETURN 12;
+    RETURN 24;
 END a2.

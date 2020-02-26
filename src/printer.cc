@@ -16,8 +16,8 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << fmt::format("MODULE {};\n", ast->name);
     visit_ASTDeclaration(ast->decs.get());
     os << fmt::format("BEGIN\n");
-    for (auto x : ast->exprs) {
-        visit_ASTExpr(x.get());
+    for (auto x : ast->stats) {
+        x->accept(this);
         os << ";\n";
     }
     os << fmt::format("END {}.\n", ast->name);
@@ -51,6 +51,19 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
             visit_ASTIdentifier(c.indent.get());
             os << fmt::format(": {};\n", c.type);
         }
+    }
+}
+
+void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {
+    visit_ASTIdentifier(ast->indent.get());
+    os << " := ";
+    visit_ASTExpr(ast->expr.get());
+}
+
+void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
+    os << "RETURN ";
+    if (ast->expr) {
+        visit_ASTExpr(ast->expr.get());
     }
 }
 

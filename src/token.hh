@@ -25,6 +25,7 @@ enum class TokenType {
     r_paren,
     equals,
     colon,
+    assign,
 
     // Keywords
     module,
@@ -35,7 +36,7 @@ enum class TokenType {
     cnst,
     type,
     var,
-
+    ret,
 };
 
 std::string string(TokenType &t);

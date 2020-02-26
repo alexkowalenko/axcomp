@@ -15,7 +15,7 @@ AX compiler
 
 Notation:
 
-* `A -> B` A devires from B.
+* `A = B` A devires from B.
 * `A | B` either A or B.
 * `()` grouping.
 * `()*` zero or more times.
@@ -23,29 +23,34 @@ Notation:
 * `()?` zero or one times (optional) (`[]` in EBNF).  
 
 ```ebnf
-module -> "MODULE" IDENT ";"
+module = "MODULE" IDENT ";"
           declarations
           "BEGIN"
                 statement_seq
           "END" IDENT "."
 
-declarations -> ("CONST" (IDENT "=" expr ";")* )?
+declarations = ("CONST" (IDENT "=" expr ";")* )?
                 ("TYPE" (IDENT "=" type ";")* )?
                 ("VAR" (IDENT ":" type ";")* )?
 
 type = INDENT
 
-statement_seq -> (expr ";")+
+statement_seq = (statement ";")+
 
-expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
+statement = assignment
+    | "RETURN" [expr]
 
-term -> factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
+assignment = ident ":=" expr
 
-factor -> IDENT | INTEGER | '(' expr ')'
+expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
 
-IDENT -> letter (letter | digit | '_')*
+term = factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
 
-INTEGER -> digit+
+factor = IDENT | INTEGER | '(' expr ')'
+
+IDENT = letter (letter | digit | '_')*
+
+INTEGER = digit+
 ```
 
 ## Example program
@@ -58,7 +63,7 @@ CONST
 VAR
     z : INTEGER;
 BEGIN
-    12;
-    (3 * x) + ((2+ (x + 1)) * 4);
+    z := 12;
+    RETURN (3 * x) + ((2+ (x + 1)) * 4);
 END test.
 ```
