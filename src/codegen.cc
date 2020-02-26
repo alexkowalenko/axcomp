@@ -40,8 +40,8 @@ using namespace llvm::sys;
 inline const std::string file_ext_llvmri = ".ll";
 inline const std::string file_ext_obj = ".o";
 
-CodeGenerator::CodeGenerator()
-    : symboltable(nullptr), filename("output"), builder(context),
+CodeGenerator::CodeGenerator(Options &o)
+    : options(o), symboltable(nullptr), filename("output"), builder(context),
       last_value(nullptr){};
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
@@ -54,8 +54,12 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     FunctionType *      ft =
         FunctionType::get(Type::getInt64Ty(context), proto, false);
 
-    Function *f =
-        Function::Create(ft, Function::ExternalLinkage, filename, module.get());
+    auto function_name = filename;
+    if (options.main_module) {
+        function_name = "main";
+    }
+    Function *f = Function::Create(ft, Function::ExternalLinkage, function_name,
+                                   module.get());
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
@@ -240,11 +244,16 @@ void CodeGenerator::generate_objectcode() {
     // Define the target triple
     auto targetTriple = sys::getDefaultTargetTriple();
 
-    InitializeAllTargetInfos();
-    InitializeAllTargets();
-    InitializeAllTargetMCs();
-    InitializeAllAsmParsers();
-    InitializeAllAsmPrinters();
+    // Set up for future cross-compiler
+    // InitializeAllTargetInfos();
+    // InitializeAllTargets();
+    // InitializeAllTargetMCs();
+    // InitializeAllAsmParsers();
+    // InitializeAllAsmPrinters();
+
+    InitializeNativeTarget();
+    InitializeNativeTargetAsmParser();
+    InitializeNativeTargetAsmPrinter();
 
     // Get the target
     std::string error;

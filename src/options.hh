@@ -6,11 +6,15 @@
 
 #pragma once
 
+#include <string>
+
 namespace ax {
 
-class Options {
-  public:
+struct Options {
     bool debug_parse = false;
+
+    bool        main_module = false;
+    std::string file_name;
 };
 
 } // namespace ax

@@ -14,6 +14,7 @@
 #include <llvm/IR/Module.h>
 
 #include "astvisitor.hh"
+#include "options.hh"
 #include "symboltable.hh"
 
 using namespace llvm;
@@ -22,7 +23,7 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    CodeGenerator();
+    CodeGenerator(Options &o);
 
     void generate(std::shared_ptr<ASTModule> ast) {
         visit_ASTModule(ast.get());
@@ -48,6 +49,7 @@ class CodeGenerator : ASTVisitor {
     AllocaInst *createEntryBlockAlloca(Function *   TheFunction,
                                        std::string &VarName);
 
+    Options &   options;
     SymbolTable symboltable;
 
     std::string             filename;
