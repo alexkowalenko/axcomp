@@ -48,8 +48,16 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Set up code generation
     init(ast->name);
 
+    // Top level consts
+    // if (ast->decs->cnst) {
+    //     doTopConsts(ast->decs->cnst.get());
+    // }
+
+    // Do procedures which generate functions first
+    doProcedures(ast->decs.get());
+
     // Set up the module as a function
-    // Make the function type:  int(void)
+    // Make the function type:  (void) : int
     std::vector<Type *> proto;
     FunctionType *      ft =
         FunctionType::get(Type::getInt64Ty(context), proto, false);
@@ -65,7 +73,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
     builder.SetInsertPoint(block);
 
-    // Do declarations
+    // Do declarations - vars
     visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
@@ -87,6 +95,12 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     print_code();
 }
 
+void CodeGenerator::doProcedures(ASTDeclaration *ast) {
+    for (auto proc : ast->procedures) {
+        visit_ASTProcedure(proc.get());
+    }
+}
+
 void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
         visit_ASTConst(ast->cnst.get());
@@ -96,20 +110,37 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
     }
 }
 
+void CodeGenerator::doTopConsts(ASTConst *ast) {
+    for (auto c : ast->consts) {
+        module->getOrInsertGlobal(c.indent->value, builder.getInt64Ty());
+        GlobalVariable *gVar = module->getNamedGlobal(c.indent->value);
+        gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
+        gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
+        gVar->setAlignment(8);
+        gVar->setConstant(true);
+
+        symboltable.put(c.indent->value, gVar);
+    }
+};
+
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     for (auto c : ast->consts) {
         visit_ASTExpr(c.expr.get());
         auto val = last_value;
 
-        // Create variable for module
         auto name = c.indent->value;
         debug("create const: {}", name);
+
+        // Create variable for module
 
         auto function = builder.GetInsertBlock()->getParent();
         auto alloc = createEntryBlockAlloca(function, name);
         builder.CreateStore(val, alloc);
 
         symboltable.put(name, alloc);
+
+        // GlobalVariable *gVar = module->getNamedGlobal(name);
+        // builder.CreateStore(val, gVar);
     }
     debug("finish const");
 }
@@ -132,7 +163,35 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     debug("finish var");
 }
 
-void CodeGenerator::visit_ASTProcedure(ASTProcedure *) {
+void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
+
+    // Make the function type:  (void) : void
+    // Change later when implement parameters
+    std::vector<Type *> proto;
+
+    FunctionType *ft =
+        FunctionType::get(Type::getVoidTy(context), proto, false);
+
+    Function *f = Function::Create(ft, Function::ExternalLinkage, ast->name,
+                                   module.get());
+
+    // Create a new basic block to start insertion into.
+    BasicBlock *block = BasicBlock::Create(context, "entry", f);
+    builder.SetInsertPoint(block);
+
+    // Do declarations
+    visit_ASTDeclaration(ast->decs.get());
+
+    // Go through the expressions
+    for (auto x : ast->stats) {
+        x->accept(this);
+    }
+
+    // Put in return statement at end of function, in case it is missing.
+    // builder.CreateRet(last_value);
+
+    // Validate the generated code, checking for consistency.
+    verifyFunction(*f);
     return;
 }
 

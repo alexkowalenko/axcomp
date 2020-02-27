@@ -8,7 +8,7 @@
 
 namespace ax {
 
-std::optional<AllocaInst *> SymbolTable::find(const std::string &name) const {
+std::optional<Value *> SymbolTable::find(const std::string &name) const {
     if (auto x = table.find(name); x != table.end()) {
         return x->second;
     }
@@ -18,7 +18,7 @@ std::optional<AllocaInst *> SymbolTable::find(const std::string &name) const {
     return {};
 }
 
-bool SymbolTable::set(const std::string &name, AllocaInst *const val) {
+bool SymbolTable::set(const std::string &name, Value *const val) {
     if (auto x = table.find(name); x != table.end()) {
         put(name, val);
         return true;
