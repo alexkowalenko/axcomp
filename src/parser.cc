@@ -12,7 +12,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{true};
+inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -43,6 +43,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
+    symbols.put(module->name, Symbol(module->name, "MODULE"));
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
 
@@ -129,10 +130,14 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     auto                      tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         ConstDec dec;
-        dec.indent = parse_identifier();
+        dec.ident = parse_identifier();
         get_token(TokenType::equals);
         dec.expr = parse_expr();
         get_token(TokenType::semicolon);
+
+        // Assume all consts are INTEGER;
+
+        symbols.put(dec.ident->value, Symbol(dec.ident->value, "INTEGER"));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -151,11 +156,15 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
     auto                    tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         VarDec dec;
-        dec.indent = parse_identifier();
+        dec.ident = parse_identifier();
         get_token(TokenType::colon);
         tok = get_token(TokenType::ident);
         dec.type = tok.val;
         get_token(TokenType::semicolon);
+
+        // Assume all consts are INTEGER;
+        symbols.put(dec.ident->value, Symbol(dec.ident->value, dec.type));
+
         var->vars.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -175,6 +184,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     lexer.get_token(); // PROCEDURE
     auto tok = get_token(TokenType::ident);
     proc->name = tok.val;
+    symbols.put(proc->name, Symbol(proc->name, "PROCEDURE"));
 
     // Parameters
     get_token(TokenType::semicolon);
@@ -238,7 +248,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
 std::shared_ptr<ASTAssignment> Parser::parse_assignment() {
     debug("Parser::parse_assignment");
     std::shared_ptr<ASTAssignment> assign = std::make_shared<ASTAssignment>();
-    assign->indent = parse_identifier();
+    assign->ident = parse_identifier();
     get_token(TokenType::assign);
     assign->expr = parse_expr();
     return assign;

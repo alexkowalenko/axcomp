@@ -39,7 +39,7 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         os << "CONST\n";
         for (auto const &c : ast->consts) {
-            visit_ASTIdentifier(c.indent.get());
+            visit_ASTIdentifier(c.ident.get());
             os << " = ";
             visit_ASTExpr(c.expr.get());
             os << ";\n";
@@ -51,7 +51,7 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
     if (!ast->vars.empty()) {
         os << "VAR\n";
         for (auto const &c : ast->vars) {
-            visit_ASTIdentifier(c.indent.get());
+            visit_ASTIdentifier(c.ident.get());
             os << fmt::format(": {};\n", c.type);
         }
     }
@@ -69,7 +69,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {
-    visit_ASTIdentifier(ast->indent.get());
+    visit_ASTIdentifier(ast->ident.get());
     os << " := ";
     visit_ASTExpr(ast->expr.get());
 }

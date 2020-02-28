@@ -113,14 +113,14 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
 
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     for (auto const &c : ast->consts) {
-        module->getOrInsertGlobal(c.indent->value, builder.getInt64Ty());
-        GlobalVariable *gVar = module->getNamedGlobal(c.indent->value);
+        module->getOrInsertGlobal(c.ident->value, builder.getInt64Ty());
+        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
         gVar->setAlignment(8);
         gVar->setConstant(true);
 
-        symboltable.put(c.indent->value, gVar);
+        symboltable.put(c.ident->value, gVar);
     }
 };
 
@@ -129,7 +129,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         visit_ASTExpr(c.expr.get());
         auto val = last_value;
 
-        auto name = c.indent->value;
+        auto name = c.ident->value;
         debug("create const: {}", name);
 
         // Create variable for module
@@ -150,7 +150,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     for (auto const &c : ast->vars) {
 
         // Create variable for module
-        auto name = c.indent->value;
+        auto name = c.ident->value;
         debug("create var: {}", name);
 
         auto function = builder.GetInsertBlock()->getParent();
@@ -199,10 +199,10 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     visit_ASTExpr(ast->expr.get());
     auto val = last_value;
 
-    auto var = symboltable.find(ast->indent->value);
+    auto var = symboltable.find(ast->ident->value);
     if (!var) {
         throw CodeGenException(
-            fmt::format("identifier: {} not found." + ast->indent->value));
+            fmt::format("identifier: {} not found." + ast->ident->value));
     }
     debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
     builder.CreateStore(val, var.value());

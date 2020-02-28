@@ -112,7 +112,7 @@ class ASTAssignment : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTAssignment(this); };
 
-    std::shared_ptr<ASTIdentifier> indent;
+    std::shared_ptr<ASTIdentifier> ident;
     std::shared_ptr<ASTExpr>       expr;
 };
 
@@ -146,7 +146,7 @@ class ASTProcedure : public ASTBase {
 };
 
 struct VarDec {
-    std::shared_ptr<ASTIdentifier> indent;
+    std::shared_ptr<ASTIdentifier> ident;
     std::string                    type;
 };
 
@@ -164,7 +164,7 @@ class ASTVar : public ASTBase {
 };
 
 struct ConstDec {
-    std::shared_ptr<ASTIdentifier> indent;
+    std::shared_ptr<ASTIdentifier> ident;
     std::shared_ptr<ASTExpr>       expr;
 };
 

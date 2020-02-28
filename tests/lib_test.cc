@@ -13,6 +13,7 @@
 #include "lexer.hh"
 #include "parser.hh"
 #include "printer.hh"
+#include "symboltable.hh"
 
 #include "parse_test.hh"
 
@@ -30,7 +31,9 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
         std::istringstream is(t.input);
         Lexer              lex(is);
-        Parser             parser(lex);
+
+        SymbolTable<Symbol> symbols(nullptr);
+        Parser              parser(lex, symbols);
 
         std::string result;
         try {

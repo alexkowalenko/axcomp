@@ -12,31 +12,71 @@
 #include <optional>
 #include <string>
 
-#include <llvm/IR/Value.h>
-
 namespace ax {
 
-using namespace llvm;
-
-class SymbolTable {
+template <typename T> class SymbolTable {
   public:
     explicit SymbolTable(std::shared_ptr<SymbolTable> const &s) : next(s){};
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
 
-    inline void put(const std::string &name, Value *const val) {
+    inline void put(const std::string &name, T const &val) {
         table[name] = val;
     };
 
-    std::optional<Value *> find(const std::string &name) const;
-    bool                   set(const std::string &name, Value *val);
-    void                   remove(const std::string &name);
+    std::optional<T> find(const std::string &name) const;
+    bool             set(const std::string &name, T const &val);
+    void             remove(const std::string &name);
 
     void dump(std::ostream &os) const;
 
   private:
-    std::map<std::string, Value *> table;
-    std::shared_ptr<SymbolTable>   next;
+    std::map<std::string, T>     table;
+    std::shared_ptr<SymbolTable> next;
 };
+
+template <typename T>
+std::optional<T> SymbolTable<T>::find(const std::string &name) const {
+    if (auto const &x = table.find(name); x != table.end()) {
+        return x->second;
+    }
+    if (next) {
+        return next->find(name);
+    }
+    return {};
+}
+
+template <typename T>
+bool SymbolTable<T>::set(const std::string &name, T const &val) {
+    if (auto const &x = table.find(name); x != table.end()) {
+        put(name, val);
+        return true;
+    }
+    // not found, check above
+    if (next) {
+        return next->set(name, val);
+    }
+    return false;
+}
+
+template <typename T> void SymbolTable<T>::remove(const std::string &name) {
+    if (auto const &x = table.find(name); x != table.end()) {
+        table.erase(name);
+        return;
+    }
+    if (next) {
+        next->remove(name);
+    }
+}
+
+template <typename T> void SymbolTable<T>::dump(std::ostream &os) const {
+    os << "Dump symbol table: \n";
+    for (auto const &x : table) {
+        os << x.first << " -> " << std::string(x.second) << std::endl;
+    }
+    if (next) {
+        next->dump(os);
+    }
+}
 
 } // namespace ax

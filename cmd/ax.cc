@@ -14,6 +14,8 @@
 #include "options.hh"
 #include "parser.hh"
 #include "printer.hh"
+#include "symbol.hh"
+#include "typetable.hh"
 
 using namespace ax;
 
@@ -28,6 +30,7 @@ int main(int argc, char **argv) {
         ->check(CLI::ExistingFile);
     app.add_flag("--main,-m", options.main_module, "compile as main module");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
+    app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
 
     CLI11_PARSE(app, argc, argv);
     if (debug_options.find('p') != std::string::npos) {
@@ -36,11 +39,16 @@ int main(int argc, char **argv) {
     }
 
     std::istream *input{&std::cin};
-    if (options.file_name.empty()) {
+    if (!options.file_name.empty()) {
         input = new std::ifstream(options.file_name);
     }
-    ax::Lexer  lexer(*input);
-    ax::Parser parser(lexer);
+    Lexer lexer(*input);
+
+    TypeTable types;
+    types.initialise();
+
+    SymbolTable<Symbol> symbols(nullptr);
+    ax::Parser          parser(lexer, symbols);
 
     try {
         auto ast = parser.parse();
@@ -52,6 +60,10 @@ int main(int argc, char **argv) {
 
         ax::CodeGenerator code(options);
         code.generate(ast);
+
+        if (options.print_symbols) {
+            symbols.dump(std::cout);
+        }
 
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;

@@ -8,11 +8,13 @@
 
 #include "astmod.hh"
 #include "lexer.hh"
+#include "symbol.hh"
+#include "symboltable.hh"
 
 namespace ax {
 class Parser {
   public:
-    explicit Parser(Lexer &l) : lexer(l){};
+    explicit Parser(Lexer &l, SymbolTable<Symbol> &s) : lexer(l), symbols(s){};
 
     std::shared_ptr<ASTModule> parse();
 
@@ -33,7 +35,8 @@ class Parser {
 
     Token get_token(TokenType t);
 
-    Lexer &lexer;
+    Lexer &              lexer;
+    SymbolTable<Symbol> &symbols;
 };
 
 } // namespace ax

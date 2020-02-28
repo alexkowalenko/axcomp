@@ -13,8 +13,10 @@ namespace ax {
 struct Options {
     bool debug_parse = false;
 
-    bool        main_module = false;
-    bool        only_ll = false;
+    bool main_module = false;
+    bool only_ll = false;
+    bool print_symbols = false;
+
     std::string file_name;
 };
 
