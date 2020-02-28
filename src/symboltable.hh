@@ -20,7 +20,7 @@ using namespace llvm;
 
 class SymbolTable {
   public:
-    SymbolTable(std::shared_ptr<SymbolTable> s) : next(s){};
+    explicit SymbolTable(std::shared_ptr<SymbolTable> const &s) : next(s){};
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
 

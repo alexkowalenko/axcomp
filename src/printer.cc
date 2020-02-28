@@ -16,7 +16,7 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << fmt::format("MODULE {};\n", ast->name);
     visit_ASTDeclaration(ast->decs.get());
     os << fmt::format("BEGIN\n");
-    for (auto x : ast->stats) {
+    for (auto const &x : ast->stats) {
         x->accept(this);
         os << ";\n";
     }
@@ -30,15 +30,15 @@ void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->var) {
         visit_ASTVar(ast->var.get());
     }
-    for (auto proc : ast->procedures) {
+    for (auto const &proc : ast->procedures) {
         proc->accept(this);
     }
 }
 
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
-    if (ast->consts.size() > 0) {
+    if (!ast->consts.empty()) {
         os << "CONST\n";
-        for (auto c : ast->consts) {
+        for (auto const &c : ast->consts) {
             visit_ASTIdentifier(c.indent.get());
             os << " = ";
             visit_ASTExpr(c.expr.get());
@@ -48,9 +48,9 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
 }
 
 void ASTPrinter::visit_ASTVar(ASTVar *ast) {
-    if (ast->vars.size() > 0) {
+    if (!ast->vars.empty()) {
         os << "VAR\n";
-        for (auto c : ast->vars) {
+        for (auto const &c : ast->vars) {
             visit_ASTIdentifier(c.indent.get());
             os << fmt::format(": {};\n", c.type);
         }
@@ -61,7 +61,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
     os << fmt::format("PROCEDURE {};\n", ast->name);
     ast->decs->accept(this);
     os << fmt::format("BEGIN\n");
-    for (auto x : ast->stats) {
+    for (auto const &x : ast->stats) {
         x->accept(this);
         os << ";\n";
     }

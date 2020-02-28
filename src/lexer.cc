@@ -16,13 +16,14 @@ static Token nullToken = Token(TokenType::null);
 Lexer::Lexer(std::istream &stream) : is(stream), next_token(nullToken){};
 
 void Lexer::get_comment() {
-    char c = is.get(); // get asterisk
+    is.get(); // get asterisk
     do {
-        c = is.get();
+        char c = is.get();
         if (c == '*' && is.peek() == ')') {
-            c = is.get();
+            is.get();
             return;
-        } else if (c == '(' && is.peek() == '*') {
+        }
+        if (c == '(' && is.peek() == '*') {
             // suport nested comments, call recursively
             get_comment();
         }
@@ -37,11 +38,12 @@ char Lexer::get_char() {
         if (c == '\n') {
             lineno++;
             continue;
-        } else if (c == '(' && is.peek() == '*') {
+        }
+        if (c == '(' && is.peek() == '*') {
             get_comment();
             continue;
         }
-        if (isspace(c)) {
+        if (std::isspace(c)) {
             continue;
         }
         return c;

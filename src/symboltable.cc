@@ -22,20 +22,20 @@ bool SymbolTable::set(const std::string &name, Value *const val) {
     if (auto x = table.find(name); x != table.end()) {
         put(name, val);
         return true;
-    } else {
-        // not found, check above
-        if (next) {
-            return next->set(name, val);
-        }
-        return false;
     }
-};
+    // not found, check above
+    if (next) {
+        return next->set(name, val);
+    }
+    return false;
+}
 
 void SymbolTable::remove(const std::string &name) {
     if (auto x = table.find(name); x != table.end()) {
         table.erase(name);
         return;
-    } else if (next) {
+    }
+    if (next) {
         next->remove(name);
     }
 }

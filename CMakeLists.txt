@@ -38,7 +38,9 @@ include(cmake/Doxygen.cmake)
 enable_doxygen()
 
 # allow for static analysis options
+set(ENABLE_CLANG_TIDY OFF)
 include(cmake/StaticAnalyzers.cmake)
+
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)

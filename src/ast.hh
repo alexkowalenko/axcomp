@@ -12,7 +12,7 @@ class ASTVisitor;
 
 class ASTBase {
   public:
-    virtual ~ASTBase(){};
+    virtual ~ASTBase() = default;
 
     virtual void accept(ASTVisitor *v) = 0;
 };

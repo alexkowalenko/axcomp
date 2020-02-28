@@ -25,6 +25,7 @@ Notation:
 ```ebnf
 module = "MODULE" IDENT ";"
          declarations
+         procedures
          ["BEGIN"
                 statement_seq]
          "END" IDENT "."
@@ -32,7 +33,8 @@ module = "MODULE" IDENT ";"
 declarations = ["CONST" (IDENT "=" expr ";")* ]
                ["TYPE" (IDENT "=" type ";")* ]
                ["VAR" (IDENT ":" type ";")* ]
-               ( procedureDeclaration ";")*
+
+procedures = ( procedureDeclaration ";")*
 
 procedureDeclaration = procedureHeading ";" procedureBody
 
@@ -80,6 +82,11 @@ BEGIN
     RETURN (3 * x) + ((2+ (x + 1)) * 4);
 END test.
 ```
+## Notes
+
+Changes to the standard definition:
+
+* Procedures don't have nested procedures.
 
 ## Program options
 

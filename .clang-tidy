@@ -1,0 +1,7 @@
+---
+Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-modernize-use-trailing-return-type,-llvm-*,-misc-non-private-member-variables-in-classes'
+WarningsAsErrors: '1'
+HeaderFilterRegex: 'src/'
+FormatStyle:     none
+
+

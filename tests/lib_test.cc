@@ -26,7 +26,7 @@ static inline void rtrim(std::string &s) {
 }
 
 void do_parse_tests(std::vector<ParseTests> &tests) {
-    for (auto t : tests) {
+    for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         Lexer              lex(is);

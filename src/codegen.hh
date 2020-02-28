@@ -23,26 +23,26 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    CodeGenerator(Options &o);
+    explicit CodeGenerator(Options &o);
 
-    void generate(std::shared_ptr<ASTModule> ast) {
+    void generate(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());
     };
 
-    void visit_ASTModule(ASTModule *);
-    void visit_ASTDeclaration(ASTDeclaration *);
-    void doProcedures(ASTDeclaration *);
-    void doTopConsts(ASTConst *);
-    void visit_ASTConst(ASTConst *);
-    void visit_ASTVar(ASTVar *);
-    void visit_ASTProcedure(ASTProcedure *);
-    void visit_ASTAssignment(ASTAssignment *);
-    void visit_ASTReturn(ASTReturn *);
-    void visit_ASTExpr(ASTExpr *);
-    void visit_ASTTerm(ASTTerm *);
-    void visit_ASTFactor(ASTFactor *);
-    void visit_ASTInteger(ASTInteger *);
-    void visit_ASTIdentifier(ASTIdentifier *);
+    void visit_ASTModule(ASTModule *ast) override;
+    void visit_ASTDeclaration(ASTDeclaration *ast) override;
+    void doProcedures(ASTDeclaration *ast);
+    void doTopConsts(ASTConst *ast);
+    void visit_ASTConst(ASTConst *ast) override;
+    void visit_ASTVar(ASTVar *ast) override;
+    void visit_ASTProcedure(ASTProcedure *ast) override;
+    void visit_ASTAssignment(ASTAssignment *ast) override;
+    void visit_ASTReturn(ASTReturn *ast) override;
+    void visit_ASTExpr(ASTExpr *ast) override;
+    void visit_ASTTerm(ASTTerm *ast) override;
+    void visit_ASTFactor(ASTFactor *ast) override;
+    void visit_ASTInteger(ASTInteger *ast) override;
+    void visit_ASTIdentifier(ASTIdentifier *ast) override;
 
   private:
     void init(std::string const &module_name);

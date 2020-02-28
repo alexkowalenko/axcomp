@@ -197,9 +197,8 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name) {
         throw ParseException(
-            fmt::format(
-                "END identifier name: {} doesn't match procedure name: {}",
-                tok.val, proc->name),
+            fmt::format("END name: {} doesn't match procedure name: {}",
+                        tok.val, proc->name),
             lexer.lineno);
     }
     get_token(TokenType::semicolon);
@@ -342,7 +341,8 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
     debug("Parser::parse_integer");
     auto                        tok = get_token(TokenType::integer);
     std::shared_ptr<ASTInteger> ast = std::make_shared<ASTInteger>();
-    ast->value = atol(tok.val.c_str());
+    char *                      end;
+    ast->value = std::strtol(tok.val.c_str(), &end, 10);
     return ast;
 }
 

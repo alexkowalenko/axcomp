@@ -37,8 +37,8 @@ template <typename... T> inline void debug(const T &... msg) {
 
 using namespace llvm::sys;
 
-inline const std::string file_ext_llvmri = ".ll";
-inline const std::string file_ext_obj = ".o";
+inline const std::string file_ext_llvmri{".ll"};
+inline const std::string file_ext_obj{".o"};
 
 CodeGenerator::CodeGenerator(Options &o)
     : options(o), symboltable(nullptr), filename("output"), builder(context),
@@ -77,7 +77,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
-    for (auto x : ast->stats) {
+    for (auto const &x : ast->stats) {
         x->accept(this);
     }
 
@@ -96,7 +96,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 }
 
 void CodeGenerator::doProcedures(ASTDeclaration *ast) {
-    for (auto proc : ast->procedures) {
+    for (auto const &proc : ast->procedures) {
         visit_ASTProcedure(proc.get());
     }
 }
@@ -111,7 +111,7 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
 }
 
 void CodeGenerator::doTopConsts(ASTConst *ast) {
-    for (auto c : ast->consts) {
+    for (auto const &c : ast->consts) {
         module->getOrInsertGlobal(c.indent->value, builder.getInt64Ty());
         GlobalVariable *gVar = module->getNamedGlobal(c.indent->value);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
@@ -124,7 +124,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
 };
 
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
-    for (auto c : ast->consts) {
+    for (auto const &c : ast->consts) {
         visit_ASTExpr(c.expr.get());
         auto val = last_value;
 
@@ -146,7 +146,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
 }
 
 void CodeGenerator::visit_ASTVar(ASTVar *ast) {
-    for (auto c : ast->vars) {
+    for (auto const &c : ast->vars) {
 
         // Create variable for module
         auto name = c.indent->value;
@@ -183,7 +183,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
-    for (auto x : ast->stats) {
+    for (auto const &x : ast->stats) {
         x->accept(this);
     }
 
@@ -192,7 +192,6 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
-    return;
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
@@ -341,7 +340,7 @@ void CodeGenerator::generate_objectcode() {
     // Print an error and exit if we couldn't find the requested target.
     // This generally occurs if we've forgotten to initialise the
     // TargetRegistry or we have a bogus target triple.
-    if (!target) {
+    if (target == nullptr) {
         throw CodeGenException(error, 0);
     }
 

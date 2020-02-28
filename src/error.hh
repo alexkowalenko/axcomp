@@ -10,10 +10,10 @@
 
 namespace ax {
 
-class AXException {
+class AXException : std::exception {
 
   public:
-    AXException(std::string m, int l) : msg(m), lineno(l){};
+    AXException(std::string const &m, int l) : msg(m), lineno(l){};
 
     std::string error_msg();
 
@@ -23,18 +23,18 @@ class AXException {
 
 class LexicalException : public AXException {
   public:
-    LexicalException(std::string m, int l) : AXException(m, l){};
+    LexicalException(std::string const &m, int l) : AXException(m, l){};
 };
 
 class ParseException : public AXException {
   public:
-    ParseException(std::string m, int l) : AXException(m, l){};
+    ParseException(std::string const &m, int l) : AXException(m, l){};
 };
 
 class CodeGenException : public AXException {
   public:
-    CodeGenException(std::string m, int l) : AXException(m, l){};
-    CodeGenException(std::string m) : AXException(m, 0){};
+    CodeGenException(std::string const &m, int l) : AXException(m, l){};
+    explicit CodeGenException(std::string const &m) : AXException(m, 0){};
 };
 
 } // namespace ax

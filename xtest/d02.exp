@@ -1,0 +1,24 @@
+; ModuleID = 'd02'
+source_filename = "d02"
+target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-apple-darwin18.7.0"
+
+define void @f() {
+entry:
+  ret i64 12
+}
+
+define void @g() {
+entry:
+  ret i64 24
+}
+
+define void @h() {
+entry:
+  ret i64 36
+}
+
+define i64 @output() {
+entry:
+  ret i64 0
+}

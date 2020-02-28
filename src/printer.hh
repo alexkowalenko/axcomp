@@ -16,22 +16,24 @@ namespace ax {
 class ASTPrinter : ASTVisitor {
 
   public:
-    ASTPrinter(std::ostream &ostream) : os(ostream){};
+    explicit ASTPrinter(std::ostream &ostream) : os(ostream){};
 
-    void print(std::shared_ptr<ASTModule> ast) { visit_ASTModule(ast.get()); };
+    void print(std::shared_ptr<ASTModule> const &ast) {
+        visit_ASTModule(ast.get());
+    };
 
-    void visit_ASTModule(ASTModule *);
-    void visit_ASTDeclaration(ASTDeclaration *);
-    void visit_ASTConst(ASTConst *);
-    void visit_ASTVar(ASTVar *);
-    void visit_ASTProcedure(ASTProcedure *);
-    void visit_ASTAssignment(ASTAssignment *);
-    void visit_ASTReturn(ASTReturn *);
-    void visit_ASTExpr(ASTExpr *);
-    void visit_ASTTerm(ASTTerm *);
-    void visit_ASTFactor(ASTFactor *);
-    void visit_ASTInteger(ASTInteger *);
-    void visit_ASTIdentifier(ASTIdentifier *);
+    void visit_ASTModule(ASTModule *ast) override;
+    void visit_ASTDeclaration(ASTDeclaration *ast) override;
+    void visit_ASTConst(ASTConst *ast) override;
+    void visit_ASTVar(ASTVar *ast) override;
+    void visit_ASTProcedure(ASTProcedure *ast) override;
+    void visit_ASTAssignment(ASTAssignment *ast) override;
+    void visit_ASTReturn(ASTReturn *ast) override;
+    void visit_ASTExpr(ASTExpr *ast) override;
+    void visit_ASTTerm(ASTTerm *ast) override;
+    void visit_ASTFactor(ASTFactor *ast) override;
+    void visit_ASTInteger(ASTInteger *ast) override;
+    void visit_ASTIdentifier(ASTIdentifier *ast) override;
 
   private:
     std::ostream &os;

@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     }
 
     std::istream *input{&std::cin};
-    if (options.file_name.size() > 0) {
+    if (options.file_name.empty()) {
         input = new std::ifstream(options.file_name);
     }
     ax::Lexer  lexer(*input);

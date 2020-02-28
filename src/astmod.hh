@@ -23,18 +23,18 @@ class ASTDeclaration;
 
 class ASTInteger : public ASTBase {
   public:
-    ~ASTInteger(){};
+    ~ASTInteger() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTInteger(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTInteger(this); };
 
     long value;
 };
 
 class ASTIdentifier : public ASTBase {
   public:
-    ~ASTIdentifier(){};
+    ~ASTIdentifier() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTIdentifier(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(this); };
 
     std::string value;
 };
@@ -49,9 +49,9 @@ class ASTIdentifier : public ASTBase {
 class ASTFactor : public ASTBase {
   public:
     ASTFactor() : identifier(nullptr), integer(nullptr), expr(nullptr){};
-    ~ASTFactor(){};
+    ~ASTFactor() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTFactor(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
     std::shared_ptr<ASTIdentifier> identifier;
     std::shared_ptr<ASTInteger>    integer;
@@ -69,9 +69,9 @@ struct Term_mult {
  */
 class ASTTerm : public ASTBase {
   public:
-    ~ASTTerm(){};
+    ~ASTTerm() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTTerm(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTTerm(this); };
 
     std::shared_ptr<ASTFactor> factor;
     std::vector<Term_mult>     rest;
@@ -88,9 +88,9 @@ struct Expr_add {
  */
 class ASTExpr : public ASTBase {
   public:
-    ~ASTExpr(){};
+    ~ASTExpr() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTExpr(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTExpr(this); };
 
     std::optional<TokenType> first_sign;
     std::shared_ptr<ASTTerm> term;
@@ -108,9 +108,9 @@ class ASTStatement : public ASTBase {};
  */
 class ASTAssignment : public ASTStatement {
   public:
-    ~ASTAssignment(){};
+    ~ASTAssignment() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTAssignment(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTAssignment(this); };
 
     std::shared_ptr<ASTIdentifier> indent;
     std::shared_ptr<ASTExpr>       expr;
@@ -122,9 +122,9 @@ class ASTAssignment : public ASTStatement {
  */
 class ASTReturn : public ASTStatement {
   public:
-    ~ASTReturn(){};
+    ~ASTReturn() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTReturn(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTReturn(this); };
 
     std::shared_ptr<ASTExpr> expr;
 };
@@ -134,9 +134,9 @@ class ASTReturn : public ASTStatement {
 
 class ASTProcedure : public ASTBase {
   public:
-    ~ASTProcedure(){};
+    ~ASTProcedure() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTProcedure(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
     std::string name;
     bool        is_external;
@@ -156,9 +156,9 @@ struct VarDec {
  */
 class ASTVar : public ASTBase {
   public:
-    ~ASTVar(){};
+    ~ASTVar() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTVar(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTVar(this); };
 
     std::vector<VarDec> vars;
 };
@@ -174,18 +174,18 @@ struct ConstDec {
  */
 class ASTConst : public ASTBase {
   public:
-    ~ASTConst(){};
+    ~ASTConst() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTConst(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTConst(this); };
 
     std::vector<ConstDec> consts;
 };
 
 class ASTDeclaration : public ASTBase {
   public:
-    ~ASTDeclaration(){};
+    ~ASTDeclaration() override = default;
 
-    void accept(ASTVisitor *v) { v->visit_ASTDeclaration(this); };
+    void accept(ASTVisitor *v) override { v->visit_ASTDeclaration(this); };
 
     std::shared_ptr<ASTConst>                  cnst;
     std::shared_ptr<ASTVar>                    var;
@@ -194,8 +194,8 @@ class ASTDeclaration : public ASTBase {
 
 class ASTModule : public ASTBase {
   public:
-    ~ASTModule(){};
-    void accept(ASTVisitor *v) { v->visit_ASTModule(this); };
+    ~ASTModule() override = default;
+    void accept(ASTVisitor *v) override { v->visit_ASTModule(this); };
 
     std::string                                name;
     std::shared_ptr<ASTDeclaration>            decs;

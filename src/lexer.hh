@@ -15,7 +15,7 @@ namespace ax {
 
 class Lexer {
   public:
-    Lexer(std::istream &stream);
+    explicit Lexer(std::istream &stream);
 
     Token get_token();
     Token peek_token();
