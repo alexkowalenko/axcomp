@@ -12,7 +12,7 @@
 namespace ax {
 class Parser {
   public:
-    Parser(Lexer &l) : lexer(l){};
+    explicit Parser(Lexer &l) : lexer(l){};
 
     std::shared_ptr<ASTModule> parse();
 

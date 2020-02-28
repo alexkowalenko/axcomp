@@ -187,9 +187,8 @@ class ASTDeclaration : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDeclaration(this); };
 
-    std::shared_ptr<ASTConst>                  cnst;
-    std::shared_ptr<ASTVar>                    var;
-    std::vector<std::shared_ptr<ASTProcedure>> procedures;
+    std::shared_ptr<ASTConst> cnst;
+    std::shared_ptr<ASTVar>   var;
 };
 
 class ASTModule : public ASTBase {
@@ -199,6 +198,7 @@ class ASTModule : public ASTBase {
 
     std::string                                name;
     std::shared_ptr<ASTDeclaration>            decs;
+    std::vector<std::shared_ptr<ASTProcedure>> procedures;
     std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 } // namespace ax

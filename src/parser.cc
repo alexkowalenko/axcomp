@@ -12,7 +12,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{false};
+inline constexpr bool debug_parser{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -45,6 +45,14 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     module->name = tok.val;
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
+
+    // Procedures
+    tok = lexer.peek_token();
+    while (tok.type == TokenType::procedure) {
+        module->procedures.push_back(parse_procedure());
+        tok = lexer.peek_token();
+    }
+
     get_token(TokenType::begin);
 
     // statement_seq
@@ -91,7 +99,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
     std::shared_ptr<ASTDeclaration> decs = std::make_shared<ASTDeclaration>();
     auto                            tok = lexer.peek_token();
     while (tok.type == TokenType::cnst || tok.type == TokenType::type ||
-           tok.type == TokenType::var || tok.type == TokenType::procedure) {
+           tok.type == TokenType::var) {
 
         switch (tok.type) {
         case TokenType::cnst:
@@ -99,9 +107,6 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             break;
         case TokenType::var:
             decs->var = parse_var();
-            break;
-        case TokenType::procedure:
-            decs->procedures.push_back(parse_procedure());
             break;
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
@@ -180,8 +185,8 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     get_token(TokenType::begin);
 
     // statement_seq
+    tok = lexer.peek_token();
     do {
-        tok = lexer.peek_token();
         if (tok.type == TokenType::end) {
             lexer.get_token();
             break;
@@ -262,7 +267,6 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
     std::shared_ptr<ASTExpr> expr = std::make_shared<ASTExpr>();
 
     auto tok = lexer.peek_token();
-    debug("expr: {}", std::string(tok));
     if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
         lexer.get_token();
         expr->first_sign = std::optional<TokenType>{tok.type};
@@ -310,7 +314,6 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     debug("Parser::parse_factor");
     std::shared_ptr<ASTFactor> factor = std::make_shared<ASTFactor>();
     auto                       tok = lexer.peek_token();
-    debug("factor: {}\n", std::string(tok));
     switch (tok.type) {
     case TokenType::l_paren:
         lexer.get_token(); // get (

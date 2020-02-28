@@ -72,7 +72,7 @@ std::vector<LexTests> tests = {
 
 TEST(Lexer, Lexer1) {
 
-    for (auto t : tests) {
+    for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         Lexer              lex(is);

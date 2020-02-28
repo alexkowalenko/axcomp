@@ -13,7 +13,7 @@ namespace ax {
 class AXException : std::exception {
 
   public:
-    AXException(std::string const &m, int l) : msg(m), lineno(l){};
+    AXException(std::string m, int l) : msg(std::move(m)), lineno(l){};
 
     std::string error_msg();
 

@@ -29,7 +29,7 @@ class SymbolTable {
     };
 
     std::optional<Value *> find(const std::string &name) const;
-    bool                   set(const std::string &name, Value *const val);
+    bool                   set(const std::string &name, Value *val);
     void                   remove(const std::string &name);
 
     void dump(std::ostream &os) const;

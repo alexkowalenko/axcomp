@@ -54,7 +54,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // }
 
     // Do procedures which generate functions first
-    doProcedures(ast->decs.get());
+    doProcedures(ast->procedures);
 
     // Set up the module as a function
     // Make the function type:  (void) : int
@@ -95,8 +95,9 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     print_code();
 }
 
-void CodeGenerator::doProcedures(ASTDeclaration *ast) {
-    for (auto const &proc : ast->procedures) {
+void CodeGenerator::doProcedures(
+    std::vector<std::shared_ptr<ASTProcedure>> const &procs) {
+    for (auto const &proc : procs) {
         visit_ASTProcedure(proc.get());
     }
 }

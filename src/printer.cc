@@ -15,6 +15,9 @@ namespace ax {
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << fmt::format("MODULE {};\n", ast->name);
     visit_ASTDeclaration(ast->decs.get());
+    for (auto const &proc : ast->procedures) {
+        proc->accept(this);
+    }
     os << fmt::format("BEGIN\n");
     for (auto const &x : ast->stats) {
         x->accept(this);
@@ -29,9 +32,6 @@ void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     }
     if (ast->var) {
         visit_ASTVar(ast->var.get());
-    }
-    for (auto const &proc : ast->procedures) {
-        proc->accept(this);
     }
 }
 
