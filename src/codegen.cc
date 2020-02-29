@@ -122,7 +122,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
 
         symboltable.put(c.ident->value, gVar);
     }
-};
+}
 
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     for (auto const &c : ast->consts) {
@@ -206,12 +206,12 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     }
     debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
     builder.CreateStore(val, var.value());
-};
+}
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
     visit_ASTExpr(ast->expr.get());
     builder.CreateRet(last_value);
-};
+}
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 

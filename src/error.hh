@@ -31,6 +31,11 @@ class ParseException : public AXException {
     ParseException(std::string const &m, int l) : AXException(m, l){};
 };
 
+class TypeError : public AXException {
+  public:
+    TypeError(std::string const &m, int l) : AXException(m, l){};
+};
+
 class CodeGenException : public AXException {
   public:
     CodeGenException(std::string const &m, int l) : AXException(m, l){};

@@ -10,6 +10,7 @@
 
 #include "codegen.hh"
 #include "error.hh"
+#include "inspector.hh"
 #include "lexer.hh"
 #include "options.hh"
 #include "parser.hh"
@@ -58,6 +59,9 @@ int main(int argc, char **argv) {
             printer.print(ast);
         }
 
+        Inspector inpect(symbols, types);
+        inpect.check(ast);
+
         ax::CodeGenerator code(options);
         code.generate(ast);
 
@@ -69,7 +73,7 @@ int main(int argc, char **argv) {
         std::cout << e.error_msg() << std::endl;
         return -1;
     } catch (std::exception &e) {
-        std::cout << "Exception " << e.what() << std::endl;
+        std::cout << "Exception: " << e.what() << std::endl;
         return -1;
     }
     return 0;

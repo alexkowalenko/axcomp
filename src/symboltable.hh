@@ -16,7 +16,8 @@ namespace ax {
 
 template <typename T> class SymbolTable {
   public:
-    explicit SymbolTable(std::shared_ptr<SymbolTable> const &s) : next(s){};
+    explicit SymbolTable(std::shared_ptr<SymbolTable> s) : next(std::move(s)){};
+    ~SymbolTable() = default;
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
 

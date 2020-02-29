@@ -30,6 +30,9 @@ include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
 # sanitizer options if supported by compiler
+set(ENABLE_SANITIZER_ADDRESS ON)
+set(ENABLE_SANITIZER_MEMORY OFF) # Not on MacOS
+set(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON)
 include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 

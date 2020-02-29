@@ -15,10 +15,12 @@ namespace ax {
 
 class Symbol {
   public:
-    Symbol(std::string const &n, std::string const &t) : name(n), type(t){};
+    Symbol(std::string n, std::string t)
+        : name(std::move(n)), type(std::move(t)){};
 
     Symbol(const Symbol &s) = default;
     Symbol() = default;
+    ~Symbol() = default;
 
     explicit operator std::string() const {
         return fmt::format("({} : {})", name, type);

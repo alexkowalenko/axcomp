@@ -11,7 +11,7 @@
 namespace ax {
 class Type {
   public:
-    Type(std::string n) : name(n){};
+    explicit Type(std::string n) : name(std::move(n)){};
     virtual ~Type() = default;
 
     std::string name;
@@ -19,19 +19,19 @@ class Type {
 
 class SimpleType : public Type {
   public:
-    SimpleType(std::string n) : Type(n){};
+    explicit SimpleType(std::string n) : Type(std::move(n)){};
     ~SimpleType() override = default;
 };
 
 class ModuleType : public Type {
   public:
-    ModuleType(std::string n) : Type(n){};
+    explicit ModuleType(std::string n) : Type(std::move(n)){};
     ~ModuleType() override = default;
 };
 
 class FunctionType : public Type {
   public:
-    FunctionType(std::string n) : Type(n){};
+    explicit FunctionType(std::string n) : Type(std::move(n)){};
     ~FunctionType() override = default;
 };
 
