@@ -91,7 +91,7 @@ TEST(Parser, Assignment) {
         {"MODULE y; VAR x : INTEGER; BEGIN := 2; END y.", "",
          "1: Unexpected token: :="},
         {"MODULE y; VAR x : INTEGER;  BEGIN x 12; END y.", "",
-         "1: Unexpected token: integer(12) - expecting :="},
+         "1: Unexpected token: integer(12)"},
 
     };
     do_parse_tests(tests);

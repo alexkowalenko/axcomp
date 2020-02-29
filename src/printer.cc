@@ -81,6 +81,11 @@ void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
     }
 }
 
+void ASTPrinter::visit_ASTCall(ASTCall *ast) {
+    ast->name->accept(this);
+    os << "()";
+};
+
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());

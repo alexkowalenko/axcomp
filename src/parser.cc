@@ -228,11 +228,22 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
  */
 std::shared_ptr<ASTStatement> Parser::parse_statement() {
     auto tok = lexer.peek_token();
+    debug(fmt::format("Parser::parse_statement {}", std::string(tok)));
     switch (tok.type) {
     case TokenType::ret:
         return parse_return();
-    case TokenType::ident:
-        return parse_assignment();
+    case TokenType::ident: {
+        // This can be an assignment or function call
+        auto ident = lexer.get_token();
+        tok = lexer.peek_token();
+        debug(fmt::format("Parser::parse_statement next {}", std::string(tok)));
+        if (tok.type == TokenType::assign) {
+            return parse_assignment(ident);
+        } else if (tok.type == TokenType::l_paren) {
+            return parse_call(ident);
+        }
+        [[fallthrough]];
+    }
     default:
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
@@ -245,14 +256,15 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
  *
  * @return std::shared_ptr<ASTAssignment>
  */
-std::shared_ptr<ASTAssignment> Parser::parse_assignment() {
+std::shared_ptr<ASTAssignment> Parser::parse_assignment(Token const &ident) {
     debug("Parser::parse_assignment");
     std::shared_ptr<ASTAssignment> assign = std::make_shared<ASTAssignment>();
-    assign->ident = parse_identifier();
+    assign->ident = std::make_shared<ASTIdentifier>();
+    assign->ident->value = ident.val;
     get_token(TokenType::assign);
     assign->expr = parse_expr();
     return assign;
-};
+}
 
 /**
  * @brief RETURN [expr]
@@ -265,7 +277,21 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
     get_token(TokenType::ret);
     ret->expr = parse_expr();
     return ret;
-};
+}
+
+/**
+ * @brief  IDENT "(" ")"
+ *
+ * @return std::shared_ptr<ASTCall>
+ */
+std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
+    std::shared_ptr<ASTCall> call = std::make_shared<ASTCall>();
+    call->name = std::make_shared<ASTIdentifier>();
+    call->name->value = ident.val;
+    get_token(TokenType::l_paren);
+    get_token(TokenType::r_paren);
+    return call;
+}
 
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*

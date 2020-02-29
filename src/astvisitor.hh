@@ -18,6 +18,7 @@ class ASTProcedure;
 class ASTStatement;
 class ASTAssignment;
 class ASTReturn;
+class ASTCall;
 class ASTExpr;
 class ASTTerm;
 class ASTFactor;
@@ -36,6 +37,7 @@ class ASTVisitor {
     virtual void visit_ASTProcedure(ASTProcedure *ast);
     virtual void visit_ASTAssignment(ASTAssignment *ast);
     virtual void visit_ASTReturn(ASTReturn *ast);
+    virtual void visit_ASTCall(ASTCall *ast);
     virtual void visit_ASTExpr(ASTExpr *ast);
     virtual void visit_ASTTerm(ASTTerm *ast);
     virtual void visit_ASTFactor(ASTFactor *ast);

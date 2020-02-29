@@ -129,6 +129,19 @@ class ASTReturn : public ASTStatement {
     std::shared_ptr<ASTExpr> expr;
 };
 
+/**
+ * @brief IDENT "(" ")"
+ *
+ */
+class ASTCall : public ASTStatement {
+  public:
+    ~ASTCall() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTCall(this); };
+
+    std::shared_ptr<ASTIdentifier> name;
+};
+
 //////////////////////
 // Declaration objects
 
@@ -139,7 +152,7 @@ class ASTProcedure : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
     std::string name;
-    bool        is_external;
+    bool        is_external = true;
     // std::vector<Params>
     std::shared_ptr<ASTDeclaration>            decs;
     std::vector<std::shared_ptr<ASTStatement>> stats;

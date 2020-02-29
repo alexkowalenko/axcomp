@@ -1,7 +1,7 @@
 ---
-Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-modernize-use-trailing-return-type,-llvm-*,-misc-non-private-member-variables-in-classes,-misc-non-private-member-variables-in-classes'
+Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-modernize-use-trailing-return-type,-llvm-*,-misc-non-private-member-variables-in-classes,-misc-non-private-member-variables-in-classes,-hicpp-special-member-functions,-cppcoreguidelines-special-member-functions'
 WarningsAsErrors: '1'
-HeaderFilterRegex: 'src/'
+HeaderFilterRegex: './src/'
 FormatStyle:     none
 
 

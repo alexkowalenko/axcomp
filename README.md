@@ -53,9 +53,12 @@ identList = IDENT ("," IDENT)+
 statement_seq = (statement ";")+
 
 statement = assignment
+    | procedureCall
     | "RETURN" [expr]
 
-assignment = ident ":=" expr
+assignment = IDENT ":=" expr
+
+procedureCall = IDENT "(" ")"
 
 expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
 

@@ -66,6 +66,10 @@ void ASTVisitor::visit_ASTReturn(ASTReturn *ast) {
     }
 }
 
+void ASTVisitor::visit_ASTCall(ASTCall *ast) {
+    ast->name->accept(this);
+}
+
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
     visit_ASTTerm(ast->term.get());
     for (auto const &t : ast->rest) {

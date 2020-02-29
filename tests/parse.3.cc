@@ -8,7 +8,7 @@
 
 #include "parse_test.hh"
 
-TEST(Parser, Proc_1) {
+TEST(Parser, Proc) {
     std::vector<ParseTests> tests = {
 
         {R"(
@@ -40,30 +40,6 @@ BEGIN
 END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
          "g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\nRETURN 0;\nEND x.",
-         ""},
-
-        {R"(
-MODULE x;
-  CONST
-        y = 3;
-  VAR
-    z : INTEGER;
-    
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END f;
-
-  PROCEDURE g;
-  BEGIN
-      RETURN 24;
-  END g;
-BEGIN
-    RETURN 0;
-END x.)",
-         "MODULE x;\nCONST\ny = 3;\nVAR\nz: INTEGER;\nPROCEDURE "
-         "f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE g;\nBEGIN\nRETURN 24;\nEND "
-         "g.\nBEGIN\nRETURN 0;\nEND x.",
          ""},
 
         // Errors
@@ -106,8 +82,59 @@ END x.)",
 BEGIN
     RETURN 0;
 END x.)",
-         "", "5: Unexpected token: semicolon - expecting :="},
+         "", "5: Unexpected token: semicolon"},
 
     };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, Call) {
+    std::vector<ParseTests> tests = {
+
+        {R"(
+MODULE x;
+  PROCEDURE f;
+  BEGIN
+      RETURN 12;
+  END f;
+BEGIN
+    f();
+END x.)",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nf();\nEND "
+         "x.",
+         ""},
+
+        {R"(
+MODULE x;
+  PROCEDURE f;
+  BEGIN
+      RETURN 12;
+  END f;
+
+  PROCEDURE g;
+  BEGIN
+      f();
+      RETURN 24;
+  END g;
+BEGIN
+    g();
+    RETURN 0;
+END x.)",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
+         "g;\nBEGIN\nf();\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN 0;\nEND x.",
+         ""},
+
+        // Error
+        {R"(MODULE x;
+    BEGIN
+        f(;
+    END x.)",
+         "", "3: Unexpected token: semicolon - expecting )"},
+        // Error
+        {R"(MODULE x;
+    BEGIN
+        f);
+    END x.)",
+         "", "3: Unexpected token: )"}};
     do_parse_tests(tests);
 }
