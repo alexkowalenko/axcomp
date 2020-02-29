@@ -84,4 +84,14 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     }
 }
 
+void Inspector::visit_ASTFactor(ASTFactor *ast) {
+    if (ast->identifier != nullptr) {
+        if (auto res = symbols.find(ast->identifier->value); !res) {
+            throw CodeGenException(
+                fmt::format("undefined identifier {}", ast->identifier->value),
+                0);
+        }
+    }
+}
+
 } // namespace ax

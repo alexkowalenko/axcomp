@@ -9,30 +9,34 @@
 #include <string>
 
 namespace ax {
+
+enum class SimpleTypeTag { void_t, integer, module, procedure };
+
+std::string string(SimpleTypeTag &t);
+
 class Type {
   public:
-    explicit Type(std::string n) : name(std::move(n)){};
     virtual ~Type() = default;
 
-    std::string name;
+    virtual operator std::string() = 0;
 };
 
 class SimpleType : public Type {
   public:
-    explicit SimpleType(std::string n) : Type(std::move(n)){};
-    ~SimpleType() override = default;
+    explicit SimpleType(SimpleTypeTag n) : type(n){};
+    ~SimpleType(){};
+
+    operator std::string() override;
+
+    SimpleTypeTag type;
 };
 
-class ModuleType : public Type {
+class ProcedureType : public Type {
   public:
-    explicit ModuleType(std::string n) : Type(std::move(n)){};
-    ~ModuleType() override = default;
-};
+    explicit ProcedureType(std::string n){};
+    ~ProcedureType(){};
 
-class FunctionType : public Type {
-  public:
-    explicit FunctionType(std::string n) : Type(std::move(n)){};
-    ~FunctionType() override = default;
+    operator std::string();
 };
 
 } // namespace ax

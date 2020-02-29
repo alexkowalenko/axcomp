@@ -23,10 +23,22 @@ using namespace ax;
 
 void do_inspect_tests(std::vector<ParseTests> &tests);
 
-TEST(Inspector, Type) {
+TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
-        {"MODULE x; VAR z: INT; BEGIN x := 10; END x.", "",
-         "0: Unknown type: INT"},
+        {"MODULE x; VAR z: complex; BEGIN x := 10; END x.", "",
+         "0: Unknown type: complex"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, UnknownExpr) {
+    std::vector<ParseTests> tests = {
+        {"MODULE y; VAR x : INTEGER; BEGIN RETURN x; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nRETURN x;\nEND y.", ""},
+
+        // Errors
+        {"MODULE y; VAR x : INTEGER; BEGIN RETURN z; END y.", "",
+         "0: undefined identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -36,6 +48,7 @@ TEST(Inspector, Return) {
         {"MODULE x; VAR z: INTEGER; BEGIN x := 10; RETURN x; END x.",
          "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nx := 10;\nRETURN x;\nEND x.", ""},
 
+        // Errors
         {"MODULE x; VAR z: INTEGER; BEGIN x := 10; END x.", "",
          "0: MODULE x has no RETURN function"},
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN x := 1; END y; "
