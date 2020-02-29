@@ -27,6 +27,7 @@ class Inspector : public ASTVisitor {
     void visit_ASTVar(ASTVar *ast) override;
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
+    void visit_ASTCall(ASTCall *ast) override;
 
     void check(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());

@@ -228,7 +228,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
  */
 std::shared_ptr<ASTStatement> Parser::parse_statement() {
     auto tok = lexer.peek_token();
-    debug(fmt::format("Parser::parse_statement {}", std::string(tok)));
+    debug("Parser::parse_statement {}", std::string(tok));
     switch (tok.type) {
     case TokenType::ret:
         return parse_return();
@@ -236,7 +236,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         // This can be an assignment or function call
         auto ident = lexer.get_token();
         tok = lexer.peek_token();
-        debug(fmt::format("Parser::parse_statement next {}", std::string(tok)));
+        debug("Parser::parse_statement next {}", std::string(tok));
         if (tok.type == TokenType::assign) {
             return parse_assignment(ident);
         } else if (tok.type == TokenType::l_paren) {

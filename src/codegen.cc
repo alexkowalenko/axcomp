@@ -213,6 +213,36 @@ void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
     builder.CreateRet(last_value);
 }
 
+void CodeGenerator::visit_ASTCall(ASTCall *ast) {
+    debug("CodeGenerator::visit_ASTCall");
+    // Look up the name in the global module table.
+    Function *CalleeF;
+    try {
+        CalleeF = module->getFunction(ast->name->value);
+        if (!CalleeF) {
+            throw CodeGenException(
+                fmt::format("function: {} not found", ast->name->value));
+        }
+    } catch (...) {
+        debug("CodeGenerator::visit_ASTCall exception");
+        throw CodeGenException(
+            fmt::format("function: {} not found", ast->name->value));
+    }
+
+    // If argument mismatch error.
+    // if (CalleeF->arg_size() != Args.size())
+    //    return LogErrorV("Incorrect # arguments passed");
+
+    std::vector<Value *> ArgsV;
+    // for (unsigned i = 0, e = Args.size(); i != e; ++i) {
+    //    ArgsV.push_back(Args[i]->codegen());
+    //    if (!ArgsV.back())
+    //        return nullptr;
+    //}
+
+    builder.CreateCall(CalleeF, ArgsV, "calltmp");
+}
+
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 
     visit_ASTTerm(expr->term.get());

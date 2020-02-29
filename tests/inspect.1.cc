@@ -33,11 +33,33 @@ TEST(Inspector, Type) {
 
 TEST(Inspector, Return) {
     std::vector<ParseTests> tests = {
+        {"MODULE x; VAR z: INTEGER; BEGIN x := 10; RETURN x; END x.",
+         "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nx := 10;\nRETURN x;\nEND x.", ""},
+
         {"MODULE x; VAR z: INTEGER; BEGIN x := 10; END x.", "",
          "0: MODULE x has no RETURN function"},
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN x := 1; END y; "
          "BEGIN x := 10; END x.",
          "", "0: PROCEDURE y has no RETURN function"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, Call) {
+    std::vector<ParseTests> tests = {
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+         "f(); RETURN x; END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN 0;\nEND "
+         "f.\nBEGIN\nf();\nRETURN x;\nEND y.",
+         ""},
+
+        // Errors
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+         "x(); RETURN x; END y.",
+         "", "0: x is not a PROCEDURE"},
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+         "g(); RETURN x; END y.",
+         "", "0: undefined PROCEDURE g"},
     };
     do_inspect_tests(tests);
 }

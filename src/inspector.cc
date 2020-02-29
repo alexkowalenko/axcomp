@@ -27,13 +27,13 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
     for (auto const &proc : ast->procedures) {
         proc->accept(this);
     }
+    has_return = false;
     for (auto const &x : ast->stats) {
-        has_return = false;
         x->accept(this);
-        if (!has_return) {
-            throw CodeGenException(
-                fmt::format("MODULE {} has no RETURN function", ast->name), 0);
-        }
+    }
+    if (!has_return) {
+        throw CodeGenException(
+            fmt::format("MODULE {} has no RETURN function", ast->name), 0);
     }
 }
 
@@ -69,6 +69,18 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         visit_ASTExpr(ast->expr.get());
 
         has_return = true;
+    }
+}
+
+void Inspector::visit_ASTCall(ASTCall *ast) {
+    auto res = symbols.find(ast->name->value);
+    if (!res) {
+        throw CodeGenException(
+            fmt::format("undefined PROCEDURE {}", ast->name->value), 0);
+    }
+    if (res->type != "PROCEDURE") {
+        throw CodeGenException(
+            fmt::format("{} is not a PROCEDURE", ast->name->value), 0);
     }
 }
 
