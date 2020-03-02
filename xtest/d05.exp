@@ -1,15 +1,22 @@
-; ModuleID = 'c04'
-source_filename = "c04"
+; ModuleID = 'd05'
+source_filename = "d05"
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-darwin18.7.0"
 
-@x = internal global i64 0, align 8
 @y = internal global i64 0, align 8
+
+define void @f() {
+entry:
+  %yy = alloca i64
+  store i64 0, i64* %yy
+  %yy1 = load i64, i64* %yy
+  %addtmp = add i64 %yy1, 2
+  ret i64 %addtmp
+}
 
 define i64 @output() {
 entry:
-  %x = load i64, i64* @x
   %y = load i64, i64* @y
-  %addtmp = add i64 %x, %y
+  %addtmp = add i64 %y, 63
   ret i64 %addtmp
 }

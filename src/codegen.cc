@@ -50,9 +50,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
     // Top level consts
     top_level = true;
-    if (ast->decs->cnst) {
-        doTopConsts(ast->decs->cnst.get());
-    }
+    doTopDecs(ast->decs.get());
 
     top_level = false;
     // Do procedures which generate functions first
@@ -95,19 +93,26 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     print_code();
 }
 
-void CodeGenerator::doProcedures(
-    std::vector<std::shared_ptr<ASTProcedure>> const &procs) {
-    for (auto const &proc : procs) {
-        visit_ASTProcedure(proc.get());
+void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
+    if (ast->cnst) {
+        doTopConsts(ast->cnst.get());
+    }
+    if (ast->var) {
+        doTopVars(ast->var.get());
     }
 }
 
-void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
-    if (ast->cnst && !top_level) {
-        visit_ASTConst(ast->cnst.get());
-    }
-    if (ast->var) {
-        visit_ASTVar(ast->var.get());
+void CodeGenerator::doTopVars(ASTVar *ast) {
+    debug("CodeGenerator::doTopVars");
+    for (auto const &c : ast->vars) {
+        module->getOrInsertGlobal(c.ident->value, builder.getInt64Ty());
+        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
+
+        gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
+        gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
+        gVar->setAlignment(8);
+
+        symboltable.put(c.ident->value, gVar);
     }
 }
 
@@ -127,6 +132,22 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
     }
 }
 
+void CodeGenerator::doProcedures(
+    std::vector<std::shared_ptr<ASTProcedure>> const &procs) {
+    for (auto const &proc : procs) {
+        visit_ASTProcedure(proc.get());
+    }
+}
+
+void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
+    if (ast->cnst && !top_level) {
+        visit_ASTConst(ast->cnst.get());
+    }
+    if (ast->var && !top_level) {
+        visit_ASTVar(ast->var.get());
+    }
+}
+
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     debug("CodeGenerator::visit_ASTConst");
     for (auto const &c : ast->consts) {
@@ -143,11 +164,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         builder.CreateStore(val, alloc);
 
         symboltable.put(name, alloc);
-
-        // GlobalVariable *gVar = module->getNamedGlobal(name);
-        // builder.CreateStore(val, gVar);
     }
-    debug("finish const");
 }
 
 void CodeGenerator::visit_ASTVar(ASTVar *ast) {

@@ -5,5 +5,5 @@ VAR
     x : INTEGER;
     y : INTEGER;
 BEGIN
-    RETURN alpha * x; (* should be 0 as vars are initialised to 0 *)
+    RETURN x - alpha;
 END c05.

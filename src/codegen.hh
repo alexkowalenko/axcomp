@@ -30,13 +30,17 @@ class CodeGenerator : ASTVisitor {
     };
 
     void visit_ASTModule(ASTModule *ast) override;
-    void visit_ASTDeclaration(ASTDeclaration *ast) override;
 
-    void doProcedures(std::vector<std::shared_ptr<ASTProcedure>> const &procs);
+    void doTopDecs(ASTDeclaration *ast);
+    void doTopVars(ASTVar *ast);
     void doTopConsts(ASTConst *ast);
 
+    void visit_ASTDeclaration(ASTDeclaration *ast) override;
     void visit_ASTConst(ASTConst *ast) override;
     void visit_ASTVar(ASTVar *ast) override;
+
+    void doProcedures(std::vector<std::shared_ptr<ASTProcedure>> const &procs);
+
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTAssignment(ASTAssignment *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
