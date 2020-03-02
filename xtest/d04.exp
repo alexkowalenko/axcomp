@@ -7,10 +7,10 @@ target triple = "x86_64-apple-darwin18.7.0"
 
 define void @f() {
 entry:
-  %yy = alloca i64
-  store i64 4, i64* %yy
-  %yy1 = load i64, i64* %yy
-  ret i64 %yy1
+  %y = alloca i64
+  store i64 4, i64* %y
+  %y1 = load i64, i64* %y
+  ret i64 %y1
 }
 
 define i64 @output() {

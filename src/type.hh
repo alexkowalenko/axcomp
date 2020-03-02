@@ -12,7 +12,7 @@ namespace ax {
 
 enum class SimpleTypeTag { void_t, integer, module, procedure };
 
-std::string string(SimpleTypeTag &t);
+std::string to_string(SimpleTypeTag t);
 
 class Type {
   public:

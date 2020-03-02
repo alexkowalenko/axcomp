@@ -59,8 +59,9 @@ class CodeGenerator : ASTVisitor {
     AllocaInst *createEntryBlockAlloca(Function *   TheFunction,
                                        std::string &VarName);
 
-    Options &            options;
-    SymbolTable<Value *> symboltable;
+    Options &                             options;
+    std::shared_ptr<SymbolTable<Value *>> top_symboltable;
+    std::shared_ptr<SymbolTable<Value *>> current_symboltable;
 
     std::string             filename;
     LLVMContext             context;

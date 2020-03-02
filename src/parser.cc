@@ -5,6 +5,7 @@
 //
 
 #include "parser.hh"
+#include "type.hh"
 
 #include <fmt/core.h>
 
@@ -136,8 +137,9 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         get_token(TokenType::semicolon);
 
         // Assume all consts are INTEGER;
-
-        symbols.put(dec.ident->value, Symbol(dec.ident->value, "INTEGER"));
+        symbols.put(
+            dec.ident->value,
+            Symbol(dec.ident->value, to_string(SimpleTypeTag::integer)));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -162,7 +164,6 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         dec.type = tok.val;
         get_token(TokenType::semicolon);
 
-        // Assume all consts are INTEGER;
         symbols.put(dec.ident->value, Symbol(dec.ident->value, dec.type));
 
         var->vars.push_back(dec);

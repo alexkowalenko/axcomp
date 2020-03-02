@@ -41,8 +41,10 @@ inline const std::string file_ext_llvmri{".ll"};
 inline const std::string file_ext_obj{".o"};
 
 CodeGenerator::CodeGenerator(Options &o)
-    : options(o), symboltable(nullptr), filename("output"), builder(context),
-      last_value(nullptr){};
+    : options(o), filename("output"), builder(context), last_value(nullptr) {
+    top_symboltable = std::make_shared<SymbolTable<Value *>>(nullptr);
+    current_symboltable = top_symboltable;
+}
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Set up code generation
@@ -112,7 +114,7 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
         gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
         gVar->setAlignment(8);
 
-        symboltable.put(c.ident->value, gVar);
+        current_symboltable->put(c.ident->value, gVar);
     }
 }
 
@@ -128,7 +130,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         gVar->setAlignment(8);
         gVar->setConstant(true);
 
-        symboltable.put(c.ident->value, gVar);
+        current_symboltable->put(c.ident->value, gVar);
     }
 }
 
@@ -163,7 +165,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         auto alloc = createEntryBlockAlloca(function, name);
         builder.CreateStore(val, alloc);
 
-        symboltable.put(name, alloc);
+        current_symboltable->put(name, alloc);
     }
 }
 
@@ -180,7 +182,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
                             alloc);
         alloc->setName(name);
         debug("set name: {}", name);
-        symboltable.put(name, alloc);
+        current_symboltable->put(name, alloc);
     }
     debug("finish var");
 }
@@ -201,6 +203,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
     builder.SetInsertPoint(block);
 
+    auto former_symboltable = current_symboltable;
+    current_symboltable =
+        std::make_shared<SymbolTable<Value *>>(former_symboltable);
+
     // Do declarations
     visit_ASTDeclaration(ast->decs.get());
 
@@ -209,18 +215,17 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         x->accept(this);
     }
 
-    // Put in return statement at end of function, in case it is missing.
-    // builder.CreateRet(last_value);
-
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
+
+    current_symboltable = former_symboltable;
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     visit_ASTExpr(ast->expr.get());
     auto val = last_value;
 
-    auto var = symboltable.find(ast->ident->value);
+    auto var = current_symboltable->find(ast->ident->value);
     if (!var) {
         throw CodeGenException(
             fmt::format("identifier: {} not found." + ast->ident->value));
@@ -332,7 +337,7 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
 }
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
-    if (auto res = symboltable.find(ast->value)) {
+    if (auto res = current_symboltable->find(ast->value)) {
         last_value = builder.CreateLoad(*res, ast->value);
         return;
     }
@@ -360,6 +365,7 @@ void CodeGenerator::init(std::string const &module_name) {
 }
 
 void CodeGenerator::print_code() {
+    debug("CodeGenerator::print_code");
     auto            f = filename + file_ext_llvmri;
     std::error_code EC;
     raw_fd_ostream  out_file(f, EC, sys::fs::OF_None);
@@ -368,9 +374,12 @@ void CodeGenerator::print_code() {
         throw CodeGenException("Could not open file: " + EC.message(), 0);
     }
     module->print(out_file, nullptr);
+    out_file.flush();
 }
 
 void CodeGenerator::generate_objectcode() {
+    debug("CodeGenerator::generate_objectcode");
+
     // Define the target triple
     auto targetTriple = sys::getDefaultTargetTriple();
 
