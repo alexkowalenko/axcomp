@@ -126,7 +126,11 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
 
         c.expr->accept(this);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
-        gVar->setInitializer(static_cast<ConstantInt *>(last_value));
+        if (isa<ConstantInt>(last_value)) {
+            gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
+        } else {
+            throw CodeGenException("Expression based CONSTs not supported.", 0);
+        }
         gVar->setAlignment(8);
         gVar->setConstant(true);
 

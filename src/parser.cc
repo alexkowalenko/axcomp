@@ -240,7 +240,8 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         debug("Parser::parse_statement next {}", std::string(tok));
         if (tok.type == TokenType::assign) {
             return parse_assignment(ident);
-        } else if (tok.type == TokenType::l_paren) {
+        }
+        if (tok.type == TokenType::l_paren) {
             return parse_call(ident);
         }
         [[fallthrough]];

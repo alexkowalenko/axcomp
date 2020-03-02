@@ -27,7 +27,7 @@ class ASTInteger : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTInteger(this); };
 
-    long value;
+    long value = 0;
 };
 
 class ASTIdentifier : public ASTBase {
