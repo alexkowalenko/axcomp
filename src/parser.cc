@@ -119,7 +119,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
 };
 
 /**
- * @brief "CONST" (IDENT "=" expr ";")*
+ * @brief "CONST" (IDENT "=" INTEGER ";")*
  *
  * @return std::shared_ptr<ASTConst>
  */
@@ -132,7 +132,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         ConstDec dec;
         dec.ident = parse_identifier();
         get_token(TokenType::equals);
-        dec.expr = parse_expr();
+        dec.expr = parse_integer();
         get_token(TokenType::semicolon);
 
         // Assume all consts are INTEGER;

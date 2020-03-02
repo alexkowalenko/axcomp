@@ -41,7 +41,7 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
         for (auto const &c : ast->consts) {
             visit_ASTIdentifier(c.ident.get());
             os << " = ";
-            visit_ASTExpr(c.expr.get());
+            c.expr->accept(this);
             os << ";\n";
         }
     }

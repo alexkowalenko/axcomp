@@ -52,17 +52,17 @@ TEST(Parser, Var) {
          "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nRETURN 12;\nEND y.",
          ""},
         {"MODULE y; "
-         "CONST z = 1+10; "
+         "CONST z = 10; "
          "VAR x : INTEGER; y: INTEGER; "
          "BEGIN RETURN 12; END y.",
-         "MODULE y;\nCONST\nz = 1+10;\nVAR\nx: INTEGER;\ny: "
+         "MODULE y;\nCONST\nz = 10;\nVAR\nx: INTEGER;\ny: "
          "INTEGER;\nBEGIN\nRETURN 12;\nEND y.",
          ""},
 
         // Errors
         {"MODULE y; VAR x : INTEGER BEGIN RETURN 12; END y.", "",
          "1: Unexpected token: BEGIN - expecting semicolon"},
-        {"MODULE y; VAR : INTEGER;  BEGIN RETURN 12; END y.", "",
+        {"MODULE y; VAR : INTEGER; BEGIN RETURN 12; END y.", "",
          "1: Unexpected token: : - expecting BEGIN"},
 
     };
@@ -80,10 +80,10 @@ TEST(Parser, Assignment) {
          "x+5;\nEND y.",
          ""},
         {"MODULE y; "
-         "CONST z = 1+10; "
+         "CONST z = 10; "
          "VAR x : INTEGER; y: INTEGER; "
          "BEGIN x := z * (2 + z); END y.",
-         "MODULE y;\nCONST\nz = 1+10;\nVAR\nx: INTEGER;\ny: "
+         "MODULE y;\nCONST\nz = 10;\nVAR\nx: INTEGER;\ny: "
          "INTEGER;\nBEGIN\nx := z* (2+z) ;\nEND y.",
          ""},
 

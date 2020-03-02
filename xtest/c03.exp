@@ -3,16 +3,15 @@ source_filename = "c03"
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-darwin18.7.0"
 
+@x = internal constant i64 3, align 8
+@y = internal constant i64 2, align 8
+
 define i64 @output() {
 entry:
-  %y = alloca i64
-  %x = alloca i64
-  store i64 3, i64* %x
-  store i64 2, i64* %y
-  %y1 = load i64, i64* %y
-  %x2 = load i64, i64* %x
-  %addtmp = add i64 %y1, %x2
-  %x3 = load i64, i64* %x
-  %multmp = mul i64 %addtmp, %x3
+  %y = load i64, i64* @y
+  %x = load i64, i64* @x
+  %addtmp = add i64 %y, %x
+  %x1 = load i64, i64* @x
+  %multmp = mul i64 %addtmp, %x1
   ret i64 %multmp
 }

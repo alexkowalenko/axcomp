@@ -30,7 +30,7 @@ module = "MODULE" IDENT ";"
                 statement_seq]
          "END" IDENT "."
 
-declarations = ["CONST" (IDENT "=" expr ";")* ]
+declarations = ["CONST" (IDENT "=" INTEGER ";")* ]
                ["TYPE" (IDENT "=" type ";")* ]
                ["VAR" (IDENT ":" type ";")* ]
 

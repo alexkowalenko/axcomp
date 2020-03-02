@@ -49,10 +49,12 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     init(ast->name);
 
     // Top level consts
-    // if (ast->decs->cnst) {
-    //     doTopConsts(ast->decs->cnst.get());
-    // }
+    top_level = true;
+    if (ast->decs->cnst) {
+        doTopConsts(ast->decs->cnst.get());
+    }
 
+    top_level = false;
     // Do procedures which generate functions first
     doProcedures(ast->procedures);
 
@@ -74,15 +76,13 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     builder.SetInsertPoint(block);
 
     // Do declarations - vars
+    top_level = true; // we have done the procedures
     visit_ASTDeclaration(ast->decs.get());
 
     // Go through the expressions
     for (auto const &x : ast->stats) {
         x->accept(this);
     }
-
-    // Put in return statement at end of function, in case it is missing.
-    // builder.CreateRet(last_value);
 
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
@@ -103,7 +103,7 @@ void CodeGenerator::doProcedures(
 }
 
 void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
-    if (ast->cnst) {
+    if (ast->cnst && !top_level) {
         visit_ASTConst(ast->cnst.get());
     }
     if (ast->var) {
@@ -112,11 +112,14 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
 }
 
 void CodeGenerator::doTopConsts(ASTConst *ast) {
+    debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
         module->getOrInsertGlobal(c.ident->value, builder.getInt64Ty());
         GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
+
+        c.expr->accept(this);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
-        gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
+        gVar->setInitializer(static_cast<ConstantInt *>(last_value));
         gVar->setAlignment(8);
         gVar->setConstant(true);
 
@@ -125,8 +128,9 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
 }
 
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
+    debug("CodeGenerator::visit_ASTConst");
     for (auto const &c : ast->consts) {
-        visit_ASTExpr(c.expr.get());
+        c.expr->accept(this);
         auto val = last_value;
 
         auto name = c.ident->value;

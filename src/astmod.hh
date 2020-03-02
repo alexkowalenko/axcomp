@@ -178,11 +178,11 @@ class ASTVar : public ASTBase {
 
 struct ConstDec {
     std::shared_ptr<ASTIdentifier> ident;
-    std::shared_ptr<ASTExpr>       expr;
+    std::shared_ptr<ASTInteger>    expr;
 };
 
 /**
- * @brief "CONST" (IDENT "=" expr ";")*
+ * @brief "CONST" (IDENT "=" INTEGER ";")*
  *
  */
 class ASTConst : public ASTBase {
