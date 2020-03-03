@@ -175,6 +175,8 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
 /**
  * @brief "PROCEDURE" ident [formalParameters]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
+ * 
+ * formalParameters = "(" ")" [ ":" IDENT ]
  *
  * @return std::shared_ptr<ASTProcedure>
  */
@@ -188,6 +190,21 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     symbols.put(proc->name, Symbol(proc->name, "PROCEDURE"));
 
     // Parameters
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::l_paren) {
+        // Do parameters
+        lexer.get_token();
+        get_token(TokenType::r_paren);
+    }
+
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::colon) {
+        // Do return
+        lexer.get_token();
+        tok = get_token(TokenType::ident);
+        proc->return_type = tok.val;
+    }
+
     get_token(TokenType::semicolon);
 
     // Declarations

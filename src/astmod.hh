@@ -145,22 +145,23 @@ class ASTCall : public ASTStatement {
 //////////////////////
 // Declaration objects
 
+struct VarDec {
+    std::shared_ptr<ASTIdentifier> ident;
+    std::string                    type;
+};
+
 class ASTProcedure : public ASTBase {
   public:
     ~ASTProcedure() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
-    std::string name;
-    bool        is_external = true;
-    // std::vector<Params>
+    std::string                                name;
+    bool                                       is_external = true;
+    std::string                                return_type;
+    std::vector<VarDec>                        params;
     std::shared_ptr<ASTDeclaration>            decs;
     std::vector<std::shared_ptr<ASTStatement>> stats;
-};
-
-struct VarDec {
-    std::shared_ptr<ASTIdentifier> ident;
-    std::string                    type;
 };
 
 /**

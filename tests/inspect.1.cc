@@ -58,6 +58,18 @@ TEST(Inspector, Return) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ReturnType) {
+    std::vector<ParseTests> tests = {
+        {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN 0; END f; BEGIN RETURN 333; END x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 0;\nEND f.\nBEGIN\nRETURN 333;\nEND x.", ""},
+
+        // Error
+        {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN RETURN 333; END x.",
+         "", "0: Unknown type: complex for return from function f"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Call) {
     std::vector<ParseTests> tests = {
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "

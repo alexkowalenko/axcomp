@@ -76,12 +76,25 @@ INTEGER = digit+
 ```pascal
 (* Sample program *)
 MODULE test;
-CONST
-    x = 1;
-VAR
-    z : INTEGER;
+    CONST
+        x = 1;
+    VAR
+        z : INTEGER;
+
+    PROCEDURE f;
+        VAR yy : INTEGER;
+    BEGIN
+      RETURN yy + 2;
+    END f;
+
+    PROCEDURE g(): INTEGER;
+    BEGIN
+      RETURN 2;
+    END f;
+
 BEGIN
     z := 12;
+    f();
     RETURN (3 * x) + ((2+ (x + 1)) * 4);
 END test.
 ```

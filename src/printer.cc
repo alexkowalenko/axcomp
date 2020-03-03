@@ -58,7 +58,11 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
 }
 
 void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
-    os << fmt::format("PROCEDURE {};\n", ast->name);
+    os << fmt::format("PROCEDURE {}", ast->name);
+    if (!ast->return_type.empty()) {
+        os << fmt::format("(): {}", ast->return_type);
+    }
+    os << ";\n";
     ast->decs->accept(this);
     os << fmt::format("BEGIN\n");
     for (auto const &x : ast->stats) {

@@ -138,3 +138,53 @@ END x.)",
          "", "3: Unexpected token: )"}};
     do_parse_tests(tests);
 }
+
+TEST(Parser, ReturnType) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE x;
+            PROCEDURE f(): INTEGER;
+            BEGIN RETURN 12;
+            END f;
+            BEGIN
+            f();
+            END x.)",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nf();\nEND x.",
+         ""},
+
+        {R"(MODULE x;
+        PROCEDURE f(): INTEGER;
+        BEGIN RETURN 12;
+        END f;
+        PROCEDURE g;
+        BEGIN RETURN 24;
+        END g;
+        BEGIN
+            g();
+        RETURN 0;
+        END x.)",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN 0;\nEND x.",
+         ""},
+
+        // Error
+        {R"(MODULE x;
+        PROCEDURE f() INTEGER;
+        BEGIN
+            RETURN 12;
+        END f;
+        BEGIN
+            f();
+        END x.)",
+         "", "2: Unexpected token: INTEGER - expecting semicolon"},
+        {R"(MODULE x;
+        PROCEDURE f() :
+        BEGIN
+            RETURN 12;
+        END f;
+        BEGIN
+            f();
+        END x.)",
+         "", "3: Unexpected token: BEGIN - expecting indent"},};
+    do_parse_tests(tests);
+}
+

@@ -193,12 +193,18 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
-    // Make the function type:  (void) : void
-    // Change later when implement parameters
+    // Make the function arguments
     std::vector<Type *> proto;
+    
+    Type* returnType;
+    if (ast->return_type.empty()) {
+        returnType = Type::getVoidTy(context);
+    } else {
+        // assume INTEGER for now.
+        returnType = Type::getInt64Ty(context);
+    }
 
-    FunctionType *ft =
-        FunctionType::get(Type::getVoidTy(context), proto, false);
+    FunctionType *ft = FunctionType::get(returnType, proto, false);
 
     Function *f = Function::Create(ft, Function::ExternalLinkage, ast->name,
                                    module.get());
@@ -349,8 +355,8 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
 }
 
 /**
- * @brief Create an alloca instruction in the entry block of the function.  This
- * is used for mutable variables etc.
+ * @brief Create an alloca instruction in the entry block of the function.
+ * This is used for mutable variables etc.
  *
  * @param function
  * @param name

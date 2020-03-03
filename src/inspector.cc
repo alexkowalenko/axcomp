@@ -52,6 +52,15 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
+
+    // Check return type
+    if(!ast->return_type.empty()) {
+        auto result = types.find(ast->return_type);
+        if (!result) {
+            throw TypeError(fmt::format("Unknown type: {} for return from function {}", ast->return_type, ast->name), 0);
+        }
+    }
+
     ast->decs->accept(this);
     for (auto const &x : ast->stats) {
         has_return = false;
