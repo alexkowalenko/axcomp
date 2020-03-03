@@ -130,16 +130,16 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     std::shared_ptr<ASTConst> cnst = std::make_shared<ASTConst>();
     auto                      tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
-        ConstDec dec;
-        dec.ident = parse_identifier();
+        ASTConst::ConstDec dec;
+        dec.first = parse_identifier();
         get_token(TokenType::equals);
-        dec.expr = parse_integer();
+        dec.second = parse_integer();
         get_token(TokenType::semicolon);
 
         // Assume all consts are INTEGER;
         symbols.put(
-            dec.ident->value,
-            Symbol(dec.ident->value, to_string(SimpleTypeTag::integer)));
+            dec.first->value,
+            Symbol(dec.first->value, to_string(SimpleTypeTag::integer)));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -158,13 +158,13 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
     auto                    tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         VarDec dec;
-        dec.ident = parse_identifier();
+        dec.first = parse_identifier();
         get_token(TokenType::colon);
         tok = get_token(TokenType::ident);
-        dec.type = tok.val;
+        dec.second = tok.val;
         get_token(TokenType::semicolon);
 
-        symbols.put(dec.ident->value, Symbol(dec.ident->value, dec.type));
+        symbols.put(dec.first->value, Symbol(dec.first->value, dec.second));
 
         var->vars.push_back(dec);
         tok = lexer.peek_token();
@@ -175,7 +175,7 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
 /**
  * @brief "PROCEDURE" ident [formalParameters]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
- * 
+ *
  * formalParameters = "(" ")" [ ":" IDENT ]
  *
  * @return std::shared_ptr<ASTProcedure>
@@ -361,7 +361,7 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 }
 
 /**
- * @brief factor -> IDENT | INTEGER | '(' expr ')'
+ * @brief factor -> IDENT | procedureCall | INTEGER | '(' expr ')'
  *
  * @return std::shared_ptr<ASTFactor>
  */
@@ -371,16 +371,31 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     auto                       tok = lexer.peek_token();
     switch (tok.type) {
     case TokenType::l_paren:
+        // Expression
         lexer.get_token(); // get (
-        factor->expr = parse_expr();
+        factor->factor = parse_expr();
         get_token(TokenType::r_paren);
         return factor;
     case TokenType::integer:
-        factor->integer = parse_integer();
+        // Integer
+        factor->factor = parse_integer();
         return factor;
-    case TokenType::ident:
-        factor->identifier = parse_identifier();
+    case TokenType::ident: {
+        // Identifier
+        auto ident = parse_identifier();
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::l_paren) {
+            // Procedure call
+            lexer.get_token(); // get (
+            get_token(TokenType::r_paren);
+            auto call = std::make_shared<ASTCall>();
+            call->name = ident;
+            factor->factor = call;
+        } else {
+            factor->factor = ident;
+        }
         return factor;
+    }
     default:
         throw ParseException(
             fmt::format("Unexpected token: {} - expecting ( or integer",

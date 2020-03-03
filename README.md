@@ -64,7 +64,7 @@ expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
 
 term = factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
 
-factor = IDENT | INTEGER | '(' expr ')'
+factor = IDENT | procedureCall | INTEGER | '(' expr ')'
 
 IDENT = letter (letter | digit | '_')*
 
@@ -95,7 +95,7 @@ MODULE test;
 BEGIN
     z := 12;
     f();
-    RETURN (3 * x) + ((2+ (x + 1)) * 4);
+    RETURN (3 * f()) + ((2 + (f() + 1)) * 4);
 END test.
 ```
 ## Notes

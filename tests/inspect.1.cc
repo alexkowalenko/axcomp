@@ -60,11 +60,15 @@ TEST(Inspector, Return) {
 
 TEST(Inspector, ReturnType) {
     std::vector<ParseTests> tests = {
-        {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN 0; END f; BEGIN RETURN 333; END x.",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 0;\nEND f.\nBEGIN\nRETURN 333;\nEND x.", ""},
+        {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN 0; END f; BEGIN "
+         "RETURN 333; END x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 0;\nEND "
+         "f.\nBEGIN\nRETURN 333;\nEND x.",
+         ""},
 
         // Error
-        {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN RETURN 333; END x.",
+        {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN "
+         "RETURN 333; END x.",
          "", "0: Unknown type: complex for return from function f"},
     };
     do_inspect_tests(tests);
@@ -77,6 +81,12 @@ TEST(Inspector, Call) {
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN 0;\nEND "
          "f.\nBEGIN\nf();\nRETURN x;\nEND y.",
          ""},
+        {"MODULE y; VAR x : INTEGER; "
+         "PROCEDURE f():INTEGER; BEGIN RETURN 0; END f; "
+         "BEGIN f(); RETURN f(); END y.",
+         "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN "
+         "0;\nEND f.\nBEGIN\nf();\nRETURN f();\nEND y.",
+         ""},
 
         // Errors
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
@@ -84,6 +94,10 @@ TEST(Inspector, Call) {
          "", "0: x is not a PROCEDURE"},
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
          "g(); RETURN x; END y.",
+         "", "0: undefined PROCEDURE g"},
+        {"MODULE y; VAR x : INTEGER; "
+         "PROCEDURE f():INTEGER; BEGIN RETURN 0; END f; "
+         "BEGIN RETURN g(); END y.",
          "", "0: undefined PROCEDURE g"},
     };
     do_inspect_tests(tests);

@@ -149,7 +149,8 @@ TEST(Parser, ReturnType) {
             BEGIN
             f();
             END x.)",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nf();\nEND x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
+         "f.\nBEGIN\nf();\nEND x.",
          ""},
 
         {R"(MODULE x;
@@ -163,7 +164,9 @@ TEST(Parser, ReturnType) {
             g();
         RETURN 0;
         END x.)",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN 0;\nEND x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
+         "f.\nPROCEDURE g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN "
+         "0;\nEND x.",
          ""},
 
         // Error
@@ -184,7 +187,34 @@ TEST(Parser, ReturnType) {
         BEGIN
             f();
         END x.)",
-         "", "3: Unexpected token: BEGIN - expecting indent"},};
+         "", "3: Unexpected token: BEGIN - expecting indent"},
+    };
     do_parse_tests(tests);
 }
 
+TEST(Parser, FunctionCall) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE x;
+            PROCEDURE f(): INTEGER;
+            BEGIN RETURN 12;
+            END f;
+            BEGIN
+            RETURN f() + (f() * f());
+            END x.)",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
+         "f.\nBEGIN\nRETURN f()+ (f()*f()) ;\nEND x.",
+         ""},
+
+        // Error
+        {R"(MODULE x;
+            PROCEDURE f(): INTEGER;
+            BEGIN RETURN 12;
+            END f;
+            BEGIN
+            RETURN f(;
+            END x.)",
+         "", "6: Unexpected token: semicolon - expecting )"},
+    };
+    do_parse_tests(tests);
+}

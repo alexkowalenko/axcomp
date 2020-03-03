@@ -13,6 +13,9 @@
 
 namespace ax {
 
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+
 inline constexpr bool debug_inspect{false};
 
 template <typename... T> inline void debug(const T &... msg) {
@@ -41,11 +44,11 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
     if (!ast->vars.empty()) {
         for (auto const &c : ast->vars) {
-            c.ident->accept(this);
+            c.first->accept(this);
 
-            auto result = types.find(c.type);
+            auto result = types.find(c.second);
             if (!result) {
-                throw TypeError(fmt::format("Unknown type: {}", c.type), 0);
+                throw TypeError(fmt::format("Unknown type: {}", c.second), 0);
             }
         }
     }
@@ -54,10 +57,13 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
 void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Check return type
-    if(!ast->return_type.empty()) {
+    if (!ast->return_type.empty()) {
         auto result = types.find(ast->return_type);
         if (!result) {
-            throw TypeError(fmt::format("Unknown type: {} for return from function {}", ast->return_type, ast->name), 0);
+            throw TypeError(
+                fmt::format("Unknown type: {} for return from function {}",
+                            ast->return_type, ast->name),
+                0);
         }
     }
 
@@ -94,13 +100,18 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 }
 
 void Inspector::visit_ASTFactor(ASTFactor *ast) {
-    if (ast->identifier != nullptr) {
-        if (auto res = symbols.find(ast->identifier->value); !res) {
-            throw CodeGenException(
-                fmt::format("undefined identifier {}", ast->identifier->value),
-                0);
-        }
-    }
+    std::visit(
+        overloaded{
+            [](auto arg) { /* do nothing for others*/ },
+            [this](std::shared_ptr<ASTCall> const &arg) { arg->accept(this); },
+            [this](std::shared_ptr<ASTIdentifier> const &arg) {
+                if (auto res = this->symbols.find(arg->value); !res) {
+                    throw CodeGenException(
+                        fmt::format("undefined identifier {}", arg->value), 0);
+                }
+            },
+        },
+        ast->factor);
 }
 
 } // namespace ax

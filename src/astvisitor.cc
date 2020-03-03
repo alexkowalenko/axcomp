@@ -34,8 +34,8 @@ void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
 void ASTVisitor::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         for (auto const &c : ast->consts) {
-            c.ident->accept(this);
-            c.expr->accept(this);
+            c.first->accept(this);
+            c.second->accept(this);
         }
     }
 }
@@ -43,7 +43,7 @@ void ASTVisitor::visit_ASTConst(ASTConst *ast) {
 void ASTVisitor::visit_ASTVar(ASTVar *ast) {
     if (!ast->vars.empty()) {
         for (auto const &c : ast->vars) {
-            c.ident->accept(this);
+            c.first->accept(this);
         }
     }
 }
@@ -85,14 +85,8 @@ void ASTVisitor::visit_ASTTerm(ASTTerm *ast) {
 }
 
 void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
-    if (ast->integer) {
-        visit_ASTInteger(ast->integer.get());
-    } else if (ast->identifier) {
-        visit_ASTIdentifier(ast->identifier.get());
-    } else {
-
-        visit_ASTExpr(ast->expr.get());
-    }
+    // Visit the appropriate variant
+    std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
 }
 
 void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}

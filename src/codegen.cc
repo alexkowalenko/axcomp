@@ -107,24 +107,24 @@ void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
 void CodeGenerator::doTopVars(ASTVar *ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
-        module->getOrInsertGlobal(c.ident->value, builder.getInt64Ty());
-        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
+        module->getOrInsertGlobal(c.first->value, builder.getInt64Ty());
+        GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
         gVar->setAlignment(8);
 
-        current_symboltable->put(c.ident->value, gVar);
+        current_symboltable->put(c.first->value, gVar);
     }
 }
 
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
-        module->getOrInsertGlobal(c.ident->value, builder.getInt64Ty());
-        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
+        module->getOrInsertGlobal(c.first->value, builder.getInt64Ty());
+        GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
-        c.expr->accept(this);
+        c.second->accept(this);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         if (isa<ConstantInt>(last_value)) {
             gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
@@ -134,7 +134,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         gVar->setAlignment(8);
         gVar->setConstant(true);
 
-        current_symboltable->put(c.ident->value, gVar);
+        current_symboltable->put(c.first->value, gVar);
     }
 }
 
@@ -157,10 +157,10 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     debug("CodeGenerator::visit_ASTConst");
     for (auto const &c : ast->consts) {
-        c.expr->accept(this);
+        c.second->accept(this);
         auto val = last_value;
 
-        auto name = c.ident->value;
+        auto name = c.first->value;
         debug("create const: {}", name);
 
         // Create variable for module
@@ -177,7 +177,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     for (auto const &c : ast->vars) {
 
         // Create variable for module
-        auto name = c.ident->value;
+        auto name = c.first->value;
         debug("create var: {}", name);
 
         auto function = builder.GetInsertBlock()->getParent();
@@ -195,8 +195,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Make the function arguments
     std::vector<Type *> proto;
-    
-    Type* returnType;
+
+    Type *returnType;
     if (ast->return_type.empty()) {
         returnType = Type::getVoidTy(context);
     } else {
@@ -276,7 +276,7 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     //        return nullptr;
     //}
 
-    builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    last_value = builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
@@ -333,13 +333,8 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
 }
 
 void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
-    if (ast->integer) {
-        visit_ASTInteger(ast->integer.get());
-    } else if (ast->expr) {
-        visit_ASTExpr(ast->expr.get());
-    } else if (ast->identifier) {
-        visit_ASTIdentifier(ast->identifier.get());
-    }
+    // Visit the appropriate variant
+    std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
 }
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {

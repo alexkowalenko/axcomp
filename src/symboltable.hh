@@ -25,7 +25,7 @@ template <typename T> class SymbolTable {
         table[name] = val;
     };
 
-    std::optional<T> find(const std::string &name) const;
+    [[nodiscard]] std::optional<T> find(const std::string &name) const;
     bool             set(const std::string &name, T const &val);
     void             remove(const std::string &name);
 

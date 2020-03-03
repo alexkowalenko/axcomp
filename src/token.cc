@@ -6,77 +6,54 @@
 
 #include "token.hh"
 
+#include <unordered_map>
+
 #include <fmt/core.h>
 
 namespace ax {
 
-std::string string(TokenType &t) {
+static std::unordered_map<TokenType, std::string> mapping{
+    {TokenType::null, "null"},
+    {TokenType::integer, "integer"},
+    {TokenType::ident, "indent"},
+    {TokenType::semicolon, "semicolon"},
+    {TokenType::period, "period"},
+    {TokenType::comma, ","},
 
-    switch (t) {
-    case TokenType::null:
-        return "null";
-    case TokenType::integer:
-        return "integer";
-    case TokenType::ident:
-        return "indent";
-    case TokenType::semicolon:
-        return "semicolon";
-    case TokenType::period:
-        return "period";
-    case TokenType::comma:
-        return ",";
+    {TokenType::plus, "+"},
+    {TokenType::dash, "-"},
+    {TokenType::asterisk, "*"},
 
-    case TokenType::plus:
-        return "+";
-    case TokenType::dash:
-        return "-";
-    case TokenType::asterisk:
-        return "*";
-
-    case TokenType::l_paren:
-        return "(";
-    case TokenType::r_paren:
-        return ")";
-    case TokenType::colon:
-        return ":";
-    case TokenType::equals:
-        return "=";
-    case TokenType::assign:
-        return ":=";
+    {TokenType::l_paren, "("},
+    {TokenType::r_paren, ")"},
+    {TokenType::colon, ":"},
+    {TokenType::equals, "="},
+    {TokenType::assign, ":="},
 
     // Keywords
-    case TokenType::module:
-        return "MODULE";
-    case TokenType::begin:
-        return "BEGIN";
-    case TokenType::end:
-        return "END";
-    case TokenType::div:
-        return "DIV";
-    case TokenType::mod:
-        return "MOD";
-    case TokenType::cnst:
-        return "CONST";
-    case TokenType::type:
-        return "TYPE";
-    case TokenType::var:
-        return "VAR";
-    case TokenType::ret:
-        return "RETURN";
-    case TokenType::procedure:
-        return "PROCEDURE";
+    {TokenType::module, "MODULE"},
+    {TokenType::begin, "BEGIN"},
+    {TokenType::end, "END"},
+    {TokenType::div, "DIV"},
+    {TokenType::mod, "MOD"},
+    {TokenType::cnst, "CONST"},
+    {TokenType::type, "TYPE"},
+    {TokenType::var, "VAR"},
+    {TokenType::ret, "RETURN"},
+    {TokenType::procedure, "PROCEDURE"},
 
-    case TokenType::eof:
-        return "EOF";
-    default:
-        return "Unknown token";
+    {TokenType::eof, "EOF"},
+};
+
+std::string string(TokenType &t) {
+    if (auto res = mapping.find(t); res != mapping.end()) {
+        return res->second;
     }
+    return "Unknown token";
 }
 
 Token::operator std::string() {
     switch (type) {
-    case TokenType::null:
-        return "null";
     case TokenType::integer:
         return fmt::format("integer({})", val);
     case TokenType::ident:

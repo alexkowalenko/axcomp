@@ -12,6 +12,9 @@
 
 namespace ax {
 
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << fmt::format("MODULE {};\n", ast->name);
     visit_ASTDeclaration(ast->decs.get());
@@ -39,9 +42,9 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         os << "CONST\n";
         for (auto const &c : ast->consts) {
-            visit_ASTIdentifier(c.ident.get());
+            visit_ASTIdentifier(c.first.get());
             os << " = ";
-            c.expr->accept(this);
+            c.second->accept(this);
             os << ";\n";
         }
     }
@@ -51,8 +54,8 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
     if (!ast->vars.empty()) {
         os << "VAR\n";
         for (auto const &c : ast->vars) {
-            visit_ASTIdentifier(c.ident.get());
-            os << fmt::format(": {};\n", c.type);
+            visit_ASTIdentifier(c.first.get());
+            os << fmt::format(": {};\n", c.second);
         }
     }
 }
@@ -114,15 +117,13 @@ void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
 }
 
 void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
-    if (ast->integer) {
-        visit_ASTInteger(ast->integer.get());
-    } else if (ast->identifier) {
-        visit_ASTIdentifier(ast->identifier.get());
-    } else {
-        os << " (";
-        visit_ASTExpr(ast->expr.get());
-        os << ") ";
-    }
+    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
+                          [this](std::shared_ptr<ASTExpr> const &arg) {
+                              this->os << " (";
+                              arg->accept(this);
+                              this->os << ") ";
+                          }},
+               ast->factor);
 }
 
 void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {

@@ -8,6 +8,7 @@
 
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "ast.hh"
@@ -48,14 +49,13 @@ class ASTIdentifier : public ASTBase {
  */
 class ASTFactor : public ASTBase {
   public:
-    ASTFactor() : identifier(nullptr), integer(nullptr), expr(nullptr){};
     ~ASTFactor() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
-    std::shared_ptr<ASTIdentifier> identifier;
-    std::shared_ptr<ASTInteger>    integer;
-    std::shared_ptr<ASTExpr>       expr;
+    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>,
+                 std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>>
+        factor;
 };
 
 struct Term_mult {
@@ -145,10 +145,7 @@ class ASTCall : public ASTStatement {
 //////////////////////
 // Declaration objects
 
-struct VarDec {
-    std::shared_ptr<ASTIdentifier> ident;
-    std::string                    type;
-};
+using VarDec = std::pair<std::shared_ptr<ASTIdentifier>, std::string>;
 
 class ASTProcedure : public ASTBase {
   public:
@@ -177,11 +174,6 @@ class ASTVar : public ASTBase {
     std::vector<VarDec> vars;
 };
 
-struct ConstDec {
-    std::shared_ptr<ASTIdentifier> ident;
-    std::shared_ptr<ASTInteger>    expr;
-};
-
 /**
  * @brief "CONST" (IDENT "=" INTEGER ";")*
  *
@@ -192,6 +184,8 @@ class ASTConst : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTConst(this); };
 
+    using ConstDec =
+        std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>>;
     std::vector<ConstDec> consts;
 };
 

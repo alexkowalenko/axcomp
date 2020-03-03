@@ -4,6 +4,8 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
+#include <unordered_map>
+
 #include <fmt/core.h>
 
 #include "error.hh"
@@ -12,6 +14,32 @@
 namespace ax {
 
 static Token nullToken = Token(TokenType::null);
+
+static std::unordered_map<std::string, Token> keyword_map = {
+    {"MODULE", Token(TokenType::module, "MODULE")},
+    {"BEGIN", Token(TokenType::begin, "BEGIN")},
+    {"END", Token(TokenType::end, "END")},
+    {"DIV", Token(TokenType::div, "DIV")},
+    {"MOD", Token(TokenType::mod, "MOD")},
+    {"CONST", Token(TokenType::cnst, "CONST")},
+    {"TYPE", Token(TokenType::type, "TYPE")},
+    {"VAR", Token(TokenType::var, "VAR")},
+    {"RETURN", Token(TokenType::ret, "RETURN")},
+    {"PROCEDURE", Token(TokenType::procedure, "PROCEDURE")},
+};
+
+static std::unordered_map<char, Token> token_map = {
+    {-1, Token(TokenType::eof)},
+    {';', Token(TokenType::semicolon, ";")},
+    {'.', Token(TokenType::period, ".")},
+    {',', Token(TokenType::comma, ",")},
+    {'+', Token(TokenType::plus, "+")},
+    {'-', Token(TokenType::dash, "-")},
+    {'*', Token(TokenType::asterisk, "*")},
+    {'(', Token(TokenType::l_paren, "(")},
+    {')', Token(TokenType::r_paren, ")")},
+    {'=', Token(TokenType::equals, "=")},
+};
 
 Lexer::Lexer(std::istream &stream) : is(stream), next_token(nullToken){};
 
@@ -24,7 +52,8 @@ void Lexer::get_comment() {
             return;
         }
         if (c == '(' && is.peek() == '*') {
-            // suport nested comments, call recursively
+            // suport nested comments, call
+            // recursively
             get_comment();
         }
     } while (is);
@@ -34,7 +63,8 @@ char Lexer::get_char() {
     char c = 0;
     while (is) {
         c = is.get();
-        // fmt::print("Char: {} next: {}\n", c, is.peek());
+        // fmt::print("Char: {} next: {}\n", c,
+        // is.peek());
         if (c == '\n') {
             lineno++;
             continue;
@@ -70,35 +100,9 @@ Token Lexer::scan_ident(char c) {
         ident += c;
         c = is.peek();
     }
-    if (ident == "MODULE") {
-        return Token(TokenType::module, ident);
-    }
-    if (ident == "BEGIN") {
-        return Token(TokenType::begin, ident);
-    }
-    if (ident == "END") {
-        return Token(TokenType::end, ident);
-    }
-    if (ident == "DIV") {
-        return Token(TokenType::div, ident);
-    }
-    if (ident == "MOD") {
-        return Token(TokenType::mod, ident);
-    }
-    if (ident == "CONST") {
-        return Token(TokenType::cnst, ident);
-    }
-    if (ident == "TYPE") {
-        return Token(TokenType::type, ident);
-    }
-    if (ident == "VAR") {
-        return Token(TokenType::var, ident);
-    }
-    if (ident == "RETURN") {
-        return Token(TokenType::ret, ident);
-    }
-    if (ident == "PROCEDURE") {
-        return Token(TokenType::procedure, ident);
+    // Look for keywords
+    if (auto res = keyword_map.find(ident); res != keyword_map.end()) {
+        return res->second;
     }
     return Token(TokenType::ident, ident);
 }
@@ -113,43 +117,27 @@ Token Lexer::get_token() {
 
     // Get next token
     auto c = get_char();
-    switch (c) {
-    case -1:
-        return Token(TokenType::eof);
-    case ';':
-        return Token(TokenType::semicolon, ";");
-    case '.':
-        return Token(TokenType::period, ".");
-    case ',':
-        return Token(TokenType::comma, ",");
-    case '+':
-        return Token(TokenType::plus, "+");
-    case '-':
-        return Token(TokenType::dash, "-");
-    case '*':
-        return Token(TokenType::asterisk, "*");
-    case '(':
-        return Token(TokenType::l_paren, "(");
-    case ')':
-        return Token(TokenType::r_paren, ")");
-    case '=':
-        return Token(TokenType::equals, "=");
-    case ':':
+
+    // Check single digit character tokens
+    if (auto res = token_map.find(c); res != token_map.end()) {
+        return res->second;
+    }
+
+    // Check multiple character tokens
+    if (c == ':') {
         if (is.peek() == '=') {
             get_char();
             return Token(TokenType::assign, ":=");
         }
         return Token(TokenType::colon, ":");
-
-    default:
-        if (std::isdigit(c)) {
-            return scan_digit(c);
-        }
-        if (std::isalpha(c)) {
-            return scan_ident(c);
-        }
-        throw LexicalException(std::string("Unknown character ") + c, lineno);
     }
+    if (std::isdigit(c)) {
+        return scan_digit(c);
+    }
+    if (std::isalpha(c)) {
+        return scan_ident(c);
+    }
+    throw LexicalException(std::string("Unknown character ") + c, lineno);
 }
 
 Token Lexer::peek_token() {
