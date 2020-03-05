@@ -27,13 +27,11 @@ template <typename... T> inline void debug(const T &... msg) {
 void Inspector::visit_ASTModule(ASTModule *ast) {
     debug("Inspector::visit_ASTModule");
     ast->decs->accept(this);
-    for (auto const &proc : ast->procedures) {
-        proc->accept(this);
-    }
+    std::for_each(ast->procedures.begin(), ast->procedures.end(),
+                  [this](auto const &proc) { proc->accept(this); });
     has_return = false;
-    for (auto const &x : ast->stats) {
-        x->accept(this);
-    }
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this](auto const &x) { x->accept(this); });
     if (!has_return) {
         throw CodeGenException(
             fmt::format("MODULE {} has no RETURN function", ast->name), 0);
@@ -43,14 +41,16 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
 void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
     if (!ast->vars.empty()) {
-        for (auto const &c : ast->vars) {
-            c.first->accept(this);
+        std::for_each(ast->vars.begin(), ast->vars.end(),
+                      [this](auto const &v) {
+                          v.first->accept(this);
 
-            auto result = types.find(c.second);
-            if (!result) {
-                throw TypeError(fmt::format("Unknown type: {}", c.second), 0);
-            }
-        }
+                          auto result = types.find(v.second);
+                          if (!result) {
+                              throw TypeError(
+                                  fmt::format("Unknown type: {}", v.second), 0);
+                          }
+                      });
     }
 }
 
@@ -65,18 +65,32 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                             ast->return_type, ast->name),
                 0);
         }
-    }
+    };
+
+    // Check parameter types
+    std::for_each(
+        ast->params.begin(), ast->params.end(), [this, ast](auto const &p) {
+            if (auto r = types.find(p.second); !r) {
+                throw TypeError(
+                    fmt::format(
+                        "Unknown type: {} for paramater {} from function {}",
+                        p.second, p.first->value, ast->name),
+                    0);
+            }
+        });
 
     ast->decs->accept(this);
-    for (auto const &x : ast->stats) {
-        has_return = false;
-        x->accept(this);
-        if (!has_return) {
-            throw CodeGenException(
-                fmt::format("PROCEDURE {} has no RETURN function", ast->name),
-                0);
-        }
-    }
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this, ast](auto const &x) {
+                      has_return = false;
+                      x->accept(this);
+                      if (!has_return) {
+                          throw CodeGenException(
+                              fmt::format("PROCEDURE {} has no RETURN function",
+                                          ast->name),
+                              0);
+                      }
+                  });
 }
 
 void Inspector::visit_ASTReturn(ASTReturn *ast) {

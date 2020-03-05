@@ -87,7 +87,7 @@ MODULE test;
       RETURN yy + 2;
     END f;
 
-    PROCEDURE g(): INTEGER;
+    PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
     BEGIN
       RETURN 2;
     END f;

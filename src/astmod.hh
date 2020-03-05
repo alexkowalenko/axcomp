@@ -58,11 +58,6 @@ class ASTFactor : public ASTBase {
         factor;
 };
 
-struct Term_mult {
-    TokenType                  sign;
-    std::shared_ptr<ASTFactor> factor;
-};
-
 /**
  * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
  *
@@ -73,13 +68,10 @@ class ASTTerm : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTTerm(this); };
 
+    using Term_mult = std::pair<TokenType, std::shared_ptr<ASTFactor>>;
+
     std::shared_ptr<ASTFactor> factor;
     std::vector<Term_mult>     rest;
-};
-
-struct Expr_add {
-    TokenType                sign;
-    std::shared_ptr<ASTTerm> term;
 };
 
 /**
@@ -91,6 +83,8 @@ class ASTExpr : public ASTBase {
     ~ASTExpr() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTExpr(this); };
+
+    using Expr_add = std::pair<TokenType, std::shared_ptr<ASTTerm>>;
 
     std::optional<TokenType> first_sign;
     std::shared_ptr<ASTTerm> term;

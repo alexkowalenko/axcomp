@@ -218,3 +218,74 @@ TEST(Parser, FunctionCall) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, FunctionParams) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
+         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x  INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "", "3: Unexpected token: INTEGER - expecting :"},
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : ) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "", "3: Unexpected token: ) - expecting indent"},
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER  y: INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "", "3: expecting ; or ) in parameter list"},
+    };
+    do_parse_tests(tests);
+}

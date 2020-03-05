@@ -79,10 +79,9 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     top_level = true; // we have done the procedures
     visit_ASTDeclaration(ast->decs.get());
 
-    // Go through the expressions
-    for (auto const &x : ast->stats) {
-        x->accept(this);
-    }
+    // Go through the statements
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this](auto const &x) { x->accept(this); });
 
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
@@ -140,9 +139,8 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
 
 void CodeGenerator::doProcedures(
     std::vector<std::shared_ptr<ASTProcedure>> const &procs) {
-    for (auto const &proc : procs) {
-        visit_ASTProcedure(proc.get());
-    }
+    std::for_each(procs.begin(), procs.end(),
+                  [this](auto const &x) { x->accept(this); });
 }
 
 void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
@@ -195,6 +193,11 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Make the function arguments
     std::vector<Type *> proto;
+    std::for_each(ast->params.begin(), ast->params.end(),
+                  [this, &proto](auto const &p) {
+                      // All types are INT64
+                      proto.push_back(Type::getInt64Ty(context));
+                  });
 
     Type *returnType;
     if (ast->return_type.empty()) {
@@ -217,13 +220,21 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     current_symboltable =
         std::make_shared<SymbolTable<Value *>>(former_symboltable);
 
+    // Set paramater names
+    unsigned i = 0;
+    std::for_each(
+        f->args().begin(), f->args().end(), [this, ast, &i](auto &arg) {
+            arg.setName(ast->params[i++].first->value);
+            // put also into symbol table
+            current_symboltable->put(ast->params[i++].first->value, &arg);
+        });
+
     // Do declarations
     visit_ASTDeclaration(ast->decs.get());
 
-    // Go through the expressions
-    for (auto const &x : ast->stats) {
-        x->accept(this);
-    }
+    // Go through the statements
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this](auto const &x) { x->accept(this); });
 
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
@@ -291,9 +302,9 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
     }
 
     for (auto t : expr->rest) {
-        visit_ASTTerm(t.term.get());
+        t.second->accept(this);
         Value *R = last_value;
-        switch (t.sign) {
+        switch (t.first) {
         case TokenType::plus:
             last_value = builder.CreateAdd(L, R, "addtmp");
             break;
@@ -301,7 +312,7 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
             last_value = builder.CreateSub(L, R, "subtmp");
             break;
         default:
-            throw CodeGenException("ASTExpr with sign" + string(t.sign));
+            throw CodeGenException("ASTExpr with sign" + string(t.first));
         }
 
         L = last_value;
@@ -312,9 +323,9 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
     Value *L = last_value;
     for (auto t : ast->rest) {
-        visit_ASTFactor(t.factor.get());
+        t.second->accept(this);
         Value *R = last_value;
-        switch (t.sign) {
+        switch (t.first) {
         case TokenType::asterisk:
             last_value = builder.CreateMul(L, R, "multmp");
             break;
@@ -325,7 +336,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
             last_value = builder.CreateSRem(L, R, "modtmp");
             break;
         default:
-            throw CodeGenException("ASTTerm with sign" + string(t.sign));
+            throw CodeGenException("ASTTerm with sign" + string(t.first));
         }
 
         L = last_value;

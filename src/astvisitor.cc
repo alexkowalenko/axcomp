@@ -6,6 +6,8 @@
 
 #include "printer.hh"
 
+#include <algorithm>
+
 #include <fmt/core.h>
 
 #include "astmod.hh"
@@ -14,12 +16,10 @@ namespace ax {
 
 void ASTVisitor::visit_ASTModule(ASTModule *ast) {
     ast->decs->accept(this);
-    for (auto const &proc : ast->procedures) {
-        proc->accept(this);
-    }
-    for (auto const &x : ast->stats) {
-        x->accept(this);
-    }
+    std::for_each(ast->procedures.begin(), ast->procedures.end(),
+                  [this](auto const &proc) { proc->accept(this); });
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
@@ -33,26 +33,25 @@ void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
 
 void ASTVisitor::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
-        for (auto const &c : ast->consts) {
-            c.first->accept(this);
-            c.second->accept(this);
-        }
+        std::for_each(ast->consts.begin(), ast->consts.end(),
+                      [this](auto const &c) {
+                          c.first->accept(this);
+                          c.second->accept(this);
+                      });
     }
 }
 
 void ASTVisitor::visit_ASTVar(ASTVar *ast) {
     if (!ast->vars.empty()) {
-        for (auto const &c : ast->vars) {
-            c.first->accept(this);
-        }
+        std::for_each(ast->vars.begin(), ast->vars.end(),
+                      [this](auto const &v) { v.first->accept(this); });
     }
 }
 
 void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {
     ast->decs->accept(this);
-    for (auto const &x : ast->stats) {
-        x->accept(this);
-    }
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTAssignment(ASTAssignment *ast) {
@@ -72,16 +71,14 @@ void ASTVisitor::visit_ASTCall(ASTCall *ast) {
 
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
     visit_ASTTerm(ast->term.get());
-    for (auto const &t : ast->rest) {
-        visit_ASTTerm(t.term.get());
-    }
+    std::for_each(ast->rest.begin(), ast->rest.end(),
+                  [this](auto t) { t.second->accept(this); });
 }
 
 void ASTVisitor::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
-    for (auto const &t : ast->rest) {
-        visit_ASTFactor(t.factor.get());
-    }
+    std::for_each(ast->rest.begin(), ast->rest.end(),
+                  [this](auto t) { t.second->accept(this); });
 }
 
 void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {

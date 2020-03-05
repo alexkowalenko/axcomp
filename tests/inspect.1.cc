@@ -103,6 +103,55 @@ TEST(Inspector, Call) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, FunctionParams) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
+         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : UNDEF) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "", "0: Unknown type: UNDEF for paramater x from function f"},
+    };
+    do_inspect_tests(tests);
+}
+
 void do_inspect_tests(std::vector<ParseTests> &tests) {
     TypeTable types;
     types.initialise();

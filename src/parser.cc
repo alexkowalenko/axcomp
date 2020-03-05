@@ -173,10 +173,8 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
 }
 
 /**
- * @brief "PROCEDURE" ident [formalParameters]
+ * @brief "PROCEDURE" ident [formalParameters] [ ":" IDENT ]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
- *
- * formalParameters = "(" ")" [ ":" IDENT ]
  *
  * @return std::shared_ptr<ASTProcedure>
  */
@@ -192,9 +190,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     // Parameters
     tok = lexer.peek_token();
     if (tok.type == TokenType::l_paren) {
-        // Do parameters
-        lexer.get_token();
-        get_token(TokenType::r_paren);
+        parse_parameters(proc->params);
     }
 
     tok = lexer.peek_token();
@@ -236,6 +232,36 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     }
     get_token(TokenType::semicolon);
     return proc;
+}
+
+/**
+ * @brief formalParameters
+ * = "(" [(identList : INDENT)* (";"  (identList : INDENT)*)] "")"
+ *
+ * @return std::vector<VarDec>
+ */
+void Parser::parse_parameters(std::vector<VarDec> &v) {
+    lexer.get_token(); // get (
+    auto tok = lexer.peek_token();
+    while (tok.type != TokenType::r_paren) {
+        VarDec dec;
+        dec.first = parse_identifier();
+        get_token(TokenType::colon);
+        dec.second = parse_identifier()->value;
+        v.push_back(dec);
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::semicolon) {
+            lexer.get_token(); // get ;
+            tok = lexer.peek_token();
+            continue;
+        } else if (tok.type == TokenType::r_paren) {
+            break;
+        } else {
+            throw ParseException("expecting ; or ) in parameter list",
+                                 lexer.lineno);
+        }
+    }
+    lexer.get_token(); // get )
 }
 
 /**
@@ -330,8 +356,7 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
     tok = lexer.peek_token();
     while (tok.type == TokenType::plus || tok.type == TokenType::dash) {
         lexer.get_token();
-        Expr_add add{tok.type};
-        add.term = parse_term();
+        ASTExpr::Expr_add add{tok.type, parse_term()};
         expr->rest.push_back(add);
         tok = lexer.peek_token();
     }
@@ -352,8 +377,7 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
     while (tok.type == TokenType::asterisk || tok.type == TokenType::div ||
            tok.type == TokenType::mod) {
         lexer.get_token();
-        Term_mult mult{tok.type};
-        mult.factor = parse_factor();
+        ASTTerm::Term_mult mult{tok.type, parse_factor()};
         term->rest.push_back(mult);
         tok = lexer.peek_token();
     }
