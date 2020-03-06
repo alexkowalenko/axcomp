@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
     TypeTable types;
     types.initialise();
 
-    SymbolTable<Symbol> symbols(nullptr);
-    ax::Parser          parser(lexer, symbols);
+    auto       symbols = std::make_shared<SymbolTable<Symbol>>(nullptr);
+    ax::Parser parser(lexer, symbols);
 
     try {
         auto ast = parser.parse();
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
         code.generate(ast);
 
         if (options.print_symbols) {
-            symbols.dump(std::cout);
+            symbols->dump(std::cout);
         }
 
     } catch (ax::AXException &e) {

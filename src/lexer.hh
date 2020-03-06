@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "token.hh"
 
@@ -18,6 +19,7 @@ class Lexer {
     explicit Lexer(std::istream &stream);
 
     Token get_token();
+    void  push_token(Token t);
     Token peek_token();
 
     int lineno = 1;
@@ -29,8 +31,8 @@ class Lexer {
     Token scan_digit(char c);
     Token scan_ident(char c);
 
-    std::istream &is;
-    Token         next_token;
+    std::istream &     is;
+    std::vector<Token> next_token;
 };
 
 } // namespace ax

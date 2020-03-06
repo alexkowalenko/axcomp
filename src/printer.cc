@@ -105,7 +105,15 @@ void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
 
 void ASTPrinter::visit_ASTCall(ASTCall *ast) {
     ast->name->accept(this);
-    os << "()";
+    os << "(";
+    std::for_each(ast->args.begin(), ast->args.end(),
+                  [this, ast](auto const &a) {
+                      a->accept(this);
+                      if (a != *(ast->args.end() - 1)) {
+                          os << ", ";
+                      }
+                  });
+    os << ")";
 };
 
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {

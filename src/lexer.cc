@@ -41,7 +41,7 @@ static std::unordered_map<char, Token> token_map = {
     {'=', Token(TokenType::equals, "=")},
 };
 
-Lexer::Lexer(std::istream &stream) : is(stream), next_token(nullToken){};
+Lexer::Lexer(std::istream &stream) : is(stream){};
 
 void Lexer::get_comment() {
     is.get(); // get asterisk
@@ -109,9 +109,9 @@ Token Lexer::scan_ident(char c) {
 
 Token Lexer::get_token() {
     // Check if there is already a token
-    if (next_token.type != TokenType::null) {
-        Token s = next_token;
-        next_token = nullToken;
+    if (!next_token.empty()) {
+        Token s = next_token.back();
+        next_token.pop_back();
         return s;
     }
 
@@ -140,11 +140,17 @@ Token Lexer::get_token() {
     throw LexicalException(std::string("Unknown character ") + c, lineno);
 }
 
+void Lexer::push_token(Token t) {
+    next_token.push_back(t);
+}
+
 Token Lexer::peek_token() {
-    if (next_token.type == TokenType::null) {
-        next_token = get_token();
+    if (next_token.empty()) {
+        Token t = get_token();
+        next_token.push_back(t);
+        return t;
     }
-    return next_token;
+    return next_token.back();
 }
 
 } // namespace ax

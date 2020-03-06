@@ -27,7 +27,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_codegen{false};
+inline constexpr bool debug_codegen{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
@@ -190,7 +190,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 }
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
-
+    debug(" CodeGenerator::visit_ASTProcedure");
     // Make the function arguments
     std::vector<Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
@@ -222,12 +222,21 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Set paramater names
     unsigned i = 0;
-    std::for_each(
-        f->args().begin(), f->args().end(), [this, ast, &i](auto &arg) {
-            arg.setName(ast->params[i++].first->value);
-            // put also into symbol table
-            current_symboltable->put(ast->params[i++].first->value, &arg);
-        });
+    std::for_each(f->args().begin(), f->args().end(), [=, &i](auto &arg) {
+        auto param_name = ast->params[i++].first->value;
+        arg.setName(param_name);
+
+        // Create an alloca for this variable.
+        debug("set up param {}", param_name);
+        AllocaInst *alloca = createEntryBlockAlloca(f, param_name);
+
+        // Store the initial value into the alloca.
+        builder.CreateStore(&arg, alloca);
+
+        // put also into symbol table
+        current_symboltable->put(param_name, alloca);
+        debug("put {} into symboltable", param_name);
+    });
 
     // Do declarations
     visit_ASTDeclaration(ast->decs.get());

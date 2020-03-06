@@ -124,7 +124,7 @@ class ASTReturn : public ASTStatement {
 };
 
 /**
- * @brief IDENT "(" ")"
+ * @brief IDENT "(" expr ( "," expr )* ")"
  *
  */
 class ASTCall : public ASTStatement {
@@ -133,7 +133,8 @@ class ASTCall : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTCall(this); };
 
-    std::shared_ptr<ASTIdentifier> name;
+    std::shared_ptr<ASTIdentifier>        name;
+    std::vector<std::shared_ptr<ASTExpr>> args;
 };
 
 //////////////////////

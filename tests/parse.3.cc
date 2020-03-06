@@ -129,7 +129,7 @@ END x.)",
     BEGIN
         f(;
     END x.)",
-         "", "3: Unexpected token: semicolon - expecting )"},
+         "", "3: Unexpected token: semicolon"},
         // Error
         {R"(MODULE x;
     BEGIN
@@ -200,7 +200,8 @@ TEST(Parser, FunctionCall) {
             BEGIN RETURN 12;
             END f;
             BEGIN
-            RETURN f() + (f() * f());
+            RETURN f() 
+                + (f() * f());
             END x.)",
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
          "f.\nBEGIN\nRETURN f()+ (f()*f()) ;\nEND x.",
@@ -214,7 +215,7 @@ TEST(Parser, FunctionCall) {
             BEGIN
             RETURN f(;
             END x.)",
-         "", "6: Unexpected token: semicolon - expecting )"},
+         "", "6: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }

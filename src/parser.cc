@@ -44,7 +44,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols.put(module->name, Symbol(module->name, "MODULE"));
+    symbols->put(module->name, Symbol(module->name, "MODULE"));
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
 
@@ -137,7 +137,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         get_token(TokenType::semicolon);
 
         // Assume all consts are INTEGER;
-        symbols.put(
+        symbols->put(
             dec.first->value,
             Symbol(dec.first->value, to_string(SimpleTypeTag::integer)));
         cnst->consts.push_back(dec);
@@ -164,7 +164,7 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         dec.second = tok.val;
         get_token(TokenType::semicolon);
 
-        symbols.put(dec.first->value, Symbol(dec.first->value, dec.second));
+        symbols->put(dec.first->value, Symbol(dec.first->value, dec.second));
 
         var->vars.push_back(dec);
         tok = lexer.peek_token();
@@ -185,7 +185,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     lexer.get_token(); // PROCEDURE
     auto tok = get_token(TokenType::ident);
     proc->name = tok.val;
-    symbols.put(proc->name, Symbol(proc->name, "PROCEDURE"));
+    symbols->put(proc->name, Symbol(proc->name, "PROCEDURE"));
 
     // Parameters
     tok = lexer.peek_token();
@@ -325,7 +325,7 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
 }
 
 /**
- * @brief  IDENT "(" ")"
+ * @brief  IDENT "(" expr ( "," expr )* ")"
  *
  * @return std::shared_ptr<ASTCall>
  */
@@ -334,6 +334,22 @@ std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
     call->name = std::make_shared<ASTIdentifier>();
     call->name->value = ident.val;
     get_token(TokenType::l_paren);
+    auto tok = lexer.peek_token();
+    while (tok.type != TokenType::r_paren) {
+        auto expr = parse_expr();
+        call->args.push_back(expr);
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::r_paren) {
+            break;
+        } else if (tok.type == TokenType::comma) {
+            lexer.get_token(); // get ,
+            continue;
+        } else {
+            throw ParseException(
+                fmt::format("Unexpected {} expecting , or )", tok.val),
+                lexer.lineno);
+        }
+    }
     get_token(TokenType::r_paren);
     return call;
 }
@@ -374,12 +390,14 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 
     term->factor = parse_factor();
     auto tok = lexer.peek_token();
+    debug("term {}", std::string(tok));
     while (tok.type == TokenType::asterisk || tok.type == TokenType::div ||
            tok.type == TokenType::mod) {
         lexer.get_token();
         ASTTerm::Term_mult mult{tok.type, parse_factor()};
         term->rest.push_back(mult);
         tok = lexer.peek_token();
+        debug("term {}", std::string(tok));
     }
     return term;
 }
@@ -393,6 +411,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     debug("Parser::parse_factor");
     std::shared_ptr<ASTFactor> factor = std::make_shared<ASTFactor>();
     auto                       tok = lexer.peek_token();
+    debug("factor {}", std::string(tok));
     switch (tok.type) {
     case TokenType::l_paren:
         // Expression
@@ -406,24 +425,21 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         return factor;
     case TokenType::ident: {
         // Identifier
-        auto ident = parse_identifier();
-        tok = lexer.peek_token();
-        if (tok.type == TokenType::l_paren) {
-            // Procedure call
-            lexer.get_token(); // get (
-            get_token(TokenType::r_paren);
-            auto call = std::make_shared<ASTCall>();
-            call->name = ident;
-            factor->factor = call;
+        lexer.get_token(); // get tok
+        auto nexttok = lexer.peek_token();
+        debug("factor nexttok: {}", std::string(nexttok));
+        if (nexttok.type == TokenType::l_paren) {
+            factor->factor = parse_call(tok);
+            return factor;
         } else {
-            factor->factor = ident;
+            lexer.push_token(tok);
+            factor->factor = parse_identifier();
+            return factor;
         }
-        return factor;
     }
     default:
         throw ParseException(
-            fmt::format("Unexpected token: {} - expecting ( or integer",
-                        std::string(tok)),
+            fmt::format("Unexpected token: {}", std::string(tok)),
             lexer.lineno);
     }
     return nullptr; // Not factor

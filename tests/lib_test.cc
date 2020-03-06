@@ -25,8 +25,8 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
         std::istringstream is(t.input);
         Lexer              lex(is);
 
-        SymbolTable<Symbol> symbols(nullptr);
-        Parser              parser(lex, symbols);
+        auto   symbols = std::make_shared<SymbolTable<Symbol>>(nullptr);
+        Parser parser(lex, symbols);
 
         std::string result;
         try {

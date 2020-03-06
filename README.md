@@ -58,7 +58,7 @@ statement = assignment
 
 assignment = IDENT ":=" expr
 
-procedureCall = IDENT "(" ")"
+procedureCall = IDENT "(" expr ( "," expr )* ")"
 
 expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
 

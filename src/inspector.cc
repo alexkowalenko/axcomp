@@ -79,6 +79,15 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
             }
         });
 
+    // new symbol table
+    auto former_symboltable = current_symboltable;
+    current_symboltable =
+        std::make_shared<SymbolTable<Symbol>>(former_symboltable);
+    std::for_each(ast->params.begin(), ast->params.end(),
+                  [this](auto const &p) {
+                      current_symboltable->put(
+                          p.first->value, Symbol(p.first->value, p.second));
+                  });
     ast->decs->accept(this);
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this, ast](auto const &x) {
@@ -91,6 +100,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                               0);
                       }
                   });
+    current_symboltable = former_symboltable;
 }
 
 void Inspector::visit_ASTReturn(ASTReturn *ast) {
@@ -102,7 +112,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
 }
 
 void Inspector::visit_ASTCall(ASTCall *ast) {
-    auto res = symbols.find(ast->name->value);
+    auto res = current_symboltable->find(ast->name->value);
     if (!res) {
         throw CodeGenException(
             fmt::format("undefined PROCEDURE {}", ast->name->value), 0);
@@ -119,7 +129,8 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
             [](auto arg) { /* do nothing for others*/ },
             [this](std::shared_ptr<ASTCall> const &arg) { arg->accept(this); },
             [this](std::shared_ptr<ASTIdentifier> const &arg) {
-                if (auto res = this->symbols.find(arg->value); !res) {
+                if (auto res = this->current_symboltable->find(arg->value);
+                    !res) {
                     throw CodeGenException(
                         fmt::format("undefined identifier {}", arg->value), 0);
                 }

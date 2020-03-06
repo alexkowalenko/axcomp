@@ -52,7 +52,7 @@ TEST(Parser, Module) {
         {"MODULE y; RETURN 12; END y.", "",
          "1: Unexpected token: RETURN - expecting BEGIN"},
         {"MODULE y; BEGIN RETURN ; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN 12; y.", "", "1: Unexpected token: period"},
         {"MODULE y; BEGIN RETURN 12; END .", "",
          "1: Unexpected token: period - expecting indent"},
@@ -87,11 +87,11 @@ TEST(Parser, Plus) {
 
         // Errors
         {"MODULE y; BEGIN RETURN - ; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN 1 -; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN - 1 + 2 + ; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }
@@ -113,12 +113,11 @@ TEST(Parser, Mult) {
          "MODULE y;\nBEGIN\nRETURN 3*3+4*4;\nEND y.", ""},
 
         // Errors
-        {"MODULE y; BEGIN RETURN * ; END y.", "",
-         "1: Unexpected token: * - expecting ( or integer"},
+        {"MODULE y; BEGIN RETURN * ; END y.", "", "1: Unexpected token: *"},
         {"MODULE y; BEGIN RETURN 1 MOD; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN - 1 + 2 DIV ; END y.", "",
-         "1: Unexpected token: semicolon - expecting ( or integer"},
+         "1: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }
