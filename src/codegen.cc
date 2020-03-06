@@ -27,7 +27,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_codegen{true};
+inline constexpr bool debug_codegen{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
@@ -194,7 +194,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     // Make the function arguments
     std::vector<Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
-                  [this, &proto](auto const &p) {
+                  [this, &proto](auto const &) {
                       // All types are INT64
                       proto.push_back(Type::getInt64Ty(context));
                   });
@@ -272,10 +272,10 @@ void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
 void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     debug("CodeGenerator::visit_ASTCall");
     // Look up the name in the global module table.
-    Function *CalleeF;
+    Function *callee;
     try {
-        CalleeF = module->getFunction(ast->name->value);
-        if (!CalleeF) {
+        callee = module->getFunction(ast->name->value);
+        if (!callee) {
             throw CodeGenException(
                 fmt::format("function: {} not found", ast->name->value));
         }
@@ -285,18 +285,12 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
             fmt::format("function: {} not found", ast->name->value));
     }
 
-    // If argument mismatch error.
-    // if (CalleeF->arg_size() != Args.size())
-    //    return LogErrorV("Incorrect # arguments passed");
-
-    std::vector<Value *> ArgsV;
-    // for (unsigned i = 0, e = Args.size(); i != e; ++i) {
-    //    ArgsV.push_back(Args[i]->codegen());
-    //    if (!ArgsV.back())
-    //        return nullptr;
-    //}
-
-    last_value = builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    std::vector<Value *> args;
+    for (auto const &a : ast->args) {
+        a->accept(this);
+        args.push_back(last_value);
+    }
+    last_value = builder.CreateCall(callee, args, "calltmp");
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {

@@ -13,6 +13,14 @@
 
 namespace ax {
 
+inline constexpr bool debug_lexer{false};
+
+template <typename... T> inline void debug(const T &... msg) {
+    if constexpr (debug_lexer) {
+        std::cerr << fmt::format(msg...) << std::endl;
+    }
+}
+
 static Token nullToken = Token(TokenType::null);
 
 static std::unordered_map<std::string, Token> keyword_map = {
@@ -41,7 +49,7 @@ static std::unordered_map<char, Token> token_map = {
     {'=', Token(TokenType::equals, "=")},
 };
 
-Lexer::Lexer(std::istream &stream) : is(stream){};
+Lexer::Lexer(std::istream &stream) : is{stream} {}
 
 void Lexer::get_comment() {
     is.get(); // get asterisk
@@ -110,7 +118,8 @@ Token Lexer::scan_ident(char c) {
 Token Lexer::get_token() {
     // Check if there is already a token
     if (!next_token.empty()) {
-        Token s = next_token.back();
+        debug("size: {}", next_token.size());
+        Token s{next_token.back()};
         next_token.pop_back();
         return s;
     }
@@ -140,7 +149,7 @@ Token Lexer::get_token() {
     throw LexicalException(std::string("Unknown character ") + c, lineno);
 }
 
-void Lexer::push_token(Token t) {
+void Lexer::push_token(Token const &t) {
     next_token.push_back(t);
 }
 

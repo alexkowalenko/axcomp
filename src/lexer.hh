@@ -19,10 +19,10 @@ class Lexer {
     explicit Lexer(std::istream &stream);
 
     Token get_token();
-    void  push_token(Token t);
+    void  push_token(Token const &t);
     Token peek_token();
 
-    int lineno = 1;
+    int get_lineno() { return lineno; };
 
   private:
     void get_comment();
@@ -31,6 +31,7 @@ class Lexer {
     Token scan_digit(char c);
     Token scan_ident(char c);
 
+    int                lineno = 1;
     std::istream &     is;
     std::vector<Token> next_token;
 };

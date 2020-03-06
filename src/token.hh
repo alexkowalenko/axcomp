@@ -48,6 +48,9 @@ class Token {
     explicit Token(TokenType t) noexcept : type(t){};
     Token(TokenType t, std::string v) : type(t), val(std::move(v)){};
 
+    Token(Token const &) = default;
+    Token &operator=(Token const &) = default;
+
     explicit             operator std::string();
     friend std::ostream &operator<<(std::ostream &os, const Token &t);
 

@@ -26,7 +26,7 @@ Token Parser::get_token(TokenType t) {
     if (tok.type != t) {
         throw ParseException(fmt::format("Unexpected token: {} - expecting {}",
                                          std::string(tok), string(t)),
-                             lexer.lineno);
+                             lexer.get_lineno());
     }
     return tok;
 }
@@ -82,7 +82,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
         throw ParseException(
             fmt::format("END identifier name: {} doesn't match module name: {}",
                         tok.val, module->name),
-            lexer.lineno);
+            lexer.get_lineno());
     }
     get_token(TokenType::period);
     return module;
@@ -112,7 +112,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             break;
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
-                                 lexer.lineno);
+                                 lexer.get_lineno());
         }
         tok = lexer.peek_token();
     }
@@ -228,7 +228,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
         throw ParseException(
             fmt::format("END name: {} doesn't match procedure name: {}",
                         tok.val, proc->name),
-            lexer.lineno);
+            lexer.get_lineno());
     }
     get_token(TokenType::semicolon);
     return proc;
@@ -240,7 +240,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
  *
  * @return std::vector<VarDec>
  */
-void Parser::parse_parameters(std::vector<VarDec> &v) {
+void Parser::parse_parameters(std::vector<VarDec> &params) {
     lexer.get_token(); // get (
     auto tok = lexer.peek_token();
     while (tok.type != TokenType::r_paren) {
@@ -248,18 +248,18 @@ void Parser::parse_parameters(std::vector<VarDec> &v) {
         dec.first = parse_identifier();
         get_token(TokenType::colon);
         dec.second = parse_identifier()->value;
-        v.push_back(dec);
+        params.push_back(dec);
         tok = lexer.peek_token();
         if (tok.type == TokenType::semicolon) {
             lexer.get_token(); // get ;
             tok = lexer.peek_token();
             continue;
-        } else if (tok.type == TokenType::r_paren) {
-            break;
-        } else {
-            throw ParseException("expecting ; or ) in parameter list",
-                                 lexer.lineno);
         }
+        if (tok.type == TokenType::r_paren) {
+            break;
+        }
+        throw ParseException("expecting ; or ) in parameter list",
+                             lexer.get_lineno());
     }
     lexer.get_token(); // get )
 }
@@ -292,7 +292,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
     default:
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
-            lexer.lineno);
+            lexer.get_lineno());
     }
 }
 
@@ -341,14 +341,14 @@ std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
         tok = lexer.peek_token();
         if (tok.type == TokenType::r_paren) {
             break;
-        } else if (tok.type == TokenType::comma) {
+        }
+        if (tok.type == TokenType::comma) {
             lexer.get_token(); // get ,
             continue;
-        } else {
-            throw ParseException(
-                fmt::format("Unexpected {} expecting , or )", tok.val),
-                lexer.lineno);
         }
+        throw ParseException(
+            fmt::format("Unexpected {} expecting , or )", tok.val),
+            lexer.get_lineno());
     }
     get_token(TokenType::r_paren);
     return call;
@@ -431,16 +431,15 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         if (nexttok.type == TokenType::l_paren) {
             factor->factor = parse_call(tok);
             return factor;
-        } else {
-            lexer.push_token(tok);
-            factor->factor = parse_identifier();
-            return factor;
         }
+        lexer.push_token(tok);
+        factor->factor = parse_identifier();
+        return factor;
     }
     default:
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
-            lexer.lineno);
+            lexer.get_lineno());
     }
     return nullptr; // Not factor
 };

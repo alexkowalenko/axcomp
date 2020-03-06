@@ -290,3 +290,53 @@ TEST(Parser, FunctionParams) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, CallArgs) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN f(3);
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
+         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN f(3);\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz;
+            END f;
+            BEGIN
+            RETURN f(3 , 4) + f(2, f(3 + 4));
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
+         "f.\nBEGIN\nRETURN f(3, 4)+f(2, f(3+4));\nEND xxx.",
+         ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            BEGIN
+            RETURN f(3, );
+            END xxx.)",
+         "", "4: Unexpected token: )"},
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            BEGIN
+            RETURN f(3 ;
+            END xxx.)",
+         "", "4: Unexpected ; expecting , or )"},
+    };
+    do_parse_tests(tests);
+}
