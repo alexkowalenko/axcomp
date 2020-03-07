@@ -41,6 +41,15 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
     }
 }
 
+void Inspector::visit_ASTConst(ASTConst *ast) {
+    if (!ast->consts.empty()) {
+        for (auto &c : ast->consts) {
+            c.value->accept(this);
+            c.type = std::string(*last_type);
+        }
+    }
+}
+
 void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
     if (!ast->vars.empty()) {

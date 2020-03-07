@@ -7,7 +7,9 @@
 #include "codegen.hh"
 
 #include <iostream>
+#include <string.h>
 
+#include "llvm/Support/FormatVariadic.h"
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
@@ -40,10 +42,12 @@ using namespace llvm::sys;
 inline const std::string file_ext_llvmri{".ll"};
 inline const std::string file_ext_obj{".o"};
 
-CodeGenerator::CodeGenerator(Options &o)
-    : options(o), filename("output"), builder(context), last_value(nullptr) {
+CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
+    : options(o), types(t), filename("output"), builder(context),
+      last_value(nullptr) {
     top_symboltable = std::make_shared<SymbolTable<Value *>>(nullptr);
     current_symboltable = top_symboltable;
+    types.setTypes(context);
 }
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
@@ -60,9 +64,10 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
     // Set up the module as a function
     // Make the function type:  (void) : int
-    std::vector<Type *> proto;
-    FunctionType *      ft =
-        FunctionType::get(Type::getInt64Ty(context), proto, false);
+    // main returns int
+    std::vector<llvm::Type *> proto;
+    FunctionType *            ft =
+        FunctionType::get(llvm::Type::getInt64Ty(context), proto, false);
 
     auto function_name = filename;
     if (options.main_module) {
@@ -106,12 +111,12 @@ void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
 void CodeGenerator::doTopVars(ASTVar *ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
-        module->getOrInsertGlobal(c.first->value, builder.getInt64Ty());
+        auto type = getType(c.second);
+        module->getOrInsertGlobal(c.first->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         gVar->setInitializer(ConstantInt::get(context, APInt(64, 0, true)));
-        gVar->setAlignment(8);
 
         current_symboltable->put(c.first->value, gVar);
     }
@@ -120,20 +125,20 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
-        module->getOrInsertGlobal(c.first->value, builder.getInt64Ty());
-        GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
+        auto type = getType(c.type);
+        module->getOrInsertGlobal(c.ident->value, type);
+        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
 
-        c.second->accept(this);
+        c.value->accept(this);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         if (isa<ConstantInt>(last_value)) {
             gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
         } else {
             throw CodeGenException("Expression based CONSTs not supported.", 0);
         }
-        gVar->setAlignment(8);
         gVar->setConstant(true);
 
-        current_symboltable->put(c.first->value, gVar);
+        current_symboltable->put(c.ident->value, gVar);
     }
 }
 
@@ -155,16 +160,15 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
 void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     debug("CodeGenerator::visit_ASTConst");
     for (auto const &c : ast->consts) {
-        c.second->accept(this);
+        c.value->accept(this);
         auto val = last_value;
 
-        auto name = c.first->value;
+        auto name = c.ident->value;
         debug("create const: {}", name);
 
-        // Create variable for module
-
+        // Create const
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name);
+        auto alloc = createEntryBlockAlloca(function, name, c.type);
         builder.CreateStore(val, alloc);
 
         current_symboltable->put(name, alloc);
@@ -174,12 +178,12 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
 void CodeGenerator::visit_ASTVar(ASTVar *ast) {
     for (auto const &c : ast->vars) {
 
-        // Create variable for module
+        // Create variable
         auto name = c.first->value;
         debug("create var: {}", name);
 
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name);
+        auto alloc = createEntryBlockAlloca(function, name, c.second);
         builder.CreateStore(ConstantInt::get(context, APInt(64, 0, true)),
                             alloc);
         alloc->setName(name);
@@ -192,19 +196,20 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     debug(" CodeGenerator::visit_ASTProcedure");
     // Make the function arguments
-    std::vector<Type *> proto;
+    std::vector<llvm::Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
-                  [this, &proto](auto const &) {
-                      // All types are INT64
-                      proto.push_back(Type::getInt64Ty(context));
+                  [this, &proto](auto const &p) {
+                      debug("arg type: {}", p.second);
+                      auto type = getType(p.second);
+                      proto.push_back(type);
                   });
 
-    Type *returnType;
+    llvm::Type *returnType;
     if (ast->return_type.empty()) {
-        returnType = Type::getVoidTy(context);
+        returnType = llvm::Type::getVoidTy(context);
     } else {
-        // assume INTEGER for now.
-        returnType = Type::getInt64Ty(context);
+        debug("ret type: {}", ast->return_type);
+        returnType = getType(ast->return_type);
     }
 
     FunctionType *ft = FunctionType::get(returnType, proto, false);
@@ -223,12 +228,12 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     // Set paramater names
     unsigned i = 0;
     std::for_each(f->args().begin(), f->args().end(), [=, &i](auto &arg) {
-        auto param_name = ast->params[i++].first->value;
+        auto param_name = ast->params[i].first->value;
         arg.setName(param_name);
-
+        auto type_name = ast->params[i].second;
         // Create an alloca for this variable.
-        debug("set up param {}", param_name);
-        AllocaInst *alloca = createEntryBlockAlloca(f, param_name);
+        debug("set up param {}: {}.", param_name, type_name);
+        AllocaInst *alloca = createEntryBlockAlloca(f, param_name, type_name);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
@@ -236,6 +241,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         // put also into symbol table
         current_symboltable->put(param_name, alloca);
         debug("put {} into symboltable", param_name);
+        i++;
     });
 
     // Do declarations
@@ -258,7 +264,7 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     auto var = current_symboltable->find(ast->ident->value);
     if (!var) {
         throw CodeGenException(
-            fmt::format("identifier: {} not found." + ast->ident->value));
+            fmt::format("identifier: {} not found.", ast->ident->value));
     }
     debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
     builder.CreateStore(val, var.value());
@@ -375,11 +381,20 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
  * @param name
  * @return AllocaInst*
  */
-AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *   function,
-                                                  std::string &name) {
+AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
+                                                  std::string const &name,
+                                                  std::string const &type) {
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());
-    return TmpB.CreateAlloca(Type::getInt64Ty(context), nullptr, name);
+    auto        t = getType(type);
+    return TmpB.CreateAlloca(t, nullptr, name);
+}
+
+llvm::Type *CodeGenerator::getType(std::string const &t) {
+    if (auto type = types.find(t); *type) {
+        return (*type)->get_llvm();
+    }
+    throw CodeGenException("Type not found: " + t, 0);
 }
 
 void CodeGenerator::init(std::string const &module_name) {

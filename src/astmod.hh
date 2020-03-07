@@ -173,6 +173,12 @@ class ASTVar : public ASTBase {
     std::vector<VarDec> vars;
 };
 
+struct ConstDec {
+    std::shared_ptr<ASTIdentifier> ident;
+    std::shared_ptr<ASTInteger>    value;
+    std::string                    type;
+};
+
 /**
  * @brief "CONST" (IDENT "=" INTEGER ";")*
  *
@@ -183,8 +189,6 @@ class ASTConst : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTConst(this); };
 
-    using ConstDec =
-        std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>>;
     std::vector<ConstDec> consts;
 };
 

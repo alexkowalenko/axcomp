@@ -3,8 +3,8 @@ source_filename = "c04"
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-darwin18.7.0"
 
-@x = internal global i64 0, align 8
-@y = internal global i64 0, align 8
+@x = internal global i64 0
+@y = internal global i64 0
 
 define i64 @output() {
 entry:

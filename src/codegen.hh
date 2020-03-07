@@ -16,6 +16,7 @@
 #include "astvisitor.hh"
 #include "options.hh"
 #include "symboltable.hh"
+#include "typetable.hh"
 
 using namespace llvm;
 
@@ -23,7 +24,7 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    explicit CodeGenerator(Options &o);
+    explicit CodeGenerator(Options &o, TypeTable &t);
 
     void generate(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());
@@ -56,10 +57,14 @@ class CodeGenerator : ASTVisitor {
     void generate_objectcode();
     void print_code();
 
-    AllocaInst *createEntryBlockAlloca(Function *   TheFunction,
-                                       std::string &VarName);
+    AllocaInst *createEntryBlockAlloca(Function *         TheFunction,
+                                       std::string const &name,
+                                       std::string const &type);
+
+    llvm::Type *getType(std::string const &t);
 
     Options &                             options;
+    TypeTable &                           types;
     std::shared_ptr<SymbolTable<Value *>> top_symboltable;
     std::shared_ptr<SymbolTable<Value *>> current_symboltable;
 

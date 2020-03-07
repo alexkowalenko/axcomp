@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-#include <fmt/core.h>
-
 #include "astmod.hh"
 
 namespace ax {
@@ -35,8 +33,8 @@ void ASTVisitor::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         std::for_each(ast->consts.begin(), ast->consts.end(),
                       [this](auto const &c) {
-                          c.first->accept(this);
-                          c.second->accept(this);
+                          c.ident->accept(this);
+                          c.value->accept(this);
                       });
     }
 }

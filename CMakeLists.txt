@@ -84,6 +84,7 @@ add_definitions(${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(llvm_libs native asmparser
   # For future cross compiler
   # AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens
+  # also try 'all'
 )                  
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 

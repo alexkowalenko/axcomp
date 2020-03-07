@@ -132,16 +132,16 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     std::shared_ptr<ASTConst> cnst = std::make_shared<ASTConst>();
     auto                      tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
-        ASTConst::ConstDec dec;
-        dec.first = parse_identifier();
+        ConstDec dec;
+        dec.ident = parse_identifier();
         get_token(TokenType::equals);
-        dec.second = parse_integer();
+        dec.value = parse_integer();
         get_token(TokenType::semicolon);
 
         // Assume all consts are INTEGER;
         symbols->put(
-            dec.first->value,
-            Symbol(dec.first->value, std::string(*TypeTable::IntType.get())));
+            dec.ident->value,
+            Symbol(dec.ident->value, std::string(*TypeTable::IntType.get())));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }

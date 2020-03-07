@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
         Inspector inpect(symbols, types);
         inpect.check(ast);
 
-        ax::CodeGenerator code(options);
+        ax::CodeGenerator code(options, types);
         code.generate(ast);
 
         if (options.print_symbols) {

@@ -9,6 +9,8 @@
 #include <memory>
 #include <optional>
 
+#include <llvm/IR/LLVMContext.h>
+
 #include "symboltable.hh"
 #include "type.hh"
 
@@ -19,6 +21,7 @@ class TypeTable {
     TypeTable() : table(nullptr){};
 
     void initialise();
+    void setTypes(llvm::LLVMContext &context);
 
     std::optional<TypePtr> find(std::string const &name);
     void                   put(std::string const &name, TypePtr const &t);

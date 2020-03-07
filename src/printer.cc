@@ -44,9 +44,9 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
         os << "CONST\n";
         std::for_each(ast->consts.begin(), ast->consts.end(),
                       [this](auto const &c) {
-                          c.first->accept(this);
+                          c.ident->accept(this);
                           os << " = ";
-                          c.second->accept(this);
+                          c.value->accept(this);
                           os << ";\n";
                       });
     }

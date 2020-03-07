@@ -24,7 +24,7 @@ class Inspector : public ASTVisitor {
         : top_symboltable(s), current_symboltable(s), types(t){};
 
     void visit_ASTModule(ASTModule *ast) override;
-
+    void visit_ASTConst(ASTConst *ast) override;
     void visit_ASTVar(ASTVar *ast) override;
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
@@ -45,9 +45,9 @@ class Inspector : public ASTVisitor {
 
     TypeTable &types;
 
-    bool                  has_return = false;
-    std::shared_ptr<Type> last_type = nullptr;
-    ASTProcedure *        last_proc = nullptr;
+    bool          has_return = false;
+    TypePtr       last_type = nullptr;
+    ASTProcedure *last_proc = nullptr;
 };
 
 } // namespace ax

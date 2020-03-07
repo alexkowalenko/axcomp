@@ -6,6 +6,7 @@
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
 
+set(INSTALL_GTEST OFF)
 
 mark_as_advanced(
     # BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
@@ -24,7 +25,7 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} libax fmt gtest gtest_main)
+    target_link_libraries(${TESTNAME} libax fmt gtest gtest_main ${llvm_libs})
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}
@@ -34,6 +35,17 @@ macro(package_add_test TESTNAME)
     )
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
 endmacro()
+
+# LLVM
+set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+
+llvm_map_components_to_libnames(llvm_libs native)                  
+message(STATUS "Using LLVM libs: ${llvm_libs}")
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
