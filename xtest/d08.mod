@@ -2,7 +2,7 @@ MODULE d08; (* Test procedure parameters *)
   VAR
      y :INTEGER;
     
-  PROCEDURE f (x : INTEGER): INTEGER;
+  PROCEDURE f : INTEGER;
   VAR yy : INTEGER;
   BEGIN
       RETURN yy + 2;

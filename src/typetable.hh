@@ -20,16 +20,16 @@ class TypeTable {
 
     void initialise();
 
-    std::optional<std::shared_ptr<Type>> find(std::string const &name);
-    void put(std::string const &name, std::shared_ptr<Type> t);
+    std::optional<TypePtr> find(std::string const &name);
+    void                   put(std::string const &name, TypePtr const &t);
 
     // Standard types
-    static std::shared_ptr<Type> IntType;
-    static std::shared_ptr<Type> ModuleType;
-    static std::shared_ptr<Type> VoidType;
+    static TypePtr IntType;
+    static TypePtr ModuleType;
+    static TypePtr VoidType;
 
   private:
-    SymbolTable<std::shared_ptr<Type>> table;
+    SymbolTable<TypePtr> table;
 };
 
 } // namespace ax

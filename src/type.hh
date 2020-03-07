@@ -12,18 +12,21 @@
 
 namespace ax {
 
+class Type;
+using TypePtr = std::shared_ptr<Type>;
+
 class Type {
   public:
     virtual ~Type() = default;
 
-    bool equiv(std::shared_ptr<Type> t);
+    bool equiv(TypePtr const &t);
 
     virtual explicit operator std::string() = 0;
 };
 
 class SimpleType : public Type {
   public:
-    explicit SimpleType(std::string n) : name(n){};
+    explicit SimpleType(std::string n) : name(std::move(n)){};
     ~SimpleType() override = default;
 
     explicit operator std::string() override;
@@ -33,15 +36,14 @@ class SimpleType : public Type {
 
 class ProcedureType : public Type {
   public:
-    ProcedureType(std::shared_ptr<Type> const &             r,
-                  std::vector<std::shared_ptr<Type>> const &p)
-        : ret(r), params(p){};
+    ProcedureType(TypePtr r, std::vector<TypePtr> p)
+        : ret(std::move(r)), params(std::move(p)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
 
-    std::shared_ptr<Type>              ret;
-    std::vector<std::shared_ptr<Type>> params;
+    TypePtr              ret;
+    std::vector<TypePtr> params;
 };
 
 } // namespace ax

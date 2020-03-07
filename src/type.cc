@@ -10,7 +10,7 @@
 
 namespace ax {
 
-bool Type::equiv(std::shared_ptr<Type> t) {
+bool Type::equiv(TypePtr const &t) {
     return std::string(*this) == std::string(*t);
 }
 
@@ -21,7 +21,7 @@ SimpleType::operator std::string() {
 ProcedureType::operator std::string() {
     std::string res{"("};
     for (auto &t : params) {
-        res += std::string(*t.get());
+        res += std::string(*t);
         if (t != *(params.end() - 1)) {
             res += ",";
         }

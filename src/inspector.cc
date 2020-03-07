@@ -73,7 +73,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     }
 
     // Check parameter types
-    std::vector<std::shared_ptr<Type>> argTypes;
+    std::vector<TypePtr> argTypes;
     std::for_each(
         ast->params.begin(), ast->params.end(),
         [this, ast, &argTypes](auto const &p) {
@@ -155,6 +155,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
         throw CodeGenException(
             fmt::format("{} is not a PROCEDURE", ast->name->value), 0);
     }
+
     // Find return type from procedure and put in last_type
     auto pType = types.find(ast->name->value);
     if (!pType) {
@@ -166,6 +167,16 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
         throw CodeGenException(
             fmt::format("{} is not type PROCEDURE", ast->name->value), 0);
     }
+
+    if (ast->args.size() != procType->params.size()) {
+        throw CodeGenException(
+            fmt::format("calling PROCEDURE {}, incorrect number of "
+                        "arguments: {} instead of {}",
+                        ast->name->value, ast->args.size(),
+                        procType->params.size()),
+            0);
+    }
+
     last_type = procType->ret;
 }
 
@@ -210,7 +221,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                ast->factor);
 }
 
-void Inspector::visit_ASTInteger(ASTInteger *ast) {
+void Inspector::visit_ASTInteger(ASTInteger *) {
     last_type = TypeTable::IntType;
 }
 

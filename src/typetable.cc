@@ -7,9 +7,9 @@
 
 namespace ax {
 
-std::shared_ptr<Type> TypeTable::IntType;
-std::shared_ptr<Type> TypeTable::ModuleType;
-std::shared_ptr<Type> TypeTable::VoidType;
+TypePtr TypeTable::IntType;
+TypePtr TypeTable::ModuleType;
+TypePtr TypeTable::VoidType;
 
 void TypeTable::initialise() {
     IntType = std::make_shared<SimpleType>("INTEGER");
@@ -22,11 +22,11 @@ void TypeTable::initialise() {
     table.put(std::string(*VoidType), VoidType);
 }
 
-std::optional<std::shared_ptr<Type>> TypeTable::find(std::string const &name) {
+std::optional<TypePtr> TypeTable::find(std::string const &name) {
     return table.find(name);
 }
 
-void TypeTable::put(std::string const &name, std::shared_ptr<Type> t) {
+void TypeTable::put(std::string const &name, TypePtr const &t) {
     table.put(name, t);
 }
 

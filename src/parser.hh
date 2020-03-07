@@ -17,7 +17,7 @@ namespace ax {
 class Parser {
   public:
     explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<Symbol>> s)
-        : lexer(l), symbols(s){};
+        : lexer(l), symbols(std::move(s)){};
 
     std::shared_ptr<ASTModule> parse();
 

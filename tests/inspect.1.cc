@@ -100,6 +100,17 @@ TEST(Inspector, Call) {
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN "
          "0;\nEND f.\nBEGIN\nf();\nRETURN f();\nEND y.",
          ""},
+        {R"(MODULE xxx;
+            PROCEDURE f(x : INTEGER) : INTEGER;
+            BEGIN
+            RETURN 0;
+            END f;
+            BEGIN
+                RETURN f(1);
+            END xxx.)",
+         "MODULE xxx;\nPROCEDURE f(x : INTEGER): INTEGER;\nBEGIN\nRETURN "
+         "0;\nEND f.\nBEGIN\nRETURN f(1);\nEND xxx.",
+         ""},
 
         // Errors
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
@@ -112,6 +123,30 @@ TEST(Inspector, Call) {
          "PROCEDURE f():INTEGER; BEGIN RETURN 0; END f; "
          "BEGIN RETURN g(); END y.",
          "", "0: undefined PROCEDURE g"},
+
+        {R"(MODULE xxx;
+            PROCEDURE f(x : INTEGER) : INTEGER;
+            BEGIN
+            RETURN 0;
+            END f;
+            BEGIN
+                RETURN f();
+            END xxx.)",
+         "",
+         "0: calling PROCEDURE f, incorrect number of arguments: 0 instead of "
+         "1"},
+        {R"(MODULE xxx;
+            PROCEDURE f() : INTEGER;
+            BEGIN
+            RETURN 0;
+            END f;
+            BEGIN
+                RETURN f(1,2,3,4);
+            END xxx.)",
+         "",
+         "0: calling PROCEDURE f, incorrect number of arguments: 4 instead of "
+         "0"},
+
     };
     do_inspect_tests(tests);
 }
