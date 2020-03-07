@@ -32,10 +32,10 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
 
 void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
-        visit_ASTConst(ast->cnst.get());
+        ast->cnst->accept(this);
     }
     if (ast->var) {
-        visit_ASTVar(ast->var.get());
+        ast->var->accept(this);
     }
 }
 
@@ -91,15 +91,15 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {
-    visit_ASTIdentifier(ast->ident.get());
+    ast->ident->accept(this);
     os << " := ";
-    visit_ASTExpr(ast->expr.get());
+    ast->expr->accept(this);
 }
 
 void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
     os << "RETURN ";
     if (ast->expr) {
-        visit_ASTExpr(ast->expr.get());
+        ast->expr->accept(this);
     }
 }
 
@@ -120,7 +120,7 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());
     }
-    visit_ASTTerm(ast->term.get());
+    ast->term->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
         os << string(t.first);
         t.second->accept(this);
@@ -128,7 +128,7 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
 }
 
 void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTFactor(ast->factor.get());
+    ast->factor->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
         if (t.first == TokenType::div || t.first == TokenType::mod) {
             os << fmt::format(" {} ", string(t.first));

@@ -1,15 +1,15 @@
 MODULE d02; (* function definitions *)
   PROCEDURE f;
   BEGIN
-      RETURN 12;
+      RETURN;
   END f;
   
-  PROCEDURE g;
+  PROCEDURE g : INTEGER;
   BEGIN
       RETURN 24;
   END g;
  
-  PROCEDURE h;
+  PROCEDURE h() : INTEGER;
   BEGIN
       RETURN 36;
   END h;

@@ -5,15 +5,15 @@ target triple = "x86_64-apple-darwin18.7.0"
 
 define void @f() {
 entry:
-  ret i64 12
+  ret void
 }
 
-define void @g() {
+define i64 @g() {
 entry:
   ret i64 24
 }
 
-define void @h() {
+define i64 @h() {
 entry:
   ret i64 36
 }

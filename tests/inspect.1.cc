@@ -26,7 +26,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests);
 TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
         {"MODULE x; VAR z: complex; BEGIN x := 10; END x.", "",
-         "0: Unknown type: complex"},
+         "0: Unknown type: complex for identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -65,20 +65,33 @@ TEST(Inspector, ReturnType) {
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 0;\nEND "
          "f.\nBEGIN\nRETURN 333;\nEND x.",
          ""},
+        {"MODULE x; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
+         "RETURN 333; END x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN ;\nEND f.\nBEGIN\nRETURN "
+         "333;\nEND x.",
+         ""},
 
         // Error
         {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
          "", "0: Unknown type: complex for return from function f"},
+
+        {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN; END f; BEGIN "
+         "RETURN 333; END x.",
+         "", "0: RETURN does not match return type for function f"},
+
+        {"MODULE x; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+         "RETURN 333; END x.",
+         "", "0: RETURN does not match return type for function f"},
     };
     do_inspect_tests(tests);
 }
 
 TEST(Inspector, Call) {
     std::vector<ParseTests> tests = {
-        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
          "f(); RETURN x; END y.",
-         "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN 0;\nEND "
+         "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN ;\nEND "
          "f.\nBEGIN\nf();\nRETURN x;\nEND y.",
          ""},
         {"MODULE y; VAR x : INTEGER; "
@@ -89,10 +102,10 @@ TEST(Inspector, Call) {
          ""},
 
         // Errors
-        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
          "x(); RETURN x; END y.",
          "", "0: x is not a PROCEDURE"},
-        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
+        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
          "g(); RETURN x; END y.",
          "", "0: undefined PROCEDURE g"},
         {"MODULE y; VAR x : INTEGER; "

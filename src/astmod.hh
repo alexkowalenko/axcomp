@@ -140,6 +140,10 @@ class ASTCall : public ASTStatement {
 //////////////////////
 // Declaration objects
 
+/**
+ * @brief INDENT : type
+ *
+ */
 using VarDec = std::pair<std::shared_ptr<ASTIdentifier>, std::string>;
 
 class ASTProcedure : public ASTBase {

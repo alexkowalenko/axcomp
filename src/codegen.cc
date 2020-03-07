@@ -77,7 +77,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
     // Do declarations - vars
     top_level = true; // we have done the procedures
-    visit_ASTDeclaration(ast->decs.get());
+    ast->decs->accept(this);
 
     // Go through the statements
     std::for_each(ast->stats.begin(), ast->stats.end(),
@@ -145,10 +145,10 @@ void CodeGenerator::doProcedures(
 
 void CodeGenerator::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst && !top_level) {
-        visit_ASTConst(ast->cnst.get());
+        ast->cnst->accept(this);
     }
     if (ast->var && !top_level) {
-        visit_ASTVar(ast->var.get());
+        ast->var->accept(this);
     }
 }
 
@@ -239,7 +239,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     });
 
     // Do declarations
-    visit_ASTDeclaration(ast->decs.get());
+    ast->decs->accept(this);
 
     // Go through the statements
     std::for_each(ast->stats.begin(), ast->stats.end(),
@@ -252,7 +252,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
-    visit_ASTExpr(ast->expr.get());
+    ast->expr->accept(this);
     auto val = last_value;
 
     auto var = current_symboltable->find(ast->ident->value);
@@ -265,8 +265,12 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
 }
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
-    visit_ASTExpr(ast->expr.get());
-    builder.CreateRet(last_value);
+    if (ast->expr) {
+        ast->expr->accept(this);
+        builder.CreateRet(last_value);
+    } else {
+        builder.CreateRetVoid();
+    }
 }
 
 void CodeGenerator::visit_ASTCall(ASTCall *ast) {
@@ -295,7 +299,7 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 
-    visit_ASTTerm(expr->term.get());
+    expr->term->accept(this);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
     if (expr->first_sign && expr->first_sign.value() == TokenType::dash) {
@@ -323,7 +327,7 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
 }
 
 void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTFactor(ast->factor.get());
+    ast->factor->accept(this);
     Value *L = last_value;
     for (auto t : ast->rest) {
         t.second->accept(this);

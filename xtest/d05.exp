@@ -5,7 +5,7 @@ target triple = "x86_64-apple-darwin18.7.0"
 
 @y = internal global i64 0, align 8
 
-define void @f() {
+define i64 @f() {
 entry:
   %yy = alloca i64
   store i64 0, i64* %yy

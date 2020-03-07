@@ -2,7 +2,7 @@ MODULE d05; (* Test top level VARs and procedure VARs *)
   VAR
         y :INTEGER;
     
-  PROCEDURE f;
+  PROCEDURE f : INTEGER;
   VAR yy : INTEGER;
   BEGIN
       RETURN yy + 2;

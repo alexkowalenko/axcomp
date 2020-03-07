@@ -14,12 +14,16 @@
 #include "parser.hh"
 #include "printer.hh"
 #include "symboltable.hh"
+#include "typetable.hh"
 
 #include "parse_test.hh"
 
 using namespace ax;
 
 void do_parse_tests(std::vector<ParseTests> &tests) {
+    TypeTable types;
+    types.initialise();
+
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);

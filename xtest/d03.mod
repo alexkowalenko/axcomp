@@ -1,5 +1,5 @@
 MODULE d03; (* function definitions *)
-  PROCEDURE f;
+  PROCEDURE f : INTEGER;
   BEGIN
       RETURN 12;
   END f;

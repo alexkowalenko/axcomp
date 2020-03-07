@@ -5,11 +5,11 @@
 //
 
 #include "parser.hh"
-#include "type.hh"
 
 #include <fmt/core.h>
 
 #include "error.hh"
+#include "typetable.hh"
 
 namespace ax {
 
@@ -44,7 +44,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols->put(module->name, Symbol(module->name, "MODULE"));
+    symbols->put(
+        module->name,
+        Symbol(module->name, std::string(*TypeTable::ModuleType.get())));
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
 
@@ -139,7 +141,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         // Assume all consts are INTEGER;
         symbols->put(
             dec.first->value,
-            Symbol(dec.first->value, to_string(SimpleTypeTag::integer)));
+            Symbol(dec.first->value, std::string(*TypeTable::IntType.get())));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -320,7 +322,10 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
     debug("Parser::parse_return");
     std::shared_ptr<ASTReturn> ret = std::make_shared<ASTReturn>();
     get_token(TokenType::ret);
-    ret->expr = parse_expr();
+    auto tok = lexer.peek_token();
+    if (tok.type != TokenType::semicolon) {
+        ret->expr = parse_expr();
+    }
     return ret;
 }
 

@@ -29,7 +29,11 @@ class Inspector : public ASTVisitor {
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
     void visit_ASTCall(ASTCall *ast) override;
+    void visit_ASTExpr(ASTExpr *ast) override;
+    void visit_ASTTerm(ASTTerm *ast) override;
     void visit_ASTFactor(ASTFactor *ast) override;
+    void visit_ASTInteger(ASTInteger *ast) override;
+    void visit_ASTIdentifier(ASTIdentifier *ast) override;
 
     void check(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());
@@ -41,7 +45,9 @@ class Inspector : public ASTVisitor {
 
     TypeTable &types;
 
-    bool has_return = false;
+    bool                  has_return = false;
+    std::shared_ptr<Type> last_type = nullptr;
+    ASTProcedure *        last_proc = nullptr;
 };
 
 } // namespace ax

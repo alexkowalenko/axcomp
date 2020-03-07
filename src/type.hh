@@ -6,37 +6,42 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace ax {
-
-enum class SimpleTypeTag { void_t, integer, module, procedure };
-
-std::string to_string(SimpleTypeTag t);
 
 class Type {
   public:
     virtual ~Type() = default;
+
+    bool equiv(std::shared_ptr<Type> t);
 
     virtual explicit operator std::string() = 0;
 };
 
 class SimpleType : public Type {
   public:
-    explicit SimpleType(SimpleTypeTag n) : type(n){};
+    explicit SimpleType(std::string n) : name(n){};
     ~SimpleType() override = default;
 
     explicit operator std::string() override;
 
-    SimpleTypeTag type;
+    std::string name;
 };
 
 class ProcedureType : public Type {
   public:
-    explicit ProcedureType() = default;
+    ProcedureType(std::shared_ptr<Type> const &             r,
+                  std::vector<std::shared_ptr<Type>> const &p)
+        : ret(r), params(p){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
+
+    std::shared_ptr<Type>              ret;
+    std::vector<std::shared_ptr<Type>> params;
 };
 
 } // namespace ax
