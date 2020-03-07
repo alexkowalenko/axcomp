@@ -35,8 +35,9 @@ class Parser {
     std::shared_ptr<ASTExpr>       parse_expr();
     std::shared_ptr<ASTTerm>       parse_term();
     std::shared_ptr<ASTFactor>     parse_factor();
-    std::shared_ptr<ASTInteger>    parse_integer();
     std::shared_ptr<ASTIdentifier> parse_identifier();
+    std::shared_ptr<ASTInteger>    parse_integer();
+    std::shared_ptr<ASTBool>       parse_boolean();
 
     Token get_token(TokenType t);
 

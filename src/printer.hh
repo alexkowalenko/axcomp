@@ -33,8 +33,9 @@ class ASTPrinter : ASTVisitor {
     void visit_ASTExpr(ASTExpr *ast) override;
     void visit_ASTTerm(ASTTerm *ast) override;
     void visit_ASTFactor(ASTFactor *ast) override;
-    void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
+    void visit_ASTInteger(ASTInteger *ast) override;
+    void visit_ASTBool(ASTBool *ast) override;
 
   private:
     std::ostream &os;

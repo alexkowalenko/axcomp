@@ -361,10 +361,6 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
     std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
 }
 
-void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
-    last_value = ConstantInt::get(context, APInt(64, ast->value, true));
-}
-
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
     if (auto res = current_symboltable->find(ast->value)) {
         last_value = builder.CreateLoad(*res, ast->value);
@@ -372,6 +368,14 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
     }
     throw CodeGenException(fmt::format("identifier {} unknown", ast->value));
 }
+
+void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
+    last_value = ConstantInt::get(context, APInt(64, ast->value, true));
+}
+
+void CodeGenerator::visit_ASTBool(ASTBool *ast) {
+    last_value = ConstantInt::get(context, APInt(1, ast->value, true));
+};
 
 /**
  * @brief Create an alloca instruction in the entry block of the function.

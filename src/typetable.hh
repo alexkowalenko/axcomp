@@ -28,6 +28,7 @@ class TypeTable {
 
     // Standard types
     static TypePtr IntType;
+    static TypePtr BoolType;
     static TypePtr ModuleType;
     static TypePtr VoidType;
 

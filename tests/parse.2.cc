@@ -96,3 +96,14 @@ TEST(Parser, Assignment) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, Bools) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; VAR x : BOOLEAN; BEGIN x := TRUE; END y.",
+         "MODULE y;\nVAR\nx: BOOLEAN;\nBEGIN\nx := TRUE;\nEND y.", ""},
+        {"MODULE y; VAR x : BOOLEAN; BEGIN x := FALSE; END y.",
+         "MODULE y;\nVAR\nx: BOOLEAN;\nBEGIN\nx := FALSE;\nEND y.", ""},
+    };
+    do_parse_tests(tests);
+}

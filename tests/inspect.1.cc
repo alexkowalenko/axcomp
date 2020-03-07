@@ -45,13 +45,13 @@ TEST(Inspector, UnknownExpr) {
 
 TEST(Inspector, Return) {
     std::vector<ParseTests> tests = {
-        {"MODULE x; VAR z: INTEGER; BEGIN x := 10; RETURN x; END x.",
-         "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nx := 10;\nRETURN x;\nEND x.", ""},
+        {"MODULE x; VAR z: INTEGER; BEGIN z := 10; RETURN z; END x.",
+         "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nz := 10;\nRETURN z;\nEND x.", ""},
 
         // Errors
-        {"MODULE x; VAR z: INTEGER; BEGIN x := 10; END x.", "",
+        {"MODULE x; VAR z: INTEGER; BEGIN z := 10; END x.", "",
          "0: MODULE x has no RETURN function"},
-        {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN x := 1; END y; "
+        {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN z := 1; END y; "
          "BEGIN x := 10; END x.",
          "", "0: PROCEDURE y has no RETURN function"},
     };
@@ -71,6 +71,18 @@ TEST(Inspector, ReturnType) {
          "333;\nEND x.",
          ""},
 
+        {R"(MODULE xxx;
+            PROCEDURE f : BOOLEAN;
+            BEGIN
+            RETURN TRUE;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
+         "MODULE xxx;\nPROCEDURE f(): BOOLEAN;\nBEGIN\nRETURN TRUE;\nEND "
+         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         ""},
+
         // Error
         {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
@@ -82,6 +94,15 @@ TEST(Inspector, ReturnType) {
 
         {"MODULE x; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
+         "", "0: RETURN does not match return type for function f"},
+        {R"(MODULE xxx;
+            PROCEDURE f : BOOLEAN;
+            BEGIN
+            RETURN 123456;
+            END f;
+            BEGIN
+            RETURN 3;
+            END xxx.)",
          "", "0: RETURN does not match return type for function f"},
     };
     do_inspect_tests(tests);
@@ -196,6 +217,47 @@ TEST(Inspector, FunctionParams) {
             RETURN 3;
             END xxx.)",
          "", "0: Unknown type: UNDEF for paramater x from function f"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, Assignment) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            BEGIN
+            z := 33;
+            RETURN z;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nBEGIN\nz := 33;\nRETURN z;\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : BOOLEAN;
+            BEGIN
+            z := TRUE;
+            RETURN z;
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: BOOLEAN;\nBEGIN\nz := TRUE;\nRETURN z;\nEND "
+         "xxx.",
+         ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            VAR z : BOOLEAN;
+            BEGIN
+            z := 4;
+            RETURN z;
+            END xxx.)",
+         "", "0: Can't assign expression of type INTEGER to z"},
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            BEGIN
+            z := TRUE;
+            RETURN z;
+            END xxx.)",
+         "", "0: Can't assign expression of type BOOLEAN to z"},
     };
     do_inspect_tests(tests);
 }

@@ -126,6 +126,19 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     current_symboltable = former_symboltable;
 }
 
+void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
+    ast->expr->accept(this);
+    auto expr_type = last_type;
+
+    ast->ident->accept(this);
+    if (!last_type->equiv(expr_type)) {
+        throw CodeGenException(
+            fmt::format("Can't assign expression of type {} to {}",
+                        std::string(*expr_type), ast->ident->value),
+            0);
+    }
+}
+
 void Inspector::visit_ASTReturn(ASTReturn *ast) {
     has_return = true;
     if (ast->expr) {
@@ -230,10 +243,6 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                ast->factor);
 }
 
-void Inspector::visit_ASTInteger(ASTInteger *) {
-    last_type = TypeTable::IntType;
-}
-
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     debug("Inspector::visit_ASTIdentifier");
     auto res = current_symboltable->find(ast->value);
@@ -249,6 +258,14 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
                         0);
     }
     last_type = *resType;
+}
+
+void Inspector::visit_ASTInteger(ASTInteger *) {
+    last_type = TypeTable::IntType;
+}
+
+void Inspector::visit_ASTBool(ASTBool *ast) {
+    last_type = TypeTable::BoolType;
 }
 
 } // namespace ax

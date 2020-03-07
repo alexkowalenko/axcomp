@@ -34,7 +34,8 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"VAR", Token(TokenType::var, "VAR")},
     {"RETURN", Token(TokenType::ret, "RETURN")},
     {"PROCEDURE", Token(TokenType::procedure, "PROCEDURE")},
-};
+    {"TRUE", Token(TokenType::true_k, "TRUE")},
+    {"FALSE", Token(TokenType::false_k, "FALSE")}};
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},

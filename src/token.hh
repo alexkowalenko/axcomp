@@ -12,7 +12,7 @@
 namespace ax {
 
 enum class TokenType {
-    null,
+    null = 0,
     eof,
     integer,
     ident,
@@ -39,9 +39,11 @@ enum class TokenType {
     var,
     ret,
     procedure,
+    true_k,
+    false_k,
 };
 
-std::string string(TokenType &t);
+std::string string(TokenType t);
 
 class Token {
   public:

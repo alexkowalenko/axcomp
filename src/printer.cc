@@ -11,6 +11,7 @@
 #include <fmt/core.h>
 
 #include "astmod.hh"
+#include "token.hh"
 
 namespace ax {
 
@@ -149,12 +150,20 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
                ast->factor);
 }
 
+void ASTPrinter::visit_ASTIdentifier(ASTIdentifier *ast) {
+    os << fmt::format("{}", ast->value);
+};
+
 void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {
     os << fmt::format("{}", ast->value);
 }
 
-void ASTPrinter::visit_ASTIdentifier(ASTIdentifier *ast) {
-    os << fmt::format("{}", ast->value);
-};
+void ASTPrinter::visit_ASTBool(ASTBool *ast) {
+    if (ast->value) {
+        os << string(TokenType::true_k);
+    } else {
+        os << string(TokenType::false_k);
+    }
+}
 
 } // namespace ax

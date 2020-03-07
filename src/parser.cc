@@ -408,7 +408,11 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 }
 
 /**
- * @brief factor -> IDENT | procedureCall | INTEGER | '(' expr ')'
+ * @brief factor -> IDENT
+ *                  | procedureCall
+ *                  | INTEGER
+ *                  | "TRUE" | "FALSE"
+ *                  | '('expr ')'
  *
  * @return std::shared_ptr<ASTFactor>
  */
@@ -427,6 +431,10 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     case TokenType::integer:
         // Integer
         factor->factor = parse_integer();
+        return factor;
+    case TokenType::true_k:
+    case TokenType::false_k:
+        factor->factor = parse_boolean();
         return factor;
     case TokenType::ident: {
         // Identifier
@@ -450,6 +458,19 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
 };
 
 /**
+ * @brief IDENT
+ *
+ * @return std::shared_ptr<ASTIdentifier>
+ */
+std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
+    debug("Parser::parse_identifier");
+    auto                           tok = get_token(TokenType::ident);
+    std::shared_ptr<ASTIdentifier> ast = std::make_shared<ASTIdentifier>();
+    ast->value = tok.val;
+    return ast;
+};
+
+/**
  * @brief INTEGER
  *
  * @return std::shared_ptr<ASTInteger>
@@ -464,17 +485,19 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
 }
 
 /**
- * @brief IDENT
+ * @brief TRUE | FALSE
  *
- * @return std::shared_ptr<ASTIdentifier>
+ * @return std::shared_ptr<ASTBool>
  */
-std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
-    debug("Parser::parse_identifier");
-    auto                           tok = get_token(TokenType::ident);
-    std::shared_ptr<ASTIdentifier> ast = std::make_shared<ASTIdentifier>();
-    ast->value = tok.val;
+std::shared_ptr<ASTBool> Parser::parse_boolean() {
+    std::shared_ptr<ASTBool> ast = std::make_shared<ASTBool>();
+    if (auto tok = lexer.get_token(); tok.type == TokenType::true_k) {
+        ast->value = true;
+    } else {
+        ast->value = false;
+    }
     return ast;
-};
+}
 
 std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();

@@ -23,6 +23,7 @@ class ASTExpr;
 class ASTTerm;
 class ASTFactor;
 class ASTInteger;
+class ASTBool;
 class ASTIdentifier;
 
 class ASTVisitor {
@@ -43,6 +44,7 @@ class ASTVisitor {
     virtual void visit_ASTFactor(ASTFactor *ast);
     virtual void visit_ASTInteger(ASTInteger *ast);
     virtual void visit_ASTIdentifier(ASTIdentifier *ast);
+    virtual void visit_ASTBool(ASTBool *ast);
 };
 
 } // namespace ax

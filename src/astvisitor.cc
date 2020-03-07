@@ -84,8 +84,10 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
     std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
 }
 
+void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
+
 void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}
 
-void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
+void ASTVisitor::visit_ASTBool(ASTBool *ast){};
 
 } // namespace ax

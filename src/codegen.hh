@@ -49,8 +49,9 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTExpr(ASTExpr *expr) override;
     void visit_ASTTerm(ASTTerm *ast) override;
     void visit_ASTFactor(ASTFactor *ast) override;
-    void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
+    void visit_ASTInteger(ASTInteger *ast) override;
+    void visit_ASTBool(ASTBool *ast) override;
 
   private:
     void init(std::string const &module_name);

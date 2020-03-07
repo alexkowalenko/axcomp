@@ -41,11 +41,13 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::var, "VAR"},
     {TokenType::ret, "RETURN"},
     {TokenType::procedure, "PROCEDURE"},
+    {TokenType::true_k, "TRUE"},
+    {TokenType::false_k, "FALSE"},
 
     {TokenType::eof, "EOF"},
 };
 
-std::string string(TokenType &t) {
+std::string string(TokenType t) {
     if (auto res = mapping.find(t); res != mapping.end()) {
         return res->second;
     }

@@ -31,6 +31,15 @@ class ASTInteger : public ASTBase {
     long value = 0;
 };
 
+class ASTBool : public ASTBase {
+  public:
+    ~ASTBool() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTBool(this); };
+
+    bool value = false;
+};
+
 class ASTIdentifier : public ASTBase {
   public:
     ~ASTIdentifier() override = default;
@@ -54,7 +63,8 @@ class ASTFactor : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
     std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>,
-                 std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>>
+                 std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>,
+                 std::shared_ptr<ASTBool>>
         factor;
 };
 

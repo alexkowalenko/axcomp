@@ -7,7 +7,8 @@
 #include <sstream>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include <fmt/core.h>
+#include <gtest/gtest.h>
 
 #include "error.hh"
 #include "lexer.hh"
@@ -61,6 +62,8 @@ std::vector<LexTests> tests = {
     {"VAR", TokenType::var, "VAR"},
     {"RETURN", TokenType::ret, "RETURN"},
     {"PROCEDURE", TokenType::procedure, "PROCEDURE"},
+    {"TRUE", TokenType::true_k, "TRUE"},
+    {"FALSE", TokenType::false_k, "FALSE"},
 
     // identifiers
     {"a", TokenType::ident, "a"},
@@ -77,10 +80,10 @@ TEST(Lexer, Lexer1) {
         std::istringstream is(t.input);
         Lexer              lex(is);
 
-        std::cout << "Scan " << t.input;
         try {
             auto token = lex.get_token();
-            std::cout << " get " << token.val << std::endl;
+            std::cout << fmt::format("Scan {} get {}", t.input, token.val)
+                      << std::endl;
             EXPECT_EQ(token.type, t.token);
             EXPECT_EQ(token.val, t.val);
         } catch (LexicalException &l) {

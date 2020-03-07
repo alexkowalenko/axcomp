@@ -64,7 +64,7 @@ expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
 
 term = factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
 
-factor = IDENT | procedureCall | INTEGER | '(' expr ')'
+factor = IDENT | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')'
 
 IDENT = letter (letter | digit | '_')*
 
@@ -76,28 +76,31 @@ INTEGER = digit+
 ```pascal
 (* Sample program *)
 MODULE test;
-    CONST
-        x = 1;
-    VAR
-        z : INTEGER;
+CONST
+    x = 1;
+VAR
+    z : INTEGER;
+    check : BOOLEAN;
 
     PROCEDURE f;
         VAR yy : INTEGER;
     BEGIN
-      RETURN yy + 2;
+      RETURN ;
     END f;
 
     PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
     BEGIN
-      RETURN 2;
+      RETURN x + y * y;
     END f;
 
 BEGIN
     z := 12;
+    check := FALSE;
     f();
-    RETURN (3 * f()) + ((2 + (f() + 1)) * 4);
+    RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4);
 END test.
 ```
+
 ## Notes
 
 Changes to the standard definition:
