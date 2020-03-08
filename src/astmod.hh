@@ -53,7 +53,12 @@ class ASTIdentifier : public ASTBase {
 // Expression Objects
 
 /**
- * @brief factor -> IDENT | INTEGER | '(' expr ')'
+ * @brief factor -> IDENT
+ *                  | procedureCall
+ *                  | INTEGER
+ *                  | "TRUE" | "FALSE"
+ *                  | '('expr ')'
+ *                  | "~" factor
  *
  */
 class ASTFactor : public ASTBase {
@@ -64,12 +69,13 @@ class ASTFactor : public ASTBase {
 
     std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>,
                  std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>,
-                 std::shared_ptr<ASTBool>>
-        factor;
+                 std::shared_ptr<ASTBool>, std::shared_ptr<ASTFactor>>
+         factor;
+    bool is_not = false;
 };
 
 /**
- * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
+ * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
  *
  */
 class ASTTerm : public ASTBase {
@@ -85,7 +91,26 @@ class ASTTerm : public ASTBase {
 };
 
 /**
- * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
+ * @brief expr -> ('+' | '-' )? term ( ('+' | '-' | "OR") term)*
+ *
+ */
+class ASTSimpleExpr : public ASTBase {
+  public:
+    ~ASTSimpleExpr() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTSimpleExpr(this); };
+
+    using Expr_add = std::pair<TokenType, std::shared_ptr<ASTTerm>>;
+
+    std::optional<TokenType> first_sign;
+    std::shared_ptr<ASTTerm> term;
+    std::vector<Expr_add>    rest;
+};
+
+/**
+ * @brief expr = simpleExpr [ relation simpleExpr]
+ *
+ * relation = "=" | "#" | "<" | "<=" | ">" | ">="
  *
  */
 class ASTExpr : public ASTBase {
@@ -94,11 +119,9 @@ class ASTExpr : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTExpr(this); };
 
-    using Expr_add = std::pair<TokenType, std::shared_ptr<ASTTerm>>;
-
-    std::optional<TokenType> first_sign;
-    std::shared_ptr<ASTTerm> term;
-    std::vector<Expr_add>    rest;
+    std::shared_ptr<ASTSimpleExpr>                expr;
+    std::optional<TokenType>                      relation;
+    std::optional<std::shared_ptr<ASTSimpleExpr>> relation_expr;
 };
 
 ////////////////////

@@ -27,6 +27,13 @@ enum class TokenType {
     equals,
     colon,
     assign,
+    hash,
+    less,
+    leq,
+    greater,
+    gteq,
+    tilde,
+    ampersand,
 
     // Keywords
     module,
@@ -41,6 +48,7 @@ enum class TokenType {
     procedure,
     true_k,
     false_k,
+    or_k,
 };
 
 std::string string(TokenType t);

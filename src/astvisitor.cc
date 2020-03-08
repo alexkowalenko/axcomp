@@ -68,6 +68,13 @@ void ASTVisitor::visit_ASTCall(ASTCall *ast) {
 }
 
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
+    ast->expr->accept(this);
+    if (*ast->relation_expr) {
+        (*ast->relation_expr)->accept(this);
+    }
+}
+
+void ASTVisitor::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
     std::for_each(ast->rest.begin(), ast->rest.end(),
                   [this](auto t) { t.second->accept(this); });

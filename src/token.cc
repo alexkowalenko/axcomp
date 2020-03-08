@@ -29,6 +29,13 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::colon, ":"},
     {TokenType::equals, "="},
     {TokenType::assign, ":="},
+    {TokenType::hash, "#"},
+    {TokenType::less, "<"},
+    {TokenType::leq, "<="},
+    {TokenType::greater, ">"},
+    {TokenType::gteq, ">="},
+    {TokenType::tilde, "~"},
+    {TokenType::ampersand, "&"},
 
     // Keywords
     {TokenType::module, "MODULE"},
@@ -43,6 +50,7 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::procedure, "PROCEDURE"},
     {TokenType::true_k, "TRUE"},
     {TokenType::false_k, "FALSE"},
+    {TokenType::or_k, "OR"},
 
     {TokenType::eof, "EOF"},
 };

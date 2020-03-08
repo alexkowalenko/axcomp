@@ -6,6 +6,9 @@
 
 #include "parser.hh"
 
+#include <optional>
+#include <set>
+
 #include <fmt/core.h>
 
 #include "error.hh"
@@ -360,13 +363,40 @@ std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
 }
 
 /**
- * @brief expr -> ('+' | '-' )? term ( ('+' | '-' ) term)*
+ * @brief expr = simpleExpr [ relation simpleExpr]
+ *
+ * relation = "=" | "#" | "<" | "<=" | ">" | ">="
  *
  * @return std::shared_ptr<ASTExpr>
  */
+
+inline std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
+                                          TokenType::less,    TokenType::leq,
+                                          TokenType::greater, TokenType::gteq};
+
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
     debug("Parser::parse_expr");
-    std::shared_ptr<ASTExpr> expr = std::make_shared<ASTExpr>();
+    std::shared_ptr<ASTExpr> ast = std::make_shared<ASTExpr>();
+
+    ast->expr = parse_simpleexpr();
+    auto tok = lexer.peek_token();
+    if (relationOps.find(tok.type) != relationOps.end()) {
+        lexer.get_token(); // get token;
+        ast->relation = std::optional<TokenType>(tok.type);
+        ast->relation_expr =
+            std::optional<std::shared_ptr<ASTSimpleExpr>>(parse_simpleexpr());
+    }
+    return ast;
+}
+
+/**
+ * @brief expr -> ('+' | '-' )? term ( ('+' | '-' | "OR" ) term)*
+ *
+ * @return std::shared_ptr<ASTSimpleExpr>
+ */
+std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
+    debug("Parser::parse_simpleexpr");
+    std::shared_ptr<ASTSimpleExpr> expr = std::make_shared<ASTSimpleExpr>();
 
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
@@ -375,9 +405,10 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
     }
     expr->term = parse_term();
     tok = lexer.peek_token();
-    while (tok.type == TokenType::plus || tok.type == TokenType::dash) {
+    while (tok.type == TokenType::plus || tok.type == TokenType::dash ||
+           tok.type == TokenType::or_k) {
         lexer.get_token();
-        ASTExpr::Expr_add add{tok.type, parse_term()};
+        ASTSimpleExpr::Expr_add add{tok.type, parse_term()};
         expr->rest.push_back(add);
         tok = lexer.peek_token();
     }
@@ -385,10 +416,14 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
 }
 
 /**
- * @brief term -> INTEGER ( ( '*' | 'DIV' | 'MOD' ) INTEGER)*
+ * @brief term -> INTEGER ( ( '*' | 'DIV' | 'MOD' | "&") INTEGER)*
  *
  * @return std::shared_ptr<ASTTerm>
  */
+
+inline std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div,
+                                      TokenType::mod, TokenType::ampersand};
+
 std::shared_ptr<ASTTerm> Parser::parse_term() {
     debug("Parser::parse_term");
     std::shared_ptr<ASTTerm> term = std::make_shared<ASTTerm>();
@@ -396,8 +431,7 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
     term->factor = parse_factor();
     auto tok = lexer.peek_token();
     debug("term {}", std::string(tok));
-    while (tok.type == TokenType::asterisk || tok.type == TokenType::div ||
-           tok.type == TokenType::mod) {
+    while (termOps.find(tok.type) != termOps.end()) {
         lexer.get_token();
         ASTTerm::Term_mult mult{tok.type, parse_factor()};
         term->rest.push_back(mult);
@@ -418,36 +452,41 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
  */
 std::shared_ptr<ASTFactor> Parser::parse_factor() {
     debug("Parser::parse_factor");
-    std::shared_ptr<ASTFactor> factor = std::make_shared<ASTFactor>();
+    std::shared_ptr<ASTFactor> ast = std::make_shared<ASTFactor>();
     auto                       tok = lexer.peek_token();
     debug("factor {}", std::string(tok));
     switch (tok.type) {
     case TokenType::l_paren:
         // Expression
         lexer.get_token(); // get (
-        factor->factor = parse_expr();
+        ast->factor = parse_expr();
         get_token(TokenType::r_paren);
-        return factor;
+        return ast;
     case TokenType::integer:
         // Integer
-        factor->factor = parse_integer();
-        return factor;
+        ast->factor = parse_integer();
+        return ast;
     case TokenType::true_k:
     case TokenType::false_k:
-        factor->factor = parse_boolean();
-        return factor;
+        ast->factor = parse_boolean();
+        return ast;
+    case TokenType::tilde:
+        lexer.get_token(); // get ~
+        ast->is_not = true;
+        ast->factor = parse_factor();
+        return ast;
     case TokenType::ident: {
         // Identifier
         lexer.get_token(); // get tok
         auto nexttok = lexer.peek_token();
         debug("factor nexttok: {}", std::string(nexttok));
         if (nexttok.type == TokenType::l_paren) {
-            factor->factor = parse_call(tok);
-            return factor;
+            ast->factor = parse_call(tok);
+            return ast;
         }
         lexer.push_token(tok);
-        factor->factor = parse_identifier();
-        return factor;
+        ast->factor = parse_identifier();
+        return ast;
     }
     default:
         throw ParseException(

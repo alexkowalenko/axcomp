@@ -66,6 +66,33 @@ TEST(Parser, Module) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, Logic) {
+    std::vector<ParseTests> tests = {
+
+        {"MODULE y; BEGIN RETURN 1 = 1; END y.",
+         "MODULE y;\nBEGIN\nRETURN 1 = 1;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN 1 # 1; END y.",
+         "MODULE y;\nBEGIN\nRETURN 1 # 1;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN (1 < 1) = (1 > 1); END y.",
+         "MODULE y;\nBEGIN\nRETURN  (1 < 1)  =  (1 > 1) ;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN (1 >= 1) # (1 <= 1); END y.",
+         "MODULE y;\nBEGIN\nRETURN  (1 >= 1)  #  (1 <= 1) ;\nEND y.", ""},
+
+        {"MODULE y; BEGIN RETURN 1 OR 1; END y.",
+         "MODULE y;\nBEGIN\nRETURN 1 OR 1;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN 1 & 1; END y.",
+         "MODULE y;\nBEGIN\nRETURN 1 & 1;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN ~ TRUE; END y.",
+         "MODULE y;\nBEGIN\nRETURN ~ TRUE;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN ~ ~ TRUE; END y.",
+         "MODULE y;\nBEGIN\nRETURN ~ ~ TRUE;\nEND y.", ""},
+        {"MODULE y; BEGIN RETURN ~ TRUE & ~ FALSE; END y.",
+         "MODULE y;\nBEGIN\nRETURN ~ TRUE & ~ FALSE;\nEND y.", ""},
+
+    };
+    do_parse_tests(tests);
+}
+
 TEST(Parser, Plus) {
     std::vector<ParseTests> tests = {
 

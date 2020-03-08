@@ -118,12 +118,24 @@ void ASTPrinter::visit_ASTCall(ASTCall *ast) {
 };
 
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
+    ast->expr->accept(this);
+    if (ast->relation) {
+        os << fmt::format(" {} ", string(*ast->relation));
+        (*ast->relation_expr)->accept(this);
+    }
+}
+
+void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());
     }
     ast->term->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
-        os << string(t.first);
+        if (t.first == TokenType::or_k) {
+            os << fmt::format(" {} ", string(t.first));
+        } else {
+            os << string(t.first);
+        }
         t.second->accept(this);
     });
 }
@@ -131,10 +143,10 @@ void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
 void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
     ast->factor->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
-        if (t.first == TokenType::div || t.first == TokenType::mod) {
-            os << fmt::format(" {} ", string(t.first));
-        } else {
+        if (t.first == TokenType::asterisk) {
             os << string(t.first);
+        } else {
+            os << fmt::format(" {} ", string(t.first));
         }
         t.second->accept(this);
     });
@@ -146,6 +158,12 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
                               this->os << " (";
                               arg->accept(this);
                               this->os << ") ";
+                          },
+                          [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                              if (ast->is_not) {
+                                  os << "~ ";
+                              }
+                              arg->accept(this);
                           }},
                ast->factor);
 }

@@ -60,11 +60,15 @@ assignment = IDENT ":=" expr
 
 procedureCall = IDENT "(" expr ( "," expr )* ")"
 
-expr = ('+' | '-' )? term ( ('+' | '-' ) term)*
+expr = simpleExpr [ relation simpleExpr]
 
-term = factor ( ( '*' | 'DIV' | 'MOD' ) factor)*
+relation = "=" | "#" | "<" | "<=" | ">" | ">="
 
-factor = IDENT | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')'
+simpleExpr = ('+' | '-' )? term ( ('+' | '-' | "OR" ) term)*
+
+term = factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
+
+factor = IDENT | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' | "~" factor
 
 IDENT = letter (letter | digit | '_')*
 
@@ -82,16 +86,16 @@ VAR
     z : INTEGER;
     check : BOOLEAN;
 
-    PROCEDURE f;
-        VAR yy : INTEGER;
-    BEGIN
-      RETURN ;
-    END f;
+PROCEDURE f;
+    VAR yy : INTEGER;
+BEGIN
+    RETURN ;
+END f;
 
-    PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
-    BEGIN
-      RETURN x + y * y;
-    END f;
+PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
+BEGIN
+    RETURN x + y * y;
+END f;
 
 BEGIN
     z := 12;

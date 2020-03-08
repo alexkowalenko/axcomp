@@ -35,7 +35,8 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"RETURN", Token(TokenType::ret, "RETURN")},
     {"PROCEDURE", Token(TokenType::procedure, "PROCEDURE")},
     {"TRUE", Token(TokenType::true_k, "TRUE")},
-    {"FALSE", Token(TokenType::false_k, "FALSE")}};
+    {"FALSE", Token(TokenType::false_k, "FALSE")},
+    {"OR", Token(TokenType::or_k, "OR")}};
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},
@@ -48,6 +49,9 @@ static std::unordered_map<char, Token> token_map = {
     {'(', Token(TokenType::l_paren, "(")},
     {')', Token(TokenType::r_paren, ")")},
     {'=', Token(TokenType::equals, "=")},
+    {'#', Token(TokenType::hash, "#")},
+    {'~', Token(TokenType::tilde, "~")},
+    {'&', Token(TokenType::ampersand, "&")},
 };
 
 Lexer::Lexer(std::istream &stream) : is{stream} {}
@@ -134,12 +138,25 @@ Token Lexer::get_token() {
     }
 
     // Check multiple character tokens
-    if (c == ':') {
+    switch (c) {
+    case ':':
         if (is.peek() == '=') {
             get_char();
             return Token(TokenType::assign, ":=");
         }
         return Token(TokenType::colon, ":");
+    case '<':
+        if (is.peek() == '=') {
+            get_char();
+            return Token(TokenType::leq, "<=");
+        }
+        return Token(TokenType::less, "<");
+    case '>':
+        if (is.peek() == '=') {
+            get_char();
+            return Token(TokenType::gteq, ">=");
+        }
+        return Token(TokenType::greater, ">");
     }
     if (std::isdigit(c)) {
         return scan_digit(c);

@@ -303,8 +303,11 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     last_value = builder.CreateCall(callee, args, "calltmp");
 }
 
-void CodeGenerator::visit_ASTExpr(ASTExpr *expr) {
+void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {
+    ast->expr->accept(this);
+}
 
+void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *expr) {
     expr->term->accept(this);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer

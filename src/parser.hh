@@ -33,6 +33,7 @@ class Parser {
     std::shared_ptr<ASTReturn>     parse_return();
     std::shared_ptr<ASTCall>       parse_call(Token const &ident);
     std::shared_ptr<ASTExpr>       parse_expr();
+    std::shared_ptr<ASTSimpleExpr> parse_simpleexpr();
     std::shared_ptr<ASTTerm>       parse_term();
     std::shared_ptr<ASTFactor>     parse_factor();
     std::shared_ptr<ASTIdentifier> parse_identifier();

@@ -39,9 +39,16 @@ std::vector<LexTests> tests = {
     {"*", TokenType::asterisk, "*"},
     {"(", TokenType::l_paren, "("},
     {")", TokenType::r_paren, ")"},
-    {"=", TokenType::equals, "="},
     {":", TokenType::colon, ":"},
     {":=", TokenType::assign, ":="},
+    {"=", TokenType::equals, "="},
+    {"#", TokenType::hash, "#"},
+    {"<", TokenType::less, "<"},
+    {"<=", TokenType::leq, "<="},
+    {">", TokenType::greater, ">"},
+    {">=", TokenType::gteq, ">="},
+    {"~", TokenType::tilde, "~"},
+    {"&", TokenType::ampersand, "&"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -64,6 +71,7 @@ std::vector<LexTests> tests = {
     {"PROCEDURE", TokenType::procedure, "PROCEDURE"},
     {"TRUE", TokenType::true_k, "TRUE"},
     {"FALSE", TokenType::false_k, "FALSE"},
+    {"OR", TokenType::or_k, "OR"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

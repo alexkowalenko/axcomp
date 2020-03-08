@@ -203,6 +203,10 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 }
 
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
+    ast->expr->accept(this);
+};
+
+void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
     auto t1 = last_type;
     std::for_each(ast->rest.begin(), ast->rest.end(), [this, &t1](auto t) {
