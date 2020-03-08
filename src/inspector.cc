@@ -204,7 +204,20 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
-};
+    if (ast->relation) {
+        auto t1 = last_type;
+        (*ast->relation_expr)->accept(this);
+        // Types have to be the same BOOLEANs or INTEGERs
+        if (!last_type->equiv(t1)) {
+            throw CodeGenException(
+                fmt::format("types in expression don't match {} and {}",
+                            std::string(*t1), std::string(*last_type)),
+                0);
+        }
+        // Comparison operators return BOOLEAN
+        last_type = TypeTable::BoolType;
+    }
+}
 
 void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
@@ -217,9 +230,22 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
                             std::string(*t1), std::string(*last_type)),
                 0);
         }
+        if (t.first == TokenType::or_k) {
+            if (last_type != TypeTable::BoolType) {
+                throw CodeGenException(
+                    fmt::format("types in OR expression must be BOOLEAN"), 0);
+            }
+        } else {
+            if (last_type != TypeTable::IntType) {
+                throw CodeGenException(
+                    fmt::format("types in {} expression must be numeric",
+                                string(t.first)),
+                    0);
+            }
+        }
         t1 = last_type;
     });
-};
+}
 
 void Inspector::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
@@ -232,19 +258,44 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
                             std::string(*t1), std::string(*last_type)),
                 0);
         }
+        if (t.first == TokenType::ampersand) {
+            if (last_type != TypeTable::BoolType) {
+                throw CodeGenException(
+                    fmt::format("types in & expression must be BOOLEAN"), 0);
+            }
+        } else {
+            if (last_type != TypeTable::IntType) {
+                throw CodeGenException(
+                    fmt::format("types in {} expression must be numeric",
+                                string(t.first)),
+                    0);
+            }
+        }
         t1 = last_type;
     });
-};
+}
 
 void Inspector::visit_ASTFactor(ASTFactor *ast) {
-    std::visit(overloaded{
-                   [this](auto factor) { factor->accept(this); },
-                   [this](std::shared_ptr<ASTCall> const &factor) {
-                       // need to pass on return type */
-                       factor->accept(this);
-                   },
-               },
-               ast->factor);
+    std::visit(
+        overloaded{
+            [this](auto factor) { factor->accept(this); },
+            [this](std::shared_ptr<ASTCall> const &factor) {
+                // need to pass on return type */
+                factor->accept(this);
+            },
+            [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                if (ast->is_not) {
+                    arg->accept(this);
+                    if (last_type != TypeTable::BoolType) {
+                        throw CodeGenException(
+                            fmt::format("type in ~ expression must be BOOLEAN"),
+                            0);
+                    }
+                }
+            },
+
+        },
+        ast->factor);
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

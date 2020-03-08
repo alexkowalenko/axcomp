@@ -275,6 +275,12 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
     if (ast->expr) {
         ast->expr->accept(this);
+        if (top_level &&
+            last_value->getType() != llvm::Type::getInt64Ty(context)) {
+            // in the main module - return i64 value
+            last_value =
+                builder.CreateZExt(last_value, llvm::Type::getInt64Ty(context));
+        }
         builder.CreateRet(last_value);
     } else {
         builder.CreateRetVoid();
@@ -331,9 +337,7 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {
         case TokenType::gteq:
             last_value = builder.CreateICmpSGE(L, R);
             break;
-        default:
-            throw CodeGenException("ASTExpr with sign" +
-                                   string(*ast->relation));
+        default:;
         }
     }
 }

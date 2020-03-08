@@ -262,6 +262,117 @@ TEST(Inspector, Assignment) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ExprCompare) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE = FALSE;
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN TRUE = FALSE;\nEND xxx.", ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE = 1;
+            END xxx.)",
+         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 0 # FALSE;
+            END xxx.)",
+         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, SimpleExpr) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE OR FALSE;
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN TRUE OR FALSE;\nEND xxx.", ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE + 1;
+            END xxx.)",
+         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 0 OR FALSE;
+            END xxx.)",
+         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 0 OR 0;
+            END xxx.)",
+         "", "0: types in OR expression must be BOOLEAN"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN FALSE + FALSE;
+            END xxx.)",
+         "", "0: types in + expression must be numeric"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, Term) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE & FALSE;
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN TRUE & FALSE;\nEND xxx.", ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE * 1;
+            END xxx.)",
+         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 0 & FALSE;
+            END xxx.)",
+         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN TRUE DIV FALSE;
+            END xxx.)",
+         "", "0: types in DIV expression must be numeric"},
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 0 & 23;
+            END xxx.)",
+         "", "0: types in & expression must be BOOLEAN"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, Factor) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN ~ TRUE;
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN ~ TRUE;\nEND xxx.", ""},
+
+        // Errors
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN ~ 1;
+            END xxx.)",
+         "", "0: type in ~ expression must be BOOLEAN"},
+    };
+    do_inspect_tests(tests);
+}
+
 void do_inspect_tests(std::vector<ParseTests> &tests) {
     TypeTable types;
     types.initialise();
