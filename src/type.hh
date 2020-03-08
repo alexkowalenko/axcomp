@@ -19,7 +19,7 @@ using TypePtr = std::shared_ptr<Type>;
 
 class Type {
   public:
-    Type() : llvm_type(nullptr){};
+    Type() = default;
     virtual ~Type() = default;
 
     bool equiv(TypePtr const &t);
@@ -30,13 +30,13 @@ class Type {
     llvm::Type *get_llvm() { return llvm_type; };
 
   private:
-    llvm::Type *llvm_type;
+    llvm::Type *llvm_type{nullptr};
 };
 
 class SimpleType : public Type {
   public:
     explicit SimpleType(std::string n) : name(std::move(n)){};
-    ~SimpleType() override{};
+    ~SimpleType() override = default;
 
     explicit operator std::string() override;
 

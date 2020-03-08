@@ -530,11 +530,8 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
  */
 std::shared_ptr<ASTBool> Parser::parse_boolean() {
     std::shared_ptr<ASTBool> ast = std::make_shared<ASTBool>();
-    if (auto tok = lexer.get_token(); tok.type == TokenType::true_k) {
-        ast->value = true;
-    } else {
-        ast->value = false;
-    }
+    auto                     tok = lexer.get_token();
+    ast->value = (tok.type == TokenType::true_k);
     return ast;
 }
 

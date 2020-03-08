@@ -7,7 +7,6 @@
 #include "codegen.hh"
 
 #include <iostream>
-#include <string.h>
 
 #include "llvm/Support/FormatVariadic.h"
 #include <llvm/IR/Constants.h>
@@ -36,6 +35,9 @@ template <typename... T> inline void debug(const T &... msg) {
         std::cerr << fmt::format(msg...) << std::endl;
     }
 }
+
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
 using namespace llvm::sys;
 
@@ -305,19 +307,48 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
+
+    if (ast->relation) {
+        auto L = last_value;
+        (*ast->relation_expr)->accept(this);
+        auto R = last_value;
+        switch (*ast->relation) {
+        case TokenType::equals:
+            last_value = builder.CreateICmpEQ(L, R);
+            break;
+        case TokenType::hash:
+            last_value = builder.CreateICmpNE(L, R);
+            break;
+        case TokenType::less:
+            last_value = builder.CreateICmpSLT(L, R);
+            break;
+        case TokenType::leq:
+            last_value = builder.CreateICmpSLE(L, R);
+            break;
+        case TokenType::greater:
+            last_value = builder.CreateICmpSGT(L, R);
+            break;
+        case TokenType::gteq:
+            last_value = builder.CreateICmpSGE(L, R);
+            break;
+        default:
+            throw CodeGenException("ASTExpr with sign" +
+                                   string(*ast->relation));
+        }
+    }
 }
 
-void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *expr) {
-    expr->term->accept(this);
+void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
+    ast->term->accept(this);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
-    if (expr->first_sign && expr->first_sign.value() == TokenType::dash) {
+    if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
         L = builder.CreateSub(ConstantInt::get(context, APInt(64, 0, true)), L,
                               "negtmp");
         last_value = L;
     }
 
-    for (auto t : expr->rest) {
+    for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
         switch (t.first) {
@@ -327,10 +358,12 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *expr) {
         case TokenType::dash:
             last_value = builder.CreateSub(L, R, "subtmp");
             break;
+        case TokenType::or_k:
+            last_value = builder.CreateOr(L, R, "subtmp");
+            break;
         default:
-            throw CodeGenException("ASTExpr with sign" + string(t.first));
+            throw CodeGenException("ASTSimpleExpr with sign" + string(t.first));
         }
-
         L = last_value;
     }
 }
@@ -338,7 +371,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *expr) {
 void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
     ast->factor->accept(this);
     Value *L = last_value;
-    for (auto t : ast->rest) {
+    for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
         switch (t.first) {
@@ -351,6 +384,9 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
         case TokenType::mod:
             last_value = builder.CreateSRem(L, R, "modtmp");
             break;
+        case TokenType::ampersand:
+            last_value = builder.CreateAnd(L, R, "modtmp");
+            break;
         default:
             throw CodeGenException("ASTTerm with sign" + string(t.first));
         }
@@ -360,9 +396,22 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
 }
 
 void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
+    debug("CodeGenerator::visit_ASTFactor");
     // Visit the appropriate variant
-    std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
-}
+    std::visit(overloaded{[this](auto arg) {
+                              debug("visit_ASTFactor: wrong ");
+                              arg->accept(this);
+                          },
+                          [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                              debug("visit_ASTFactor: not ");
+                              if (ast->is_not) {
+                                  debug("visit_ASTFactor: not do");
+                                  arg->accept(this);
+                                  last_value = builder.CreateNot(last_value);
+                              }
+                          }},
+               ast->factor);
+} // namespace ax
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
     if (auto res = current_symboltable->find(ast->value)) {
@@ -377,7 +426,8 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
 }
 
 void CodeGenerator::visit_ASTBool(ASTBool *ast) {
-    last_value = ConstantInt::get(context, APInt(1, ast->value, true));
+    last_value = ConstantInt::get(
+        context, APInt(1, static_cast<uint64_t>(ast->value), true));
 };
 
 /**

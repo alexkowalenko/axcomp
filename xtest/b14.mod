@@ -1,0 +1,4 @@
+MODULE b14;
+BEGIN
+    RETURN ~ TRUE; 
+END b14.
