@@ -36,7 +36,11 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"PROCEDURE", Token(TokenType::procedure, "PROCEDURE")},
     {"TRUE", Token(TokenType::true_k, "TRUE")},
     {"FALSE", Token(TokenType::false_k, "FALSE")},
-    {"OR", Token(TokenType::or_k, "OR")}};
+    {"OR", Token(TokenType::or_k, "OR")},
+    {"IF", Token(TokenType::if_k, "IF")},
+    {"THEN", Token(TokenType::then, "THEN")},
+    {"ELSIF", Token(TokenType::elsif, "ELSIF")},
+    {"ELSE", Token(TokenType::else_k, "ELSE")}}; // namespace ax
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},

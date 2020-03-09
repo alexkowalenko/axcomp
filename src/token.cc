@@ -51,6 +51,10 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::true_k, "TRUE"},
     {TokenType::false_k, "FALSE"},
     {TokenType::or_k, "OR"},
+    {TokenType::if_k, "IF"},
+    {TokenType::then, "THEN"},
+    {TokenType::elsif, "ELSIF"},
+    {TokenType::else_k, "ELSE"},
 
     {TokenType::eof, "EOF"},
 };

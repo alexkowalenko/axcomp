@@ -25,7 +25,7 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} libax fmt gtest gtest_main ${llvm_libs})
+    target_link_libraries(${TESTNAME} libax libaxtest fmt gtest gtest_main ${llvm_libs})
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}
@@ -48,10 +48,18 @@ llvm_map_components_to_libnames(llvm_libs native)
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
+include_directories(${PROJECT_SOURCE_DIR}/extern/fmt/include)
+
+add_library(libaxtest STATIC lib_test.cc)
 
 package_add_test(lex.1 lex.1.cc)
 package_add_test(lex.2 lex.2.cc)
-package_add_test(parse.1 parse.1.cc lib_test.cc)
-package_add_test(parse.2 parse.2.cc lib_test.cc)
-package_add_test(parse.3 parse.3.cc lib_test.cc)
+
+package_add_test(parse.1 parse.1.cc)
+package_add_test(parse.2 parse.2.cc)
+package_add_test(parse.3 parse.3.cc)
+package_add_test(parse.4 parse.4.cc)
+
 package_add_test(inspect.1 inspect.1.cc)
+package_add_test(inspect.2 inspect.2.cc)

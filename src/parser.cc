@@ -16,7 +16,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{false};
+inline constexpr bool debug_parser{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -33,6 +33,8 @@ Token Parser::get_token(TokenType t) {
     }
     return tok;
 }
+
+inline std::set<TokenType> module_ends{TokenType::end};
 
 /**
  * @brief module -> "MODULE" IDENT ";"  declarations "BEGIN" statement_seq "END"
@@ -63,25 +65,10 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::begin);
 
     // statement_seq
-    do {
-        tok = lexer.peek_token();
-        if (tok.type == TokenType::end) {
-            lexer.get_token();
-            break;
-        }
+    parse_statement_block(module->stats, module_ends);
 
-        // Statement
-        auto stat = parse_statement();
-        module->stats.push_back(stat);
-        // ;
-        get_token(TokenType::semicolon);
-
-        // check if anymore
-        tok = lexer.peek_token();
-        if (tok.type == TokenType::eof) {
-            break;
-        }
-    } while (true);
+    // END
+    get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
         throw ParseException(
@@ -214,20 +201,10 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     get_token(TokenType::begin);
 
     // statement_seq
-    tok = lexer.peek_token();
-    do {
-        if (tok.type == TokenType::end) {
-            lexer.get_token();
-            break;
-        }
+    parse_statement_block(proc->stats, module_ends);
 
-        // Statement
-        auto stat = parse_statement();
-        proc->stats.push_back(stat);
-        get_token(TokenType::semicolon);
-
-        tok = lexer.peek_token();
-    } while (true);
+    // END
+    get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name) {
         throw ParseException(
@@ -271,7 +248,9 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
 
 /**
  * @brief assignment
-    | RETURN [expr]
+    | procedureCall
+    | ifStatment
+    | "RETURN" [expr]
  *
  * @return std::shared_ptr<ASTStatement>
  */
@@ -281,6 +260,8 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
     switch (tok.type) {
     case TokenType::ret:
         return parse_return();
+    case TokenType::if_k:
+        return parse_if();
     case TokenType::ident: {
         // This can be an assignment or function call
         auto ident = lexer.get_token();
@@ -298,6 +279,24 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
             lexer.get_lineno());
+    }
+}
+
+void Parser::parse_statement_block(
+    std::vector<std::shared_ptr<ASTStatement>> &stats,
+    std::set<TokenType>                         end_tokens) {
+    auto tok = lexer.peek_token();
+    while (true) {
+        if (end_tokens.find(tok.type) != end_tokens.end()) {
+            return;
+        }
+
+        // Statement
+        auto s = parse_statement();
+        stats.push_back(s);
+        get_token(TokenType::semicolon);
+
+        tok = lexer.peek_token();
     }
 }
 
@@ -361,6 +360,55 @@ std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
     get_token(TokenType::r_paren);
     return call;
 }
+
+inline std::set<TokenType> if_ends{TokenType::end, TokenType::elsif,
+                                   TokenType::else_k};
+
+/**
+ * @brief "IF" expression "THEN" statement_seq
+    ( "ELSIF" expression "THEN" statement_seq )*
+    [ "ELSE" statement_seq "END" ]
+ *
+ * @return std::shared_ptr<ASTIf>
+ */
+std::shared_ptr<ASTIf> Parser::parse_if() {
+    debug("Parser::parse_if");
+    std::shared_ptr<ASTIf> stat = std::make_shared<ASTIf>();
+
+    // IF
+    get_token(TokenType::if_k);
+    stat->if_clause.expr = parse_expr();
+
+    // THEN
+    get_token(TokenType::then);
+    parse_statement_block(stat->if_clause.stats, if_ends);
+
+    // ELSIF
+    auto tok = lexer.peek_token();
+    while (tok.type == TokenType::elsif) {
+        debug("Parser::parse_if elsif");
+        lexer.get_token();
+        ASTIf::IFClause clause;
+        clause.expr = parse_expr();
+        get_token(TokenType::then);
+        parse_statement_block(clause.stats, if_ends);
+        stat->elsif_clause.push_back(clause);
+        tok = lexer.peek_token();
+    }
+
+    // ELSE
+    if (tok.type == TokenType::else_k) {
+        debug("Parser::parse_if else\n");
+        lexer.get_token();
+        stat->else_clause =
+            std::make_optional<std::vector<std::shared_ptr<ASTStatement>>>();
+        parse_statement_block(*stat->else_clause, module_ends);
+    }
+
+    // END
+    get_token(TokenType::end);
+    return stat;
+};
 
 /**
  * @brief expr = simpleExpr [ relation simpleExpr]
@@ -538,5 +586,4 @@ std::shared_ptr<ASTBool> Parser::parse_boolean() {
 std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();
 }
-
 }; // namespace ax

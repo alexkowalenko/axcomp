@@ -30,6 +30,7 @@ class Inspector : public ASTVisitor {
     void visit_ASTAssignment(ASTAssignment *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
     void visit_ASTCall(ASTCall *ast) override;
+    void visit_ASTIf(ASTIf *ast) override;
     void visit_ASTSimpleExpr(ASTSimpleExpr *ast) override;
     void visit_ASTExpr(ASTExpr *ast) override;
     void visit_ASTTerm(ASTTerm *ast) override;

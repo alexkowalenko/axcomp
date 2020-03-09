@@ -54,11 +54,16 @@ statement_seq = (statement ";")+
 
 statement = assignment
     | procedureCall
+    | ifStatment
     | "RETURN" [expr]
 
 assignment = IDENT ":=" expr
 
 procedureCall = IDENT "(" expr ( "," expr )* ")"
+
+ifStatement = "IF" expression "THEN" statement_seq
+    ( "ELSIF" expression "THEN" statement_seq )*
+    [ "ELSE" statement_seq ] "END"
 
 expr = simpleExpr [ relation simpleExpr]
 

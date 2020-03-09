@@ -67,6 +67,24 @@ void ASTVisitor::visit_ASTCall(ASTCall *ast) {
     ast->name->accept(this);
 }
 
+void ASTVisitor::visit_ASTIf(ASTIf *ast) {
+    ast->if_clause.expr->accept(this);
+    std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
+                  [this](auto const &x) { x->accept(this); });
+
+    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(),
+                  [this](auto const &x) {
+                      x.expr->accept(this);
+                      std::for_each(x.stats.begin(), x.stats.end(),
+                                    [this](auto const &s) { s->accept(this); });
+                  });
+    if (ast->else_clause) {
+        auto elses = *ast->else_clause;
+        std::for_each(begin(elses), end(elses),
+                      [this](auto const &s) { s->accept(this); });
+    }
+}
+
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (*ast->relation_expr) {

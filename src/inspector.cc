@@ -132,10 +132,9 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
 
     ast->ident->accept(this);
     if (!last_type->equiv(expr_type)) {
-        throw CodeGenException(
-            fmt::format("Can't assign expression of type {} to {}",
-                        std::string(*expr_type), ast->ident->value),
-            0);
+        throw TypeError(fmt::format("Can't assign expression of type {} to {}",
+                                    std::string(*expr_type), ast->ident->value),
+                        0);
     }
 }
 
@@ -159,7 +158,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         }
 
         if (!last_type->equiv(retType)) {
-            throw CodeGenException(
+            throw TypeError(
                 fmt::format("RETURN does not match return type for function {}",
                             last_proc->name),
                 0);
@@ -174,32 +173,58 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
             fmt::format("undefined PROCEDURE {}", ast->name->value), 0);
     }
     if (res->type != "PROCEDURE") {
-        throw CodeGenException(
-            fmt::format("{} is not a PROCEDURE", ast->name->value), 0);
+        throw TypeError(fmt::format("{} is not a PROCEDURE", ast->name->value),
+                        0);
     }
 
     // Find return type from procedure and put in last_type
     auto pType = types.find(ast->name->value);
     if (!pType) {
-        throw CodeGenException(
+        throw TypeError(
             fmt::format("undefined type PROCEDURE {}", ast->name->value), 0);
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(*pType);
     if (!procType) {
-        throw CodeGenException(
+        throw TypeError(
             fmt::format("{} is not type PROCEDURE", ast->name->value), 0);
     }
 
     if (ast->args.size() != procType->params.size()) {
-        throw CodeGenException(
-            fmt::format("calling PROCEDURE {}, incorrect number of "
-                        "arguments: {} instead of {}",
-                        ast->name->value, ast->args.size(),
-                        procType->params.size()),
-            0);
+        throw TypeError(fmt::format("calling PROCEDURE {}, incorrect number of "
+                                    "arguments: {} instead of {}",
+                                    ast->name->value, ast->args.size(),
+                                    procType->params.size()),
+                        0);
     }
 
     last_type = procType->ret;
+}
+
+void Inspector::visit_ASTIf(ASTIf *ast) {
+    ast->if_clause.expr->accept(this);
+    if (last_type != TypeTable::BoolType) {
+        throw TypeError(fmt::format("IF expression must be type BOOLEAN"), 0);
+    }
+
+    std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
+                  [this](auto const &x) { x->accept(this); });
+
+    std::for_each(
+        ast->elsif_clause.begin(), ast->elsif_clause.end(),
+        [this](auto const &x) {
+            x.expr->accept(this);
+            if (last_type != TypeTable::BoolType) {
+                throw TypeError(
+                    fmt::format("ELSIF expression must be type BOOLEAN"), 0);
+            }
+            std::for_each(x.stats.begin(), x.stats.end(),
+                          [this](auto const &s) { s->accept(this); });
+        });
+    if (ast->else_clause) {
+        auto elses = *ast->else_clause;
+        std::for_each(begin(elses), end(elses),
+                      [this](auto const &s) { s->accept(this); });
+    }
 }
 
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
@@ -209,7 +234,7 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
         (*ast->relation_expr)->accept(this);
         // Types have to be the same BOOLEANs or INTEGERs
         if (!last_type->equiv(t1)) {
-            throw CodeGenException(
+            throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
                 0);
@@ -225,19 +250,19 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     std::for_each(ast->rest.begin(), ast->rest.end(), [this, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            throw CodeGenException(
+            throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
                 0);
         }
         if (t.first == TokenType::or_k) {
             if (last_type != TypeTable::BoolType) {
-                throw CodeGenException(
+                throw TypeError(
                     fmt::format("types in OR expression must be BOOLEAN"), 0);
             }
         } else {
             if (last_type != TypeTable::IntType) {
-                throw CodeGenException(
+                throw TypeError(
                     fmt::format("types in {} expression must be numeric",
                                 string(t.first)),
                     0);
@@ -253,19 +278,19 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
     std::for_each(ast->rest.begin(), ast->rest.end(), [this, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            throw CodeGenException(
+            throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
                 0);
         }
         if (t.first == TokenType::ampersand) {
             if (last_type != TypeTable::BoolType) {
-                throw CodeGenException(
+                throw TypeError(
                     fmt::format("types in & expression must be BOOLEAN"), 0);
             }
         } else {
             if (last_type != TypeTable::IntType) {
-                throw CodeGenException(
+                throw TypeError(
                     fmt::format("types in {} expression must be numeric",
                                 string(t.first)),
                     0);
@@ -287,7 +312,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                 if (ast->is_not) {
                     arg->accept(this);
                     if (last_type != TypeTable::BoolType) {
-                        throw CodeGenException(
+                        throw TypeError(
                             fmt::format("type in ~ expression must be BOOLEAN"),
                             0);
                     }

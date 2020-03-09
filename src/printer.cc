@@ -115,7 +115,39 @@ void ASTPrinter::visit_ASTCall(ASTCall *ast) {
                       }
                   });
     os << ")";
-};
+}
+
+void ASTPrinter::visit_ASTIf(ASTIf *ast) {
+    os << "IF ";
+    ast->if_clause.expr->accept(this);
+    os << " THEN\n";
+    std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
+                  [this](auto const &x) {
+                      x->accept(this);
+                      os << ";\n";
+                  });
+
+    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(),
+                  [this](auto const &x) {
+                      os << "ELSIF ";
+                      x.expr->accept(this);
+                      os << " THEN\n";
+                      std::for_each(x.stats.begin(), x.stats.end(),
+                                    [this](auto const &s) {
+                                        s->accept(this);
+                                        os << ";\n";
+                                    });
+                  });
+    if (ast->else_clause) {
+        os << "ELSE\n";
+        auto elses = *ast->else_clause;
+        std::for_each(begin(elses), end(elses), [this](auto const &s) {
+            s->accept(this);
+            os << ";\n";
+        });
+    }
+    os << "END";
+}
 
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);

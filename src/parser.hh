@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "astmod.hh"
@@ -27,11 +28,17 @@ class Parser {
     std::shared_ptr<ASTConst>       parse_const();
     std::shared_ptr<ASTVar>         parse_var();
     std::shared_ptr<ASTProcedure>   parse_procedure();
-    void                          parse_parameters(std::vector<VarDec> &params);
+    void parse_parameters(std::vector<VarDec> &params);
+
     std::shared_ptr<ASTStatement> parse_statement();
+    void
+    parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
+                          std::set<TokenType> end_tokens);
+
     std::shared_ptr<ASTAssignment> parse_assignment(Token const &ident);
     std::shared_ptr<ASTReturn>     parse_return();
     std::shared_ptr<ASTCall>       parse_call(Token const &ident);
+    std::shared_ptr<ASTIf>         parse_if();
     std::shared_ptr<ASTExpr>       parse_expr();
     std::shared_ptr<ASTSimpleExpr> parse_simpleexpr();
     std::shared_ptr<ASTTerm>       parse_term();

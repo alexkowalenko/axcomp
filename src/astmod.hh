@@ -170,6 +170,30 @@ class ASTCall : public ASTStatement {
     std::vector<std::shared_ptr<ASTExpr>> args;
 };
 
+/**
+ * @brief "IF" expression "THEN" statement_seq
+ *
+ * ( "ELSIF" expression "THEN" statement_seq )*
+ *
+ * [ "ELSE" statement_seq ] "END"
+ *
+ */
+class ASTIf : public ASTStatement {
+  public:
+    ~ASTIf() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTIf(this); };
+
+    struct IFClause {
+        std::shared_ptr<ASTExpr>                   expr;
+        std::vector<std::shared_ptr<ASTStatement>> stats;
+    };
+
+    IFClause                                                  if_clause;
+    std::vector<IFClause>                                     elsif_clause;
+    std::optional<std::vector<std::shared_ptr<ASTStatement>>> else_clause;
+};
+
 //////////////////////
 // Declaration objects
 

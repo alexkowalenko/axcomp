@@ -49,6 +49,10 @@ enum class TokenType {
     true_k,
     false_k,
     or_k,
+    if_k,
+    then,
+    elsif,
+    else_k,
 };
 
 std::string string(TokenType t);

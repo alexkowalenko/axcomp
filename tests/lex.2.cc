@@ -72,6 +72,10 @@ std::vector<LexTests> tests = {
     {"TRUE", TokenType::true_k, "TRUE"},
     {"FALSE", TokenType::false_k, "FALSE"},
     {"OR", TokenType::or_k, "OR"},
+    {"IF", TokenType::if_k, "IF"},
+    {"THEN", TokenType::then, "THEN"},
+    {"ELSIF", TokenType::elsif, "ELSIF"},
+    {"ELSE", TokenType::else_k, "ELSE"},
 
     // identifiers
     {"a", TokenType::ident, "a"},
