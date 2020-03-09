@@ -16,7 +16,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{true};
+inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {

@@ -311,6 +311,55 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     last_value = builder.CreateCall(callee, args, "calltmp");
 }
 
+void CodeGenerator::visit_ASTIf(ASTIf *ast) {
+    debug("CodeGenerator::visit_ASTIf");
+
+    // IF
+    ast->if_clause.expr->accept(this);
+
+    // Create blocks, insert then block
+    auto        funct = builder.GetInsertBlock()->getParent();
+    BasicBlock *then_block = BasicBlock::Create(context, "then", funct);
+    BasicBlock *else_block = BasicBlock::Create(context, "else");
+    BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
+
+    builder.CreateCondBr(last_value, then_block, else_block);
+
+    // Emit then value.
+    builder.SetInsertPoint(then_block);
+
+    std::for_each(begin(ast->if_clause.stats), end(ast->if_clause.stats),
+                  [this](auto const &s) { s->accept(this); });
+    builder.CreateBr(merge_block);
+
+    // Codegen of 'Then' can change the current block, update then_block for the
+    // PHI.
+    then_block = builder.GetInsertBlock();
+
+    // Emit ELSE block.
+    funct->getBasicBlockList().push_back(else_block);
+    builder.SetInsertPoint(else_block);
+
+    if (ast->else_clause) {
+        auto elses = *ast->else_clause;
+        std::for_each(begin(elses), end(elses),
+                      [this](auto const &s) { s->accept(this); });
+    }
+
+    builder.CreateBr(merge_block);
+    // codegen of ELSE can change the current block, update else_block for the
+    // PHI.
+    else_block = builder.GetInsertBlock();
+
+    // Emit merge block.
+    funct->getBasicBlockList().push_back(merge_block);
+    builder.SetInsertPoint(merge_block);
+    // PHINode *PN =
+    //     builder.CreatePHI(llvm::Type::getInt64Ty(context), 2, "iftmp");
+
+    // last_value = PN;
+}
+
 void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
 

@@ -106,6 +106,11 @@ BEGIN
     z := 12;
     check := FALSE;
     f();
+    IF z < 12 THEN
+        z := z + 1;
+    ELSE 
+        z := z - 1;
+    END
     RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4);
 END test.
 ```

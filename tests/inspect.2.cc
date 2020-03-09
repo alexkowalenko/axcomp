@@ -15,51 +15,52 @@ TEST(Inspector, IF) {
         {R"(MODULE alpha;
         VAR x : INTEGER;
         BEGIN
-            IF TRUE THEN
+            IF x > 12 THEN
                 x := 1;
                 RETURN 1;
             END;
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF x > 12 THEN\nx := "
          "1;\nRETURN 1;\nEND;\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
         BEGIN
-            IF TRUE THEN
+            IF x = 12 THEN
                 x := 1;
                 RETURN 1;
-            ELSIF TRUE THEN
+            ELSIF x < 3 THEN
                 RETURN 3;
             ELSE
                 RETURN 2;
             END;
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nELSIF TRUE THEN\nRETURN 3;\nELSE\nRETURN "
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF x = 12 THEN\nx := "
+         "1;\nRETURN 1;\nELSIF x < 3 THEN\nRETURN 3;\nELSE\nRETURN "
          "2;\nEND;\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
         BEGIN
-            IF TRUE THEN
+            IF x = 12 THEN
                 x := 1;
                 RETURN 1;
-            ELSIF TRUE THEN
+            ELSIF (x < 12) OR (x > 12) THEN
                 RETURN 3;
-            ELSIF TRUE THEN
+            ELSIF x > 12 THEN
                 RETURN 4;
-            ELSIF TRUE THEN
+            ELSIF x + x * x > 20 THEN
                 RETURN 5;
             ELSE
                 RETURN 2;
             END;
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nELSIF TRUE THEN\nRETURN 3;\nELSIF TRUE THEN\nRETURN "
-         "4;\nELSIF TRUE THEN\nRETURN 5;\nELSE\nRETURN 2;\nEND;\nEND alpha.",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF x = 12 THEN\nx := "
+         "1;\nRETURN 1;\nELSIF  (x < 12)  OR  (x > 12)  THEN\nRETURN 3;\nELSIF "
+         "x > 12 THEN\nRETURN 4;\nELSIF x+x*x > 20 THEN\nRETURN "
+         "5;\nELSE\nRETURN 2;\nEND;\nEND alpha.",
          ""},
 
         // Errors

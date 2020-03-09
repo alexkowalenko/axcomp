@@ -128,8 +128,8 @@ Token Lexer::get_token() {
     // Check if there is already a token
     if (!next_token.empty()) {
         debug("size: {}", next_token.size());
-        Token s{next_token.back()};
-        next_token.pop_back();
+        Token s{next_token.top()};
+        next_token.pop();
         return s;
     }
 
@@ -172,16 +172,16 @@ Token Lexer::get_token() {
 }
 
 void Lexer::push_token(Token const &t) {
-    next_token.push_back(t);
+    next_token.push(t);
 }
 
 Token Lexer::peek_token() {
     if (next_token.empty()) {
-        Token t = get_token();
-        next_token.push_back(t);
+        Token t{get_token()};
+        next_token.push(t);
         return t;
     }
-    return next_token.back();
+    return next_token.top();
 }
 
 } // namespace ax

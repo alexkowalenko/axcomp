@@ -7,8 +7,8 @@
 #pragma once
 
 #include <iostream>
+#include <stack>
 #include <string>
-#include <vector>
 
 #include "token.hh"
 
@@ -31,9 +31,9 @@ class Lexer {
     Token scan_digit(char c);
     Token scan_ident(char c);
 
-    int                lineno = 1;
-    std::istream &     is;
-    std::vector<Token> next_token;
+    int               lineno = 1;
+    std::istream &    is;
+    std::stack<Token> next_token;
 };
 
 } // namespace ax
