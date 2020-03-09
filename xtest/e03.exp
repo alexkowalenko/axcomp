@@ -1,0 +1,35 @@
+; ModuleID = 'e03'
+source_filename = "e03"
+target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-apple-darwin18.7.0"
+
+@x = internal global i64 0
+
+define i64 @output() {
+entry:
+  store i64 3, i64* @x
+  %x = load i64, i64* @x
+  %0 = icmp eq i64 %x, 1
+  br i1 %0, label %then, label %elsif0
+
+then:                                             ; preds = %entry
+  store i64 10, i64* @x
+  br label %ifcont
+
+elsif0:                                           ; preds = %entry
+  %x1 = load i64, i64* @x
+  %1 = icmp eq i64 %x1, 3
+  br i1 %1, label %then2, label %else
+
+then2:                                            ; preds = %elsif0
+  store i64 30, i64* @x
+  br label %ifcont
+
+else:                                             ; preds = %elsif0
+  store i64 90, i64* @x
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then2, %then
+  %x3 = load i64, i64* @x
+  ret i64 %x3
+}

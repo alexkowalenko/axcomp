@@ -1,0 +1,75 @@
+; ModuleID = 'e05'
+source_filename = "e05"
+target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-apple-darwin18.7.0"
+
+@x = internal global i64 0
+
+define i64 @output() {
+entry:
+  store i64 2, i64* @x
+  %x = load i64, i64* @x
+  %0 = icmp eq i64 %x, 1
+  br i1 %0, label %then, label %elsif0
+
+then:                                             ; preds = %entry
+  store i64 10, i64* @x
+  br label %ifcont
+
+elsif0:                                           ; preds = %entry
+  %x1 = load i64, i64* @x
+  %1 = icmp eq i64 %x1, 2
+  br i1 %1, label %then2, label %elsif1
+
+then2:                                            ; preds = %elsif0
+  store i64 20, i64* @x
+  br label %ifcont
+
+elsif1:                                           ; preds = %elsif0
+  %x3 = load i64, i64* @x
+  %2 = icmp eq i64 %x3, 3
+  br i1 %2, label %then4, label %else
+
+then4:                                            ; preds = %elsif1
+  store i64 30, i64* @x
+  br label %ifcont
+
+else:                                             ; preds = %elsif1
+  store i64 90, i64* @x
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then4, %then2, %then
+  %x5 = load i64, i64* @x
+  %3 = icmp eq i64 %x5, 10
+  br i1 %3, label %then6, label %elsif07
+
+then6:                                            ; preds = %ifcont
+  store i64 100, i64* @x
+  br label %ifcont14
+
+elsif07:                                          ; preds = %ifcont
+  %x8 = load i64, i64* @x
+  %4 = icmp eq i64 %x8, 30
+  br i1 %4, label %then9, label %elsif110
+
+then9:                                            ; preds = %elsif07
+  store i64 300, i64* @x
+  br label %ifcont14
+
+elsif110:                                         ; preds = %elsif07
+  %x11 = load i64, i64* @x
+  %5 = icmp eq i64 %x11, 20
+  br i1 %5, label %then12, label %else13
+
+then12:                                           ; preds = %elsif110
+  store i64 200, i64* @x
+  br label %ifcont14
+
+else13:                                           ; preds = %elsif110
+  store i64 900, i64* @x
+  br label %ifcont14
+
+ifcont14:                                         ; preds = %else13, %then12, %then9, %then6
+  %x15 = load i64, i64* @x
+  ret i64 %x15
+}

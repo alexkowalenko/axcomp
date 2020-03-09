@@ -321,9 +321,21 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     auto        funct = builder.GetInsertBlock()->getParent();
     BasicBlock *then_block = BasicBlock::Create(context, "then", funct);
     BasicBlock *else_block = BasicBlock::Create(context, "else");
+    std::vector<BasicBlock *> elsif_blocks;
+    int                       i = 0;
+    std::for_each(
+        begin(ast->elsif_clause), end(ast->elsif_clause), [&](auto const &e) {
+            auto e_block =
+                BasicBlock::Create(context, fmt::format("elsif{}", i++));
+            elsif_blocks.push_back(e_block);
+        });
     BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
 
-    builder.CreateCondBr(last_value, then_block, else_block);
+    if (!ast->elsif_clause.empty()) {
+        builder.CreateCondBr(last_value, then_block, elsif_blocks[0]);
+    } else {
+        builder.CreateCondBr(last_value, then_block, else_block);
+    }
 
     // Emit then value.
     builder.SetInsertPoint(then_block);
@@ -332,9 +344,34 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
                   [this](auto const &s) { s->accept(this); });
     builder.CreateBr(merge_block);
 
-    // Codegen of 'Then' can change the current block, update then_block for the
+    // Codegen of THEN can change the current block, update then_block for the
     // PHI.
     then_block = builder.GetInsertBlock();
+
+    i = 0;
+    for (auto const &e : ast->elsif_clause) {
+        funct->getBasicBlockList().push_back(elsif_blocks[i]);
+        builder.SetInsertPoint(elsif_blocks[i]);
+
+        // do expr
+        e.expr->accept(this);
+        BasicBlock *t_block = BasicBlock::Create(context, "then", funct);
+
+        if ((ast->elsif_clause.size() - (i + 1)) > 0) {
+            builder.CreateCondBr(last_value, t_block, elsif_blocks[i + 1]);
+        } else {
+            // last ELSIF block - branch to else_block
+            builder.CreateCondBr(last_value, t_block, else_block);
+        }
+
+        // THEN
+        builder.SetInsertPoint(t_block);
+        std::for_each(begin(e.stats), end(e.stats),
+                      [this](auto const &s) { s->accept(this); });
+        builder.CreateBr(merge_block);
+        elsif_blocks[i] = builder.GetInsertBlock();
+        i++;
+    }
 
     // Emit ELSE block.
     funct->getBasicBlockList().push_back(else_block);
