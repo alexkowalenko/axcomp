@@ -238,7 +238,14 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
         throw TypeError(fmt::format("FOR end expression must be numeric type"),
                         0);
     }
-    // By valye checked by parser - has to be integer
+    if (ast->by) {
+        (*ast->by)->accept(this);
+        if (!types.isNumericType(last_type)) {
+            throw TypeError(
+                fmt::format("FOR BY expression must be numeric type"), 0);
+        }
+    }
+
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable =

@@ -435,8 +435,7 @@ std::shared_ptr<ASTFor> Parser::parse_for() {
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::by) {
         lexer.get_token();
-        auto incr = parse_integer();
-        ast->by = incr->value;
+        ast->by = parse_expr();
     }
 
     // DO

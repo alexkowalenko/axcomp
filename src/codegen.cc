@@ -422,7 +422,13 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
                   [this](auto const &s) { s->accept(this); });
 
     // Emit the step value.
-    Value *step = ConstantInt::get(context, APInt(64, ast->by, false));
+    Value *step;
+    if (ast->by) {
+        (*ast->by)->accept(this);
+        step = last_value;
+    } else {
+        step = ConstantInt::get(context, APInt(64, 1, false));
+    }
     auto   tmp = builder.CreateLoad(index);
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
@@ -432,12 +438,7 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
     auto end_value = last_value;
 
     // Convert condition to a bool
-    Value *endCond;
-    if (ast->by > 0) {
-        endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
-    } else {
-        endCond = builder.CreateICmpSLE(start_value, nextVar, "loopcond");
-    }
+    Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
 
     // Create the "after loop" block and insert it.
     BasicBlock *loopEnd = builder.GetInsertBlock();

@@ -89,6 +89,9 @@ void ASTVisitor::visit_ASTFor(ASTFor *ast) {
     ast->ident->accept(this);
     ast->start->accept(this);
     ast->end->accept(this);
+    if (ast->by) {
+        (*ast->by)->accept(this);
+    }
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &x) { x->accept(this); });
 }

@@ -117,7 +117,7 @@ TEST(Inspector, For) {
             END;
             RETURN; 
             END e06.)",
-         "MODULE e06;\nBEGIN\nFOR i := 0 TO 0 DO\nEND;\nRETURN ;\nEND e06.",
+         "MODULE e06;\nBEGIN\nFOR i := 0 TO 9 DO\nEND;\nRETURN ;\nEND e06.",
          ""},
 
         // Errors

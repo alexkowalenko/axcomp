@@ -124,7 +124,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 0 DO\nx := "
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 10 DO\nx := "
          "x+i;\nEND;\nRETURN x;\nEND alpha.",
          ""},
 
@@ -136,7 +136,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 0 BY 2 DO\nx "
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 19 BY 2 DO\nx "
          ":= x+i;\nEND;\nRETURN x;\nEND alpha.",
          ""},
 
@@ -179,7 +179,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "4: Unexpected token: DO - expecting integer"},
+         "", "4: Unexpected token: DO"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;

@@ -208,7 +208,7 @@ class ASTFor : public ASTStatement {
     std::shared_ptr<ASTIdentifier>             ident;
     std::shared_ptr<ASTExpr>                   start;
     std::shared_ptr<ASTExpr>                   end;
-    long                                       by = 1;
+    std::optional<std::shared_ptr<ASTExpr>>    by = std::nullopt;
     std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 

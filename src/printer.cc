@@ -155,9 +155,10 @@ void ASTPrinter::visit_ASTFor(ASTFor *ast) {
     os << " := ";
     ast->start->accept(this);
     os << " TO ";
-    ast->start->accept(this);
-    if (ast->by != 1) {
-        os << fmt::format(" BY {}", ast->by);
+    ast->end->accept(this);
+    if (ast->by) {
+        os << fmt::format(" BY ");
+        (*ast->by)->accept(this);
     }
     os << " DO\n";
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
