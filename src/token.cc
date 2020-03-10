@@ -55,6 +55,10 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::then, "THEN"},
     {TokenType::elsif, "ELSIF"},
     {TokenType::else_k, "ELSE"},
+    {TokenType::for_k, "FOR"},
+    {TokenType::to, "TO"},
+    {TokenType::by, "BY"},
+    {TokenType::do_k, "DO"},
 
     {TokenType::eof, "EOF"},
 };

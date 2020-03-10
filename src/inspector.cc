@@ -227,6 +227,31 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
     }
 }
 
+void Inspector::visit_ASTFor(ASTFor *ast) {
+    ast->start->accept(this);
+    if (!types.isNumericType(last_type)) {
+        throw TypeError(
+            fmt::format("FOR start expression must be numeric type"), 0);
+    }
+    ast->end->accept(this);
+    if (!types.isNumericType(last_type)) {
+        throw TypeError(fmt::format("FOR end expression must be numeric type"),
+                        0);
+    }
+    // By valye checked by parser - has to be integer
+    // new symbol table
+    auto former_symboltable = current_symboltable;
+    current_symboltable =
+        std::make_shared<SymbolTable<Symbol>>(former_symboltable);
+    current_symboltable->put(
+        ast->ident->value,
+        Symbol(ast->ident->value, std::string(*types.IntType)));
+
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &s) { s->accept(this); });
+    current_symboltable = former_symboltable;
+}
+
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (ast->relation) {

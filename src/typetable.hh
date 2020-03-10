@@ -26,6 +26,8 @@ class TypeTable {
     std::optional<TypePtr> find(std::string const &name);
     void                   put(std::string const &name, TypePtr const &t);
 
+    bool isNumericType(TypePtr const &t);
+
     // Standard types
     static TypePtr IntType;
     static TypePtr BoolType;

@@ -40,7 +40,11 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"IF", Token(TokenType::if_k, "IF")},
     {"THEN", Token(TokenType::then, "THEN")},
     {"ELSIF", Token(TokenType::elsif, "ELSIF")},
-    {"ELSE", Token(TokenType::else_k, "ELSE")}}; // namespace ax
+    {"ELSE", Token(TokenType::else_k, "ELSE")},
+    {"FOR", Token(TokenType::for_k, "FOR")},
+    {"TO", Token(TokenType::to, "TO")},
+    {"BY", Token(TokenType::by, "BY")},
+    {"DO", Token(TokenType::do_k, "DO")}};
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},

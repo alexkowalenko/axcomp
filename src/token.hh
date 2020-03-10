@@ -53,6 +53,10 @@ enum class TokenType {
     then,
     elsif,
     else_k,
+    for_k,
+    to,
+    by,
+    do_k,
 };
 
 std::string string(TokenType t);

@@ -108,3 +108,33 @@ TEST(Inspector, IF) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, For) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE e06;
+            BEGIN 
+            FOR i := 0 TO 9 DO 
+            END;
+            RETURN; 
+            END e06.)",
+         "MODULE e06;\nBEGIN\nFOR i := 0 TO 0 DO\nEND;\nRETURN ;\nEND e06.",
+         ""},
+
+        // Errors
+        {R"(MODULE e06;
+            BEGIN 
+            FOR i := 0 TO TRUE DO 
+            END;
+            RETURN; 
+            END e06.)",
+         "", "0: FOR end expression must be numeric type"},
+        {R"(MODULE e06;
+            BEGIN 
+            FOR i := FALSE TO TRUE DO 
+            END;
+            RETURN; 
+            END e06.)",
+         "", "0: FOR start expression must be numeric type"},
+    };
+    do_inspect_tests(tests);
+}

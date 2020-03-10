@@ -36,6 +36,10 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }
 
+bool TypeTable::isNumericType(TypePtr const &t) {
+    return t == IntType;
+}
+
 std::optional<TypePtr> TypeTable::find(std::string const &name) {
     return table.find(name);
 }

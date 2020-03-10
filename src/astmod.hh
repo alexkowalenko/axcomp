@@ -194,6 +194,24 @@ class ASTIf : public ASTStatement {
     std::optional<std::vector<std::shared_ptr<ASTStatement>>> else_clause;
 };
 
+/**
+ * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
+    statement_seq "END"
+ *
+ */
+class ASTFor : public ASTStatement {
+  public:
+    ~ASTFor() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTFor(this); };
+
+    std::shared_ptr<ASTIdentifier>             ident;
+    std::shared_ptr<ASTExpr>                   start;
+    std::shared_ptr<ASTExpr>                   end;
+    long                                       by = 1;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
+};
+
 //////////////////////
 // Declaration objects
 

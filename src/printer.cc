@@ -149,6 +149,24 @@ void ASTPrinter::visit_ASTIf(ASTIf *ast) {
     os << "END";
 }
 
+void ASTPrinter::visit_ASTFor(ASTFor *ast) {
+    os << "FOR ";
+    ast->ident->accept(this);
+    os << " := ";
+    ast->start->accept(this);
+    os << " TO ";
+    ast->start->accept(this);
+    if (ast->by != 1) {
+        os << fmt::format(" BY {}", ast->by);
+    }
+    os << " DO\n";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+    os << "END";
+}
+
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (ast->relation) {

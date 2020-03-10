@@ -344,8 +344,7 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
                   [this](auto const &s) { s->accept(this); });
     builder.CreateBr(merge_block);
 
-    // Codegen of THEN can change the current block, update then_block for the
-    // PHI.
+    // Codegen of THEN can change the current block, update then_block
     then_block = builder.GetInsertBlock();
 
     i = 0;
@@ -357,7 +356,7 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
         e.expr->accept(this);
         BasicBlock *t_block = BasicBlock::Create(context, "then", funct);
 
-        if ((ast->elsif_clause.size() - (i + 1)) > 0) {
+        if (&e != &ast->elsif_clause.back()) {
             builder.CreateCondBr(last_value, t_block, elsif_blocks[i + 1]);
         } else {
             // last ELSIF block - branch to else_block
@@ -384,17 +383,73 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     }
 
     builder.CreateBr(merge_block);
-    // codegen of ELSE can change the current block, update else_block for the
-    // PHI.
+    // codegen of ELSE can change the current block, update else_block
     else_block = builder.GetInsertBlock();
 
     // Emit merge block.
     funct->getBasicBlockList().push_back(merge_block);
     builder.SetInsertPoint(merge_block);
-    // PHINode *PN =
-    //     builder.CreatePHI(llvm::Type::getInt64Ty(context), 2, "iftmp");
+}
 
-    // last_value = PN;
+void CodeGenerator::visit_ASTFor(ASTFor *ast) {
+    debug("CodeGenerator::visit_ASTIf");
+
+    // do start expr
+    ast->start->accept(this);
+    auto start_value = last_value;
+
+    // Make the new basic block for the loop header, inserting after current
+    // block.
+    auto        funct = builder.GetInsertBlock()->getParent();
+    BasicBlock *preheader = builder.GetInsertBlock();
+    BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
+
+    auto former_symboltable = current_symboltable;
+    current_symboltable =
+        std::make_shared<SymbolTable<Value *>>(former_symboltable);
+    auto index = createEntryBlockAlloca(funct, ast->ident->value,
+                                        std::string(*types.IntType));
+    builder.CreateStore(last_value, index);
+    current_symboltable->put(ast->ident->value, index);
+
+    // Insert an explicit fall through from the current block to the LoopBB.
+    // Start insertion in LoopBB.
+    builder.CreateBr(loop);
+    builder.SetInsertPoint(loop);
+
+    // DO
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &s) { s->accept(this); });
+
+    // Emit the step value.
+    Value *step = ConstantInt::get(context, APInt(64, ast->by, false));
+    auto   tmp = builder.CreateLoad(index);
+    Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
+    builder.CreateStore(nextVar, index);
+
+    // Compute the end condition.
+    ast->end->accept(this);
+    auto end_value = last_value;
+
+    // Convert condition to a bool
+    Value *endCond;
+    if (ast->by > 0) {
+        endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
+    } else {
+        endCond = builder.CreateICmpSLE(start_value, nextVar, "loopcond");
+    }
+
+    // Create the "after loop" block and insert it.
+    BasicBlock *loopEnd = builder.GetInsertBlock();
+    BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
+
+    // Insert the conditional branch into the end of LoopEndBB.
+    builder.CreateCondBr(endCond, loop, after);
+
+    // Any new code will be inserted in AfterBB.
+    builder.SetInsertPoint(after);
+
+    current_symboltable = former_symboltable;
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {

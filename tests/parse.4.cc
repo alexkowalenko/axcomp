@@ -112,3 +112,93 @@ TEST(Parser, IF) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, FOR) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 10 DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 0 DO\nx := "
+         "x+i;\nEND;\nRETURN x;\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 BY 2 DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 0 BY 2 DO\nx "
+         ":= x+i;\nEND;\nRETURN x;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i 0 TO 19 BY 2 DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "4: Unexpected token: integer(0) - expecting :="},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 19 BY 2 DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "4: Unexpected token: integer(19) - expecting TO"},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 2 DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "4: Unexpected token: integer(2) - expecting DO"},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 BY DO
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "4: Unexpected token: DO - expecting integer"},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 BY 2
+                x := x + i;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "5: Unexpected token: x - expecting DO"},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 BY 2 DO
+                x := x + i;
+            RETURN x;
+        END alpha.)",
+         "", "7: Unexpected token: alpha - expecting semicolon"},
+    };
+    do_parse_tests(tests);
+}

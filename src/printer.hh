@@ -31,6 +31,7 @@ class ASTPrinter : ASTVisitor {
     void visit_ASTReturn(ASTReturn *ast) override;
     void visit_ASTCall(ASTCall *ast) override;
     void visit_ASTIf(ASTIf *ast) override;
+    void visit_ASTFor(ASTFor *ast) override;
     void visit_ASTExpr(ASTExpr *ast) override;
     void visit_ASTSimpleExpr(ASTSimpleExpr *ast) override;
     void visit_ASTTerm(ASTTerm *ast) override;

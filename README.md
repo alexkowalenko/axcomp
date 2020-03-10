@@ -55,6 +55,7 @@ statement_seq = (statement ";")+
 statement = assignment
     | procedureCall
     | ifStatment
+    | forStatement
     | "RETURN" [expr]
 
 assignment = IDENT ":=" expr
@@ -64,6 +65,10 @@ procedureCall = IDENT "(" expr ( "," expr )* ")"
 ifStatement = "IF" expression "THEN" statement_seq
     ( "ELSIF" expression "THEN" statement_seq )*
     [ "ELSE" statement_seq ] "END"
+
+forStatement = "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO" 
+    statement_seq "END"
+
 
 expr = simpleExpr [ relation simpleExpr]
 
@@ -110,7 +115,12 @@ BEGIN
         z := z + 1;
     ELSE 
         z := z - 1;
-    END
+    END;
+
+    FOR i := 0 TO 9 BY 2 DO
+        z := i * i + z; 
+    END;
+
     RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4);
 END test.
 ```

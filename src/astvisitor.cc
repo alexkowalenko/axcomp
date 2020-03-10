@@ -85,6 +85,14 @@ void ASTVisitor::visit_ASTIf(ASTIf *ast) {
     }
 }
 
+void ASTVisitor::visit_ASTFor(ASTFor *ast) {
+    ast->ident->accept(this);
+    ast->start->accept(this);
+    ast->end->accept(this);
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (*ast->relation_expr) {

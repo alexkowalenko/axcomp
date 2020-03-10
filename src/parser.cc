@@ -250,6 +250,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
  * @brief assignment
     | procedureCall
     | ifStatment
+    | forStatement
     | "RETURN" [expr]
  *
  * @return std::shared_ptr<ASTStatement>
@@ -262,6 +263,8 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         return parse_return();
     case TokenType::if_k:
         return parse_if();
+    case TokenType::for_k:
+        return parse_for();
     case TokenType::ident: {
         // This can be an assignment or function call
         auto ident = lexer.get_token();
@@ -395,7 +398,6 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
         stat->elsif_clause.push_back(clause);
         tok = lexer.peek_token();
     }
-
     // ELSE
     if (tok.type == TokenType::else_k) {
         debug("Parser::parse_if else\n");
@@ -404,11 +406,46 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
             std::make_optional<std::vector<std::shared_ptr<ASTStatement>>>();
         parse_statement_block(*stat->else_clause, module_ends);
     }
-
     // END
     get_token(TokenType::end);
     return stat;
 };
+
+/**
+ * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
+    statement_seq "END"
+ *
+ * @return std::shared_ptr<ASTFor>
+ */
+std::shared_ptr<ASTFor> Parser::parse_for() {
+    debug("Parser::parse_for");
+    std::shared_ptr<ASTFor> ast = std::make_shared<ASTFor>();
+
+    // FOR
+    get_token(TokenType::for_k);
+    ast->ident = parse_identifier();
+    // :=
+    get_token(TokenType::assign);
+    ast->start = parse_expr();
+    // TO
+    get_token(TokenType::to);
+    ast->end = parse_expr();
+
+    // BY
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::by) {
+        lexer.get_token();
+        auto incr = parse_integer();
+        ast->by = incr->value;
+    }
+
+    // DO
+    get_token(TokenType::do_k);
+    parse_statement_block(ast->stats, module_ends);
+    // END
+    get_token(TokenType::end);
+    return ast;
+}
 
 /**
  * @brief expr = simpleExpr [ relation simpleExpr]

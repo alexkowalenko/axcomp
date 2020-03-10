@@ -1,0 +1,40 @@
+; ModuleID = 'e07'
+source_filename = "e07"
+target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-apple-darwin18.7.0"
+
+@x = internal global i64 0
+
+define i64 @f() {
+entry:
+  ret i64 9
+}
+
+define i64 @output() {
+entry:
+  %i = alloca i64
+  store i64 0, i64* @x
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %x = load i64, i64* @x
+  %i1 = load i64, i64* %i
+  %addtmp = add i64 %x, %i1
+  store i64 %addtmp, i64* @x
+  %0 = load i64, i64* %i
+  %nextvar = add i64 %0, 2
+  store i64 %nextvar, i64* %i
+  %calltmp = call i64 @f()
+  %loopcond = icmp sle i64 %nextvar, %calltmp
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  %x2 = load i64, i64* @x
+  ret i64 %x2
+}
+
+; Function Attrs: nounwind
+declare void @llvm.stackprotector(i8*, i8**) #0
+
+attributes #0 = { nounwind }
