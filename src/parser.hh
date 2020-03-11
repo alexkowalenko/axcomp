@@ -37,9 +37,14 @@ class Parser {
 
     std::shared_ptr<ASTAssignment> parse_assignment(Token const &ident);
     std::shared_ptr<ASTReturn>     parse_return();
+    std::shared_ptr<ASTExit>       parse_exit();
     std::shared_ptr<ASTCall>       parse_call(Token const &ident);
     std::shared_ptr<ASTIf>         parse_if();
     std::shared_ptr<ASTFor>        parse_for();
+    std::shared_ptr<ASTWhile>      parse_while();
+    std::shared_ptr<ASTRepeat>     parse_repeat();
+    std::shared_ptr<ASTLoop>       parse_loop();
+    std::shared_ptr<ASTBlock>      parse_block();
     std::shared_ptr<ASTExpr>       parse_expr();
     std::shared_ptr<ASTSimpleExpr> parse_simpleexpr();
     std::shared_ptr<ASTTerm>       parse_term();

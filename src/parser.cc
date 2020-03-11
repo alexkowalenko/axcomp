@@ -265,6 +265,16 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         return parse_if();
     case TokenType::for_k:
         return parse_for();
+    case TokenType::while_k:
+        return parse_while();
+    case TokenType::repeat:
+        return parse_repeat();
+    case TokenType::exit:
+        return parse_exit();
+    case TokenType::loop:
+        return parse_loop();
+    case TokenType::begin:
+        return parse_block();
     case TokenType::ident: {
         // This can be an assignment or function call
         auto ident = lexer.get_token();
@@ -333,6 +343,16 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
     }
     return ret;
 }
+
+/**
+ * @brief EXIT
+ *
+ * @return std::shared_ptr<ASTExit>
+ */
+std::shared_ptr<ASTExit> Parser::parse_exit() {
+    get_token(TokenType::exit);
+    return std::make_shared<ASTExit>();
+};
 
 /**
  * @brief  IDENT "(" expr ( "," expr )* ")"
@@ -441,6 +461,64 @@ std::shared_ptr<ASTFor> Parser::parse_for() {
     // DO
     get_token(TokenType::do_k);
     parse_statement_block(ast->stats, module_ends);
+    // END
+    get_token(TokenType::end);
+    return ast;
+}
+
+std::shared_ptr<ASTWhile> Parser::parse_while() {
+    std::shared_ptr<ASTWhile> ast = std::make_shared<ASTWhile>();
+
+    // WHILE
+    get_token(TokenType::while_k);
+    ast->expr = parse_expr();
+
+    // DO
+    get_token(TokenType::do_k);
+    parse_statement_block(ast->stats, module_ends);
+    // END
+    get_token(TokenType::end);
+    return ast;
+}
+
+inline std::set<TokenType> repeat_ends{TokenType::until};
+
+std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
+    std::shared_ptr<ASTRepeat> ast = std::make_shared<ASTRepeat>();
+
+    // REPEAT
+    get_token(TokenType::repeat);
+
+    parse_statement_block(ast->stats, repeat_ends);
+
+    // UNTIL
+    get_token(TokenType::until);
+    ast->expr = parse_expr();
+
+    return ast;
+}
+
+std::shared_ptr<ASTLoop> Parser::parse_loop() {
+    std::shared_ptr<ASTLoop> ast = std::make_shared<ASTLoop>();
+
+    // LOOP
+    get_token(TokenType::loop);
+
+    parse_statement_block(ast->stats, module_ends);
+
+    // END
+    get_token(TokenType::end);
+    return ast;
+}
+
+std::shared_ptr<ASTBlock> Parser::parse_block() {
+    std::shared_ptr<ASTBlock> ast = std::make_shared<ASTBlock>();
+
+    // BEGIN
+    get_token(TokenType::begin);
+
+    parse_statement_block(ast->stats, module_ends);
+
     // END
     get_token(TokenType::end);
     return ast;

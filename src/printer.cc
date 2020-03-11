@@ -104,6 +104,10 @@ void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
     }
 }
 
+void ASTPrinter::visit_ASTExit(ASTExit *ast) {
+    os << "EXIT";
+}
+
 void ASTPrinter::visit_ASTCall(ASTCall *ast) {
     ast->name->accept(this);
     os << "(";
@@ -161,6 +165,45 @@ void ASTPrinter::visit_ASTFor(ASTFor *ast) {
         (*ast->by)->accept(this);
     }
     os << " DO\n";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+    os << "END";
+}
+
+void ASTPrinter::visit_ASTWhile(ASTWhile *ast) {
+    os << "WHILE ";
+    ast->expr->accept(this);
+    os << " DO\n";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+    os << "END";
+}
+
+void ASTPrinter::visit_ASTRepeat(ASTRepeat *ast) {
+    os << "REPEAT\n";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+    os << "UNTIL ";
+    ast->expr->accept(this);
+}
+
+void ASTPrinter::visit_ASTLoop(ASTLoop *ast) {
+    os << "LOOP\n";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+    os << "END";
+}
+
+void ASTPrinter::visit_ASTBlock(ASTBlock *ast) {
+    os << "BEGIN\n";
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
         x->accept(this);
         os << ";\n";

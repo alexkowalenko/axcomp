@@ -44,7 +44,12 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"FOR", Token(TokenType::for_k, "FOR")},
     {"TO", Token(TokenType::to, "TO")},
     {"BY", Token(TokenType::by, "BY")},
-    {"DO", Token(TokenType::do_k, "DO")}};
+    {"DO", Token(TokenType::do_k, "DO")},
+    {"WHILE", Token(TokenType::while_k, "WHILE")},
+    {"REPEAT", Token(TokenType::repeat, "REPEAT")},
+    {"UNTIL", Token(TokenType::until, "UNTIL")},
+    {"LOOP", Token(TokenType::loop, "LOOP")},
+    {"EXIT", Token(TokenType::exit, "EXIT")}};
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},

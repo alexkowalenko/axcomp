@@ -63,6 +63,8 @@ void ASTVisitor::visit_ASTReturn(ASTReturn *ast) {
     }
 }
 
+void ASTVisitor::visit_ASTExit(ASTExit *ast) {}
+
 void ASTVisitor::visit_ASTCall(ASTCall *ast) {
     ast->name->accept(this);
 }
@@ -92,6 +94,28 @@ void ASTVisitor::visit_ASTFor(ASTFor *ast) {
     if (ast->by) {
         (*ast->by)->accept(this);
     }
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void ASTVisitor::visit_ASTWhile(ASTWhile *ast) {
+    ast->expr->accept(this);
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void ASTVisitor::visit_ASTRepeat(ASTRepeat *ast) {
+    ast->expr->accept(this);
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void ASTVisitor::visit_ASTLoop(ASTLoop *ast) {
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void ASTVisitor::visit_ASTBlock(ASTBlock *ast) {
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &x) { x->accept(this); });
 }

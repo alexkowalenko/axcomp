@@ -157,6 +157,19 @@ class ASTReturn : public ASTStatement {
 };
 
 /**
+ * @brief EXIT
+ *
+ */
+class ASTExit : public ASTStatement {
+  public:
+    ~ASTExit() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTExit(this); };
+
+    std::shared_ptr<ASTExpr> expr;
+};
+
+/**
  * @brief IDENT "(" expr ( "," expr )* ")"
  *
  */
@@ -204,6 +217,64 @@ class ASTFor : public ASTStatement {
     ~ASTFor() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTFor(this); };
+
+    std::shared_ptr<ASTIdentifier>             ident;
+    std::shared_ptr<ASTExpr>                   start;
+    std::shared_ptr<ASTExpr>                   end;
+    std::optional<std::shared_ptr<ASTExpr>>    by = std::nullopt;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
+};
+
+/**
+ * @brief "WHILE" expr "DO" statement_seq "END"
+ *
+ */
+class ASTWhile : public ASTStatement {
+  public:
+    ~ASTWhile() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTWhile(this); };
+
+    std::shared_ptr<ASTExpr>                   expr;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
+};
+
+/**
+ * @brief "REPEAT" statement_seq "UNTIL" expr
+ *
+ */
+class ASTRepeat : public ASTStatement {
+  public:
+    ~ASTRepeat() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTRepeat(this); };
+
+    std::shared_ptr<ASTExpr>                   expr;
+    std::vector<std::shared_ptr<ASTStatement>> stats;
+};
+
+/**
+ * @brief "LOOP" statement_seq "END"
+ *
+ */
+class ASTLoop : public ASTStatement {
+  public:
+    ~ASTLoop() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTLoop(this); };
+
+    std::vector<std::shared_ptr<ASTStatement>> stats;
+};
+
+/**
+ * @brief "BEGIN" statement_seq "END"
+ *
+ */
+class ASTBlock : public ASTStatement {
+  public:
+    ~ASTBlock() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTBlock(this); };
 
     std::shared_ptr<ASTIdentifier>             ident;
     std::shared_ptr<ASTExpr>                   start;

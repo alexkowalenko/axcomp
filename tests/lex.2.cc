@@ -80,6 +80,11 @@ std::vector<LexTests> tests = {
     {"TO", TokenType::to, "TO"},
     {"BY", TokenType::by, "BY"},
     {"DO", TokenType::do_k, "DO"},
+    {"WHILE", TokenType::while_k, "WHILE"},
+    {"REPEAT", TokenType::repeat, "REPEAT"},
+    {"UNTIL", TokenType::until, "UNTIL"},
+    {"LOOP", TokenType::loop, "LOOP"},
+    {"EXIT", TokenType::exit, "EXIT"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

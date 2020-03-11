@@ -56,6 +56,11 @@ statement = assignment
     | procedureCall
     | ifStatment
     | forStatement
+    | whileStatement
+    | repeatStatement
+    | loopStatment
+    | block
+    | "EXIT"
     | "RETURN" [expr]
 
 assignment = IDENT ":=" expr
@@ -66,9 +71,16 @@ ifStatement = "IF" expression "THEN" statement_seq
     ( "ELSIF" expression "THEN" statement_seq )*
     [ "ELSE" statement_seq ] "END"
 
-forStatement = "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO" 
+forStatement = "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
     statement_seq "END"
 
+whileStatement = "WHILE" expr "DO" statement_seq "END"
+
+repeatStatement = "REPEAT" statement_seq "UNTIL" expr
+
+loopStatement = "LOOP" statement_seq "END"
+
+block = "BEGIN" statement_seq "END"
 
 expr = simpleExpr [ relation simpleExpr]
 
@@ -113,12 +125,31 @@ BEGIN
     f();
     IF z < 12 THEN
         z := z + 1;
-    ELSE 
+    ELSE
         z := z - 1;
     END;
 
     FOR i := 0 TO 9 BY 2 DO
-        z := i * i + z; 
+        z := i * i + z;
+    END;
+
+    WHILE x > 4 DO
+        x := x - 1;
+    END;
+
+    REPEAT
+        z = z + 1;
+    UNTIL z > 10;
+
+    LOOP
+        IF x < 3 THEN
+            EXIT;
+        END;
+        x := x - 1;
+    END;
+
+    BEGIN
+        x := 4;
     END;
 
     RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4);

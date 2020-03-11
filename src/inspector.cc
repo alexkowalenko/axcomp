@@ -259,6 +259,37 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
     current_symboltable = former_symboltable;
 }
 
+void Inspector::visit_ASTWhile(ASTWhile *ast) {
+    ast->expr->accept(this);
+    if (last_type != TypeTable::BoolType) {
+        throw TypeError(fmt::format("WHILE expression must be type BOOLEAN"),
+                        0);
+    }
+
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+    ast->expr->accept(this);
+    if (last_type != TypeTable::BoolType) {
+        throw TypeError(fmt::format("REPEAT expression must be type BOOLEAN"),
+                        0);
+    }
+}
+
+void Inspector::visit_ASTLoop(ASTLoop *ast) {
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
+void Inspector::visit_ASTBlock(ASTBlock *ast) {
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &x) { x->accept(this); });
+}
+
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (ast->relation) {

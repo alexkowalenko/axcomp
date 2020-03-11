@@ -202,3 +202,97 @@ TEST(Parser, FOR) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, WHILE) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            WHILE x < 10 DO
+                x := x + 1;
+            END;
+            RETURN x;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nWHILE x < 10 DO\nx := "
+         "x+1;\nEND;\nRETURN x;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            WHILE x < 10
+                x := x + 1;
+            END;
+            RETURN x;
+        END alpha.)",
+         "", "5: Unexpected token: x - expecting DO"},
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, REPEAT) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            REPEAT
+                x := x+1;
+            UNTIL x > 10;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nx := x+1;\nUNTIL x > "
+         "10;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            REPEAT
+                x := x+1;
+             x > 10;
+        END alpha.)",
+         "", "6: Unexpected token: >"},
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, LOOP) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            LOOP
+                x := x + 1;
+                EXIT;
+            END;
+            RETURN x;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nLOOP\nx := "
+         "x+1;\nEXIT;\nEND;\nRETURN x;\nEND alpha.",
+         ""},
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, BEGIN) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            BEGIN
+                x := x + 1;
+                EXIT;
+            END;
+            RETURN x;
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nBEGIN\nx := "
+         "x+1;\nEXIT;\nEND;\nRETURN x;\nEND alpha.",
+         ""},
+    };
+    do_parse_tests(tests);
+}

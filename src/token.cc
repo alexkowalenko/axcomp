@@ -59,6 +59,11 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::to, "TO"},
     {TokenType::by, "BY"},
     {TokenType::do_k, "DO"},
+    {TokenType::while_k, "WHILE"},
+    {TokenType::repeat, "REPEAT"},
+    {TokenType::until, "UNTIL"},
+    {TokenType::loop, "LOOP"},
+    {TokenType::exit, "EXIT"},
 
     {TokenType::eof, "EOF"},
 };

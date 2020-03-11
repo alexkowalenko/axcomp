@@ -57,6 +57,11 @@ enum class TokenType {
     to,
     by,
     do_k,
+    while_k,
+    repeat,
+    until,
+    loop,
+    exit,
 };
 
 std::string string(TokenType t);
