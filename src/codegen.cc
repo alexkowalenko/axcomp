@@ -392,7 +392,7 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
 }
 
 void CodeGenerator::visit_ASTFor(ASTFor *ast) {
-    debug("CodeGenerator::visit_ASTIf");
+    debug("CodeGenerator::visit_ASTFor");
 
     // do start expr
     ast->start->accept(this);
@@ -412,7 +412,7 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
     builder.CreateStore(last_value, index);
     current_symboltable->put(ast->ident->value, index);
 
-    // Insert an explicit fall through from the current block to the LoopBB.
+    // Insert an explicit fall through from the current block to the Loop.
     // Start insertion in LoopBB.
     builder.CreateBr(loop);
     builder.SetInsertPoint(loop);
@@ -444,13 +444,50 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
     BasicBlock *loopEnd = builder.GetInsertBlock();
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
 
-    // Insert the conditional branch into the end of LoopEndBB.
+    // Insert the conditional branch into the end of Loop.
     builder.CreateCondBr(endCond, loop, after);
 
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
 
     current_symboltable = former_symboltable;
+}
+
+void CodeGenerator::visit_ASTBlock(ASTBlock *ast) {
+    debug("CodeGenerator::visit_ASTBlock");
+
+    // BEGIN
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &s) { s->accept(this); });
+}
+
+void CodeGenerator::visit_ASTWhile(ASTWhile *ast) {
+    debug("CodeGenerator::visit_ASTWhile");
+
+    // Create blocks, insert then block
+    auto        funct = builder.GetInsertBlock()->getParent();
+    BasicBlock *while_block = BasicBlock::Create(context, "while", funct);
+    BasicBlock *loop = BasicBlock::Create(context, "loop");
+    BasicBlock *end_block = BasicBlock::Create(context, "end");
+
+    builder.CreateBr(while_block);
+    builder.SetInsertPoint(while_block);
+
+    // Expr
+    ast->expr->accept(this);
+    builder.CreateCondBr(last_value, loop, end_block);
+
+    // DO
+    funct->getBasicBlockList().push_back(loop);
+    builder.SetInsertPoint(loop);
+
+    std::for_each(begin(ast->stats), end(ast->stats),
+                  [this](auto const &s) { s->accept(this); });
+    builder.CreateBr(while_block);
+
+    // END
+    funct->getBasicBlockList().push_back(end_block);
+    builder.SetInsertPoint(end_block);
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {

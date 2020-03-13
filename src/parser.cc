@@ -96,12 +96,27 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
            tok.type == TokenType::var) {
 
         switch (tok.type) {
-        case TokenType::cnst:
-            decs->cnst = parse_const();
+        case TokenType::cnst: {
+            auto cnsts = parse_const();
+            if (!decs->cnst) {
+                decs->cnst = cnsts;
+            } else {
+                decs->cnst->consts.insert(decs->cnst->consts.end(),
+                                          cnsts->consts.begin(),
+                                          cnsts->consts.end());
+            }
             break;
-        case TokenType::var:
-            decs->var = parse_var();
+        }
+        case TokenType::var: {
+            auto vars = parse_var();
+            if (!decs->var) {
+                decs->var = vars;
+            } else {
+                decs->var->vars.insert(decs->var->vars.end(),
+                                       vars->vars.begin(), vars->vars.end());
+            }
             break;
+        }
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
                                  lexer.get_lineno());

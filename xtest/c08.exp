@@ -1,0 +1,24 @@
+; ModuleID = 'c08'
+source_filename = "c08"
+target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-apple-darwin18.7.0"
+
+@alpha = internal constant i64 24
+@beta = internal constant i64 48
+@x = internal global i64 0
+@y = internal global i1 0
+
+define i64 @output() {
+entry:
+  store i1 false, i1* @y
+  %beta = load i64, i64* @beta
+  store i64 %beta, i64* @x
+  %alpha = load i64, i64* @alpha
+  %multmp = mul i64 3, %alpha
+  store i64 %multmp, i64* @x
+  %x = load i64, i64* @x
+  %0 = icmp eq i64 %x, 72
+  %1 = xor i1 %0, true
+  %2 = zext i1 %1 to i64
+  ret i64 %2
+}
