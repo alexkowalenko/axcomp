@@ -8,6 +8,9 @@ target triple = "x86_64-apple-darwin18.7.0"
 define i64 @output() {
 entry:
   store i64 0, i64* @x
+  br label %begin
+
+begin:                                            ; preds = %entry
   %x = load i64, i64* @x
   %addtmp = add i64 %x, 1
   store i64 %addtmp, i64* @x
@@ -17,6 +20,9 @@ entry:
   %x3 = load i64, i64* @x
   %addtmp4 = add i64 %x3, 1
   store i64 %addtmp4, i64* @x
+  br label %end
+
+end:                                              ; preds = %begin
   %x5 = load i64, i64* @x
   ret i64 %x5
 }

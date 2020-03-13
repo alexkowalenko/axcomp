@@ -45,10 +45,13 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTAssignment(ASTAssignment *ast) override;
     void visit_ASTReturn(ASTReturn *ast) override;
+    void visit_ASTExit(ASTExit *ast) override;
     void visit_ASTCall(ASTCall *ast) override;
     void visit_ASTIf(ASTIf *ast) override;
     void visit_ASTFor(ASTFor *ast) override;
     void visit_ASTWhile(ASTWhile *ast) override;
+    void visit_ASTRepeat(ASTRepeat *ast) override;
+    void visit_ASTLoop(ASTLoop *ast) override;
     void visit_ASTBlock(ASTBlock *ast) override;
     void visit_ASTExpr(ASTExpr *ast) override;
     void visit_ASTSimpleExpr(ASTSimpleExpr *ast) override;
@@ -79,8 +82,9 @@ class CodeGenerator : ASTVisitor {
     IRBuilder<>             builder;
     std::unique_ptr<Module> module;
 
-    bool   top_level = true; // am I in the top level of the module?
-    Value *last_value;       // holds last value of compilation
+    bool        top_level = true;   // am I in the top level of the module?
+    Value *     last_value;         // holds last value of compilation
+    BasicBlock *last_end = nullptr; // last end block in loop, used for EXIT
 };
 
 } // namespace ax
