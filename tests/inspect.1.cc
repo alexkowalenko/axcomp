@@ -13,7 +13,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests);
 TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
         {"MODULE x; VAR z: complex; BEGIN x := 10; END x.", "",
-         "0: Unknown type: complex for identifier z"},
+         "1,15: Unknown type: complex for identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -25,7 +25,7 @@ TEST(Inspector, UnknownExpr) {
 
         // Errors
         {"MODULE y; VAR x : INTEGER; BEGIN RETURN z; END y.", "",
-         "0: undefined identifier z"},
+         "1,42: undefined identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -37,10 +37,10 @@ TEST(Inspector, Return) {
 
         // Errors
         {"MODULE x; VAR z: INTEGER; BEGIN z := 10; END x.", "",
-         "0: MODULE x has no RETURN function"},
+         "1,0: MODULE x has no RETURN function"},
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN z := 1; END y; "
          "BEGIN x := 10; END x.",
-         "", "0: PROCEDURE y has no RETURN function"},
+         "", "1,35: PROCEDURE y has no RETURN function"},
     };
     do_inspect_tests(tests);
 }
@@ -73,15 +73,15 @@ TEST(Inspector, ReturnType) {
         // Error
         {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
-         "", "0: Unknown type: complex for return from function f"},
+         "", "1,19: Unknown type: complex for return from function f"},
 
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN; END f; BEGIN "
          "RETURN 333; END x.",
-         "", "0: RETURN does not match return type for function f"},
+         "", "1,46: RETURN does not match return type for function f"},
 
         {"MODULE x; PROCEDURE f; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
-         "", "0: RETURN does not match return type for function f"},
+         "", "1,35: RETURN does not match return type for function f"},
         {R"(MODULE xxx;
             PROCEDURE f : BOOLEAN;
             BEGIN
@@ -90,7 +90,7 @@ TEST(Inspector, ReturnType) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "0: RETURN does not match return type for function f"},
+         "", "4,18: RETURN does not match return type for function f"},
     };
     do_inspect_tests(tests);
 }
@@ -123,14 +123,14 @@ TEST(Inspector, Call) {
         // Errors
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
          "x(); RETURN x; END y.",
-         "", "0: x is not a PROCEDURE"},
+         "", "1,69: x is not a PROCEDURE"},
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
          "g(); RETURN x; END y.",
-         "", "0: undefined PROCEDURE g"},
+         "", "1,69: undefined PROCEDURE g"},
         {"MODULE y; VAR x : INTEGER; "
          "PROCEDURE f():INTEGER; BEGIN RETURN 0; END f; "
          "BEGIN RETURN g(); END y.",
-         "", "0: undefined PROCEDURE g"},
+         "", "1,88: undefined PROCEDURE g"},
 
         {R"(MODULE xxx;
             PROCEDURE f(x : INTEGER) : INTEGER;
@@ -141,7 +141,8 @@ TEST(Inspector, Call) {
                 RETURN f();
             END xxx.)",
          "",
-         "0: calling PROCEDURE f, incorrect number of arguments: 0 instead of "
+         "7,25: calling PROCEDURE f, incorrect number of arguments: 0 instead "
+         "of "
          "1"},
         {R"(MODULE xxx;
             PROCEDURE f() : INTEGER;
@@ -152,7 +153,8 @@ TEST(Inspector, Call) {
                 RETURN f(1,2,3,4);
             END xxx.)",
          "",
-         "0: calling PROCEDURE f, incorrect number of arguments: 4 instead of "
+         "7,25: calling PROCEDURE f, incorrect number of arguments: 4 instead "
+         "of "
          "0"},
 
     };
@@ -203,7 +205,7 @@ TEST(Inspector, FunctionParams) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "0: Unknown type: UNDEF for paramater x from function f"},
+         "", "3,21: Unknown type: UNDEF for paramater x from function f"},
     };
     do_inspect_tests(tests);
 }
@@ -237,14 +239,14 @@ TEST(Inspector, Assignment) {
             z := 4;
             RETURN z;
             END xxx.)",
-         "", "0: Can't assign expression of type INTEGER to z"},
+         "", "4,16: Can't assign expression of type INTEGER to z"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             BEGIN
             z := TRUE;
             RETURN z;
             END xxx.)",
-         "", "0: Can't assign expression of type BOOLEAN to z"},
+         "", "4,16: Can't assign expression of type BOOLEAN to z"},
     };
     do_inspect_tests(tests);
 }
@@ -263,12 +265,12 @@ TEST(Inspector, ExprCompare) {
             BEGIN
             RETURN TRUE = 1;
             END xxx.)",
-         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 # FALSE;
             END xxx.)",
-         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -287,22 +289,22 @@ TEST(Inspector, SimpleExpr) {
             BEGIN
             RETURN TRUE + 1;
             END xxx.)",
-         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR FALSE;
             END xxx.)",
-         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR 0;
             END xxx.)",
-         "", "0: types in OR expression must be BOOLEAN"},
+         "", "3,20: types in OR expression must be BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN FALSE + FALSE;
             END xxx.)",
-         "", "0: types in + expression must be numeric"},
+         "", "3,24: types in + expression must be numeric"},
     };
     do_inspect_tests(tests);
 }
@@ -321,22 +323,22 @@ TEST(Inspector, Term) {
             BEGIN
             RETURN TRUE * 1;
             END xxx.)",
-         "", "0: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & FALSE;
             END xxx.)",
-         "", "0: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN TRUE DIV FALSE;
             END xxx.)",
-         "", "0: types in DIV expression must be numeric"},
+         "", "3,23: types in DIV expression must be numeric"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & 23;
             END xxx.)",
-         "", "0: types in & expression must be BOOLEAN"},
+         "", "3,20: types in & expression must be BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -355,7 +357,7 @@ TEST(Inspector, Factor) {
             BEGIN
             RETURN ~ 1;
             END xxx.)",
-         "", "0: type in ~ expression must be BOOLEAN"},
+         "", "3,20: type in ~ expression must be BOOLEAN"},
     };
     do_inspect_tests(tests);
 }

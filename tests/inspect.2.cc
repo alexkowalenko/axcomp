@@ -72,7 +72,7 @@ TEST(Inspector, IF) {
                 RETURN 1;
             END;
         END alpha.)",
-         "", "0: IF expression must be type BOOLEAN"},
+         "", "4,14: IF expression must be type BOOLEAN"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -86,7 +86,7 @@ TEST(Inspector, IF) {
                 RETURN 2;
             END;
         END alpha.)",
-         "", "0: ELSIF expression must be type BOOLEAN"},
+         "", "4,14: ELSIF expression must be type BOOLEAN"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -104,7 +104,7 @@ TEST(Inspector, IF) {
                 RETURN 2;
             END;
         END alpha.)",
-         "", "0: ELSIF expression must be type BOOLEAN"},
+         "", "4,14: ELSIF expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -127,14 +127,14 @@ TEST(Inspector, For) {
             END;
             RETURN; 
             END e06.)",
-         "", "0: FOR end expression must be numeric type"},
+         "", "3,15: FOR end expression must be numeric type"},
         {R"(MODULE e06;
             BEGIN 
             FOR i := FALSE TO TRUE DO 
             END;
             RETURN; 
             END e06.)",
-         "", "0: FOR start expression must be numeric type"},
+         "", "3,15: FOR start expression must be numeric type"},
     };
     do_inspect_tests(tests);
 }
@@ -163,7 +163,7 @@ TEST(Inspector, WHILE) {
             END;
             RETURN x;
         END alpha.)",
-         "", "0: WHILE expression must be type BOOLEAN"},
+         "", "4,17: WHILE expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -191,7 +191,7 @@ TEST(Inspector, REPEAT) {
                 x := x+1;
             UNTIL  10;
         END alpha.)",
-         "", "0: REPEAT expression must be type BOOLEAN"},
+         "", "4,18: REPEAT expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }

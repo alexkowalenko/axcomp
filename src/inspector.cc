@@ -37,7 +37,8 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
                   [this](auto const &x) { x->accept(this); });
     if (!has_return) {
         throw CodeGenException(
-            fmt::format("MODULE {} has no RETURN function", ast->name), 0);
+            fmt::format("MODULE {} has no RETURN function", ast->name),
+            ast->get_location());
     }
 }
 
@@ -53,16 +54,15 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
 void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
     if (!ast->vars.empty()) {
-        std::for_each(ast->vars.begin(), ast->vars.end(),
-                      [this](auto const &v) {
-                          v.first->accept(this);
+        std::for_each(ast->vars.begin(), ast->vars.end(), [=](auto const &v) {
+            v.first->accept(this);
 
-                          auto result = types.find(v.second);
-                          if (!result) {
-                              throw TypeError(
-                                  fmt::format("Unknown type: {}", v.second), 0);
-                          }
-                      });
+            auto result = types.find(v.second);
+            if (!result) {
+                throw TypeError(fmt::format("Unknown type: {}", v.second),
+                                ast->get_location());
+            }
+        });
     }
 }
 
@@ -76,7 +76,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
             throw TypeError(
                 fmt::format("Unknown type: {} for return from function {}",
                             ast->return_type, ast->name),
-                0);
+                ast->get_location());
         }
         retType = *result;
     }
@@ -92,7 +92,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                     fmt::format(
                         "Unknown type: {} for paramater {} from function {}",
                         p.second, p.first->value, ast->name),
-                    0);
+                    ast->get_location());
             }
             argTypes.push_back(*r);
         });
@@ -120,7 +120,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                           throw CodeGenException(
                               fmt::format("PROCEDURE {} has no RETURN function",
                                           ast->name),
-                              0);
+                              ast->get_location());
                       }
                   });
     current_symboltable = former_symboltable;
@@ -134,7 +134,7 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     if (!last_type->equiv(expr_type)) {
         throw TypeError(fmt::format("Can't assign expression of type {} to {}",
                                     std::string(*expr_type), ast->ident->value),
-                        0);
+                        ast->get_location());
     }
 }
 
@@ -161,7 +161,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
             throw TypeError(
                 fmt::format("RETURN does not match return type for function {}",
                             last_proc->name),
-                0);
+                ast->get_location());
         }
     }
 }
@@ -170,23 +170,26 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     auto res = current_symboltable->find(ast->name->value);
     if (!res) {
         throw CodeGenException(
-            fmt::format("undefined PROCEDURE {}", ast->name->value), 0);
+            fmt::format("undefined PROCEDURE {}", ast->name->value),
+            ast->get_location());
     }
     if (res->type != "PROCEDURE") {
         throw TypeError(fmt::format("{} is not a PROCEDURE", ast->name->value),
-                        0);
+                        ast->get_location());
     }
 
     // Find return type from procedure and put in last_type
     auto pType = types.find(ast->name->value);
     if (!pType) {
         throw TypeError(
-            fmt::format("undefined type PROCEDURE {}", ast->name->value), 0);
+            fmt::format("undefined type PROCEDURE {}", ast->name->value),
+            ast->get_location());
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(*pType);
     if (!procType) {
         throw TypeError(
-            fmt::format("{} is not type PROCEDURE", ast->name->value), 0);
+            fmt::format("{} is not type PROCEDURE", ast->name->value),
+            ast->get_location());
     }
 
     if (ast->args.size() != procType->params.size()) {
@@ -194,7 +197,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
                                     "arguments: {} instead of {}",
                                     ast->name->value, ast->args.size(),
                                     procType->params.size()),
-                        0);
+                        ast->get_location());
     }
 
     last_type = procType->ret;
@@ -203,7 +206,8 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 void Inspector::visit_ASTIf(ASTIf *ast) {
     ast->if_clause.expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        throw TypeError(fmt::format("IF expression must be type BOOLEAN"), 0);
+        throw TypeError(fmt::format("IF expression must be type BOOLEAN"),
+                        ast->get_location());
     }
 
     std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
@@ -211,11 +215,12 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
 
     std::for_each(
         ast->elsif_clause.begin(), ast->elsif_clause.end(),
-        [this](auto const &x) {
+        [this, ast](auto const &x) {
             x.expr->accept(this);
             if (last_type != TypeTable::BoolType) {
                 throw TypeError(
-                    fmt::format("ELSIF expression must be type BOOLEAN"), 0);
+                    fmt::format("ELSIF expression must be type BOOLEAN"),
+                    ast->get_location());
             }
             std::for_each(x.stats.begin(), x.stats.end(),
                           [this](auto const &s) { s->accept(this); });
@@ -231,18 +236,20 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
     ast->start->accept(this);
     if (!types.isNumericType(last_type)) {
         throw TypeError(
-            fmt::format("FOR start expression must be numeric type"), 0);
+            fmt::format("FOR start expression must be numeric type"),
+            ast->get_location());
     }
     ast->end->accept(this);
     if (!types.isNumericType(last_type)) {
         throw TypeError(fmt::format("FOR end expression must be numeric type"),
-                        0);
+                        ast->get_location());
     }
     if (ast->by) {
         (*ast->by)->accept(this);
         if (!types.isNumericType(last_type)) {
             throw TypeError(
-                fmt::format("FOR BY expression must be numeric type"), 0);
+                fmt::format("FOR BY expression must be numeric type"),
+                ast->get_location());
         }
     }
 
@@ -263,7 +270,7 @@ void Inspector::visit_ASTWhile(ASTWhile *ast) {
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
         throw TypeError(fmt::format("WHILE expression must be type BOOLEAN"),
-                        0);
+                        ast->get_location());
     }
 
     std::for_each(begin(ast->stats), end(ast->stats),
@@ -276,7 +283,7 @@ void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
         throw TypeError(fmt::format("REPEAT expression must be type BOOLEAN"),
-                        0);
+                        ast->get_location());
     }
 }
 
@@ -300,7 +307,7 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
             throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
-                0);
+                ast->get_location());
         }
         // Comparison operators return BOOLEAN
         last_type = TypeTable::BoolType;
@@ -310,25 +317,26 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
 void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
     auto t1 = last_type;
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this, &t1](auto t) {
+    std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
-                0);
+                ast->get_location());
         }
         if (t.first == TokenType::or_k) {
             if (last_type != TypeTable::BoolType) {
                 throw TypeError(
-                    fmt::format("types in OR expression must be BOOLEAN"), 0);
+                    fmt::format("types in OR expression must be BOOLEAN"),
+                    ast->get_location());
             }
         } else {
             if (last_type != TypeTable::IntType) {
                 throw TypeError(
                     fmt::format("types in {} expression must be numeric",
                                 string(t.first)),
-                    0);
+                    ast->get_location());
             }
         }
         t1 = last_type;
@@ -338,25 +346,26 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
 void Inspector::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
     auto t1 = last_type;
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this, &t1](auto t) {
+    std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             throw TypeError(
                 fmt::format("types in expression don't match {} and {}",
                             std::string(*t1), std::string(*last_type)),
-                0);
+                ast->get_location());
         }
         if (t.first == TokenType::ampersand) {
             if (last_type != TypeTable::BoolType) {
                 throw TypeError(
-                    fmt::format("types in & expression must be BOOLEAN"), 0);
+                    fmt::format("types in & expression must be BOOLEAN"),
+                    ast->get_location());
             }
         } else {
             if (last_type != TypeTable::IntType) {
                 throw TypeError(
                     fmt::format("types in {} expression must be numeric",
                                 string(t.first)),
-                    0);
+                    ast->get_location());
             }
         }
         t1 = last_type;
@@ -377,7 +386,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                     if (last_type != TypeTable::BoolType) {
                         throw TypeError(
                             fmt::format("type in ~ expression must be BOOLEAN"),
-                            0);
+                            ast->get_location());
                     }
                 }
             },
@@ -391,14 +400,15 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     auto res = current_symboltable->find(ast->value);
     if (!res) {
         throw CodeGenException(
-            fmt::format("undefined identifier {}", ast->value), 0);
+            fmt::format("undefined identifier {}", ast->value),
+            ast->get_location());
     }
     debug("find type: {} for {}", res->type, res->name);
     auto resType = types.find(res->type);
     if (!resType) {
         throw TypeError(fmt::format("Unknown type: {} for identifier {}",
                                     res->type, ast->value),
-                        0);
+                        ast->get_location());
     }
     last_type = *resType;
 }

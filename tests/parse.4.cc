@@ -84,7 +84,7 @@ TEST(Parser, IF) {
                 RETURN 1;
             END;
         END alpha.)",
-         "", "5: Unexpected token: x - expecting THEN"},
+         "", "5,17: Unexpected token: x - expecting THEN"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -94,7 +94,7 @@ TEST(Parser, IF) {
                 RETURN 1;
             ;
         END alpha.)",
-         "", "7: Unexpected token: semicolon"},
+         "", "7,13: Unexpected token: semicolon"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -108,7 +108,7 @@ TEST(Parser, IF) {
                 RETURN 2;
             END;
         END alpha.)",
-         "", "8: Unexpected token: RETURN - expecting THEN"},
+         "", "8,22: Unexpected token: RETURN - expecting THEN"},
     };
     do_parse_tests(tests);
 }
@@ -149,7 +149,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "4: Unexpected token: integer(0) - expecting :="},
+         "", "4,19: Unexpected token: integer(0) - expecting :="},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -159,7 +159,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "4: Unexpected token: integer(19) - expecting TO"},
+         "", "4,25: Unexpected token: integer(19) - expecting TO"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -169,7 +169,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "4: Unexpected token: integer(2) - expecting DO"},
+         "", "4,30: Unexpected token: integer(2) - expecting DO"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -179,7 +179,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "4: Unexpected token: DO"},
+         "", "4,34: Unexpected token: DO"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -189,7 +189,7 @@ TEST(Parser, FOR) {
             END;
             RETURN x;
         END alpha.)",
-         "", "5: Unexpected token: x - expecting DO"},
+         "", "5,17: Unexpected token: x - expecting DO"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -198,7 +198,7 @@ TEST(Parser, FOR) {
                 x := x + i;
             RETURN x;
         END alpha.)",
-         "", "7: Unexpected token: alpha - expecting semicolon"},
+         "", "7,17: Unexpected token: alpha - expecting semicolon"},
     };
     do_parse_tests(tests);
 }
@@ -227,7 +227,7 @@ TEST(Parser, WHILE) {
             END;
             RETURN x;
         END alpha.)",
-         "", "5: Unexpected token: x - expecting DO"},
+         "", "5,17: Unexpected token: x - expecting DO"},
     };
     do_parse_tests(tests);
 }
@@ -254,7 +254,7 @@ TEST(Parser, REPEAT) {
                 x := x+1;
              x > 10;
         END alpha.)",
-         "", "6: Unexpected token: >"},
+         "", "6,16: Unexpected token: >"},
     };
     do_parse_tests(tests);
 }

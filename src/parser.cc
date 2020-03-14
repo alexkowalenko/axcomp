@@ -29,7 +29,7 @@ Token Parser::get_token(TokenType t) {
     if (tok.type != t) {
         throw ParseException(fmt::format("Unexpected token: {} - expecting {}",
                                          std::string(tok), string(t)),
-                             lexer.get_lineno());
+                             lexer.get_location());
     }
     return tok;
 }
@@ -44,6 +44,7 @@ inline std::set<TokenType> module_ends{TokenType::end};
  */
 std::shared_ptr<ASTModule> Parser::parse_module() {
     std::shared_ptr<ASTModule> module = std::make_shared<ASTModule>();
+    module->set_location(lexer.get_location());
 
     // MODULE ident BEGIN (expr)+ END ident.
     get_token(TokenType::module);
@@ -74,7 +75,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
         throw ParseException(
             fmt::format("END identifier name: {} doesn't match module name: {}",
                         tok.val, module->name),
-            lexer.get_lineno());
+            lexer.get_location());
     }
     get_token(TokenType::period);
     return module;
@@ -91,7 +92,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
 std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
     debug("Parser::parse_declaration");
     std::shared_ptr<ASTDeclaration> decs = std::make_shared<ASTDeclaration>();
-    auto                            tok = lexer.peek_token();
+    decs->set_location(lexer.get_location());
+
+    auto tok = lexer.peek_token();
     while (tok.type == TokenType::cnst || tok.type == TokenType::type ||
            tok.type == TokenType::var) {
 
@@ -119,7 +122,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
         }
         default:
             throw ParseException(fmt::format("unimplemented {}", tok.val),
-                                 lexer.get_lineno());
+                                 lexer.get_location());
         }
         tok = lexer.peek_token();
     }
@@ -133,9 +136,12 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
  */
 std::shared_ptr<ASTConst> Parser::parse_const() {
     debug("Parser::parse_const");
-    lexer.get_token(); // CONST
+
     std::shared_ptr<ASTConst> cnst = std::make_shared<ASTConst>();
-    auto                      tok = lexer.peek_token();
+    cnst->set_location(lexer.get_location());
+
+    lexer.get_token(); // CONST
+    auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         ConstDec dec;
         dec.ident = parse_identifier();
@@ -160,9 +166,12 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
  */
 std::shared_ptr<ASTVar> Parser::parse_var() {
     debug("Parser::parse_var");
-    lexer.get_token(); // VAR
+
     std::shared_ptr<ASTVar> var = std::make_shared<ASTVar>();
-    auto                    tok = lexer.peek_token();
+    var->set_location(lexer.get_location());
+
+    lexer.get_token(); // VAR
+    auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         VarDec dec;
         dec.first = parse_identifier();
@@ -187,7 +196,9 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
  */
 std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     debug("Parser::parse_procedure");
+
     std::shared_ptr<ASTProcedure> proc = std::make_shared<ASTProcedure>();
+    proc->set_location(lexer.get_location());
 
     lexer.get_token(); // PROCEDURE
     auto tok = get_token(TokenType::ident);
@@ -225,7 +236,7 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
         throw ParseException(
             fmt::format("END name: {} doesn't match procedure name: {}",
                         tok.val, proc->name),
-            lexer.get_lineno());
+            lexer.get_location());
     }
     get_token(TokenType::semicolon);
     return proc;
@@ -256,7 +267,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
             break;
         }
         throw ParseException("expecting ; or ) in parameter list",
-                             lexer.get_lineno());
+                             lexer.get_location());
     }
     lexer.get_token(); // get )
 }
@@ -306,7 +317,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
     default:
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
-            lexer.get_lineno());
+            lexer.get_location());
     }
 }
 
@@ -335,7 +346,9 @@ void Parser::parse_statement_block(
  */
 std::shared_ptr<ASTAssignment> Parser::parse_assignment(Token const &ident) {
     debug("Parser::parse_assignment");
+
     std::shared_ptr<ASTAssignment> assign = std::make_shared<ASTAssignment>();
+    assign->set_location(lexer.get_location());
     assign->ident = std::make_shared<ASTIdentifier>();
     assign->ident->value = ident.val;
     get_token(TokenType::assign);
@@ -351,6 +364,7 @@ std::shared_ptr<ASTAssignment> Parser::parse_assignment(Token const &ident) {
 std::shared_ptr<ASTReturn> Parser::parse_return() {
     debug("Parser::parse_return");
     std::shared_ptr<ASTReturn> ret = std::make_shared<ASTReturn>();
+    ret->set_location(lexer.get_location());
     get_token(TokenType::ret);
     auto tok = lexer.peek_token();
     if (tok.type != TokenType::semicolon) {
@@ -366,7 +380,9 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
  */
 std::shared_ptr<ASTExit> Parser::parse_exit() {
     get_token(TokenType::exit);
-    return std::make_shared<ASTExit>();
+    auto ex = std::make_shared<ASTExit>();
+    ex->set_location(lexer.get_location());
+    return ex;
 };
 
 /**
@@ -376,6 +392,7 @@ std::shared_ptr<ASTExit> Parser::parse_exit() {
  */
 std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
     std::shared_ptr<ASTCall> call = std::make_shared<ASTCall>();
+    call->set_location(lexer.get_location());
     call->name = std::make_shared<ASTIdentifier>();
     call->name->value = ident.val;
     get_token(TokenType::l_paren);
@@ -393,7 +410,7 @@ std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
         }
         throw ParseException(
             fmt::format("Unexpected {} expecting , or )", tok.val),
-            lexer.get_lineno());
+            lexer.get_location());
     }
     get_token(TokenType::r_paren);
     return call;
@@ -412,6 +429,7 @@ inline std::set<TokenType> if_ends{TokenType::end, TokenType::elsif,
 std::shared_ptr<ASTIf> Parser::parse_if() {
     debug("Parser::parse_if");
     std::shared_ptr<ASTIf> stat = std::make_shared<ASTIf>();
+    stat->set_location(lexer.get_location());
 
     // IF
     get_token(TokenType::if_k);
@@ -455,6 +473,7 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
 std::shared_ptr<ASTFor> Parser::parse_for() {
     debug("Parser::parse_for");
     std::shared_ptr<ASTFor> ast = std::make_shared<ASTFor>();
+    ast->set_location(lexer.get_location());
 
     // FOR
     get_token(TokenType::for_k);
@@ -483,6 +502,7 @@ std::shared_ptr<ASTFor> Parser::parse_for() {
 
 std::shared_ptr<ASTWhile> Parser::parse_while() {
     std::shared_ptr<ASTWhile> ast = std::make_shared<ASTWhile>();
+    ast->set_location(lexer.get_location());
 
     // WHILE
     get_token(TokenType::while_k);
@@ -500,6 +520,7 @@ inline std::set<TokenType> repeat_ends{TokenType::until};
 
 std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
     std::shared_ptr<ASTRepeat> ast = std::make_shared<ASTRepeat>();
+    ast->set_location(lexer.get_location());
 
     // REPEAT
     get_token(TokenType::repeat);
@@ -515,6 +536,7 @@ std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
 
 std::shared_ptr<ASTLoop> Parser::parse_loop() {
     std::shared_ptr<ASTLoop> ast = std::make_shared<ASTLoop>();
+    ast->set_location(lexer.get_location());
 
     // LOOP
     get_token(TokenType::loop);
@@ -528,7 +550,7 @@ std::shared_ptr<ASTLoop> Parser::parse_loop() {
 
 std::shared_ptr<ASTBlock> Parser::parse_block() {
     std::shared_ptr<ASTBlock> ast = std::make_shared<ASTBlock>();
-
+    ast->set_location(lexer.get_location());
     // BEGIN
     get_token(TokenType::begin);
 
@@ -554,6 +576,7 @@ inline std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
     debug("Parser::parse_expr");
     std::shared_ptr<ASTExpr> ast = std::make_shared<ASTExpr>();
+    ast->set_location(lexer.get_location());
 
     ast->expr = parse_simpleexpr();
     auto tok = lexer.peek_token();
@@ -574,6 +597,7 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
 std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
     debug("Parser::parse_simpleexpr");
     std::shared_ptr<ASTSimpleExpr> expr = std::make_shared<ASTSimpleExpr>();
+    expr->set_location(lexer.get_location());
 
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
@@ -604,6 +628,7 @@ inline std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div,
 std::shared_ptr<ASTTerm> Parser::parse_term() {
     debug("Parser::parse_term");
     std::shared_ptr<ASTTerm> term = std::make_shared<ASTTerm>();
+    term->set_location(lexer.get_location());
 
     term->factor = parse_factor();
     auto tok = lexer.peek_token();
@@ -630,7 +655,9 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 std::shared_ptr<ASTFactor> Parser::parse_factor() {
     debug("Parser::parse_factor");
     std::shared_ptr<ASTFactor> ast = std::make_shared<ASTFactor>();
-    auto                       tok = lexer.peek_token();
+    ast->set_location(lexer.get_location());
+
+    auto tok = lexer.peek_token();
     debug("factor {}", std::string(tok));
     switch (tok.type) {
     case TokenType::l_paren:
@@ -668,7 +695,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     default:
         throw ParseException(
             fmt::format("Unexpected token: {}", std::string(tok)),
-            lexer.get_lineno());
+            lexer.get_location());
     }
     return nullptr; // Not factor
 };
@@ -682,6 +709,7 @@ std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
     debug("Parser::parse_identifier");
     auto                           tok = get_token(TokenType::ident);
     std::shared_ptr<ASTIdentifier> ast = std::make_shared<ASTIdentifier>();
+    ast->set_location(lexer.get_location());
     ast->value = tok.val;
     return ast;
 };
@@ -695,7 +723,9 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
     debug("Parser::parse_integer");
     auto                        tok = get_token(TokenType::integer);
     std::shared_ptr<ASTInteger> ast = std::make_shared<ASTInteger>();
-    char *                      end;
+    ast->set_location(lexer.get_location());
+
+    char *end;
     ast->value = std::strtol(tok.val.c_str(), &end, 10);
     return ast;
 }
@@ -708,6 +738,7 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
 std::shared_ptr<ASTBool> Parser::parse_boolean() {
     std::shared_ptr<ASTBool> ast = std::make_shared<ASTBool>();
     auto                     tok = lexer.get_token();
+    ast->set_location(lexer.get_location());
     ast->value = (tok.type == TokenType::true_k);
     return ast;
 }

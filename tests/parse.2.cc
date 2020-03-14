@@ -18,7 +18,7 @@ TEST(Parser, Const) {
 
         // Errors
         {"MODULE y; x = 1; BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: x - expecting BEGIN"},
+         "1,11: Unexpected token: x - expecting BEGIN"},
 
     };
     do_parse_tests(tests);
@@ -61,9 +61,9 @@ TEST(Parser, Var) {
 
         // Errors
         {"MODULE y; VAR x : INTEGER BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: BEGIN - expecting semicolon"},
+         "1,31: Unexpected token: BEGIN - expecting semicolon"},
         {"MODULE y; VAR : INTEGER; BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: : - expecting BEGIN"},
+         "1,15: Unexpected token: : - expecting BEGIN"},
 
     };
     do_parse_tests(tests);
@@ -89,9 +89,9 @@ TEST(Parser, Assignment) {
 
         // Errors
         {"MODULE y; VAR x : INTEGER; BEGIN := 2; END y.", "",
-         "1: Unexpected token: :="},
+         "1,35: Unexpected token: :="},
         {"MODULE y; VAR x : INTEGER;  BEGIN x 12; END y.", "",
-         "1: Unexpected token: integer(12)"},
+         "1,38: Unexpected token: integer(12)"},
 
     };
     do_parse_tests(tests);

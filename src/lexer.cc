@@ -70,9 +70,9 @@ static std::unordered_map<char, Token> token_map = {
 Lexer::Lexer(std::istream &stream) : is{stream} {}
 
 void Lexer::get_comment() {
-    is.get(); // get asterisk
+    get(); // get asterisk
     do {
-        char c = is.get();
+        char c = get();
         if (c == '*' && is.peek() == ')') {
             is.get();
             return;
@@ -82,17 +82,19 @@ void Lexer::get_comment() {
             // recursively
             get_comment();
         }
+        if (c == '\n') {
+            set_newline();
+        }
     } while (is);
 }
 
 char Lexer::get_char() {
-    char c = 0;
     while (is) {
-        c = is.get();
+        char c = get();
         // fmt::print("Char: {} next: {}\n", c,
         // is.peek());
         if (c == '\n') {
-            lineno++;
+            set_newline();
             continue;
         }
         if (c == '(' && is.peek() == '*') {
@@ -111,7 +113,7 @@ Token Lexer::scan_digit(char c) {
     std::string digit(1, c);
     c = is.peek();
     while (std::isdigit(c)) {
-        is.get();
+        get();
         digit += c;
         c = is.peek();
     }
@@ -122,7 +124,7 @@ Token Lexer::scan_ident(char c) {
     std::string ident(1, c);
     c = is.peek();
     while (std::isalnum(c) || c == '_') {
-        is.get();
+        get();
         ident += c;
         c = is.peek();
     }
@@ -177,7 +179,8 @@ Token Lexer::get_token() {
     if (std::isalpha(c)) {
         return scan_ident(c);
     }
-    throw LexicalException(std::string("Unknown character ") + c, lineno);
+    throw LexicalException(std::string("Unknown character ") + c,
+                           get_location());
 }
 
 void Lexer::push_token(Token const &t) {

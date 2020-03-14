@@ -52,7 +52,7 @@ BEGIN
     RETURN 0;
 END x.
         )",
-         "", "4: Unexpected token: RETURN - expecting BEGIN"},
+         "", "4,12: Unexpected token: RETURN - expecting BEGIN"},
 
         {R"(MODULE x;
   PROCEDURE f;
@@ -62,7 +62,7 @@ END x.
 BEGIN
     RETURN 0;
 END x.)",
-         "", "5: Unexpected token: semicolon - expecting indent"},
+         "", "5,7: Unexpected token: semicolon - expecting indent"},
 
         {R"(MODULE x;
    f;
@@ -72,7 +72,7 @@ END x.)",
 BEGIN
     RETURN 0;
 END x.)",
-         "", "2: Unexpected token: f - expecting BEGIN"},
+         "", "2,4: Unexpected token: f - expecting BEGIN"},
 
         {R"(MODULE x;
   PROCEDURE f;
@@ -82,7 +82,7 @@ END x.)",
 BEGIN
     RETURN 0;
 END x.)",
-         "", "5: Unexpected token: semicolon"},
+         "", "5,5: Unexpected token: semicolon"},
 
     };
     do_parse_tests(tests);
@@ -129,13 +129,13 @@ END x.)",
     BEGIN
         f(;
     END x.)",
-         "", "3: Unexpected token: semicolon"},
+         "", "3,11: Unexpected token: semicolon"},
         // Error
         {R"(MODULE x;
     BEGIN
         f);
     END x.)",
-         "", "3: Unexpected token: )"}};
+         "", "3,10: Unexpected token: )"}};
     do_parse_tests(tests);
 }
 
@@ -178,7 +178,7 @@ TEST(Parser, ReturnType) {
         BEGIN
             f();
         END x.)",
-         "", "2: Unexpected token: INTEGER - expecting semicolon"},
+         "", "2,29: Unexpected token: INTEGER - expecting semicolon"},
         {R"(MODULE x;
         PROCEDURE f() :
         BEGIN
@@ -187,7 +187,7 @@ TEST(Parser, ReturnType) {
         BEGIN
             f();
         END x.)",
-         "", "3: Unexpected token: BEGIN - expecting indent"},
+         "", "3,13: Unexpected token: BEGIN - expecting indent"},
     };
     do_parse_tests(tests);
 }
@@ -215,7 +215,7 @@ TEST(Parser, FunctionCall) {
             BEGIN
             RETURN f(;
             END x.)",
-         "", "6: Unexpected token: semicolon"},
+         "", "6,22: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }
@@ -264,7 +264,7 @@ TEST(Parser, FunctionParams) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "3: Unexpected token: INTEGER - expecting :"},
+         "", "3,34: Unexpected token: INTEGER - expecting :"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             PROCEDURE f(x : ) : INTEGER;
@@ -275,7 +275,7 @@ TEST(Parser, FunctionParams) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "3: Unexpected token: ) - expecting indent"},
+         "", "3,29: Unexpected token: ) - expecting indent"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             PROCEDURE f(x : INTEGER  y: INTEGER) : INTEGER;
@@ -286,7 +286,7 @@ TEST(Parser, FunctionParams) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "3: expecting ; or ) in parameter list"},
+         "", "3,38: expecting ; or ) in parameter list"},
     };
     do_parse_tests(tests);
 }
@@ -330,13 +330,13 @@ TEST(Parser, CallArgs) {
             BEGIN
             RETURN f(3, );
             END xxx.)",
-         "", "4: Unexpected token: )"},
+         "", "4,25: Unexpected token: )"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             BEGIN
             RETURN f(3 ;
             END xxx.)",
-         "", "4: Unexpected ; expecting , or )"},
+         "", "4,24: Unexpected ; expecting , or )"},
     };
     do_parse_tests(tests);
 }

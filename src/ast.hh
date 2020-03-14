@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "location.hh"
+
 namespace ax {
 
 class ASTVisitor;
@@ -22,6 +24,12 @@ class ASTBase {
     ASTBase &operator=(ASTBase &&) = default;
 
     virtual void accept(ASTVisitor *v) = 0;
+
+    void            set_location(Location const &l) { location = l; };
+    Location const &get_location() { return location; };
+
+  private:
+    Location location;
 };
 
 } // namespace ax

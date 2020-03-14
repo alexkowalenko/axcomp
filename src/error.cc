@@ -11,7 +11,7 @@
 namespace ax {
 
 std::string AXException::error_msg() {
-    return fmt::format("{}: {}", lineno, msg);
+    return fmt::format("{}: {}", std::string(location), msg);
 }
 
 } // namespace ax

@@ -10,6 +10,7 @@
 #include <stack>
 #include <string>
 
+#include "location.hh"
 #include "token.hh"
 
 namespace ax {
@@ -22,7 +23,8 @@ class Lexer {
     void  push_token(Token const &t);
     Token peek_token();
 
-    int get_lineno() { return lineno; };
+    int      get_lineno() const { return lineno; };
+    Location get_location() const { return Location{lineno, charpos}; }
 
   private:
     void get_comment();
@@ -31,7 +33,19 @@ class Lexer {
     Token scan_digit(char c);
     Token scan_ident(char c);
 
-    int               lineno = 1;
+    char get() {
+        charpos++;
+        return is.get();
+    }
+
+    void set_newline() {
+        lineno++;
+        charpos = 0;
+    }
+
+    int lineno = 1;
+    int charpos = 0;
+
     std::istream &    is;
     std::stack<Token> next_token;
 };

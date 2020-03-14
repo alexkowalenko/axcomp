@@ -113,7 +113,7 @@ void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
 void CodeGenerator::doTopVars(ASTVar *ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
-        auto type = getType(c.second);
+        auto type = getType(c.second, ast);
         module->getOrInsertGlobal(c.first->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
@@ -127,7 +127,7 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
-        auto type = getType(c.type);
+        auto type = getType(c.type, ast);
         module->getOrInsertGlobal(c.ident->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
 
@@ -136,7 +136,8 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         if (isa<ConstantInt>(last_value)) {
             gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
         } else {
-            throw CodeGenException("Expression based CONSTs not supported.", 0);
+            throw CodeGenException("Expression based CONSTs not supported.",
+                                   ast->get_location());
         }
         gVar->setConstant(true);
 
@@ -170,7 +171,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
 
         // Create const
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name, c.type);
+        auto alloc = createEntryBlockAlloca(function, name, c.type, ast);
         builder.CreateStore(val, alloc);
 
         current_symboltable->put(name, alloc);
@@ -185,7 +186,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
         debug("create var: {}", name);
 
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name, c.second);
+        auto alloc = createEntryBlockAlloca(function, name, c.second, ast);
         builder.CreateStore(ConstantInt::get(context, APInt(64, 0, true)),
                             alloc);
         alloc->setName(name);
@@ -200,9 +201,9 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     // Make the function arguments
     std::vector<llvm::Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
-                  [this, &proto](auto const &p) {
+                  [this, ast, &proto](auto const &p) {
                       debug("arg type: {}", p.second);
-                      auto type = getType(p.second);
+                      auto type = getType(p.second, ast);
                       proto.push_back(type);
                   });
 
@@ -211,7 +212,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         returnType = llvm::Type::getVoidTy(context);
     } else {
         debug("ret type: {}", ast->return_type);
-        returnType = getType(ast->return_type);
+        returnType = getType(ast->return_type, ast);
     }
 
     FunctionType *ft = FunctionType::get(returnType, proto, false);
@@ -235,7 +236,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         auto type_name = ast->params[i].second;
         // Create an alloca for this variable.
         debug("set up param {}: {}.", param_name, type_name);
-        AllocaInst *alloca = createEntryBlockAlloca(f, param_name, type_name);
+        AllocaInst *alloca =
+            createEntryBlockAlloca(f, param_name, type_name, ast);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
@@ -266,7 +268,8 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     auto var = current_symboltable->find(ast->ident->value);
     if (!var) {
         throw CodeGenException(
-            fmt::format("identifier: {} not found.", ast->ident->value));
+            fmt::format("identifier: {} not found.", ast->ident->value),
+            ast->get_location());
     }
     debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
     builder.CreateStore(val, var.value());
@@ -292,7 +295,8 @@ void CodeGenerator::visit_ASTExit(ASTExit *ast) {
         builder.GetInsertBlock();
         builder.CreateBr(last_end);
     } else {
-        throw CodeGenException(fmt::format("EXIT: no enclosing loop."));
+        throw CodeGenException(fmt::format("EXIT: no enclosing loop."),
+                               ast->get_location());
     }
 }
 
@@ -304,12 +308,14 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
         callee = module->getFunction(ast->name->value);
         if (!callee) {
             throw CodeGenException(
-                fmt::format("function: {} not found", ast->name->value));
+                fmt::format("function: {} not found", ast->name->value),
+                ast->get_location());
         }
     } catch (...) {
         debug("CodeGenerator::visit_ASTCall exception");
         throw CodeGenException(
-            fmt::format("function: {} not found", ast->name->value));
+            fmt::format("function: {} not found", ast->name->value),
+            ast->get_location());
     }
 
     std::vector<Value *> args;
@@ -415,7 +421,7 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
     current_symboltable =
         std::make_shared<SymbolTable<Value *>>(former_symboltable);
     auto index = createEntryBlockAlloca(funct, ast->ident->value,
-                                        std::string(*TypeTable::IntType));
+                                        std::string(*TypeTable::IntType), ast);
     builder.CreateStore(last_value, index);
     current_symboltable->put(ast->ident->value, index);
 
@@ -485,7 +491,6 @@ void CodeGenerator::visit_ASTWhile(ASTWhile *ast) {
                   [this](auto const &s) { s->accept(this); });
 
     builder.CreateBr(while_block);
-    loop = builder.GetInsertBlock(); // update
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -619,7 +624,8 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
             last_value = builder.CreateOr(L, R, "subtmp");
             break;
         default:
-            throw CodeGenException("ASTSimpleExpr with sign" + string(t.first));
+            throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
+                                   ast->get_location());
         }
         L = last_value;
     }
@@ -645,7 +651,8 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
             last_value = builder.CreateAnd(L, R, "modtmp");
             break;
         default:
-            throw CodeGenException("ASTTerm with sign" + string(t.first));
+            throw CodeGenException("ASTTerm with sign" + string(t.first),
+                                   ast->get_location());
         }
 
         L = last_value;
@@ -675,7 +682,8 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
         last_value = builder.CreateLoad(*res, ast->value);
         return;
     }
-    throw CodeGenException(fmt::format("identifier {} unknown", ast->value));
+    throw CodeGenException(fmt::format("identifier {} unknown", ast->value),
+                           ast->get_location());
 }
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
@@ -697,18 +705,19 @@ void CodeGenerator::visit_ASTBool(ASTBool *ast) {
  */
 AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
                                                   std::string const &name,
-                                                  std::string const &type) {
+                                                  std::string const &type,
+                                                  ASTBase *          ast) {
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());
-    auto        t = getType(type);
+    auto        t = getType(type, ast);
     return TmpB.CreateAlloca(t, nullptr, name);
 }
 
-llvm::Type *CodeGenerator::getType(std::string const &t) {
+llvm::Type *CodeGenerator::getType(std::string const &t, ASTBase *ast) {
     if (auto type = types.find(t); *type) {
         return (*type)->get_llvm();
     }
-    throw CodeGenException("Type not found: " + t, 0);
+    throw CodeGenException("Type not found: " + t, ast->get_location());
 }
 
 void CodeGenerator::init(std::string const &module_name) {
@@ -723,7 +732,7 @@ void CodeGenerator::print_code() {
     raw_fd_ostream  out_file(f, EC, sys::fs::OF_None);
 
     if (EC) {
-        throw CodeGenException("Could not open file: " + EC.message(), 0);
+        throw CodeGenException("Could not open file: " + EC.message());
     }
     module->print(out_file, nullptr);
     out_file.flush();
@@ -754,7 +763,7 @@ void CodeGenerator::generate_objectcode() {
     // This generally occurs if we've forgotten to initialise the
     // TargetRegistry or we have a bogus target triple.
     if (target == nullptr) {
-        throw CodeGenException(error, 0);
+        throw CodeGenException(error);
     }
 
     // Use generic CPU without features
@@ -774,7 +783,7 @@ void CodeGenerator::generate_objectcode() {
     raw_fd_ostream  dest_file(f, EC, sys::fs::OF_None);
 
     if (EC) {
-        throw CodeGenException("Could not open file: " + EC.message(), 0);
+        throw CodeGenException("Could not open file: " + EC.message());
     }
 
     legacy::PassManager pass;
@@ -782,8 +791,7 @@ void CodeGenerator::generate_objectcode() {
 
     if (targetMachine->addPassesToEmitFile(pass, dest_file, nullptr,
                                            file_type)) {
-        throw CodeGenException("TargetMachine can't emit a file of this type",
-                               0);
+        throw CodeGenException("TargetMachine can't emit a file of this type");
     }
     pass.run(*module);
     dest_file.flush();

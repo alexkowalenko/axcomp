@@ -46,22 +46,22 @@ TEST(Parser, Module) {
 
         // Errors
         {"y; BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: y - expecting MODULE"},
+         "1,1: Unexpected token: y - expecting MODULE"},
         {"MODULE ; BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: semicolon - expecting indent"},
+         "1,8: Unexpected token: semicolon - expecting indent"},
         {"MODULE y BEGIN RETURN 12; END y.", "",
-         "1: Unexpected token: BEGIN - expecting semicolon"},
+         "1,14: Unexpected token: BEGIN - expecting semicolon"},
         {"MODULE y; RETURN 12; END y.", "",
-         "1: Unexpected token: RETURN - expecting BEGIN"},
+         "1,16: Unexpected token: RETURN - expecting BEGIN"},
 
-        {"MODULE y; BEGIN RETURN 12; y.", "", "1: Unexpected token: period"},
+        {"MODULE y; BEGIN RETURN 12; y.", "", "1,29: Unexpected token: period"},
         {"MODULE y; BEGIN RETURN 12; END .", "",
-         "1: Unexpected token: period - expecting indent"},
+         "1,32: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN RETURN 12; END y", "",
-         "1: Unexpected token: EOF - expecting period"},
+         "1,33: Unexpected token: EOF - expecting period"},
 
         {"MODULE x; BEGIN RETURN 12; END y.", "",
-         "1: END identifier name: y doesn't match module name: x"},
+         "1,32: END identifier name: y doesn't match module name: x"},
     };
     do_parse_tests(tests);
 }
@@ -115,11 +115,11 @@ TEST(Parser, Plus) {
 
         // Errors
         {"MODULE y; BEGIN RETURN - ; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1,26: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN 1 -; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1,27: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN - 1 + 2 + ; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1,34: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }
@@ -141,11 +141,11 @@ TEST(Parser, Mult) {
          "MODULE y;\nBEGIN\nRETURN 3*3+4*4;\nEND y.", ""},
 
         // Errors
-        {"MODULE y; BEGIN RETURN * ; END y.", "", "1: Unexpected token: *"},
+        {"MODULE y; BEGIN RETURN * ; END y.", "", "1,24: Unexpected token: *"},
         {"MODULE y; BEGIN RETURN 1 MOD; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1,29: Unexpected token: semicolon"},
         {"MODULE y; BEGIN RETURN - 1 + 2 DIV ; END y.", "",
-         "1: Unexpected token: semicolon"},
+         "1,36: Unexpected token: semicolon"},
     };
     do_parse_tests(tests);
 }
@@ -164,9 +164,9 @@ TEST(Parser, Parentheses) {
 
         // Errors
         {"MODULE y; BEGIN RETURN (2 ; END y.", "",
-         "1: Unexpected token: semicolon - expecting )"},
+         "1,27: Unexpected token: semicolon - expecting )"},
         {"MODULE y; BEGIN RETURN (2 + 4) * (3 DIV 1)) ; END y.", "",
-         "1: Unexpected token: ) - expecting semicolon"},
+         "1,43: Unexpected token: ) - expecting semicolon"},
     };
     do_parse_tests(tests);
 }
