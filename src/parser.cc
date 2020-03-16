@@ -746,4 +746,19 @@ std::shared_ptr<ASTBool> Parser::parse_boolean() {
 std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();
 }
+
+void Parser::setup_builtins(std::vector<std::string> const &builtins,
+                            TypeTable &                     types) {
+    debug("Parser::setup_builtins");
+
+    std::for_each(begin(builtins), end(builtins), [this](auto const &f) {
+        symbols->put(f, Symbol{f, "PROCEDURE"});
+    });
+
+    types.put("WriteLn", std::make_shared<ProcedureType>(
+                             TypeTable::VoidType, std::vector<TypePtr>{}));
+    types.put("WriteInt", std::make_shared<ProcedureType>(
+                              TypeTable::VoidType,
+                              std::vector<TypePtr>{TypeTable::IntType}));
+}
 }; // namespace ax

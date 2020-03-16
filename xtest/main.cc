@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-extern long output();
+extern "C" long output();
 
-int main() {
+extern "C" int main() {
     printf("output: %ld\n", output());
 }

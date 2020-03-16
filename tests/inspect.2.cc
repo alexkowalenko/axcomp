@@ -233,3 +233,23 @@ TEST(Inspector, BEGIN) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Builtins) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+            BEGIN
+                x := 0;
+                WHILE x < 10 DO
+                    x := x + 1;
+                END;
+                WriteInt(x); WriteLn();
+                RETURN x; 
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nx := 0;\nWHILE x < 10 DO\nx "
+         ":= x+1;\nEND;\nWriteInt(x);\nWriteLn();\nRETURN x;\nEND alpha.",
+         ""},
+    };
+    do_inspect_tests(tests);
+}

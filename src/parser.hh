@@ -13,6 +13,7 @@
 #include "lexer.hh"
 #include "symbol.hh"
 #include "symboltable.hh"
+#include "typetable.hh"
 
 namespace ax {
 class Parser {
@@ -21,6 +22,9 @@ class Parser {
         : lexer(l), symbols(std::move(s)){};
 
     std::shared_ptr<ASTModule> parse();
+
+    void setup_builtins(std::vector<std::string> const &builtins,
+                        TypeTable &                     types);
 
   private:
     std::shared_ptr<ASTModule>      parse_module();
@@ -58,5 +62,7 @@ class Parser {
     Lexer &                              lexer;
     std::shared_ptr<SymbolTable<Symbol>> symbols;
 };
+
+inline std::vector<std::string> builtins{"WriteInt", "WriteLn"};
 
 } // namespace ax

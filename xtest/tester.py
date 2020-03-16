@@ -5,7 +5,10 @@ from pathlib import Path
 import os
 from colored import fg, bg, attr
 
-compiler = "../bin/ax"
+install_dir = "../bin"
+
+compiler = f"{install_dir}/ax"
+linker = f"clang++ main.cc -L {install_dir} -lAx "
 
 red = fg('red_1')
 restore = attr('reset')
@@ -13,12 +16,11 @@ restore = attr('reset')
 
 def do_clang(stem):
     obj = stem + ".o"
-    ret = os.system(f"clang main.c {obj}")
+    ret = os.system(linker + obj)
     if (ret != 0):
         print(red + "compile " + restore, end="")
-        # os.system(f"rm {obj}")
         return 0
-    os.system(f"./a.out > result.txt")
+    os.system("./a.out > result.txt")
     res = stem + ".res"
     ret = os.system(
         f"diff --strip-trailing-cr {res} result.txt > result.diff.txt")

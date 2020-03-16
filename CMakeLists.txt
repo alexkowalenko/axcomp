@@ -42,6 +42,7 @@ enable_doxygen()
 
 # allow for static analysis options
 set(ENABLE_CLANG_TIDY OFF)
+set(ENABLE_CPPCHECK OFF)
 include(cmake/StaticAnalyzers.cmake)
 
 
@@ -85,7 +86,12 @@ llvm_map_components_to_libnames(llvm_libs native asmparser
   # For future cross compiler
   # AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens
   # also try 'all'
-)                  
+)                 
+
+set(LLVM_ENABLE_ASSERTIONS ON)
+set(LLVM_ENABLE_EH ON)
+set(LLVM_ENABLE_RTTI ON)
+
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 
 # Doxygen docs
@@ -101,6 +107,9 @@ include_directories(extern/CLI11/include)
 # ax compiler executable
 add_executable(ax cmd/ax.cc)
 target_link_libraries(ax PRIVATE project_options project_warnings libax fmt ${llvm_libs})
+
+# ax runtime library
+add_subdirectory(lib)
 
 # install
 set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)

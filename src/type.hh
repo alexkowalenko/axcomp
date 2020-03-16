@@ -45,8 +45,8 @@ class SimpleType : public Type {
 
 class ProcedureType : public Type {
   public:
-    ProcedureType(TypePtr r, std::vector<TypePtr> p)
-        : ret(std::move(r)), params(std::move(p)){};
+    ProcedureType(TypePtr returns, std::vector<TypePtr> params)
+        : ret(std::move(returns)), params(std::move(params)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;

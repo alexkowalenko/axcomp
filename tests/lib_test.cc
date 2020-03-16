@@ -70,6 +70,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
+            parser.setup_builtins(builtins, types);
 
             Inspector inpect(symbols, types);
             inpect.check(ast);

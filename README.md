@@ -156,6 +156,11 @@ BEGIN
 END test.
 ```
 
+## Builtin functions
+
+WriteInt(x: INTEGER)
+WriteLn()
+
 ## Notes
 
 Changes to the standard definition:

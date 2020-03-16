@@ -24,11 +24,14 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    explicit CodeGenerator(Options &o, TypeTable &t);
+    explicit CodeGenerator(Options &o, std::vector<std::string> const &b,
+                           TypeTable &t);
 
     void generate(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());
     };
+
+    void setup_builtins();
 
     void visit_ASTModule(ASTModule *ast) override;
 
@@ -73,6 +76,7 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(std::string const &t, ASTBase *ast);
 
     Options &                             options;
+    std::vector<std::string> const &      builtins;
     TypeTable &                           types;
     std::shared_ptr<SymbolTable<Value *>> top_symboltable;
     std::shared_ptr<SymbolTable<Value *>> current_symboltable;

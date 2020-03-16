@@ -6,6 +6,10 @@ target triple = "x86_64-apple-darwin18.7.0"
 @x = internal constant i64 1
 @y = internal constant i64 2
 
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
 define i64 @output() {
 entry:
   %y = load i64, i64* @y

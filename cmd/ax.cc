@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
 
     auto       symbols = std::make_shared<SymbolTable<Symbol>>(nullptr);
     ax::Parser parser(lexer, symbols);
+    parser.setup_builtins(builtins, types);
 
     try {
         auto ast = parser.parse();
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
         Inspector inpect(symbols, types);
         inpect.check(ast);
 
-        ax::CodeGenerator code(options, types);
+        ax::CodeGenerator code(options, builtins, types);
         code.generate(ast);
 
         if (options.print_symbols) {

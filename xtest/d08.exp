@@ -5,6 +5,10 @@ target triple = "x86_64-apple-darwin18.7.0"
 
 @y = internal global i64 0
 
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
 define i64 @f() {
 entry:
   %yy = alloca i64
