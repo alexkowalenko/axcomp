@@ -17,8 +17,6 @@
 
 namespace ax {
 
-class ASTDeclaration;
-
 ////////////////
 // Basic Objects
 
@@ -49,20 +47,33 @@ class ASTIdentifier : public ASTBase {
     std::string value;
 };
 
+/**
+ * @brief INDENT | arrayType
+ *
+ */
+
 class ASTType : public ASTBase {
   public:
     ~ASTType() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
 
-    std::shared_ptr<ASTIdentifier> type;
+    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>> type;
 };
+
+/**
+ * @brief  "ARRAY" "[" expr "]" "OF" type
+ *
+ */
 
 class ASTArray : public ASTBase {
   public:
     ~ASTArray() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTArray(this); };
+
+    std::shared_ptr<ASTExpr> expr;
+    std::shared_ptr<ASTType> type;
 };
 
 /////////////////////

@@ -64,16 +64,22 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTBool(ASTBool *ast) override;
 
+    void generate_objectcode();
+    void generate_llcode();
+
   private:
     void init(std::string const &module_name);
-    void generate_objectcode();
-    void print_code();
 
+    AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
+                                       std::string const &      name,
+                                       std::shared_ptr<ASTType> type,
+                                       ASTBase *                ast);
     AllocaInst *createEntryBlockAlloca(Function *         TheFunction,
                                        std::string const &name,
                                        std::string const &type, ASTBase *ast);
 
     llvm::Type *getType(std::string const &t, ASTBase *ast);
+    llvm::Type *getType(std::shared_ptr<ASTType> type, ASTBase *ast);
 
     Options &                             options;
     std::vector<std::string> const &      builtins;

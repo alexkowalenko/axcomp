@@ -16,6 +16,9 @@
 
 namespace ax {
 
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+
 inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
@@ -179,8 +182,16 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         dec.second = parse_type();
         get_token(TokenType::semicolon);
 
-        symbols->put(dec.first->value,
-                     Symbol(dec.first->value, dec.second->type->value));
+        std::visit(
+            overloaded{[this, dec](std::shared_ptr<ASTIdentifier> const &t) {
+                           symbols->put(dec.first->value,
+                                        Symbol(dec.first->value, t->value));
+                       },
+                       [this](std::shared_ptr<ASTArray> const &t) { ; },
+                       [this](auto arg) { ; }
+
+            },
+            dec.second->type);
 
         var->vars.push_back(dec);
         tok = lexer.peek_token();
@@ -700,16 +711,42 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
 };
 
 /**
- * @brief  INDENT
+ * @brief  INDENT | arraytype
  *
  * @return std::shared_ptr<ASTType>
  */
 std::shared_ptr<ASTType> Parser::parse_type() {
     std::shared_ptr<ASTType> ast = std::make_shared<ASTType>();
     ast->set_location(lexer.get_location());
-    ast->type = parse_identifier();
-    return ast;
+
+    auto tok = lexer.peek_token();
+    switch (tok.type) {
+    case TokenType::array:
+        // ast->type = parse_array();
+        return ast;
+    default:
+        ast->type = parse_identifier();
+        return ast;
+    }
 }
+
+/**
+ * @brief "ARRAY" "[" expr "]" "OF" type
+ *
+ * @return std::shared_ptr<ASTArray>
+ */
+std::shared_ptr<ASTArray> Parser::parse_array() {
+    std::shared_ptr<ASTArray> ast = std::make_shared<ASTArray>();
+    ast->set_location(lexer.get_location());
+
+    get_token(TokenType::array);
+    get_token(TokenType::l_bracket);
+    ast->expr = parse_expr();
+    get_token(TokenType::r_bracket);
+    get_token(TokenType::of);
+    ast->type = parse_type();
+    return ast;
+};
 
 /**
  * @brief IDENT

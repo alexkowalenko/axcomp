@@ -90,8 +90,16 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         std::make_shared<SymbolTable<Symbol>>(former_symboltable);
     std::for_each(
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
-            current_symboltable->put(
-                p.first->value, Symbol(p.first->value, p.second->type->value));
+            std::visit(
+                overloaded{
+                    [this](auto arg) { ; },
+                    [this, p](std::shared_ptr<ASTIdentifier> const &type) {
+                        current_symboltable->put(
+                            p.first->value,
+                            Symbol(p.first->value, type->value));
+                    },
+                },
+                p.second->type);
         });
     ast->decs->accept(this);
     std::for_each(ast->stats.begin(), ast->stats.end(),
@@ -134,9 +142,16 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         auto type = last_proc->return_type;
         auto retType = TypeTable::VoidType;
         if (type != nullptr) {
-            if (auto t = types.find(type->type->value); t) {
-                retType = *t;
-            }
+            std::visit(overloaded{
+                           [this](auto arg) { ; },
+                           [this, &retType](
+                               std::shared_ptr<ASTIdentifier> const &type) {
+                               if (auto t = types.find(type->value); t) {
+                                   retType = *t;
+                               };
+                           },
+                       },
+                       type->type);
         }
 
         if (!last_type->equiv(retType)) {
@@ -378,12 +393,21 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
 }
 
 void Inspector::visit_ASTType(ASTType *ast) {
-    auto result = types.find(ast->type->value);
-    if (!result) {
-        throw TypeError(fmt::format("Unknown type: {}", ast->type->value),
-                        ast->get_location());
-    }
-    last_type = *result;
+    std::visit(
+        overloaded{[this](auto arg) { ; },
+                   [this, ast](std::shared_ptr<ASTIdentifier> const &type) {
+                       auto result = types.find(type->value);
+                       if (!result) {
+                           throw TypeError(
+                               fmt::format("Unknown type: {}", type->value),
+                               ast->get_location());
+                       }
+                       last_type = *result;
+                   },
+                   [this, ast](std::shared_ptr<ASTArray> const &arg) { ; }
+
+        },
+        ast->type);
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

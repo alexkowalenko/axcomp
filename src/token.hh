@@ -65,6 +65,7 @@ enum class TokenType {
     loop,
     exit,
     array,
+    of,
 };
 
 std::string string(TokenType t);

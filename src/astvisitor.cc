@@ -148,10 +148,14 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
 void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
 
 void ASTVisitor::visit_ASTType(ASTType *ast) {
-    ast->type->accept(this);
+    // Visit the appropriate type
+    std::visit([this](auto &&arg) { arg->accept(this); }, ast->type);
 }
 
-void ASTVisitor::visit_ASTArray(ASTArray *ast){};
+void ASTVisitor::visit_ASTArray(ASTArray *ast) {
+    ast->expr->accept(this);
+    ast->type->accept(this);
+};
 
 void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}
 

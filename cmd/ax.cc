@@ -66,6 +66,11 @@ int main(int argc, char **argv) {
         ax::CodeGenerator code(options, builtins, types);
         code.generate(ast);
 
+        if (!options.only_ll) {
+            code.generate_objectcode();
+        }
+        code.generate_llcode();
+
         if (options.print_symbols) {
             symbols->dump(std::cout);
         }

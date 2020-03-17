@@ -274,6 +274,17 @@ void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {
     os << fmt::format("{}", ast->value);
 }
 
+void ASTPrinter::visit_ASTType(ASTType *ast) {
+    std::visit(overloaded{[this](auto arg) { arg->accept(this); }}, ast->type);
+}
+
+void ASTPrinter::visit_ASTArray(ASTArray *ast) {
+    os << "ARRAY [";
+    ast->expr->accept(this);
+    os << "] OF ";
+    ast->type->accept(this);
+}
+
 void ASTPrinter::visit_ASTBool(ASTBool *ast) {
     if (ast->value) {
         os << string(TokenType::true_k);
