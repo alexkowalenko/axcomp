@@ -117,7 +117,7 @@ void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
 void CodeGenerator::doTopVars(ASTVar *ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
-        auto type = getType(c.second, ast);
+        auto type = getType(c.second->type->value, ast);
         module->getOrInsertGlobal(c.first->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
@@ -190,7 +190,8 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
         debug("create var: {}", name);
 
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name, c.second, ast);
+        auto alloc =
+            createEntryBlockAlloca(function, name, c.second->type->value, ast);
         builder.CreateStore(ConstantInt::get(context, APInt(64, 0, true)),
                             alloc);
         alloc->setName(name);
@@ -207,21 +208,20 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     std::for_each(ast->params.begin(), ast->params.end(),
                   [this, ast, &proto](auto const &p) {
                       debug("arg type: {}", p.second);
-                      auto type = getType(p.second, ast);
+                      auto type = getType(p.second->type->value, ast);
                       proto.push_back(type);
                   });
 
     llvm::Type *returnType;
-    if (ast->return_type.empty()) {
+    if (ast->return_type == nullptr) {
         returnType = llvm::Type::getVoidTy(context);
     } else {
         debug("ret type: {}", ast->return_type);
-        returnType = getType(ast->return_type, ast);
+        returnType = getType(ast->return_type->type->value, ast);
     }
 
     FunctionType *ft = FunctionType::get(returnType, proto, false);
-
-    Function *f = Function::Create(ft, Function::ExternalLinkage, ast->name,
+    Function *    f = Function::Create(ft, Function::ExternalLinkage, ast->name,
                                    module.get());
 
     // Create a new basic block to start insertion into.
@@ -241,7 +241,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         // Create an alloca for this variable.
         debug("set up param {}: {}.", param_name, type_name);
         AllocaInst *alloca =
-            createEntryBlockAlloca(f, param_name, type_name, ast);
+            createEntryBlockAlloca(f, param_name, type_name->type->value, ast);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
@@ -697,7 +697,7 @@ void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
 void CodeGenerator::visit_ASTBool(ASTBool *ast) {
     last_value = ConstantInt::get(
         context, APInt(1, static_cast<uint64_t>(ast->value), true));
-};
+}
 
 /**
  * @brief Create an alloca instruction in the entry block of the function.

@@ -40,13 +40,15 @@ procedureDeclaration = procedureHeading ";" procedureBody
 
 procedureHeading = "PROCEDURE" IDENT [formalParameters]
 
-formalParameters = "(" [fpection {";" fpSection}] ")" [ ":" IDENT ]
+formalParameters = "(" [fpection {";" fpSection}] ")" [ ":" type ]
 
 fpSection = ["VAR"] identList ":" type
 
 procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT.
 
-type = INDENT
+type = INDENT | arrayType
+
+arrayType = "ARRAY" "[" expr "]" "OF" type
 
 identList = IDENT ("," IDENT)+
 
@@ -63,7 +65,7 @@ statement = assignment
     | "EXIT"
     | "RETURN" [expr]
 
-assignment = IDENT ":=" expr
+assignment = IDENT selector ":=" expr
 
 procedureCall = IDENT "(" expr ( "," expr )* ")"
 
@@ -90,7 +92,9 @@ simpleExpr = ('+' | '-' )? term ( ('+' | '-' | "OR" ) term)*
 
 term = factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
 
-factor = IDENT | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' | "~" factor
+factor = IDENT selector | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' | "~" factor
+
+selector = ( '[' expr ']' )*
 
 IDENT = letter (letter | digit | '_')*
 

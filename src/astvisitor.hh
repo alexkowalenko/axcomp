@@ -32,6 +32,8 @@ class ASTTerm;
 class ASTFactor;
 class ASTInteger;
 class ASTBool;
+class ASTType;
+class ASTArray;
 class ASTIdentifier;
 
 class ASTVisitor {
@@ -59,6 +61,8 @@ class ASTVisitor {
     virtual void visit_ASTTerm(ASTTerm *ast);
     virtual void visit_ASTFactor(ASTFactor *ast);
     virtual void visit_ASTInteger(ASTInteger *ast);
+    virtual void visit_ASTType(ASTType *ast);
+    virtual void visit_ASTArray(ASTArray *ast);
     virtual void visit_ASTIdentifier(ASTIdentifier *ast);
     virtual void visit_ASTBool(ASTBool *ast);
 };

@@ -34,6 +34,8 @@ enum class TokenType {
     gteq,
     tilde,
     ampersand,
+    l_bracket,
+    r_bracket,
 
     // Keywords
     module,
@@ -62,6 +64,7 @@ enum class TokenType {
     until,
     loop,
     exit,
+    array,
 };
 
 std::string string(TokenType t);

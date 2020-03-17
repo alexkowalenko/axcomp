@@ -49,7 +49,9 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"REPEAT", Token(TokenType::repeat, "REPEAT")},
     {"UNTIL", Token(TokenType::until, "UNTIL")},
     {"LOOP", Token(TokenType::loop, "LOOP")},
-    {"EXIT", Token(TokenType::exit, "EXIT")}};
+    {"EXIT", Token(TokenType::exit, "EXIT")},
+    {"ARRAY", Token(TokenType::array, "ARRAY")},
+};
 
 static std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},
@@ -65,6 +67,8 @@ static std::unordered_map<char, Token> token_map = {
     {'#', Token(TokenType::hash, "#")},
     {'~', Token(TokenType::tilde, "~")},
     {'&', Token(TokenType::ampersand, "&")},
+    {'[', Token(TokenType::l_bracket, "[")},
+    {']', Token(TokenType::r_bracket, "]")},
 };
 
 Lexer::Lexer(std::istream &stream) : is{stream} {}

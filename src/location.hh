@@ -13,14 +13,14 @@ namespace ax {
 class Location {
 
   public:
-    Location(){};
+    Location() = default;
     Location(int l, int c) : lineno(l), charpos(c){};
     ~Location() = default;
 
     Location(Location const &) = default;
     Location &operator=(Location const &) = default;
 
-    operator std::string();
+    explicit operator std::string();
 
     int lineno = 0;
     int charpos = 0;

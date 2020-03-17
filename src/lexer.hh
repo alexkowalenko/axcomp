@@ -23,8 +23,7 @@ class Lexer {
     void  push_token(Token const &t);
     Token peek_token();
 
-    int      get_lineno() const { return lineno; };
-    Location get_location() const { return Location{lineno, charpos}; }
+    [[nodiscard]] Location get_location() const { return Location{lineno, charpos}; }
 
   private:
     void get_comment();

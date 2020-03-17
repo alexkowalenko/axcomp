@@ -176,11 +176,11 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         VarDec dec;
         dec.first = parse_identifier();
         get_token(TokenType::colon);
-        tok = get_token(TokenType::ident);
-        dec.second = tok.val;
+        dec.second = parse_type();
         get_token(TokenType::semicolon);
 
-        symbols->put(dec.first->value, Symbol(dec.first->value, dec.second));
+        symbols->put(dec.first->value,
+                     Symbol(dec.first->value, dec.second->type->value));
 
         var->vars.push_back(dec);
         tok = lexer.peek_token();
@@ -189,7 +189,7 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
 }
 
 /**
- * @brief "PROCEDURE" ident [formalParameters] [ ":" IDENT ]
+ * @brief "PROCEDURE" ident [formalParameters] [ ":" type ]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
  *
  * @return std::shared_ptr<ASTProcedure>
@@ -213,10 +213,9 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
 
     tok = lexer.peek_token();
     if (tok.type == TokenType::colon) {
-        // Do return
+        // Do return type
         lexer.get_token();
-        tok = get_token(TokenType::ident);
-        proc->return_type = tok.val;
+        proc->return_type = parse_type();
     }
 
     get_token(TokenType::semicolon);
@@ -255,7 +254,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
         VarDec dec;
         dec.first = parse_identifier();
         get_token(TokenType::colon);
-        dec.second = parse_identifier()->value;
+        dec.second = parse_type();
         params.push_back(dec);
         tok = lexer.peek_token();
         if (tok.type == TokenType::semicolon) {
@@ -699,6 +698,18 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     }
     return nullptr; // Not factor
 };
+
+/**
+ * @brief  INDENT
+ *
+ * @return std::shared_ptr<ASTType>
+ */
+std::shared_ptr<ASTType> Parser::parse_type() {
+    std::shared_ptr<ASTType> ast = std::make_shared<ASTType>();
+    ast->set_location(lexer.get_location());
+    ast->type = parse_identifier();
+    return ast;
+}
 
 /**
  * @brief IDENT

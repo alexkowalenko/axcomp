@@ -54,15 +54,11 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
 void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
     if (!ast->vars.empty()) {
-        std::for_each(ast->vars.begin(), ast->vars.end(), [=](auto const &v) {
-            v.first->accept(this);
-
-            auto result = types.find(v.second);
-            if (!result) {
-                throw TypeError(fmt::format("Unknown type: {}", v.second),
-                                ast->get_location());
-            }
-        });
+        std::for_each(ast->vars.begin(), ast->vars.end(),
+                      [this](auto const &v) {
+                          v.first->accept(this);
+                          v.second->accept(this);
+                      });
     }
 }
 
@@ -70,32 +66,18 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Check return type
     auto retType = TypeTable::VoidType;
-    if (!ast->return_type.empty()) {
-        auto result = types.find(ast->return_type);
-        if (!result) {
-            throw TypeError(
-                fmt::format("Unknown type: {} for return from function {}",
-                            ast->return_type, ast->name),
-                ast->get_location());
-        }
-        retType = *result;
+    if (ast->return_type != nullptr) {
+        ast->return_type->accept(this);
+        retType = last_type;
     }
 
     // Check parameter types
     std::vector<TypePtr> argTypes;
-    std::for_each(
-        ast->params.begin(), ast->params.end(),
-        [this, ast, &argTypes](auto const &p) {
-            auto r = types.find(p.second);
-            if (!r) {
-                throw TypeError(
-                    fmt::format(
-                        "Unknown type: {} for paramater {} from function {}",
-                        p.second, p.first->value, ast->name),
-                    ast->get_location());
-            }
-            argTypes.push_back(*r);
-        });
+    std::for_each(ast->params.begin(), ast->params.end(),
+                  [this, &argTypes](auto const &p) {
+                      p.second->accept(this);
+                      argTypes.push_back(last_type);
+                  });
 
     auto procType = std::make_shared<ProcedureType>(retType, argTypes);
     types.put(ast->name, procType);
@@ -106,11 +88,11 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     auto former_symboltable = current_symboltable;
     current_symboltable =
         std::make_shared<SymbolTable<Symbol>>(former_symboltable);
-    std::for_each(ast->params.begin(), ast->params.end(),
-                  [this](auto const &p) {
-                      current_symboltable->put(
-                          p.first->value, Symbol(p.first->value, p.second));
-                  });
+    std::for_each(
+        ast->params.begin(), ast->params.end(), [this](auto const &p) {
+            current_symboltable->put(
+                p.first->value, Symbol(p.first->value, p.second->type->value));
+        });
     ast->decs->accept(this);
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this, ast](auto const &x) {
@@ -151,8 +133,8 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
     if (last_proc) {
         auto type = last_proc->return_type;
         auto retType = TypeTable::VoidType;
-        if (!type.empty()) {
-            if (auto t = types.find(type); t) {
+        if (type != nullptr) {
+            if (auto t = types.find(type->type->value); t) {
                 retType = *t;
             }
         }
@@ -259,7 +241,7 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
         std::make_shared<SymbolTable<Symbol>>(former_symboltable);
     current_symboltable->put(
         ast->ident->value,
-        Symbol(ast->ident->value, std::string(*types.IntType)));
+        Symbol(ast->ident->value, std::string(*TypeTable::IntType)));
 
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &s) { s->accept(this); });
@@ -393,6 +375,15 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
 
         },
         ast->factor);
+}
+
+void Inspector::visit_ASTType(ASTType *ast) {
+    auto result = types.find(ast->type->value);
+    if (!result) {
+        throw TypeError(fmt::format("Unknown type: {}", ast->type->value),
+                        ast->get_location());
+    }
+    last_type = *result;
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

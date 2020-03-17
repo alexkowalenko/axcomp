@@ -36,6 +36,8 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::gteq, ">="},
     {TokenType::tilde, "~"},
     {TokenType::ampersand, "&"},
+    {TokenType::l_bracket, "["},
+    {TokenType::r_bracket, "]"},
 
     // Keywords
     {TokenType::module, "MODULE"},
@@ -64,6 +66,7 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::until, "UNTIL"},
     {TokenType::loop, "LOOP"},
     {TokenType::exit, "EXIT"},
+    {TokenType::array, "ARRAY"},
 
     {TokenType::eof, "EOF"},
 };

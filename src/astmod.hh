@@ -49,6 +49,22 @@ class ASTIdentifier : public ASTBase {
     std::string value;
 };
 
+class ASTType : public ASTBase {
+  public:
+    ~ASTType() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
+
+    std::shared_ptr<ASTIdentifier> type;
+};
+
+class ASTArray : public ASTBase {
+  public:
+    ~ASTArray() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTArray(this); };
+};
+
 /////////////////////
 // Expression Objects
 
@@ -290,7 +306,8 @@ class ASTBlock : public ASTStatement {
  * @brief INDENT : type
  *
  */
-using VarDec = std::pair<std::shared_ptr<ASTIdentifier>, std::string>;
+using VarDec =
+    std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
 
 class ASTProcedure : public ASTBase {
   public:
@@ -300,7 +317,7 @@ class ASTProcedure : public ASTBase {
 
     std::string                                name;
     bool                                       is_external = true;
-    std::string                                return_type;
+    std::shared_ptr<ASTType>                   return_type = nullptr;
     std::vector<VarDec>                        params;
     std::shared_ptr<ASTDeclaration>            decs;
     std::vector<std::shared_ptr<ASTStatement>> stats;

@@ -59,27 +59,31 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
         std::for_each(ast->vars.begin(), ast->vars.end(),
                       [this](auto const &v) {
                           v.first->accept(this);
-                          os << fmt::format(": {};\n", v.second);
+                          os << ": ";
+                          v.second->accept(this);
+                          os << ";\n";
                       });
     }
 }
 
 void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
     os << fmt::format("PROCEDURE {}", ast->name);
-    if (!ast->params.empty() || !ast->return_type.empty()) {
+    if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";
         std::for_each(ast->params.begin(), ast->params.end(),
                       [this, ast](auto const &p) {
                           p.first->accept(this);
-                          os << fmt::format(" : {}", p.second);
+                          os << " : ";
+                          p.second->accept(this);
                           if (p != *(ast->params.end() - 1)) {
                               os << "; ";
                           }
                       });
         os << ")";
     }
-    if (!ast->return_type.empty()) {
-        os << fmt::format(": {}", ast->return_type);
+    if (ast->return_type != nullptr) {
+        os << ": ";
+        ast->return_type->accept(this);
     }
     os << ";\n";
     ast->decs->accept(this);

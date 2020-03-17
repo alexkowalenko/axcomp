@@ -73,7 +73,7 @@ TEST(Inspector, ReturnType) {
         // Error
         {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0; END f; BEGIN "
          "RETURN 333; END x.",
-         "", "1,19: Unknown type: complex for return from function f"},
+         "", "1,24: Unknown type: complex"},
 
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN; END f; BEGIN "
          "RETURN 333; END x.",
@@ -205,7 +205,7 @@ TEST(Inspector, FunctionParams) {
             BEGIN
             RETURN 3;
             END xxx.)",
-         "", "3,21: Unknown type: UNDEF for paramater x from function f"},
+         "", "3,27: Unknown type: UNDEF"},
     };
     do_inspect_tests(tests);
 }

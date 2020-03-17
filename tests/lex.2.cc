@@ -49,6 +49,8 @@ std::vector<LexTests> tests = {
     {">=", TokenType::gteq, ">="},
     {"~", TokenType::tilde, "~"},
     {"&", TokenType::ampersand, "&"},
+    {"[", TokenType::l_bracket, "["},
+    {"]", TokenType::r_bracket, "]"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -85,6 +87,7 @@ std::vector<LexTests> tests = {
     {"UNTIL", TokenType::until, "UNTIL"},
     {"LOOP", TokenType::loop, "LOOP"},
     {"EXIT", TokenType::exit, "EXIT"},
+    {"ARRAY", TokenType::array, "ARRAY"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

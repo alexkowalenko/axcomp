@@ -43,8 +43,8 @@ class TypeError : public AXException {
 
 class CodeGenException : public AXException {
   public:
-  CodeGenException(std::string const &m)
-        : AXException(m, Location{}){};
+   explicit CodeGenException(std::string const &m)
+        : AXException(m, Location{}) {};
     CodeGenException(std::string const &m, Location const &l)
         : AXException(m, l){};
 };

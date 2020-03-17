@@ -47,6 +47,7 @@ void ASTVisitor::visit_ASTVar(ASTVar *ast) {
 }
 
 void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {
+    ast->return_type->accept(this);
     ast->decs->accept(this);
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
@@ -145,6 +146,12 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
 }
 
 void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
+
+void ASTVisitor::visit_ASTType(ASTType *ast) {
+    ast->type->accept(this);
+}
+
+void ASTVisitor::visit_ASTArray(ASTArray *ast){};
 
 void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}
 
