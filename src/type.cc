@@ -10,6 +10,8 @@
 
 namespace ax {
 
+using namespace llvm;
+
 bool Type::equiv(TypePtr const &t) {
     return std::string(*this) == std::string(*t);
 }
@@ -30,5 +32,19 @@ ProcedureType::operator std::string() {
     res += std::string(*ret);
     return res;
 }
+
+ArrayType::operator std::string() {
+    return fmt::format("{}[{}]", std::string(*base_type), size);
+}
+
+llvm::Type *ArrayType::get_llvm() {
+    return llvm::ArrayType::get(base_type->get_llvm(), size);
+};
+
+llvm::Constant *ArrayType::get_init() {
+    auto const_array = std::vector<Constant *>(size, base_type->get_init());
+    return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()),
+                              const_array);
+};
 
 } // namespace ax

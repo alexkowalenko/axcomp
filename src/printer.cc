@@ -280,7 +280,7 @@ void ASTPrinter::visit_ASTType(ASTType *ast) {
 
 void ASTPrinter::visit_ASTArray(ASTArray *ast) {
     os << "ARRAY [";
-    ast->expr->accept(this);
+    ast->size->accept(this);
     os << "] OF ";
     ast->type->accept(this);
 }

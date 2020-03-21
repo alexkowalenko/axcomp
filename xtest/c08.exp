@@ -6,7 +6,7 @@ target triple = "x86_64-apple-darwin18.7.0"
 @alpha = internal constant i64 24
 @beta = internal constant i64 48
 @x = internal global i64 0
-@y = internal global i1 0
+@y = internal global i1 false
 
 declare void @WriteInt(i64)
 

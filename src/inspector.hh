@@ -41,6 +41,7 @@ class Inspector : public ASTVisitor {
     void visit_ASTTerm(ASTTerm *ast) override;
     void visit_ASTFactor(ASTFactor *ast) override;
     void visit_ASTType(ASTType *ast) override;
+    void visit_ASTArray(ASTArray *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
     void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTBool(ASTBool *ast) override;

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 
 namespace ax {
@@ -26,11 +27,15 @@ class Type {
 
     virtual explicit operator std::string() = 0;
 
-    void        set_llvm(llvm::Type *t) { llvm_type = t; };
-    llvm::Type *get_llvm() { return llvm_type; };
+    void                set_llvm(llvm::Type *t) { llvm_type = t; };
+    virtual llvm::Type *get_llvm() { return llvm_type; };
+
+    void                    set_init(llvm::Constant *t) { llvm_init = t; };
+    virtual llvm::Constant *get_init() { return llvm_init; };
 
   private:
-    llvm::Type *llvm_type{nullptr};
+    llvm::Type *    llvm_type{nullptr};
+    llvm::Constant *llvm_init{nullptr};
 };
 
 class SimpleType : public Type {
@@ -53,6 +58,20 @@ class ProcedureType : public Type {
 
     TypePtr              ret;
     std::vector<TypePtr> params;
+};
+
+class ArrayType : public Type {
+  public:
+    ArrayType(TypePtr b, long s) : base_type(b), size(s){};
+    ~ArrayType() override = default;
+
+    explicit operator std::string() override;
+
+    llvm::Type *    get_llvm() override;
+    llvm::Constant *get_init() override;
+
+    TypePtr base_type;
+    long    size;
 };
 
 } // namespace ax

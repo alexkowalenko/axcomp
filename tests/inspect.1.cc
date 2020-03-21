@@ -12,8 +12,12 @@ void do_inspect_tests(std::vector<ParseTests> &tests);
 
 TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
+        {"MODULE x; VAR z: INTEGER; BEGIN RETURN; END x.",
+         "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nRETURN ;\nEND x.", ""},
+
+        // Errors
         {"MODULE x; VAR z: complex; BEGIN x := 10; END x.", "",
-         "1,15: Unknown type: complex for identifier z"},
+         "1,16: Unknown type: complex"},
     };
     do_inspect_tests(tests);
 }

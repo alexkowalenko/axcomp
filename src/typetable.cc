@@ -5,9 +5,12 @@
 
 #include "typetable.hh"
 
+#include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
 
 namespace ax {
+
+using namespace llvm;
 
 TypePtr TypeTable::IntType;
 TypePtr TypeTable::BoolType;
@@ -15,7 +18,6 @@ TypePtr TypeTable::ModuleType;
 TypePtr TypeTable::VoidType;
 
 void TypeTable::initialise() {
-    llvm::LLVMContext context;
     IntType = std::make_shared<SimpleType>("INTEGER");
     table.put(std::string(*IntType), IntType);
 
@@ -31,7 +33,11 @@ void TypeTable::initialise() {
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
     IntType->set_llvm(llvm::Type::getInt64Ty(context));
+    IntType->set_init(ConstantInt::get(context, APInt(64, 0, true)));
+
     BoolType->set_llvm(llvm::Type::getInt1Ty(context));
+    BoolType->set_init(ConstantInt::get(context, APInt(1, 0, true)));
+
     ModuleType->set_llvm(llvm::Type::getVoidTy(context));
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }

@@ -14,6 +14,7 @@
 #include "ast.hh"
 #include "astvisitor.hh"
 #include "token.hh"
+#include "type.hh"
 
 namespace ax {
 
@@ -58,7 +59,9 @@ class ASTType : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
 
-    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>> type;
+    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTArray>>
+            type;
+    TypePtr type_info = nullptr; // store information about the type
 };
 
 /**
@@ -72,8 +75,8 @@ class ASTArray : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTArray(this); };
 
-    std::shared_ptr<ASTExpr> expr;
-    std::shared_ptr<ASTType> type;
+    std::shared_ptr<ASTInteger> size;
+    std::shared_ptr<ASTType>    type;
 };
 
 /////////////////////
@@ -313,10 +316,6 @@ class ASTBlock : public ASTStatement {
 //////////////////////
 // Declaration objects
 
-/**
- * @brief INDENT : type
- *
- */
 using VarDec =
     std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
 
@@ -350,7 +349,7 @@ class ASTVar : public ASTBase {
 struct ConstDec {
     std::shared_ptr<ASTIdentifier> ident;
     std::shared_ptr<ASTInteger>    value;
-    std::string                    type;
+    std::shared_ptr<ASTType>       type;
 };
 
 /**

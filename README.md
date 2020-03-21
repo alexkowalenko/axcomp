@@ -48,7 +48,7 @@ procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT.
 
 type = INDENT | arrayType
 
-arrayType = "ARRAY" "[" expr "]" "OF" type
+arrayType = "ARRAY" "[" INTEGER "]" "OF" type
 
 identList = IDENT ("," IDENT)+
 
@@ -170,6 +170,8 @@ WriteLn()
 Changes to the standard definition:
 
 * Procedures don't have nested procedures.
+* CONSTs must be integers or boolean constants - not expressions.
+* ARRAY sizes must be integers.
 
 ## Program options
 

@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
             printer.print(ast);
         }
 
-        Inspector inpect(symbols, types);
-        inpect.check(ast);
+        Inspector inspect(symbols, types);
+        inspect.check(ast);
 
         ax::CodeGenerator code(options, builtins, types);
         code.generate(ast);

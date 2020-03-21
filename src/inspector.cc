@@ -46,7 +46,8 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         for (auto &c : ast->consts) {
             c.value->accept(this);
-            c.type = std::string(*last_type);
+            c.type = std::make_shared<ASTType>();
+            c.type->type_info = last_type;
         }
     }
 }
@@ -56,7 +57,8 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
     if (!ast->vars.empty()) {
         std::for_each(ast->vars.begin(), ast->vars.end(),
                       [this](auto const &v) {
-                          v.first->accept(this);
+                          // No need to check the identifier - its being
+                          // defined.
                           v.second->accept(this);
                       });
     }
@@ -402,12 +404,23 @@ void Inspector::visit_ASTType(ASTType *ast) {
                                fmt::format("Unknown type: {}", type->value),
                                ast->get_location());
                        }
+                       ast->type_info = *result;
                        last_type = *result;
                    },
-                   [this, ast](std::shared_ptr<ASTArray> const &arg) { ; }
-
-        },
+                   [this, ast](std::shared_ptr<ASTArray> const &arg) {
+                       arg->accept(this);
+                       ast->type_info = last_type;
+                   }},
         ast->type);
+}
+
+void Inspector::visit_ASTArray(ASTArray *ast) {
+    ast->size->accept(this);
+    if (!types.isNumericType(last_type)) {
+        throw TypeError("ARRAY expecting numeric size", ast->get_location());
+    }
+    ast->type->accept(this);
+    last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

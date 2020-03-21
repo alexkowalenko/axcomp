@@ -153,7 +153,7 @@ void ASTVisitor::visit_ASTType(ASTType *ast) {
 }
 
 void ASTVisitor::visit_ASTArray(ASTArray *ast) {
-    ast->expr->accept(this);
+    ast->size->accept(this);
     ast->type->accept(this);
 };
 

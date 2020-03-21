@@ -722,7 +722,7 @@ std::shared_ptr<ASTType> Parser::parse_type() {
     auto tok = lexer.peek_token();
     switch (tok.type) {
     case TokenType::array:
-        // ast->type = parse_array();
+        ast->type = parse_array();
         return ast;
     default:
         ast->type = parse_identifier();
@@ -741,7 +741,7 @@ std::shared_ptr<ASTArray> Parser::parse_array() {
 
     get_token(TokenType::array);
     get_token(TokenType::l_bracket);
-    ast->expr = parse_expr();
+    ast->size = parse_integer();
     get_token(TokenType::r_bracket);
     get_token(TokenType::of);
     ast->type = parse_type();

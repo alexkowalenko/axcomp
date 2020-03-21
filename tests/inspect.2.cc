@@ -253,3 +253,40 @@ TEST(Inspector, Builtins) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Arrays) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+VAR x : ARRAY [5] OF BOOLEAN;
+VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+
+PROCEDURE sum(a : ARRAY [3] OF BOOLEAN) : INTEGER;
+BEGIN
+    RETURN 0;
+END sum;
+
+BEGIN
+    RETURN 0; 
+END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
+         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
+         "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
+
+        // Errors
+
+        {R"(MODULE alpha;
+VAR x : ARRAY [5] OF complex;
+BEGIN
+    RETURN 0; 
+END alpha.)",
+         "", "2,20: Unknown type: complex"},
+        {R"(MODULE alpha;
+VAR x : ARRAY [TRUE] OF complex;
+BEGIN
+    RETURN 0; 
+END alpha.)",
+         "", "2,19: Unexpected token: TRUE - expecting integer"},
+    };
+    do_inspect_tests(tests);
+}
