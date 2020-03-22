@@ -27,6 +27,10 @@ class Type {
 
     virtual explicit operator std::string() = 0;
 
+    std::string get_name() { return std::string(*this); }
+
+    virtual bool is_numeric() { return false; };
+
     void                set_llvm(llvm::Type *t) { llvm_type = t; };
     virtual llvm::Type *get_llvm() { return llvm_type; };
 
@@ -48,6 +52,16 @@ class SimpleType : public Type {
     std::string name;
 };
 
+class IntegerType : public SimpleType {
+  public:
+    explicit IntegerType() : SimpleType("INTEGER"){};
+    ~IntegerType() override = default;
+
+    bool is_numeric() override { return true; };
+
+    std::string name;
+};
+
 class ProcedureType : public Type {
   public:
     ProcedureType(TypePtr returns, std::vector<TypePtr> params)
@@ -56,8 +70,8 @@ class ProcedureType : public Type {
 
     explicit operator std::string() override;
 
-    TypePtr              ret;
-    std::vector<TypePtr> params;
+    TypePtr              ret = nullptr;
+    std::vector<TypePtr> params{};
 };
 
 class ArrayType : public Type {

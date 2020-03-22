@@ -83,7 +83,22 @@ class ASTArray : public ASTBase {
 // Expression Objects
 
 /**
- * @brief factor -> IDENT
+ * @brief IDENT selector
+ *
+ */
+
+class ASTDesignator : public ASTBase {
+  public:
+    ~ASTDesignator() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTDesignator(this); };
+
+    std::shared_ptr<ASTIdentifier>        ident;
+    std::vector<std::shared_ptr<ASTExpr>> selectors;
+};
+
+/**
+ * @brief factor -> designator
  *                  | procedureCall
  *                  | INTEGER
  *                  | "TRUE" | "FALSE"
@@ -97,7 +112,7 @@ class ASTFactor : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
-    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTInteger>,
+    std::variant<std::shared_ptr<ASTDesignator>, std::shared_ptr<ASTInteger>,
                  std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>,
                  std::shared_ptr<ASTBool>, std::shared_ptr<ASTFactor>>
          factor;
@@ -160,7 +175,7 @@ class ASTExpr : public ASTBase {
 class ASTStatement : public ASTBase {};
 
 /**
- * @brief ident ":=" expr
+ * @brief designator ":=" expr
  *
  */
 class ASTAssignment : public ASTStatement {

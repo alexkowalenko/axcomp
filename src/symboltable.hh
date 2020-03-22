@@ -26,8 +26,8 @@ template <typename T> class SymbolTable {
     };
 
     [[nodiscard]] std::optional<T> find(const std::string &name) const;
-    bool             set(const std::string &name, T const &val);
-    void             remove(const std::string &name);
+    bool                           set(const std::string &name, T const &val);
+    void                           remove(const std::string &name);
 
     void dump(std::ostream &os) const;
 
@@ -73,7 +73,7 @@ template <typename T> void SymbolTable<T>::remove(const std::string &name) {
 template <typename T> void SymbolTable<T>::dump(std::ostream &os) const {
     os << "Dump symbol table: \n";
     for (auto const &x : table) {
-        os << x.first << " -> " << std::string(x.second) << std::endl;
+        os << x.first << " -> " << std::string(*x.second) << std::endl;
     }
     if (next) {
         next->dump(os);

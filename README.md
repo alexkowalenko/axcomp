@@ -65,7 +65,7 @@ statement = assignment
     | "EXIT"
     | "RETURN" [expr]
 
-assignment = IDENT selector ":=" expr
+assignment = designator ":=" expr
 
 procedureCall = IDENT "(" expr ( "," expr )* ")"
 
@@ -92,7 +92,9 @@ simpleExpr = ('+' | '-' )? term ( ('+' | '-' | "OR" ) term)*
 
 term = factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
 
-factor = IDENT selector | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' | "~" factor
+factor = designator | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' | "~" factor
+
+designator = IDENT selector
 
 selector = ( '[' expr ']' )*
 

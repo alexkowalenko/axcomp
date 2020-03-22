@@ -145,6 +145,12 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
     std::visit([this](auto &&arg) { arg->accept(this); }, ast->factor);
 }
 
+void ASTVisitor::visit_ASTDesignator(ASTDesignator *ast) {
+    ast->ident->accept(this);
+    std::for_each(begin(ast->selectors), end(ast->selectors),
+                  [this](auto &&arg) { arg->accept(this); });
+}
+
 void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
 
 void ASTVisitor::visit_ASTType(ASTType *ast) {

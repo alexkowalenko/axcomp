@@ -16,7 +16,7 @@ namespace ax {
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
-inline constexpr bool debug_inspect{false};
+inline constexpr bool debug_inspect{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_inspect) {
@@ -48,6 +48,7 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
             c.value->accept(this);
             c.type = std::make_shared<ASTType>();
             c.type->type_info = last_type;
+            current_symboltable->put(c.ident->value, last_type);
         }
     }
 }
@@ -60,6 +61,8 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
                           // No need to check the identifier - its being
                           // defined.
                           v.second->accept(this);
+                          // Update VAR declaration symbols with type
+                          current_symboltable->put(v.first->value, last_type);
                       });
     }
 }
@@ -81,24 +84,24 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                       argTypes.push_back(last_type);
                   });
 
-    auto procType = std::make_shared<ProcedureType>(retType, argTypes);
-    types.put(ast->name, procType);
+    auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
+    current_symboltable->put(ast->name, proc_type);
+    types.put(ast->name, proc_type);
 
     last_proc = ast;
 
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable =
-        std::make_shared<SymbolTable<Symbol>>(former_symboltable);
+        std::shared_ptr<SymbolTable<TypePtr>>(former_symboltable);
     std::for_each(
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
             std::visit(
                 overloaded{
                     [this](auto arg) { ; },
-                    [this, p](std::shared_ptr<ASTIdentifier> const &type) {
-                        current_symboltable->put(
-                            p.first->value,
-                            Symbol(p.first->value, type->value));
+                    [this, p](std::shared_ptr<ASTIdentifier> const &tname) {
+                        auto type = types.find(tname->value);
+                        current_symboltable->put(p.first->value, *type);
                     },
                 },
                 p.second->type);
@@ -119,10 +122,12 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
+    debug("Inspector::visit_ASTAssignment");
     ast->expr->accept(this);
     auto expr_type = last_type;
 
     ast->ident->accept(this);
+    debug("type of ident {} : {} ", ast->ident->value, last_type->get_name());
     if (!last_type->equiv(expr_type)) {
         throw TypeError(fmt::format("Can't assign expression of type {} to {}",
                                     std::string(*expr_type), ast->ident->value),
@@ -172,23 +177,10 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
             fmt::format("undefined PROCEDURE {}", ast->name->value),
             ast->get_location());
     }
-    if (res->type != "PROCEDURE") {
+    auto procType = std::dynamic_pointer_cast<ProcedureType>(*res);
+    if (!procType) {
         throw TypeError(fmt::format("{} is not a PROCEDURE", ast->name->value),
                         ast->get_location());
-    }
-
-    // Find return type from procedure and put in last_type
-    auto pType = types.find(ast->name->value);
-    if (!pType) {
-        throw TypeError(
-            fmt::format("undefined type PROCEDURE {}", ast->name->value),
-            ast->get_location());
-    }
-    auto procType = std::dynamic_pointer_cast<ProcedureType>(*pType);
-    if (!procType) {
-        throw TypeError(
-            fmt::format("{} is not type PROCEDURE", ast->name->value),
-            ast->get_location());
     }
 
     if (ast->args.size() != procType->params.size()) {
@@ -233,19 +225,19 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
 
 void Inspector::visit_ASTFor(ASTFor *ast) {
     ast->start->accept(this);
-    if (!types.isNumericType(last_type)) {
+    if (!last_type->is_numeric()) {
         throw TypeError(
             fmt::format("FOR start expression must be numeric type"),
             ast->get_location());
     }
     ast->end->accept(this);
-    if (!types.isNumericType(last_type)) {
+    if (!last_type->is_numeric()) {
         throw TypeError(fmt::format("FOR end expression must be numeric type"),
                         ast->get_location());
     }
     if (ast->by) {
         (*ast->by)->accept(this);
-        if (!types.isNumericType(last_type)) {
+        if (!last_type->is_numeric()) {
             throw TypeError(
                 fmt::format("FOR BY expression must be numeric type"),
                 ast->get_location());
@@ -255,10 +247,8 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable =
-        std::make_shared<SymbolTable<Symbol>>(former_symboltable);
-    current_symboltable->put(
-        ast->ident->value,
-        Symbol(ast->ident->value, std::string(*TypeTable::IntType)));
+        std::shared_ptr<SymbolTable<TypePtr>>(former_symboltable);
+    current_symboltable->put(ast->ident->value, TypeTable::IntType);
 
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &s) { s->accept(this); });
@@ -394,6 +384,20 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
         ast->factor);
 }
 
+void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
+    ast->ident->accept(this);
+    // check type array
+    std::for_each(
+        begin(ast->selectors), end(ast->selectors), [this, ast](auto &s) {
+            s->accept(this);
+            if (!last_type->is_numeric()) {
+                throw TypeError(
+                    fmt::format("expression in array index must be numeric"),
+                    ast->get_location());
+            }
+        });
+}
+
 void Inspector::visit_ASTType(ASTType *ast) {
     std::visit(
         overloaded{[this](auto arg) { ; },
@@ -416,7 +420,7 @@ void Inspector::visit_ASTType(ASTType *ast) {
 
 void Inspector::visit_ASTArray(ASTArray *ast) {
     ast->size->accept(this);
-    if (!types.isNumericType(last_type)) {
+    if (!last_type->is_numeric()) {
         throw TypeError("ARRAY expecting numeric size", ast->get_location());
     }
     ast->type->accept(this);
@@ -431,11 +435,11 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
             fmt::format("undefined identifier {}", ast->value),
             ast->get_location());
     }
-    debug("find type: {} for {}", res->type, res->name);
-    auto resType = types.find(res->type);
+    // debug("find type: {} for {}", res, res->name);
+    auto resType = types.find((*res)->get_name());
     if (!resType) {
         throw TypeError(fmt::format("Unknown type: {} for identifier {}",
-                                    res->type, ast->value),
+                                    (*res)->get_name(), ast->value),
                         ast->get_location());
     }
     last_type = *resType;

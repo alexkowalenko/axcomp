@@ -18,7 +18,7 @@ TypePtr TypeTable::ModuleType;
 TypePtr TypeTable::VoidType;
 
 void TypeTable::initialise() {
-    IntType = std::make_shared<SimpleType>("INTEGER");
+    IntType = std::make_shared<IntegerType>();
     table.put(std::string(*IntType), IntType);
 
     BoolType = std::make_shared<SimpleType>("BOOLEAN");
@@ -42,11 +42,7 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }
 
-bool TypeTable::isNumericType(TypePtr const &t) {
-    return t == IntType;
-}
-
-std::optional<TypePtr> TypeTable::find(std::string const &name) {
+std::optional<TypePtr> TypeTable::find(std::string name) {
     return table.find(name);
 }
 

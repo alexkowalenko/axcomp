@@ -11,6 +11,7 @@
 
 #include <llvm/IR/LLVMContext.h>
 
+#include "astmod.hh"
 #include "symboltable.hh"
 #include "type.hh"
 
@@ -23,10 +24,8 @@ class TypeTable {
     void initialise();
     void setTypes(llvm::LLVMContext &context);
 
-    std::optional<TypePtr> find(std::string const &name);
+    std::optional<TypePtr> find(std::string name);
     void                   put(std::string const &name, TypePtr const &t);
-
-    bool isNumericType(TypePtr const &t);
 
     // Standard types
     static TypePtr IntType;

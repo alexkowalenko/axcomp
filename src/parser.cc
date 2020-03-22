@@ -27,6 +27,8 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
+std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
+
 Token Parser::get_token(TokenType t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
@@ -53,9 +55,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols->put(
-        module->name,
-        Symbol(module->name, std::string(*TypeTable::ModuleType.get())));
+    symbols->put(module->name, TypeTable::ModuleType);
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
 
@@ -152,10 +152,8 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         dec.value = parse_integer();
         get_token(TokenType::semicolon);
 
-        // Assume all consts are INTEGER;
-        symbols->put(
-            dec.ident->value,
-            Symbol(dec.ident->value, std::string(*TypeTable::IntType.get())));
+        // Not sure what type this const is yet.
+        symbols->put(dec.ident->value, TypeTable::VoidType);
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -182,16 +180,8 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
         dec.second = parse_type();
         get_token(TokenType::semicolon);
 
-        std::visit(
-            overloaded{[this, dec](std::shared_ptr<ASTIdentifier> const &t) {
-                           symbols->put(dec.first->value,
-                                        Symbol(dec.first->value, t->value));
-                       },
-                       [this](std::shared_ptr<ASTArray> const &t) { ; },
-                       [this](auto arg) { ; }
-
-            },
-            dec.second->type);
+        // Not sure what type this const is yet.
+        symbols->put(dec.first->value, TypeTable::VoidType);
 
         var->vars.push_back(dec);
         tok = lexer.peek_token();
@@ -214,7 +204,6 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     lexer.get_token(); // PROCEDURE
     auto tok = get_token(TokenType::ident);
     proc->name = tok.val;
-    symbols->put(proc->name, Symbol(proc->name, "PROCEDURE"));
 
     // Parameters
     tok = lexer.peek_token();
@@ -654,7 +643,7 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
 }
 
 /**
- * @brief factor -> IDENT
+ * @brief factor -> designator
  *                  | procedureCall
  *                  | INTEGER
  *                  | "TRUE" | "FALSE"
@@ -699,7 +688,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
             return ast;
         }
         lexer.push_token(tok);
-        ast->factor = parse_identifier();
+        ast->factor = parse_designator();
         return ast;
     }
     default:
@@ -708,7 +697,33 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
             lexer.get_location());
     }
     return nullptr; // Not factor
-};
+}
+
+/**
+ * @brief IDENT selector
+ *
+ * selector = ( '[' expr ']' )*
+ *
+ * @return std::shared_ptr<ASTDesignator>
+ */
+
+std::shared_ptr<ASTDesignator> Parser::parse_designator() {
+    debug("Parser::parse_designator");
+    auto ast = std::make_shared<ASTDesignator>();
+    ast->set_location(lexer.get_location());
+
+    ast->ident = parse_identifier();
+
+    auto tok = lexer.peek_token();
+    while (tok.type == TokenType::l_bracket) {
+        lexer.get_token(); // [
+        auto expr = parse_expr();
+        get_token(TokenType::r_bracket);
+        ast->selectors.push_back(expr);
+        tok = lexer.peek_token();
+    }
+    return ast;
+}
 
 /**
  * @brief  INDENT | arraytype
@@ -746,7 +761,7 @@ std::shared_ptr<ASTArray> Parser::parse_array() {
     get_token(TokenType::of);
     ast->type = parse_type();
     return ast;
-};
+}
 
 /**
  * @brief IDENT
@@ -760,7 +775,7 @@ std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
     ast->set_location(lexer.get_location());
     ast->value = tok.val;
     return ast;
-};
+}
 
 /**
  * @brief INTEGER
@@ -795,18 +810,18 @@ std::shared_ptr<ASTModule> Parser::parse() {
     return parse_module();
 }
 
-void Parser::setup_builtins(std::vector<std::string> const &builtins,
-                            TypeTable &                     types) {
+void Parser::setup_builtins() {
     debug("Parser::setup_builtins");
 
-    std::for_each(begin(builtins), end(builtins), [this](auto const &f) {
-        symbols->put(f, Symbol{f, "PROCEDURE"});
-    });
+    builtins = {{"WriteInt", std::make_shared<ProcedureType>(
+                                 TypeTable::VoidType,
+                                 std::vector<TypePtr>{TypeTable::IntType})},
 
-    types.put("WriteLn", std::make_shared<ProcedureType>(
-                             TypeTable::VoidType, std::vector<TypePtr>{}));
-    types.put("WriteInt", std::make_shared<ProcedureType>(
-                              TypeTable::VoidType,
-                              std::vector<TypePtr>{TypeTable::IntType}));
+                {"WriteLn", std::make_shared<ProcedureType>(
+                                TypeTable::VoidType, std::vector<TypePtr>{})}};
+
+    std::for_each(begin(builtins), end(builtins),
+                  [this](auto &f) { symbols->put(f.first, f.second); });
 }
+
 }; // namespace ax

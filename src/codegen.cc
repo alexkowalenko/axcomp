@@ -25,6 +25,7 @@
 
 #include "astmod.hh"
 #include "error.hh"
+#include "parser.hh"
 
 namespace ax {
 
@@ -44,9 +45,8 @@ using namespace llvm::sys;
 inline const std::string file_ext_llvmri{".ll"};
 inline const std::string file_ext_obj{".o"};
 
-CodeGenerator::CodeGenerator(Options &o, std::vector<std::string> const &b,
-                             TypeTable &t)
-    : options(o), builtins(b), types(t), filename("output"), builder(context),
+CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
+    : options(o), types(t), filename("output"), builder(context),
       last_value(nullptr) {
     top_symboltable = std::make_shared<SymbolTable<Value *>>(nullptr);
     current_symboltable = top_symboltable;
@@ -741,27 +741,26 @@ llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> type) {
 }
 
 void CodeGenerator::setup_builtins() {
+    debug("CodeGenerator::setup_builtins");
 
     for (auto const &f : builtins) {
+        debug("function: {} ", f.first);
+        auto p = f.second;
 
-        auto res = types.find(f);
-        if (!res) {
-            throw CodeGenException(fmt::format("Can't find procedure {}", f));
-        }
-        auto procType = std::dynamic_pointer_cast<ProcedureType>(*res);
-        if (!procType) {
-            throw CodeGenException(fmt::format("{} is not type PROCEDURE", f));
-        }
+        debug("size: {} ", p->params.size());
+
         std::vector<llvm::Type *> proto;
-        std::for_each(
-            begin(procType->params), end(procType->params),
-            [this, &proto](auto const &t) { proto.push_back(t->get_llvm()); });
+        std::for_each(begin(p->params), end(p->params),
+                      [this, &proto](auto const &t) {
+                          debug("param: {} ", t->get_name());
+                          proto.push_back(t->get_llvm());
+                      });
 
-        auto funcType =
-            FunctionType::get(procType->ret->get_llvm(), proto, false);
+        auto funcType = FunctionType::get(p->ret->get_llvm(), proto, false);
 
-        auto func = Function::Create(
-            funcType, Function::LinkageTypes::ExternalLinkage, f, module.get());
+        auto func =
+            Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
+                             f.first, module.get());
         verifyFunction(*func);
     }
 }

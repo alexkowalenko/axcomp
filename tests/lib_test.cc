@@ -30,7 +30,7 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
         std::istringstream is(t.input);
         Lexer              lex(is);
 
-        auto   symbols = std::make_shared<SymbolTable<Symbol>>(nullptr);
+        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
         Parser parser(lex, symbols);
 
         std::string result;
@@ -63,14 +63,14 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         std::istringstream is(t.input);
         Lexer              lex(is);
 
-        auto   symbols = std::make_shared<SymbolTable<Symbol>>(nullptr);
+        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
         Parser parser(lex, symbols);
 
         std::string result;
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
-            parser.setup_builtins(builtins, types);
+            parser.setup_builtins();
 
             Inspector inpect(symbols, types);
             inpect.check(ast);

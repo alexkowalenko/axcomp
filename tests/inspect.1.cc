@@ -101,17 +101,34 @@ TEST(Inspector, ReturnType) {
 
 TEST(Inspector, Call) {
     std::vector<ParseTests> tests = {
-        {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN; END f; BEGIN "
-         "f(); RETURN x; END y.",
+        {R"(MODULE y; 
+        VAR x : INTEGER; 
+        PROCEDURE f; 
+        BEGIN 
+            RETURN; 
+        END f; 
+        BEGIN
+            f(); 
+            RETURN x;
+        END y.)",
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN ;\nEND "
          "f.\nBEGIN\nf();\nRETURN x;\nEND y.",
          ""},
-        {"MODULE y; VAR x : INTEGER; "
-         "PROCEDURE f():INTEGER; BEGIN RETURN 0; END f; "
-         "BEGIN f(); RETURN f(); END y.",
+
+        {R"(MODULE y; 
+            VAR x : INTEGER;
+            PROCEDURE f(): INTEGER;
+            BEGIN 
+                RETURN 0; 
+            END f; 
+            BEGIN 
+                f(); 
+                RETURN f();
+           END y.)",
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN "
          "0;\nEND f.\nBEGIN\nf();\nRETURN f();\nEND y.",
          ""},
+
         {R"(MODULE xxx;
             PROCEDURE f(x : INTEGER) : INTEGER;
             BEGIN

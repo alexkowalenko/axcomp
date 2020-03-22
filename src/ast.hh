@@ -32,4 +32,6 @@ class ASTBase {
     Location location;
 };
 
+using ASTBasePtr = std::shared_ptr<ASTBase>;
+
 } // namespace ax

@@ -30,6 +30,7 @@ class ASTExpr;
 class ASTSimpleExpr;
 class ASTTerm;
 class ASTFactor;
+class ASTDesignator;
 class ASTInteger;
 class ASTBool;
 class ASTType;
@@ -60,6 +61,7 @@ class ASTVisitor {
     virtual void visit_ASTSimpleExpr(ASTSimpleExpr *ast);
     virtual void visit_ASTTerm(ASTTerm *ast);
     virtual void visit_ASTFactor(ASTFactor *ast);
+    virtual void visit_ASTDesignator(ASTDesignator *ast);
     virtual void visit_ASTInteger(ASTInteger *ast);
     virtual void visit_ASTType(ASTType *ast);
     virtual void visit_ASTArray(ASTArray *ast);

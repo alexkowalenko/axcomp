@@ -11,20 +11,18 @@
 
 #include "astmod.hh"
 #include "lexer.hh"
-#include "symbol.hh"
 #include "symboltable.hh"
 #include "typetable.hh"
 
 namespace ax {
 class Parser {
   public:
-    explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<Symbol>> s)
+    explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<TypePtr>> s)
         : lexer(l), symbols(std::move(s)){};
 
     std::shared_ptr<ASTModule> parse();
 
-    void setup_builtins(std::vector<std::string> const &builtins,
-                        TypeTable &                     types);
+    void setup_builtins();
 
   private:
     std::shared_ptr<ASTModule>      parse_module();
@@ -53,6 +51,7 @@ class Parser {
     std::shared_ptr<ASTSimpleExpr> parse_simpleexpr();
     std::shared_ptr<ASTTerm>       parse_term();
     std::shared_ptr<ASTFactor>     parse_factor();
+    std::shared_ptr<ASTDesignator> parse_designator();
     std::shared_ptr<ASTType>       parse_type();
     std::shared_ptr<ASTArray>      parse_array();
     std::shared_ptr<ASTIdentifier> parse_identifier();
@@ -61,10 +60,11 @@ class Parser {
 
     Token get_token(TokenType t);
 
-    Lexer &                              lexer;
-    std::shared_ptr<SymbolTable<Symbol>> symbols;
+    Lexer &                               lexer;
+    std::shared_ptr<SymbolTable<TypePtr>> symbols;
 };
 
-inline std::vector<std::string> builtins{"WriteInt", "WriteLn"};
+extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>>
+    builtins;
 
 } // namespace ax

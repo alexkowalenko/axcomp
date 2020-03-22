@@ -266,9 +266,18 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
                ast->factor);
 }
 
+void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
+    ast->ident->accept(this);
+    std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
+        this->os << "[";
+        s->accept(this);
+        this->os << "]";
+    });
+}
+
 void ASTPrinter::visit_ASTIdentifier(ASTIdentifier *ast) {
     os << fmt::format("{}", ast->value);
-};
+}
 
 void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {
     os << fmt::format("{}", ast->value);

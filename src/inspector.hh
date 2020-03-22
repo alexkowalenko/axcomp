@@ -10,7 +10,6 @@
 
 #include "ast.hh"
 #include "astvisitor.hh"
-#include "symbol.hh"
 #include "symboltable.hh"
 #include "typetable.hh"
 
@@ -19,8 +18,8 @@ namespace ax {
 class Inspector : public ASTVisitor {
 
   public:
-    explicit Inspector(std::shared_ptr<SymbolTable<Symbol>> const &s,
-                       TypeTable &                                 t)
+    explicit Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
+                       TypeTable &                                  t)
         : top_symboltable(s), current_symboltable(s), types(t){};
 
     void visit_ASTModule(ASTModule *ast) override;
@@ -40,6 +39,7 @@ class Inspector : public ASTVisitor {
     void visit_ASTExpr(ASTExpr *ast) override;
     void visit_ASTTerm(ASTTerm *ast) override;
     void visit_ASTFactor(ASTFactor *ast) override;
+    void visit_ASTDesignator(ASTDesignator *ast) override;
     void visit_ASTType(ASTType *ast) override;
     void visit_ASTArray(ASTArray *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
@@ -51,8 +51,8 @@ class Inspector : public ASTVisitor {
     };
 
   private:
-    std::shared_ptr<SymbolTable<Symbol>> top_symboltable;
-    std::shared_ptr<SymbolTable<Symbol>> current_symboltable;
+    std::shared_ptr<SymbolTable<TypePtr>> top_symboltable;
+    std::shared_ptr<SymbolTable<TypePtr>> current_symboltable;
 
     TypeTable &types;
 

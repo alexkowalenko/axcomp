@@ -258,17 +258,17 @@ TEST(Inspector, Arrays) {
     std::vector<ParseTests> tests = {
 
         {R"(MODULE alpha;
-VAR x : ARRAY [5] OF BOOLEAN;
-VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
 
-PROCEDURE sum(a : ARRAY [3] OF BOOLEAN) : INTEGER;
-BEGIN
-    RETURN 0;
-END sum;
+                PROCEDURE sum(a : ARRAY [3] OF BOOLEAN) : INTEGER;
+                BEGIN
+                    RETURN 0;
+                END sum;
 
-BEGIN
-    RETURN 0; 
-END alpha.)",
+                BEGIN
+                    RETURN 0; 
+                END alpha.)",
          "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
          "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
          "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
@@ -276,17 +276,47 @@ END alpha.)",
         // Errors
 
         {R"(MODULE alpha;
-VAR x : ARRAY [5] OF complex;
-BEGIN
-    RETURN 0; 
-END alpha.)",
-         "", "2,20: Unknown type: complex"},
+            VAR x : ARRAY [5] OF complex;
+            BEGIN
+                RETURN 0; 
+            END alpha.)",
+         "", "2,32: Unknown type: complex"},
         {R"(MODULE alpha;
-VAR x : ARRAY [TRUE] OF complex;
-BEGIN
-    RETURN 0; 
-END alpha.)",
-         "", "2,19: Unexpected token: TRUE - expecting integer"},
+            VAR x : ARRAY [TRUE] OF complex;
+            BEGIN
+                RETURN 0; 
+            END alpha.)",
+         "", "2,31: Unexpected token: TRUE - expecting integer"},
     };
     do_inspect_tests(tests);
+}
+
+TEST(Inspector, ArraysIndex) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+
+                BEGIN
+                    RETURN x[1]; 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
+         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
+         "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+
+                BEGIN
+                    RETURN x[1] + y[2 + 3][x[2]]; 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
+         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
+         "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
+
+        // Errors
+    };
+    // do_inspect_tests(tests);
 }
