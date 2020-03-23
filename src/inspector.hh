@@ -56,9 +56,9 @@ class Inspector : public ASTVisitor {
 
     TypeTable &types;
 
-    bool          has_return = false;
-    TypePtr       last_type = nullptr;
-    ASTProcedure *last_proc = nullptr;
+    bool          has_return {false};
+    TypePtr       last_type {nullptr};
+    ASTProcedure *last_proc {nullptr};
 };
 
 } // namespace ax

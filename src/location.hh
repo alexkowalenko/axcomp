@@ -22,8 +22,8 @@ class Location {
 
     explicit operator std::string();
 
-    int lineno = 0;
-    int charpos = 0;
+    int lineno {0};
+    int charpos {0};
 };
 
 }; // namespace ax

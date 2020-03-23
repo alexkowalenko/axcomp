@@ -49,7 +49,7 @@ class ASTInteger : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTInteger(this); };
 
-    long value = 0;
+    long value{0};
 };
 
 class ASTBool : public ASTBase {
@@ -58,7 +58,7 @@ class ASTBool : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTBool(this); };
 
-    bool value = false;
+    bool value{false};
 };
 
 class ASTIdentifier : public ASTBase {
@@ -288,7 +288,7 @@ class ASTFor : public ASTStatement {
     std::shared_ptr<ASTIdentifier>             ident;
     std::shared_ptr<ASTExpr>                   start;
     std::shared_ptr<ASTExpr>                   end;
-    std::optional<std::shared_ptr<ASTExpr>>    by = std::nullopt;
+    std::optional<std::shared_ptr<ASTExpr>>    by{std::nullopt};
     std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 
@@ -346,7 +346,7 @@ class ASTBlock : public ASTStatement {
     std::shared_ptr<ASTIdentifier>             ident;
     std::shared_ptr<ASTExpr>                   start;
     std::shared_ptr<ASTExpr>                   end;
-    std::optional<std::shared_ptr<ASTExpr>>    by = std::nullopt;
+    std::optional<std::shared_ptr<ASTExpr>>    by{std::nullopt};
     std::vector<std::shared_ptr<ASTStatement>> stats;
 };
 
@@ -363,8 +363,8 @@ class ASTProcedure : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
     std::string                                name;
-    bool                                       is_external = true;
-    std::shared_ptr<ASTType>                   return_type = nullptr;
+    bool                                       is_external{true};
+    std::shared_ptr<ASTType>                   return_type{nullptr};
     std::vector<VarDec>                        params;
     std::shared_ptr<ASTDeclaration>            decs;
     std::vector<std::shared_ptr<ASTStatement>> stats;

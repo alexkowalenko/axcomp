@@ -39,13 +39,11 @@ endmacro()
 # LLVM
 set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
 find_package(LLVM REQUIRED CONFIG)
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 llvm_map_components_to_libnames(llvm_libs native)                  
-message(STATUS "Using LLVM libs: ${llvm_libs}")
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)

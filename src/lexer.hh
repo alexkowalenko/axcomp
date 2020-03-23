@@ -23,7 +23,9 @@ class Lexer {
     void  push_token(Token const &t);
     Token peek_token();
 
-    [[nodiscard]] Location get_location() const { return Location{lineno, charpos}; }
+    [[nodiscard]] Location get_location() const {
+        return Location{lineno, charpos};
+    }
 
   private:
     void get_comment();
@@ -42,8 +44,8 @@ class Lexer {
         charpos = 0;
     }
 
-    int lineno = 1;
-    int charpos = 0;
+    int lineno{1};
+    int charpos{0};
 
     std::istream &    is;
     std::stack<Token> next_token;

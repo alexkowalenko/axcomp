@@ -70,7 +70,7 @@ class ProcedureType : public Type {
 
     explicit operator std::string() override;
 
-    TypePtr              ret = nullptr;
+    TypePtr              ret {nullptr};
     std::vector<TypePtr> params{};
 };
 

@@ -89,9 +89,9 @@ class CodeGenerator : ASTVisitor {
     IRBuilder<>             builder;
     std::unique_ptr<Module> module;
 
-    bool        top_level = true;   // am I in the top level of the module?
-    Value *     last_value;         // holds last value of compilation
-    BasicBlock *last_end = nullptr; // last end block in loop, used for EXIT
+    bool        top_level{true};   // am I in the top level of the module?
+    Value *     last_value;        // holds last value of compilation
+    BasicBlock *last_end{nullptr}; // last end block in loop, used for EXIT
 };
 
 } // namespace ax

@@ -61,10 +61,18 @@ endif()
 # Testing
 option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
-    enable_testing()
-    include(GoogleTest)
-    add_subdirectory(tests)
-    add_subdirectory(xtest)
+  message("Enabling testing")
+  enable_testing()
+  include(GoogleTest)
+  add_subdirectory(tests)
+  add_subdirectory(xtest)
+endif()
+
+# Fuzz Testing
+option(ENABLE_FUZZING "Build the Fuzz Tests" ON)
+if(ENABLE_FUZZING)
+  message( "Enabling fuzz testing, using fuzzing sanitizer.")
+  add_subdirectory(fuzz_test)
 endif()
 
 # External libraries
