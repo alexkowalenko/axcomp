@@ -11,7 +11,7 @@
 
 #include <llvm/IR/LLVMContext.h>
 
-#include "astmod.hh"
+#include "ast.hh"
 #include "symboltable.hh"
 #include "type.hh"
 

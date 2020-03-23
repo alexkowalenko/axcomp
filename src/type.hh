@@ -76,7 +76,7 @@ class ProcedureType : public Type {
 
 class ArrayType : public Type {
   public:
-    ArrayType(TypePtr b, long s) : base_type(b), size(s){};
+    ArrayType(TypePtr b, long s) : base_type(std::move(b)), size(s){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;

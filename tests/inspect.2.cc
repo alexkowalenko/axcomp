@@ -302,21 +302,54 @@ TEST(Inspector, ArraysIndex) {
                     RETURN x[1]; 
                 END alpha.)",
          "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
-         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
-         "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
+         "[5] OF INTEGER;\nBEGIN\nRETURN x[1];\nEND alpha."},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY [5] OF BOOLEAN;
                 VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
 
                 BEGIN
-                    RETURN x[1] + y[2 + 3][x[2]]; 
+                    RETURN y[1][2] + y[2 + 3][2]; 
                 END alpha.)",
          "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
-         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
-         "INTEGER;\nBEGIN\nRETURN 0;\nEND sum.\nBEGIN\nRETURN 0;\nEND alpha."},
+         "[5] OF INTEGER;\nBEGIN\nRETURN y[1][2]+y[2+3][2];\nEND alpha."},
 
         // Errors
+
+        {R"(MODULE alpha;
+                VAR x : INTEGER;
+                BEGIN
+                    RETURN x[1]; 
+                END alpha.)",
+         "", "4,29: variable x is not an array"},
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY [5] OF BOOLEAN;
+                BEGIN
+                    RETURN x[1] + 1; 
+                END alpha.)",
+         "", "4,28: types in expression don't match BOOLEAN and INTEGER"},
+
+        {R"(MODULE alpha;
+                VAR x3 : ARRAY [6] OF BOOLEAN;
+                BEGIN
+                    RETURN x3[0] + 1; 
+                END alpha.)",
+         "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
+
+        {R"(MODULE alpha;
+                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                BEGIN
+                    RETURN x2[0] + 1; 
+                END alpha.)",
+         "", "4,29: types in expression don't match INTEGER[5] and INTEGER"},
+
+        {R"(MODULE alpha;
+                VAR x2 : ARRAY [5] OF ARRAY[5] OF BOOLEAN;
+                BEGIN
+                    RETURN x2[0][0] + 1; 
+                END alpha.)",
+         "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
     };
-    // do_inspect_tests(tests);
+    do_inspect_tests(tests);
 }

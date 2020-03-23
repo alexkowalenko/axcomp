@@ -10,7 +10,7 @@
 
 #include <fmt/core.h>
 
-#include "astmod.hh"
+#include "ast.hh"
 #include "token.hh"
 
 namespace ax {

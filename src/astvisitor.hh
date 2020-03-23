@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "ast.hh"
-
 namespace ax {
 
 class ASTModule;

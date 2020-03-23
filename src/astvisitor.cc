@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "astmod.hh"
+#include "ast.hh"
 
 namespace ax {
 

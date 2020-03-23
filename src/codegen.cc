@@ -23,7 +23,6 @@
 
 #include <fmt/core.h>
 
-#include "astmod.hh"
 #include "error.hh"
 #include "parser.hh"
 
@@ -170,7 +169,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
 
         // Create const
         auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name, c.type, ast);
+        auto alloc = createEntryBlockAlloca(function, name, c.type);
         builder.CreateStore(val, alloc);
 
         current_symboltable->put(name, alloc);
@@ -186,7 +185,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 
         auto        function = builder.GetInsertBlock()->getParent();
         auto        type = c.second;
-        AllocaInst *alloc = createEntryBlockAlloca(function, name, type, ast);
+        AllocaInst *alloc = createEntryBlockAlloca(function, name, type);
         builder.CreateStore(type->type_info->get_init(), alloc);
 
         alloc->setName(name);
@@ -232,8 +231,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         arg.setName(param_name);
         auto type_name = ast->params[i].second;
         // Create an alloca for this variable.
-        AllocaInst *alloca =
-            createEntryBlockAlloca(f, param_name, type_name, ast);
+        AllocaInst *alloca = createEntryBlockAlloca(f, param_name, type_name);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
@@ -698,10 +696,10 @@ void CodeGenerator::visit_ASTBool(ASTBool *ast) {
  * @param name
  * @return AllocaInst*
  */
-AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
-                                                  std::string const &name,
-                                                  std::shared_ptr<ASTType> type,
-                                                  ASTBase *ast) {
+AllocaInst *
+CodeGenerator::createEntryBlockAlloca(Function *               function,
+                                      std::string const &      name,
+                                      std::shared_ptr<ASTType> type) {
     AllocaInst *res = nullptr;
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());

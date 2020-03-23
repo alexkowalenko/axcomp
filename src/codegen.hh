@@ -71,8 +71,7 @@ class CodeGenerator : ASTVisitor {
 
     AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
                                        std::string const &      name,
-                                       std::shared_ptr<ASTType> type,
-                                       ASTBase *                ast);
+                                       std::shared_ptr<ASTType> type);
 
     AllocaInst *createEntryBlockAlloca(Function *         function,
                                        std::string const &name,

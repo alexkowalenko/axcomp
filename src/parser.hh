@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "astmod.hh"
+#include "ast.hh"
 #include "lexer.hh"
 #include "symboltable.hh"
 #include "typetable.hh"

@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 
-#include "astmod.hh"
+#include "ast.hh"
 #include "error.hh"
 
 namespace ax {
@@ -16,7 +16,7 @@ namespace ax {
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
 
-inline constexpr bool debug_inspect{true};
+inline constexpr bool debug_inspect{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_inspect) {
@@ -385,17 +385,42 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
 }
 
 void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
+    debug("Inspector::visit_ASTDesignator");
     ast->ident->accept(this);
-    // check type array
-    std::for_each(
-        begin(ast->selectors), end(ast->selectors), [this, ast](auto &s) {
-            s->accept(this);
-            if (!last_type->is_numeric()) {
-                throw TypeError(
-                    fmt::format("expression in array index must be numeric"),
-                    ast->get_location());
-            }
-        });
+
+    // check type array before processing selectors
+    auto array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
+    if (!array_type && !ast->selectors.empty()) {
+        throw TypeError(
+            fmt::format("variable {} is not an array", ast->ident->value),
+            ast->get_location());
+    }
+
+    // Not array type - no more checks.
+    if (!array_type) {
+        return;
+    }
+    debug("Inspector::visit_ASTDesignator type: {}", array_type->get_name());
+    TypePtr current_type = array_type->base_type;
+
+    for (auto &s : ast->selectors) {
+        s->accept(this);
+        if (!last_type->is_numeric()) {
+            throw TypeError(
+                fmt::format("expression in array index must be numeric"),
+                ast->get_location());
+        }
+
+        debug("Inspector::visit_ASTDesignator selector: {}",
+              current_type->get_name());
+        last_type = current_type;
+        array_type =
+            std::dynamic_pointer_cast<ArrayType>(array_type->base_type);
+        if (!array_type) {
+            break;
+        }
+        current_type = array_type->base_type;
+    }
 }
 
 void Inspector::visit_ASTType(ASTType *ast) {
@@ -425,6 +450,7 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
     }
     ast->type->accept(this);
     last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
+    types.put(last_type->get_name(), last_type);
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
