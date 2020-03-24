@@ -177,6 +177,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
 }
 
 void CodeGenerator::visit_ASTVar(ASTVar *ast) {
+    debug("CodeGenerator::visit_ASTVar");
     for (auto const &c : ast->vars) {
 
         // Create variable
@@ -668,11 +669,43 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
                               }
                           }},
                ast->factor);
-} // namespace ax
+}
+
+void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
+    debug("CodeGenerator::visit_ASTDesignator");
+    ast->ident->accept(this);
+
+    // Check if has selectors
+    if (ast->selectors.empty()) {
+        return;
+    }
+
+    get_ptr(ast->ident.get());
+    auto                 array_ptr = last_value;
+    std::vector<Value *> index{ConstantInt::get(context, APInt(64, 0, true))};
+    for (auto const &s : ast->selectors) {
+
+        // calculate index;
+        s->expr->accept(this);
+        debug("GEP index is Int: {}", last_value->getType()->isIntegerTy());
+        index.push_back(last_value);
+    }
+    debug("GEP is Ptr: {}", array_ptr->getType()->isPointerTy());
+    assert(array_ptr->getType()->isPointerTy());
+    auto idx = builder.CreateGEP(array_ptr, index, "idx");
+    last_value = builder.CreateLoad(idx, "idx");
+}
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
+    debug("CodeGenerator::visit_ASTIdentifier {}", ast->value);
+    get_ptr(ast);
+    last_value = builder.CreateLoad(last_value, ast->value);
+}
+
+void CodeGenerator::get_ptr(ASTIdentifier *ast) {
+    debug("CodeGenerator::getPtr {}", ast->value);
     if (auto res = current_symboltable->find(ast->value)) {
-        last_value = builder.CreateLoad(*res, ast->value);
+        last_value = *res;
         return;
     }
     throw CodeGenException(fmt::format("identifier {} unknown", ast->value),
