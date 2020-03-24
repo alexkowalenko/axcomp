@@ -127,10 +127,11 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     auto expr_type = last_type;
 
     ast->ident->accept(this);
-    debug("type of ident {} : {} ", ast->ident->value, last_type->get_name());
+    debug("type of ident: {} ", last_type->get_name());
     if (!last_type->equiv(expr_type)) {
         throw TypeError(fmt::format("Can't assign expression of type {} to {}",
-                                    std::string(*expr_type), ast->ident->value),
+                                    std::string(*expr_type),
+                                    std::string(*ast->ident)),
                         ast->get_location());
     }
 }
@@ -403,7 +404,9 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     debug("Inspector::visit_ASTDesignator type: {}", array_type->get_name());
     TypePtr current_type = array_type->base_type;
 
+    auto count = 0;
     for (auto &s : ast->selectors) {
+        count++;
         s->accept(this);
         if (!last_type->is_numeric()) {
             throw TypeError(
@@ -420,6 +423,14 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
             break;
         }
         current_type = array_type->base_type;
+    }
+    debug("Inspector::visit_ASTDesignator size: {} for {}",
+          ast->selectors.size(), count);
+    if (ast->selectors.size() > count) {
+        throw TypeError(
+            fmt::format("array indexes greater than array defintion: {}",
+                        std::string(*ast)),
+            ast->get_location());
     }
 }
 

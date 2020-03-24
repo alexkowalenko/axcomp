@@ -54,7 +54,8 @@ TEST(Parser, Module) {
         {"MODULE y; RETURN 12; END y.", "",
          "1,16: Unexpected token: RETURN - expecting BEGIN"},
 
-        {"MODULE y; BEGIN RETURN 12; y.", "", "1,29: Unexpected token: period"},
+        {"MODULE y; BEGIN RETURN 12; y.", "",
+         "1,29: Unexpected token: period - expecting :="},
         {"MODULE y; BEGIN RETURN 12; END .", "",
          "1,32: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN RETURN 12; END y", "",

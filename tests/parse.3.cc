@@ -11,78 +11,75 @@
 TEST(Parser, Proc) {
     std::vector<ParseTests> tests = {
 
-        {R"(
-MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END f;
-BEGIN
-    RETURN 0;
-END x.)",
+        {R"(MODULE x;
+        PROCEDURE f;
+        BEGIN
+            RETURN 12;
+        END f;
+        BEGIN
+            RETURN 0;
+        END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nRETURN "
          "0;\nEND x.",
          ""},
 
-        {R"(
-MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END f;
+        {R"(MODULE x;
+        PROCEDURE f;
+        BEGIN
+            RETURN 12;
+        END f;
 
-  PROCEDURE g;
-  BEGIN
-      RETURN 24;
-  END g;
-BEGIN
-    RETURN 0;
-END x.)",
+        PROCEDURE g;
+        BEGIN
+            RETURN 24;
+        END g;
+        BEGIN
+            RETURN 0;
+        END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
          "g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\nRETURN 0;\nEND x.",
          ""},
 
         // Errors
-        {R"(
-MODULE x;
-  PROCEDURE f;
-      RETURN 12;
-  END f;
-BEGIN
-    RETURN 0;
-END x.
+        {R"(MODULE x;
+        PROCEDURE f;
+            RETURN 12;
+        END f;
+        BEGIN
+            RETURN 0;
+        END x.
         )",
-         "", "4,12: Unexpected token: RETURN - expecting BEGIN"},
+         "", "3,18: Unexpected token: RETURN - expecting BEGIN"},
 
         {R"(MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END ;
-BEGIN
-    RETURN 0;
-END x.)",
-         "", "5,7: Unexpected token: semicolon - expecting indent"},
+        PROCEDURE f;
+        BEGIN
+            RETURN 12;
+        END ;
+        BEGIN
+            RETURN 0;
+        END x.)",
+         "", "5,13: Unexpected token: semicolon - expecting indent"},
 
         {R"(MODULE x;
-   f;
-  BEGIN
-      RETURN 12;
-  END f;
-BEGIN
-    RETURN 0;
-END x.)",
-         "", "2,4: Unexpected token: f - expecting BEGIN"},
+            f;
+            BEGIN
+                RETURN 12;
+            END f;
+            BEGIN
+                RETURN 0;
+            END x.)",
+         "", "2,13: Unexpected token: f - expecting BEGIN"},
 
         {R"(MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-   f;
-BEGIN
-    RETURN 0;
-END x.)",
-         "", "5,5: Unexpected token: semicolon"},
+            PROCEDURE f;
+            BEGIN
+                RETURN 12;
+            f;
+            BEGIN
+                RETURN 0;
+            END x.)",
+         "", "5,14: Unexpected token: semicolon - expecting :="},
 
     };
     do_parse_tests(tests);
@@ -91,51 +88,48 @@ END x.)",
 TEST(Parser, Call) {
     std::vector<ParseTests> tests = {
 
-        {R"(
-MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END f;
-BEGIN
-    f();
-END x.)",
+        {R"(MODULE x;
+            PROCEDURE f;
+            BEGIN
+                RETURN 12;
+            END f;
+            BEGIN
+                f();
+            END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nf();\nEND "
          "x.",
          ""},
 
-        {R"(
-MODULE x;
-  PROCEDURE f;
-  BEGIN
-      RETURN 12;
-  END f;
+        {R"(MODULE x;
+        PROCEDURE f;
+        BEGIN
+            RETURN 12;
+        END f;
 
-  PROCEDURE g;
-  BEGIN
-      f();
-      RETURN 24;
-  END g;
-BEGIN
-    g();
-    RETURN 0;
-END x.)",
+        PROCEDURE g;
+        BEGIN
+            f();
+            RETURN 24;
+        END g;
+        BEGIN
+            g();
+            RETURN 0;
+        END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
          "g;\nBEGIN\nf();\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN 0;\nEND x.",
          ""},
 
         // Error
         {R"(MODULE x;
-    BEGIN
-        f(;
-    END x.)",
-         "", "3,11: Unexpected token: semicolon"},
-        // Error
+            BEGIN
+                f(;
+            END x.)",
+         "", "3,19: Unexpected token: semicolon"},
         {R"(MODULE x;
-    BEGIN
-        f);
-    END x.)",
-         "", "3,10: Unexpected token: )"}};
+            BEGIN
+                f);
+            END x.)",
+         "", "3,18: Unexpected token: ) - expecting :="}};
     do_parse_tests(tests);
 }
 

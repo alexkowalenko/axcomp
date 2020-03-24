@@ -13,7 +13,7 @@
 
 namespace ax {
 
-class ASTPrinter : ASTVisitor {
+class ASTPrinter : public ASTVisitor {
 
   public:
     explicit ASTPrinter(std::ostream &ostream) : os(ostream){};

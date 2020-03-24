@@ -305,11 +305,11 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         auto ident = lexer.get_token();
         tok = lexer.peek_token();
         debug("Parser::parse_statement next {}", std::string(tok));
-        if (tok.type == TokenType::assign) {
-            return parse_assignment(ident);
-        }
+        lexer.push_token(ident);
         if (tok.type == TokenType::l_paren) {
-            return parse_call(ident);
+            return parse_call();
+        } else {
+            return parse_assignment();
         }
         [[fallthrough]];
     }
@@ -343,13 +343,12 @@ void Parser::parse_statement_block(
  *
  * @return std::shared_ptr<ASTAssignment>
  */
-std::shared_ptr<ASTAssignment> Parser::parse_assignment(Token const &ident) {
+std::shared_ptr<ASTAssignment> Parser::parse_assignment() {
     debug("Parser::parse_assignment");
-
     std::shared_ptr<ASTAssignment> assign = std::make_shared<ASTAssignment>();
     assign->set_location(lexer.get_location());
-    assign->ident = std::make_shared<ASTIdentifier>();
-    assign->ident->value = ident.val;
+
+    assign->ident = parse_designator();
     get_token(TokenType::assign);
     assign->expr = parse_expr();
     return assign;
@@ -389,11 +388,11 @@ std::shared_ptr<ASTExit> Parser::parse_exit() {
  *
  * @return std::shared_ptr<ASTCall>
  */
-std::shared_ptr<ASTCall> Parser::parse_call(Token const &ident) {
+std::shared_ptr<ASTCall> Parser::parse_call() {
     std::shared_ptr<ASTCall> call = std::make_shared<ASTCall>();
     call->set_location(lexer.get_location());
-    call->name = std::make_shared<ASTIdentifier>();
-    call->name->value = ident.val;
+
+    call->name = parse_identifier();
     get_token(TokenType::l_paren);
     auto tok = lexer.peek_token();
     while (tok.type != TokenType::r_paren) {
@@ -684,7 +683,8 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         auto nexttok = lexer.peek_token();
         debug("factor nexttok: {}", std::string(nexttok));
         if (nexttok.type == TokenType::l_paren) {
-            ast->factor = parse_call(tok);
+            lexer.push_token(tok);
+            ast->factor = parse_call();
             return ast;
         }
         lexer.push_token(tok);

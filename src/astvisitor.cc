@@ -54,13 +54,13 @@ void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void ASTVisitor::visit_ASTAssignment(ASTAssignment *ast) {
-    visit_ASTIdentifier(ast->ident.get());
-    visit_ASTExpr(ast->expr.get());
+    ast->ident->accept(this);
+    ast->expr->accept(this);
 }
 
 void ASTVisitor::visit_ASTReturn(ASTReturn *ast) {
     if (ast->expr) {
-        visit_ASTExpr(ast->expr.get());
+        ast->expr->accept(this);
     }
 }
 
@@ -129,13 +129,13 @@ void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
 }
 
 void ASTVisitor::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
-    visit_ASTTerm(ast->term.get());
+    ast->term->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(),
                   [this](auto t) { t.second->accept(this); });
 }
 
 void ASTVisitor::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTFactor(ast->factor.get());
+    ast->factor->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(),
                   [this](auto t) { t.second->accept(this); });
 }

@@ -260,14 +260,23 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     ast->expr->accept(this);
     auto val = last_value;
 
-    auto var = current_symboltable->find(ast->ident->value);
-    if (!var) {
-        throw CodeGenException(
-            fmt::format("identifier: {} not found.", ast->ident->value),
-            ast->get_location());
+    // Temporary
+    // Check if designator has no selectors.
+    if (ast->ident->selectors.empty()) {
+        auto var = current_symboltable->find(ast->ident->ident->value);
+        if (!var) {
+            throw CodeGenException(fmt::format("identifier: {} not found.",
+                                               ast->ident->ident->value),
+                                   ast->ident->get_location());
+        }
+        debug("CodeGenerator::visit_ASTAssignment value: {}",
+              val->getName().str());
+        builder.CreateStore(val, var.value());
+        return;
     }
-    debug("CodeGenerator::visit_ASTAssignment value: {}", val->getName().str());
-    builder.CreateStore(val, var.value());
+
+    ast->ident->accept(this);
+    builder.CreateStore(val, last_value);
 }
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
@@ -672,7 +681,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 }
 
 void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
-    debug("CodeGenerator::visit_ASTDesignator");
+    debug("CodeGenerator::visit_ASTDesignator {}", std::string(*ast));
     ast->ident->accept(this);
 
     // Check if has selectors

@@ -142,3 +142,57 @@ TEST(Parser, ArrayIndex) {
 
     do_parse_tests(tests);
 }
+
+TEST(Parser, ArrayIndexAssign) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY [5] OF INTEGER;
+            BEGIN
+                x[2] := 2;
+                RETURN x[2]; 
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF INTEGER;\nBEGIN\nx[2] := "
+         "2;\nRETURN x[2];\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY [5] OF INTEGER;
+            VAR y : ARRAY [5] OF ARRAY [5] OF BOOLEAN;
+            BEGIN
+                 x[1 + 1] := 2;
+                 y[1][2] := TRUE;
+                RETURN x[2] + y[z+1][0]; 
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF INTEGER;\ny: ARRAY [5] OF ARRAY "
+         "[5] OF BOOLEAN;\nBEGIN\nx[1+1] := 2;\ny[1][2] := TRUE;\nRETURN "
+         "x[2]+y[z+1][0];\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY [5] OF INTEGER;
+            BEGIN
+                 x 2] := 2;
+                RETURN 0; 
+            END alpha.)",
+         "", "4,20: Unexpected token: integer(2) - expecting :="},
+        {R"(MODULE alpha;
+            VAR x : ARRAY [5] OF INTEGER;
+            BEGIN
+                x[] := 2;
+                RETURN x[2]; 
+            END alpha.)",
+         "", "4,19: Unexpected token: ]"},
+        {R"(MODULE alpha;
+            VAR x : ARRAY [5] OF INTEGER;
+            BEGIN
+                x[2 := 2;
+                RETURN x[2]; 
+            END alpha.)",
+         "", "4,22: Unexpected token: := - expecting ]"},
+    };
+
+    do_parse_tests(tests);
+}

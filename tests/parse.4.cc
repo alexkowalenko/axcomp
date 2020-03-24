@@ -254,7 +254,7 @@ TEST(Parser, REPEAT) {
                 x := x+1;
              x > 10;
         END alpha.)",
-         "", "6,16: Unexpected token: >"},
+         "", "6,16: Unexpected token: > - expecting :="},
     };
     do_parse_tests(tests);
 }

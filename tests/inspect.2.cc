@@ -350,6 +350,81 @@ TEST(Inspector, ArraysIndex) {
                     RETURN x2[0][0] + 1; 
                 END alpha.)",
          "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
+
+        {R"(MODULE alpha;
+                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                BEGIN
+                    RETURN x2[0][2][3]; 
+                END alpha.)",
+         "", "4,30: array indexes greater than array defintion: x2[0][2][3]"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, ArraysIndexAssign) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY [5] OF BOOLEAN;
+
+                BEGIN
+                    x[1] := TRUE;
+                    RETURN 0; 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\nBEGIN\nx[1] := "
+         "TRUE;\nRETURN 0;\nEND alpha."},
+
+        {R"(MODULE alpha;
+                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+
+                BEGIN
+                    y[1][2] := 8;
+                    RETURN 0; 
+                END alpha.)",
+         "MODULE alpha;\nVAR\ny: ARRAY [5] OF ARRAY [5] OF "
+         "INTEGER;\nBEGIN\ny[1][2] := 8;\nRETURN 0;\nEND alpha."},
+
+        // Errors
+
+        {R"(MODULE alpha;
+                VAR x : INTEGER;
+                BEGIN
+                    x[1] := 1;
+                    RETURN 0; 
+                END alpha.)",
+         "", "4,22: variable x is not an array"},
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY [5] OF BOOLEAN;
+                BEGIN
+                    x[0] := 1;
+                    RETURN 0; 
+                END alpha.)",
+         "", "4,22: Can't assign expression of type INTEGER to x[0]"},
+
+        {R"(MODULE alpha;
+                VAR x3 : ARRAY [6] OF INTEGER;
+                BEGIN
+                    x3[2] := TRUE;
+                    RETURN 0; 
+                END alpha.)",
+         "", "4,23: Can't assign expression of type BOOLEAN to x3[2]"},
+
+        {R"(MODULE alpha;
+                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                BEGIN
+                    x2[1] := 1;
+                    RETURN 0; 
+                END alpha.)",
+         "", "4,23: Can't assign expression of type INTEGER to x2[1]"},
+
+        {R"(MODULE alpha;
+                VAR x2 : ARRAY [5] OF ARRAY[5] OF BOOLEAN;
+                BEGIN
+                    x2[1][2] := 1;
+                    RETURN 0; 
+                END alpha.)",
+         "", "4,23: Can't assign expression of type INTEGER to x2[1][2]"},
     };
     do_inspect_tests(tests);
 }

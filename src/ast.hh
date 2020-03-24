@@ -34,6 +34,8 @@ class ASTBase {
     void            set_location(Location const &l) { location = l; };
     Location const &get_location() { return location; };
 
+    explicit operator std::string();
+
   private:
     Location location;
 };
@@ -206,7 +208,7 @@ class ASTAssignment : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTAssignment(this); };
 
-    std::shared_ptr<ASTIdentifier> ident;
+    std::shared_ptr<ASTDesignator> ident;
     std::shared_ptr<ASTExpr>       expr;
 };
 
