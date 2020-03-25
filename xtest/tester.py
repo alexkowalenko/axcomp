@@ -5,10 +5,10 @@ from pathlib import Path
 import os
 from colored import fg, bg, attr
 
-install_dir = "../bin"
+install_dir = "../../bin"
 
 compiler = f"{install_dir}/ax"
-linker = f"clang++ main.cc -L {install_dir} -lAx "
+linker = f"clang++ ../main.cc -L {install_dir} -lAx "
 
 red = fg('red_1')
 restore = attr('reset')
@@ -75,14 +75,26 @@ def do_tests(l):
     return fails
 
 
-def get_tests():
+def do_tests_dir(d):
+    print(f"Tests: {d}")
+    os.chdir(d)
     tests = glob('*.mod')
+    res = do_tests(tests)
+    os.chdir("..")
+    return res
+
+
+def get_tests():
+    tests = glob('tests.*')
     return tests
 
 
 def main():
     tests = get_tests()
-    return do_tests(tests)
+    res = 0
+    for d in tests:
+        res = res + do_tests_dir(d)
+    return res
 
 
 if __name__ == '__main__':

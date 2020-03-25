@@ -106,24 +106,24 @@ INTEGER = digit+
 ## Example program
 
 ```pascal
-(* Sample program *)
-MODULE test;
+MODULE test; (* Sample program *)
 CONST
     x = 1;
 VAR
     z : INTEGER;
     check : BOOLEAN;
+    a : ARRAY [10] OF INTEGER;
 
 PROCEDURE f;
     VAR yy : INTEGER;
 BEGIN
-    RETURN ;
+    RETURN;
 END f;
 
 PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
 BEGIN
     RETURN x + y * y;
-END f;
+END g;
 
 BEGIN
     z := 12;
@@ -136,7 +136,8 @@ BEGIN
     END;
 
     FOR i := 0 TO 9 BY 2 DO
-        z := i * i + z;
+        a[i] := i * i + z;
+        a[i+1] := i + i;
     END;
 
     WHILE x > 4 DO
@@ -144,7 +145,7 @@ BEGIN
     END;
 
     REPEAT
-        z = z + 1;
+        z := z + 1;
     UNTIL z > 10;
 
     LOOP
@@ -171,7 +172,7 @@ WriteLn()
 
 Changes to the standard definition:
 
-* Procedures don't have nested procedures.
+* PROCEDUREs don't have nested procedures.
 * CONSTs must be integers or boolean constants - not expressions.
 * ARRAY sizes must be integers.
 

@@ -1,0 +1,82 @@
+; ModuleID = 'g05'
+source_filename = "g05"
+
+@a = internal global [3 x [3 x i64]] zeroinitializer
+@sum = internal global i64 0
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  %x12 = alloca i64
+  %y10 = alloca i64
+  %x = alloca i64
+  %y = alloca i64
+  store i64 0, i64* %y
+  br label %loop
+
+loop:                                             ; preds = %afterloop, %entry
+  store i64 0, i64* %x
+  br label %loop1
+
+loop1:                                            ; preds = %loop1, %loop
+  %x2 = load i64, i64* %x
+  %y3 = load i64, i64* %y
+  %addtmp = add i64 %x2, %y3
+  %x4 = load i64, i64* %x
+  %y5 = load i64, i64* %y
+  %idx = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @a, i64 0, i64 %x4, i64 %y5
+  store i64 %addtmp, i64* %idx
+  %0 = load i64, i64* %x
+  %nextvar = add i64 %0, 1
+  store i64 %nextvar, i64* %x
+  %loopcond = icmp sle i64 %nextvar, 2
+  br i1 %loopcond, label %loop1, label %afterloop
+
+afterloop:                                        ; preds = %loop1
+  %1 = load i64, i64* %y
+  %nextvar6 = add i64 %1, 1
+  store i64 %nextvar6, i64* %y
+  %loopcond7 = icmp sle i64 %nextvar6, 2
+  br i1 %loopcond7, label %loop, label %afterloop8
+
+afterloop8:                                       ; preds = %afterloop
+  store i64 0, i64* %y10
+  br label %loop9
+
+loop9:                                            ; preds = %afterloop20, %afterloop8
+  store i64 0, i64* %x12
+  br label %loop11
+
+loop11:                                           ; preds = %loop11, %loop9
+  %a = load [3 x [3 x i64]], [3 x [3 x i64]]* @a
+  %x13 = load i64, i64* %x12
+  %y14 = load i64, i64* %y10
+  %idx15 = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @a, i64 0, i64 %x13, i64 %y14
+  %idx16 = load i64, i64* %idx15
+  %calltmp = call void @WriteInt(i64 %idx16)
+  %sum = load i64, i64* @sum
+  %addtmp17 = add i64 %sum, 1
+  store i64 %addtmp17, i64* @sum
+  %2 = load i64, i64* %x12
+  %nextvar18 = add i64 %2, 1
+  store i64 %nextvar18, i64* %x12
+  %loopcond19 = icmp sle i64 %nextvar18, 2
+  br i1 %loopcond19, label %loop11, label %afterloop20
+
+afterloop20:                                      ; preds = %loop11
+  %calltmp21 = call void @WriteLn()
+  %3 = load i64, i64* %y10
+  %nextvar22 = add i64 %3, 1
+  store i64 %nextvar22, i64* %y10
+  %loopcond23 = icmp sle i64 %nextvar22, 2
+  br i1 %loopcond23, label %loop9, label %afterloop24
+
+afterloop24:                                      ; preds = %afterloop20
+  %sum25 = load i64, i64* @sum
+  %calltmp26 = call void @WriteInt(i64 %sum25)
+  %calltmp27 = call void @WriteLn()
+  ret i64 0
+}
