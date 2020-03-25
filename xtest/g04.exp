@@ -1,0 +1,43 @@
+; ModuleID = 'g04'
+source_filename = "g04"
+
+@x = internal global [3 x i1] zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  %i = alloca i64
+  store i1 false, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 0)
+  store i1 true, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 1)
+  store i1 false, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 2)
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %x = load [3 x i1], [3 x i1]* @x
+  %i1 = load i64, i64* %i
+  %idx = getelementptr [3 x i1], [3 x i1]* @x, i64 0, i64 %i1
+  %idx2 = load i1, i1* %idx
+  %calltmp = call void @WriteInt(i1 %idx2)
+  %calltmp3 = call void @WriteLn()
+  %0 = load i64, i64* %i
+  %nextvar = add i64 %0, 1
+  store i64 %nextvar, i64* %i
+  %loopcond = icmp sle i64 %nextvar, 2
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  %x4 = load [3 x i1], [3 x i1]* @x
+  %idx5 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 0)
+  %x6 = load [3 x i1], [3 x i1]* @x
+  %idx7 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 1)
+  %subtmp = or i1 %idx5, %idx7
+  %x8 = load [3 x i1], [3 x i1]* @x
+  %idx9 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 2)
+  %subtmp10 = or i1 %subtmp, %idx9
+  %1 = zext i1 %subtmp10 to i64
+  ret i64 %1
+}
