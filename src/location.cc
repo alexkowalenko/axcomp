@@ -6,12 +6,12 @@
 
 #include "location.hh"
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 namespace ax {
 
 Location::operator std::string() {
-    return fmt::format("{},{}", lineno, charpos);
+    return llvm::formatv("{0},{1}", lineno, charpos);
 }
 
 }; // namespace ax

@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "token.hh"
@@ -16,19 +16,19 @@
 namespace ax {
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
-    os << fmt::format("MODULE {};\n", ast->name);
+    os << std::string(llvm::formatv("MODULE {0};\n", ast->name));
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
-    os << fmt::format("BEGIN\n");
+    os << "BEGIN\n";
     std::for_each(ast->stats.begin(), ast->stats.end(), [this](auto const &x) {
         x->accept(this);
         os << ";\n";
     });
-    os << fmt::format("END {}.\n", ast->name);
+    os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 
 void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
@@ -67,7 +67,7 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
 }
 
 void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
-    os << fmt::format("PROCEDURE {}", ast->name);
+    os << std::string(llvm::formatv("PROCEDURE {0}", ast->name));
     if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";
         std::for_each(ast->params.begin(), ast->params.end(),
@@ -87,12 +87,12 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
     }
     os << ";\n";
     ast->decs->accept(this);
-    os << fmt::format("BEGIN\n");
+    os << "BEGIN\n";
     std::for_each(ast->stats.begin(), ast->stats.end(), [this](auto const &x) {
         x->accept(this);
         os << ";\n";
     });
-    os << fmt::format("END {}.\n", ast->name);
+    os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {
@@ -165,7 +165,7 @@ void ASTPrinter::visit_ASTFor(ASTFor *ast) {
     os << " TO ";
     ast->end->accept(this);
     if (ast->by) {
-        os << fmt::format(" BY ");
+        os << " BY ";
         (*ast->by)->accept(this);
     }
     os << " DO\n";
@@ -218,7 +218,7 @@ void ASTPrinter::visit_ASTBlock(ASTBlock *ast) {
 void ASTPrinter::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     if (ast->relation) {
-        os << fmt::format(" {} ", string(*ast->relation));
+        os << std::string(llvm::formatv(" {0} ", string(*ast->relation)));
         (*ast->relation_expr)->accept(this);
     }
 }
@@ -230,7 +230,7 @@ void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     ast->term->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
         if (t.first == TokenType::or_k) {
-            os << fmt::format(" {} ", string(t.first));
+            os << std::string(llvm::formatv(" {0} ", string(t.first)));
         } else {
             os << string(t.first);
         }
@@ -244,7 +244,7 @@ void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
         if (t.first == TokenType::asterisk) {
             os << string(t.first);
         } else {
-            os << fmt::format(" {} ", string(t.first));
+            os << std::string(llvm::formatv(" {0} ", string(t.first)));
         }
         t.second->accept(this);
     });
@@ -276,11 +276,11 @@ void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
 }
 
 void ASTPrinter::visit_ASTIdentifier(ASTIdentifier *ast) {
-    os << fmt::format("{}", ast->value);
+    os << ast->value;
 }
 
 void ASTPrinter::visit_ASTInteger(ASTInteger *ast) {
-    os << fmt::format("{}", ast->value);
+    os << ast->value;
 }
 
 void ASTPrinter::visit_ASTType(ASTType *ast) {

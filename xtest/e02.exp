@@ -1,7 +1,5 @@
 ; ModuleID = 'e02'
 source_filename = "e02"
-target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-target triple = "x86_64-apple-darwin18.7.0"
 
 @x = internal global i64 0
 
@@ -16,13 +14,16 @@ entry:
   %x1 = load i64, i64* @x
   %1 = icmp eq i64 %x1, 7
   %subtmp = or i1 %0, %1
-  br i1 %subtmp, label %then, label %ifcont
+  br i1 %subtmp, label %then, label %else
 
 then:                                             ; preds = %entry
   store i64 77, i64* @x
   br label %ifcont
 
-ifcont:                                           ; preds = %entry, %then
+else:                                             ; preds = %entry
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
   %x2 = load i64, i64* @x
   ret i64 %x2
 }

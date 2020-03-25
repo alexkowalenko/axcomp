@@ -19,7 +19,7 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
 
     target_link_libraries(${TESTNAME} PRIVATE project_options project_warnings -fsanitize=fuzzer,undefined,address,leak 
-                                      libax fmt ${llvm_libs})
+                                      libax ${llvm_libs})
     target_compile_options(${TESTNAME} PRIVATE -fsanitize=fuzzer,undefined,address,leak)
 endmacro()
 

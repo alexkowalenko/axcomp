@@ -6,8 +6,6 @@
 
 #include <sstream>
 
-#include <fmt/format.h>
-
 #include "error.hh"
 #include "lexer.hh"
 #include "token.hh"

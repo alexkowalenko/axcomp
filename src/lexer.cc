@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 #include "error.hh"
 #include "lexer.hh"
@@ -17,7 +17,7 @@ inline constexpr bool debug_lexer{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_lexer) {
-        std::cerr << fmt::format(msg...) << std::endl;
+        std::cerr << llvm::formatv(msg...) << std::endl;
     }
 }
 
@@ -96,8 +96,6 @@ void Lexer::get_comment() {
 char Lexer::get_char() {
     while (is) {
         char c = get();
-        // fmt::print("Char: {} next: {}\n", c,
-        // is.peek());
         if (c == '\n') {
             set_newline();
             continue;

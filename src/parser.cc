@@ -9,7 +9,7 @@
 #include <optional>
 #include <set>
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 #include "error.hh"
 #include "typetable.hh"
@@ -17,13 +17,13 @@
 namespace ax {
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
-        std::cerr << fmt::format(msg...) << std::endl;
+        std::cerr << llvm::formatv(msg...) << std::endl;
     }
 }
 
@@ -32,9 +32,10 @@ std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 Token Parser::get_token(TokenType t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
-        throw ParseException(fmt::format("Unexpected token: {} - expecting {}",
-                                         std::string(tok), string(t)),
-                             lexer.get_location());
+        throw ParseException(
+            llvm::formatv("Unexpected token: {0} - expecting {1}",
+                          std::string(tok), string(t)),
+            lexer.get_location());
     }
     return tok;
 }
@@ -76,8 +77,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
         throw ParseException(
-            fmt::format("END identifier name: {} doesn't match module name: {}",
-                        tok.val, module->name),
+            llvm::formatv(
+                "END identifier name: {0} doesn't match module name: {1}",
+                tok.val, module->name),
             lexer.get_location());
     }
     get_token(TokenType::period);
@@ -124,7 +126,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             break;
         }
         default:
-            throw ParseException(fmt::format("unimplemented {}", tok.val),
+            throw ParseException(llvm::formatv("unimplemented {0}", tok.val),
                                  lexer.get_location());
         }
         tok = lexer.peek_token();
@@ -233,8 +235,8 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name) {
         throw ParseException(
-            fmt::format("END name: {} doesn't match procedure name: {}",
-                        tok.val, proc->name),
+            llvm::formatv("END name: {0} doesn't match procedure name: {1}",
+                          tok.val, proc->name),
             lexer.get_location());
     }
     get_token(TokenType::semicolon);
@@ -315,7 +317,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
     }
     default:
         throw ParseException(
-            fmt::format("Unexpected token: {}", std::string(tok)),
+            llvm::formatv("Unexpected token: {0}", std::string(tok)),
             lexer.get_location());
     }
 }
@@ -407,7 +409,7 @@ std::shared_ptr<ASTCall> Parser::parse_call() {
             continue;
         }
         throw ParseException(
-            fmt::format("Unexpected {} expecting , or )", tok.val),
+            llvm::formatv("Unexpected {0} expecting , or )", tok.val),
             lexer.get_location());
     }
     get_token(TokenType::r_paren);
@@ -693,7 +695,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
     }
     default:
         throw ParseException(
-            fmt::format("Unexpected token: {}", std::string(tok)),
+            llvm::formatv("Unexpected token: {0}", std::string(tok)),
             lexer.get_location());
     }
     return nullptr; // Not factor

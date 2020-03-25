@@ -1,7 +1,5 @@
 ; ModuleID = 'e07'
 source_filename = "e07"
-target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-target triple = "x86_64-apple-darwin18.7.0"
 
 @x = internal global i64 0
 
@@ -37,8 +35,3 @@ afterloop:                                        ; preds = %loop
   %x2 = load i64, i64* @x
   ret i64 %x2
 }
-
-; Function Attrs: nounwind
-declare void @llvm.stackprotector(i8*, i8**) #0
-
-attributes #0 = { nounwind }

@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Change compiler here
-set(AX_BASE_CLANG /usr/local/opt/llvm)
+set(AX_BASE_CLANG /usr/local/Cellar/llvm/10.0.0)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
 project (axcomp VERSION 0.1
@@ -76,9 +76,6 @@ if(ENABLE_FUZZING)
 endif()
 
 # External libraries
-message("Using fmt")
-add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
-
 message("Using CLI11")
 add_subdirectory(extern/CLI11)
 
@@ -109,16 +106,15 @@ add_subdirectory(docs)
 file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
 add_library(libax STATIC ${source_files})
 include_directories(src)
-include_directories(extern/fmt/include)
 include_directories(extern/CLI11/include)
 
 # ax compiler executable
 add_executable(ax cmd/ax.cc)
-target_link_libraries(ax PRIVATE project_options project_warnings libax fmt ${llvm_libs})
+target_link_libraries(ax PRIVATE project_options project_warnings libax ${llvm_libs})
 
 # ax runtime library
 add_subdirectory(lib)
 
 # install
-set(CMAKE_INSTALL_PREFIX /Users/alex/Development/compilers/axcomp)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 install(TARGETS ax DESTINATION bin)

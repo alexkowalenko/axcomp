@@ -8,7 +8,7 @@
 
 #include <unordered_map>
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 namespace ax {
 
@@ -82,7 +82,7 @@ std::string string(TokenType t) {
 Token::operator std::string() {
     switch (type) {
     case TokenType::integer:
-        return fmt::format("integer({})", val);
+        return llvm::formatv("integer({0})", val);
     case TokenType::ident:
         return val;
 

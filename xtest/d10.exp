@@ -1,7 +1,5 @@
 ; ModuleID = 'd10'
 source_filename = "d10"
-target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
-target triple = "x86_64-apple-darwin18.7.0"
 
 declare void @WriteInt(i64)
 
@@ -38,8 +36,3 @@ entry:
   %calltmp2 = call i64 @add(i64 %calltmp, i64 %calltmp1)
   ret i64 %calltmp2
 }
-
-; Function Attrs: nounwind
-declare void @llvm.stackprotector(i8*, i8**) #0
-
-attributes #0 = { nounwind }

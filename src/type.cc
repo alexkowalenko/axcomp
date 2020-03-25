@@ -6,7 +6,7 @@
 
 #include "type.hh"
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
 
 namespace ax {
 
@@ -34,7 +34,7 @@ ProcedureType::operator std::string() {
 }
 
 ArrayType::operator std::string() {
-    return fmt::format("{}[{}]", std::string(*base_type), size);
+    return llvm::formatv("{0}[{1}]", std::string(*base_type), size);
 }
 
 llvm::Type *ArrayType::get_llvm() {

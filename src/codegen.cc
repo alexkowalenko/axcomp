@@ -15,13 +15,12 @@
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-
-#include <fmt/core.h>
 
 #include "error.hh"
 #include "parser.hh"
@@ -32,12 +31,12 @@ inline constexpr bool debug_codegen{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
-        std::cerr << fmt::format(msg...) << std::endl;
+        std::cerr << formatv(msg...) << std::endl;
     }
 }
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...)->overloaded<Ts...>;
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 using namespace llvm::sys;
 
@@ -265,11 +264,11 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     if (ast->ident->selectors.empty()) {
         auto var = current_symboltable->find(ast->ident->ident->value);
         if (!var) {
-            throw CodeGenException(fmt::format("identifier: {} not found.",
-                                               ast->ident->ident->value),
-                                   ast->ident->get_location());
+            throw CodeGenException(
+                formatv("identifier: {0} not found.", ast->ident->ident->value),
+                ast->ident->get_location());
         }
-        debug("CodeGenerator::visit_ASTAssignment value: {}",
+        debug("CodeGenerator::visit_ASTAssignment value: {0}",
               val->getName().str());
         builder.CreateStore(val, var.value());
         return;
@@ -299,8 +298,7 @@ void CodeGenerator::visit_ASTExit(ASTExit *ast) {
         builder.GetInsertBlock();
         builder.CreateBr(last_end);
     } else {
-        throw CodeGenException(fmt::format("EXIT: no enclosing loop."),
-                               ast->get_location());
+        throw CodeGenException("EXIT: no enclosing loop.", ast->get_location());
     }
 }
 
@@ -312,13 +310,13 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
         callee = module->getFunction(ast->name->value);
         if (!callee) {
             throw CodeGenException(
-                fmt::format("function: {} not found", ast->name->value),
+                formatv("function: {0} not found", ast->name->value),
                 ast->get_location());
         }
     } catch (...) {
         debug("CodeGenerator::visit_ASTCall exception");
         throw CodeGenException(
-            fmt::format("function: {} not found", ast->name->value),
+            formatv("function: {0} not found", ast->name->value),
             ast->get_location());
     }
 
@@ -342,12 +340,12 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     BasicBlock *else_block = BasicBlock::Create(context, "else");
     std::vector<BasicBlock *> elsif_blocks;
     int                       i = 0;
-    std::for_each(
-        begin(ast->elsif_clause), end(ast->elsif_clause), [&](auto const &e) {
-            auto e_block =
-                BasicBlock::Create(context, fmt::format("elsif{}", i++));
-            elsif_blocks.push_back(e_block);
-        });
+    std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
+                  [&](auto const &e) {
+                      auto e_block =
+                          BasicBlock::Create(context, formatv("elsif{0}", i++));
+                      elsif_blocks.push_back(e_block);
+                  });
     BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
 
     if (!ast->elsif_clause.empty()) {
@@ -717,7 +715,7 @@ void CodeGenerator::get_ptr(ASTIdentifier *ast) {
         last_value = *res;
         return;
     }
-    throw CodeGenException(fmt::format("identifier {} unknown", ast->value),
+    throw CodeGenException(formatv("identifier {0} unknown", ast->value),
                            ast->get_location());
 }
 
@@ -872,7 +870,7 @@ void CodeGenerator::generate_objectcode() {
     }
 
     legacy::PassManager pass;
-    auto                file_type = LLVMTargetMachine::CGFT_ObjectFile;
+    auto                file_type = CGFT_ObjectFile;
 
     if (targetMachine->addPassesToEmitFile(pass, dest_file, nullptr,
                                            file_type)) {

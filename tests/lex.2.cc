@@ -7,7 +7,8 @@
 #include <sstream>
 #include <vector>
 
-#include <fmt/core.h>
+#include <llvm/Support/FormatVariadic.h>
+
 #include <gtest/gtest.h>
 
 #include "error.hh"
@@ -106,7 +107,8 @@ TEST(Lexer, Lexer1) {
 
         try {
             auto token = lex.get_token();
-            std::cout << fmt::format("Scan {} get {}", t.input, token.val)
+            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input,
+                                                   token.val))
                       << std::endl;
             EXPECT_EQ(token.type, t.token);
             EXPECT_EQ(token.val, t.val);
