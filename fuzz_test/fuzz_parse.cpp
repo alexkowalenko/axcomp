@@ -17,10 +17,11 @@ using namespace ax;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     std::string        s{(const char *)data, size};
     std::istringstream is(s);
-    Lexer              lex(is);
+    ErrorManager       errors;
+    Lexer              lex(is, errors);
 
     auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-    Parser parser(lex, symbols);
+    Parser parser(lex, symbols, errors);
 
     try {
         auto ast = parser.parse();

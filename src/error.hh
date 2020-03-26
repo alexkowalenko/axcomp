@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "location.hh"
 
@@ -18,10 +19,10 @@ class AXException : std::exception {
     AXException(std::string m, Location const &l)
         : msg(std::move(m)), location(l){};
 
-    std::string error_msg();
+    std::string error_msg() const;
 
     std::string msg;
-    Location         location;
+    Location    location;
 };
 
 class LexicalException : public AXException {
@@ -43,10 +44,22 @@ class TypeError : public AXException {
 
 class CodeGenException : public AXException {
   public:
-   explicit CodeGenException(std::string const &m)
-        : AXException(m, Location{}) {};
+    explicit CodeGenException(std::string const &m)
+        : AXException(m, Location{}){};
     CodeGenException(std::string const &m, Location const &l)
         : AXException(m, l){};
+};
+
+class ErrorManager {
+  public:
+    void add(AXException const &e) { error_list.push_back(e); };
+    bool has_errors() { return !error_list.empty(); };
+
+    void print_errors(std::ostream &out);
+    auto first() { return error_list.begin(); };
+
+  private:
+    std::vector<AXException> error_list{};
 };
 
 } // namespace ax

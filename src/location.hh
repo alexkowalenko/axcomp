@@ -20,10 +20,10 @@ class Location {
     Location(Location const &) = default;
     Location &operator=(Location const &) = default;
 
-    explicit operator std::string();
+    explicit operator std::string() const;
 
-    int lineno {0};
-    int charpos {0};
+    int lineno{0};
+    int charpos{0};
 };
 
 }; // namespace ax

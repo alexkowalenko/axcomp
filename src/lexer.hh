@@ -10,6 +10,7 @@
 #include <stack>
 #include <string>
 
+#include "error.hh"
 #include "location.hh"
 #include "token.hh"
 
@@ -17,7 +18,7 @@ namespace ax {
 
 class Lexer {
   public:
-    explicit Lexer(std::istream &stream);
+    explicit Lexer(std::istream &stream, ErrorManager const &e);
 
     Token get_token();
     void  push_token(Token const &t);
@@ -49,6 +50,8 @@ class Lexer {
 
     std::istream &    is;
     std::stack<Token> next_token;
+
+    ErrorManager const &errors;
 };
 
 } // namespace ax

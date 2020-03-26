@@ -17,7 +17,7 @@ using namespace ax;
 TEST(Lexer, Null) {
 
     std::istringstream is("");
-    Lexer              lex(is);
+    Lexer              lex(is, ErrorManager{});
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::eof);
@@ -26,7 +26,8 @@ TEST(Lexer, Null) {
 TEST(Lexer, Exception) {
 
     std::istringstream is("x");
-    Lexer              lex(is);
+    ErrorManager       errors;
+    Lexer              lex(is, errors);
 
     try {
         auto token = lex.get_token();
@@ -39,7 +40,8 @@ TEST(Lexer, Exception) {
 TEST(Lexer, Whitespace) {
 
     std::istringstream is(" \n\t");
-    Lexer              lex(is);
+    ErrorManager       errors;
+    Lexer              lex(is, errors);
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::eof);
@@ -48,7 +50,8 @@ TEST(Lexer, Whitespace) {
 TEST(Lexer, Digit) {
 
     std::istringstream is("1\n");
-    Lexer              lex(is);
+    ErrorManager       errors;
+    Lexer              lex(is, errors);
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::integer);

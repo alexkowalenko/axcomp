@@ -36,9 +36,10 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
     if (!has_return) {
-        throw CodeGenException(
+        auto e = CodeGenException(
             llvm::formatv("MODULE {0} has no RETURN function", ast->name),
             ast->get_location());
+        errors.add(e);
     }
 }
 
@@ -112,10 +113,11 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
             has_return = false;
             x->accept(this);
             if (!has_return) {
-                throw CodeGenException(
+                auto e = CodeGenException(
                     llvm::formatv("PROCEDURE {0} has no RETURN function",
                                   ast->name),
                     ast->get_location());
+                errors.add(e);
             }
         });
     current_symboltable = former_symboltable;
@@ -129,10 +131,11 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     ast->ident->accept(this);
     debug("type of ident: {} ", last_type->get_name());
     if (!last_type->equiv(expr_type)) {
-        throw TypeError(
+        auto e = TypeError(
             llvm::formatv("Can't assign expression of type {0} to {1}",
                           std::string(*expr_type), std::string(*ast->ident)),
             ast->get_location());
+        errors.add(e);
     }
 }
 
@@ -163,11 +166,12 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         }
 
         if (!last_type->equiv(retType)) {
-            throw TypeError(
+            auto e = TypeError(
                 llvm::formatv(
                     "RETURN does not match return type for function {0}",
                     last_proc->name),
                 ast->get_location());
+            errors.add(e);
         }
     }
 }
@@ -201,8 +205,9 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 void Inspector::visit_ASTIf(ASTIf *ast) {
     ast->if_clause.expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        throw TypeError("IF expression must be type BOOLEAN",
-                        ast->get_location());
+        auto e = TypeError("IF expression must be type BOOLEAN",
+                           ast->get_location());
+        errors.add(e);
     }
 
     std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
@@ -212,9 +217,10 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
                   [this, ast](auto const &x) {
                       x.expr->accept(this);
                       if (last_type != TypeTable::BoolType) {
-                          throw TypeError(
-                              "ELSIF expression must be type BOOLEAN",
-                              ast->get_location());
+                          auto e =
+                              TypeError("ELSIF expression must be type BOOLEAN",
+                                        ast->get_location());
+                          errors.add(e);
                       }
                       std::for_each(x.stats.begin(), x.stats.end(),
                                     [this](auto const &s) { s->accept(this); });
@@ -229,19 +235,22 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
 void Inspector::visit_ASTFor(ASTFor *ast) {
     ast->start->accept(this);
     if (!last_type->is_numeric()) {
-        throw TypeError("FOR start expression must be numeric type",
-                        ast->get_location());
+        auto e = TypeError("FOR start expression must be numeric type",
+                           ast->get_location());
+        errors.add(e);
     }
     ast->end->accept(this);
     if (!last_type->is_numeric()) {
-        throw TypeError("FOR end expression must be numeric type",
-                        ast->get_location());
+        auto e = TypeError("FOR end expression must be numeric type",
+                           ast->get_location());
+        errors.add(e);
     }
     if (ast->by) {
         (*ast->by)->accept(this);
         if (!last_type->is_numeric()) {
-            throw TypeError("FOR BY expression must be numeric type",
-                            ast->get_location());
+            auto e = TypeError("FOR BY expression must be numeric type",
+                               ast->get_location());
+            errors.add(e);
         }
     }
 
@@ -259,8 +268,9 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
 void Inspector::visit_ASTWhile(ASTWhile *ast) {
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        throw TypeError("WHILE expression must be type BOOLEAN",
-                        ast->get_location());
+        auto e = TypeError("WHILE expression must be type BOOLEAN",
+                           ast->get_location());
+        errors.add(e);
     }
 
     std::for_each(begin(ast->stats), end(ast->stats),
@@ -272,8 +282,9 @@ void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
                   [this](auto const &x) { x->accept(this); });
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        throw TypeError("REPEAT expression must be type BOOLEAN",
-                        ast->get_location());
+        auto e = TypeError("REPEAT expression must be type BOOLEAN",
+                           ast->get_location());
+        errors.add(e);
     }
 }
 
@@ -294,10 +305,11 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
         (*ast->relation_expr)->accept(this);
         // Types have to be the same BOOLEANs or INTEGERs
         if (!last_type->equiv(t1)) {
-            throw TypeError(
+            auto e = TypeError(
                 llvm::formatv("types in expression don't match {0} and {1}",
                               std::string(*t1), std::string(*last_type)),
                 ast->get_location());
+            errors.add(e);
         }
         // Comparison operators return BOOLEAN
         last_type = TypeTable::BoolType;
@@ -310,22 +322,25 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            throw TypeError(
+            auto e = TypeError(
                 llvm::formatv("types in expression don't match {0} and {1}",
                               std::string(*t1), std::string(*last_type)),
                 ast->get_location());
+            errors.add(e);
         }
         if (t.first == TokenType::or_k) {
             if (last_type != TypeTable::BoolType) {
-                throw TypeError("types in OR expression must be BOOLEAN",
-                                ast->get_location());
+                auto e = TypeError("types in OR expression must be BOOLEAN",
+                                   ast->get_location());
+                errors.add(e);
             }
         } else {
             if (last_type != TypeTable::IntType) {
-                throw TypeError(
+                auto e = TypeError(
                     llvm::formatv("types in {0} expression must be numeric",
                                   string(t.first)),
                     ast->get_location());
+                errors.add(e);
             }
         }
         t1 = last_type;
@@ -338,22 +353,25 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
     std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            throw TypeError(
+            auto e = TypeError(
                 llvm::formatv("types in expression don't match {0} and {1}",
                               std::string(*t1), std::string(*last_type)),
                 ast->get_location());
+            errors.add(e);
         }
         if (t.first == TokenType::ampersand) {
             if (last_type != TypeTable::BoolType) {
-                throw TypeError("types in & expression must be BOOLEAN",
-                                ast->get_location());
+                auto e = TypeError("types in & expression must be BOOLEAN",
+                                   ast->get_location());
+                errors.add(e);
             }
         } else {
             if (last_type != TypeTable::IntType) {
-                throw TypeError(
+                auto e = TypeError(
                     llvm::formatv("types in {0} expression must be numeric",
                                   string(t.first)),
                     ast->get_location());
+                errors.add(e);
             }
         }
         t1 = last_type;
@@ -371,9 +389,10 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                        if (ast->is_not) {
                            arg->accept(this);
                            if (last_type != TypeTable::BoolType) {
-                               throw TypeError(
+                               auto e = TypeError(
                                    "type in ~ expression must be BOOLEAN",
                                    ast->get_location());
+                               errors.add(e);
                            }
                        }
                    },
@@ -389,9 +408,10 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     // check type array before processing selectors
     auto array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
     if (!array_type && !ast->selectors.empty()) {
-        throw TypeError(
+        auto e = TypeError(
             llvm::formatv("variable {0} is not an array", ast->ident->value),
             ast->get_location());
+        errors.add(e);
     }
 
     // Not array type - no more checks.
@@ -406,8 +426,9 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
         count++;
         s->accept(this);
         if (!last_type->is_numeric()) {
-            throw TypeError("expression in array index must be numeric",
-                            ast->get_location());
+            auto e = TypeError("expression in array index must be numeric",
+                               ast->get_location());
+            errors.add(e);
         }
 
         debug("Inspector::visit_ASTDesignator selector: {}",
@@ -423,10 +444,11 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     debug("Inspector::visit_ASTDesignator size: {} for {}",
           ast->selectors.size(), count);
     if (ast->selectors.size() > count) {
-        throw TypeError(
+        auto e = TypeError(
             llvm::formatv("array indexes greater than array defintion: {0}",
                           std::string(*ast)),
             ast->get_location());
+        errors.add(e);
     }
 }
 
@@ -453,7 +475,8 @@ void Inspector::visit_ASTType(ASTType *ast) {
 void Inspector::visit_ASTArray(ASTArray *ast) {
     ast->size->accept(this);
     if (!last_type->is_numeric()) {
-        throw TypeError("ARRAY expecting numeric size", ast->get_location());
+        auto e = TypeError("ARRAY expecting numeric size", ast->get_location());
+        errors.add(e);
     }
     ast->type->accept(this);
     last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
@@ -471,9 +494,10 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     // debug("find type: {} for {}", res, res->name);
     auto resType = types.find((*res)->get_name());
     if (!resType) {
-        throw TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
-                                      (*res)->get_name(), ast->value),
-                        ast->get_location());
+        auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
+                                         (*res)->get_name(), ast->value),
+                           ast->get_location());
+        errors.add(e);
     }
     last_type = *resType;
 }

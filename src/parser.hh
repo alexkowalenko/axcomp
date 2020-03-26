@@ -17,8 +17,9 @@
 namespace ax {
 class Parser {
   public:
-    explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<TypePtr>> s)
-        : lexer(l), symbols(std::move(s)){};
+    explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<TypePtr>> s,
+                    ErrorManager const &e)
+        : lexer(l), symbols(std::move(s)), errors(e){};
 
     std::shared_ptr<ASTModule> parse();
 
@@ -62,6 +63,7 @@ class Parser {
 
     Lexer &                               lexer;
     std::shared_ptr<SymbolTable<TypePtr>> symbols;
+    ErrorManager const &                  errors;
 };
 
 extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>>

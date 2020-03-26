@@ -42,13 +42,14 @@ int main(int argc, char **argv) {
     if (!options.file_name.empty()) {
         input = new std::ifstream(options.file_name);
     }
-    Lexer lexer(*input);
+    ErrorManager errors;
+    Lexer        lexer(*input, errors);
 
     TypeTable types;
     types.initialise();
 
     auto       symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-    ax::Parser parser(lexer, symbols);
+    ax::Parser parser(lexer, symbols, errors);
     parser.setup_builtins();
 
     try {
@@ -59,8 +60,12 @@ int main(int argc, char **argv) {
             printer.print(ast);
         }
 
-        Inspector inspect(symbols, types);
+        Inspector inspect(symbols, types, errors);
         inspect.check(ast);
+        if (errors.has_errors()) {
+            errors.print_errors(std::cout);
+            return -1;
+        }
 
         ax::CodeGenerator code(options, types);
         code.generate(ast);
@@ -73,7 +78,6 @@ int main(int argc, char **argv) {
         if (options.print_symbols) {
             symbols->dump(std::cout);
         }
-
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;
         return -1;

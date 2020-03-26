@@ -103,7 +103,8 @@ TEST(Lexer, Lexer1) {
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
-        Lexer              lex(is);
+        ErrorManager       errors;
+        Lexer              lex(is, errors);
 
         try {
             auto token = lex.get_token();

@@ -10,7 +10,7 @@
 
 namespace ax {
 
-Location::operator std::string() {
+Location::operator std::string() const {
     return llvm::formatv("{0},{1}", lineno, charpos);
 }
 

@@ -15,7 +15,7 @@ using namespace ax;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     std::string        s{(const char *)data, size};
     std::istringstream is(s);
-    Lexer              lex(is);
+    Lexer              lex(is, ErrorManager{});
 
     try {
         Token token = lex.get_token();

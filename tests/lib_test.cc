@@ -28,10 +28,11 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
-        Lexer              lex(is);
+        ErrorManager       errors;
+        Lexer              lex(is, errors);
 
         auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-        Parser parser(lex, symbols);
+        Parser parser(lex, symbols, errors);
 
         std::string result;
         try {
@@ -61,10 +62,11 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
-        Lexer              lex(is);
+        ErrorManager       errors;
+        Lexer              lex(is, errors);
 
         auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-        Parser parser(lex, symbols);
+        Parser parser(lex, symbols, errors);
 
         std::string result;
         try {
@@ -72,8 +74,12 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
             auto ast = parser.parse();
             parser.setup_builtins();
 
-            Inspector inpect(symbols, types);
+            Inspector inpect(symbols, types, errors);
             inpect.check(ast);
+            if (errors.has_errors()) {
+                EXPECT_EQ(errors.first()->error_msg(), t.error);
+                continue;
+            }
 
             std::ostringstream outstr;
             ASTPrinter         prt(outstr);

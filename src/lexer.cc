@@ -72,7 +72,8 @@ static std::unordered_map<char, Token> token_map = {
     {']', Token(TokenType::r_bracket, "]")},
 };
 
-Lexer::Lexer(std::istream &stream) : is{stream} {}
+Lexer::Lexer(std::istream &stream, ErrorManager const &e)
+    : is{stream}, errors{e} {}
 
 void Lexer::get_comment() {
     get(); // get asterisk
