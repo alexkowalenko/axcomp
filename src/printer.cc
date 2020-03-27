@@ -24,10 +24,7 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
     os << "BEGIN\n";
-    std::for_each(ast->stats.begin(), ast->stats.end(), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 
@@ -88,10 +85,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
     os << ";\n";
     ast->decs->accept(this);
     os << "BEGIN\n";
-    std::for_each(ast->stats.begin(), ast->stats.end(), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 
@@ -125,34 +119,31 @@ void ASTPrinter::visit_ASTCall(ASTCall *ast) {
     os << ")";
 }
 
+void ASTPrinter::print_stats(std::vector<std::shared_ptr<ASTStatement>> stats) {
+    std::for_each(begin(stats), end(stats), [stats, this](auto const &x) {
+        x->accept(this);
+        if (x != *(stats.end() - 1))
+            os << ';';
+        os << '\n';
+    });
+};
+
 void ASTPrinter::visit_ASTIf(ASTIf *ast) {
     os << "IF ";
     ast->if_clause.expr->accept(this);
     os << " THEN\n";
-    std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
-                  [this](auto const &x) {
-                      x->accept(this);
-                      os << ";\n";
-                  });
+    print_stats(ast->if_clause.stats);
 
     std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(),
                   [this](auto const &x) {
                       os << "ELSIF ";
                       x.expr->accept(this);
                       os << " THEN\n";
-                      std::for_each(x.stats.begin(), x.stats.end(),
-                                    [this](auto const &s) {
-                                        s->accept(this);
-                                        os << ";\n";
-                                    });
+                      print_stats(x.stats);
                   });
     if (ast->else_clause) {
         os << "ELSE\n";
-        auto elses = *ast->else_clause;
-        std::for_each(begin(elses), end(elses), [this](auto const &s) {
-            s->accept(this);
-            os << ";\n";
-        });
+        print_stats(*ast->else_clause);
     }
     os << "END";
 }
@@ -169,10 +160,7 @@ void ASTPrinter::visit_ASTFor(ASTFor *ast) {
         (*ast->by)->accept(this);
     }
     os << " DO\n";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << "END";
 }
 
@@ -180,38 +168,26 @@ void ASTPrinter::visit_ASTWhile(ASTWhile *ast) {
     os << "WHILE ";
     ast->expr->accept(this);
     os << " DO\n";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << "END";
 }
 
 void ASTPrinter::visit_ASTRepeat(ASTRepeat *ast) {
     os << "REPEAT\n";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << "UNTIL ";
     ast->expr->accept(this);
 }
 
 void ASTPrinter::visit_ASTLoop(ASTLoop *ast) {
     os << "LOOP\n";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << "END";
 }
 
 void ASTPrinter::visit_ASTBlock(ASTBlock *ast) {
     os << "BEGIN\n";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
-        x->accept(this);
-        os << ";\n";
-    });
+    print_stats(ast->stats);
     os << "END";
 }
 

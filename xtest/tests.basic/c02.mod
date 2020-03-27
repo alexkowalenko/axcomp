@@ -4,5 +4,5 @@ CONST
     x = 1;
     y = 2;
 BEGIN
-    RETURN y + 2 ;
+    RETURN y + 2
 END c02.

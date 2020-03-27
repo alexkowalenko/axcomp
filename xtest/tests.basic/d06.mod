@@ -5,9 +5,9 @@ MODULE d06; (* Test return types from procedures *)
   PROCEDURE f (): INTEGER;
   VAR yy : INTEGER;
   BEGIN
-      RETURN yy + 2;
+      RETURN yy + 2
   END f;
 
 BEGIN
-    RETURN y + 63;
+    RETURN y + 63
 END d06.

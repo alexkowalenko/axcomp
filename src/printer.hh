@@ -31,6 +31,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTReturn(ASTReturn *ast) override;
     void visit_ASTExit(ASTExit *ast) override;
     void visit_ASTCall(ASTCall *ast) override;
+    void print_stats(std::vector<std::shared_ptr<ASTStatement>> stats);
     void visit_ASTIf(ASTIf *ast) override;
     void visit_ASTFor(ASTFor *ast) override;
     void visit_ASTWhile(ASTWhile *ast) override;

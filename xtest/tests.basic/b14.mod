@@ -1,4 +1,4 @@
 MODULE b14;
 BEGIN
-    RETURN ~ TRUE; 
+    RETURN ~ TRUE
 END b14.

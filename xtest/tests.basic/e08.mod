@@ -7,7 +7,7 @@ BEGIN
     BEGIN
         x := x + 1;
         x := x + 1;
-        x := x + 1;
+        x := x + 1
     END;
-    RETURN x; 
+    RETURN x
 END e08.

@@ -3,11 +3,11 @@ VAR x : INTEGER;
 BEGIN
     x := 3;
     IF x = 1 THEN
-        x := 10;
+        x := 10
     ELSIF x = 3 THEN
-        x := 30;
+        x := 30
     ELSE
-        x := 90;
+        x := 90
     END;
-    RETURN x; 
+    RETURN x
 END e03.

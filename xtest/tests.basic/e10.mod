@@ -9,9 +9,9 @@ BEGIN
         y := 0;
         WHILE y < 10 DO
             x := x + 1;
-            y := y + 1;
-        END;
+            y := y + 1
+        END
     END;
-    RETURN x; 
+    RETURN x 
 
 END e10.

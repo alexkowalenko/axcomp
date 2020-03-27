@@ -4,16 +4,15 @@ VAR x1 : INTEGER;
 VAR x2 : ARRAY [5] OF INTEGER;
 VAR x3 : ARRAY [6] OF BOOLEAN;
 
-
 PROCEDURE f : INTEGER;
     VAR z1 : INTEGER;
     VAR z2 : ARRAY [4] OF INTEGER;
     VAR z3 : ARRAY [6] OF BOOLEAN;
 BEGIN
-    RETURN z2[2];
+    RETURN z2[2]
 END f;
 
 BEGIN
     x1 := x2[0] + x2[1] + f();
-    RETURN x2[3] + x1;
+    RETURN x2[3] + x1
 END g02.

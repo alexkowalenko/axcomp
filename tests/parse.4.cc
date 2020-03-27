@@ -16,11 +16,11 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
-            END;
+                RETURN 1
+            END
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nEND;\nEND alpha.",
+         "1;\nRETURN 1\nEND\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -28,13 +28,13 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
+                RETURN 1
             ELSE
-                RETURN 2;
-            END;
+                RETURN 2
+            END
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nELSE\nRETURN 2;\nEND;\nEND alpha.",
+         "1;\nRETURN 1\nELSE\nRETURN 2\nEND\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -42,16 +42,16 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
+                RETURN 1
             ELSIF TRUE THEN
-                RETURN 3;
+                RETURN 3
             ELSE
-                RETURN 2;
-            END;
+                RETURN 2
+            END
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nELSIF TRUE THEN\nRETURN 3;\nELSE\nRETURN "
-         "2;\nEND;\nEND alpha.",
+         "1;\nRETURN 1\nELSIF TRUE THEN\nRETURN 3\nELSE\nRETURN "
+         "2\nEND\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -59,20 +59,20 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
+                RETURN 1
             ELSIF TRUE THEN
-                RETURN 3;
+                RETURN 3
             ELSIF TRUE THEN
-                RETURN 4;
+                RETURN 4
             ELSIF TRUE THEN
-                RETURN 5;
+                RETURN 5
             ELSE
-                RETURN 2;
-            END;
+                RETURN 2
+            END
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nx := "
-         "1;\nRETURN 1;\nELSIF TRUE THEN\nRETURN 3;\nELSIF TRUE THEN\nRETURN "
-         "4;\nELSIF TRUE THEN\nRETURN 5;\nELSE\nRETURN 2;\nEND;\nEND alpha.",
+         "1;\nRETURN 1\nELSIF TRUE THEN\nRETURN 3\nELSIF TRUE THEN\nRETURN "
+         "4\nELSIF TRUE THEN\nRETURN 5\nELSE\nRETURN 2\nEND\nEND alpha.",
          ""},
 
         // Errors
@@ -81,8 +81,8 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE 
                 x := 1;
-                RETURN 1;
-            END;
+                RETURN 1
+            END
         END alpha.)",
          "", "5,17: Unexpected token: x - expecting THEN"},
 
@@ -91,22 +91,22 @@ TEST(Parser, IF) {
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
-            ;
+                RETURN 1
+            
         END alpha.)",
-         "", "7,13: Unexpected token: semicolon"},
+         "", "8,17: Unexpected token: alpha - expecting END"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
         BEGIN
             IF TRUE THEN
                 x := 1;
-                RETURN 1;
+                RETURN 1
             ELSIF TRUE 
-                RETURN 3;
+                RETURN 3
             ELSE
-                RETURN 2;
-            END;
+                RETURN 2
+            END
         END alpha.)",
          "", "8,22: Unexpected token: RETURN - expecting THEN"},
     };
@@ -120,24 +120,24 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 10 DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 10 DO\nx := "
-         "x+i;\nEND;\nRETURN x;\nEND alpha.",
+         "x+i\nEND;\nRETURN x\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 19 BY 2 DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 19 BY 2 DO\nx "
-         ":= x+i;\nEND;\nRETURN x;\nEND alpha.",
+         ":= x+i\nEND;\nRETURN x\nEND alpha.",
          ""},
 
         // Errors
@@ -145,9 +145,9 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i 0 TO 19 BY 2 DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "4,19: Unexpected token: integer(0) - expecting :="},
 
@@ -155,9 +155,9 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 19 BY 2 DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "4,25: Unexpected token: integer(19) - expecting TO"},
 
@@ -165,9 +165,9 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 19 2 DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "4,30: Unexpected token: integer(2) - expecting DO"},
 
@@ -175,9 +175,9 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 19 BY DO
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "4,34: Unexpected token: DO"},
 
@@ -185,9 +185,9 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 19 BY 2
-                x := x + i;
+                x := x + i
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "5,17: Unexpected token: x - expecting DO"},
 
@@ -195,10 +195,10 @@ TEST(Parser, FOR) {
         VAR x : INTEGER;
         BEGIN
             FOR i := 0 TO 19 BY 2 DO
-                x := x + i;
-            RETURN x;
+                x := x + i
+            RETURN x
         END alpha.)",
-         "", "7,17: Unexpected token: alpha - expecting semicolon"},
+         "", "6,18: Unexpected token: RETURN - expecting END"},
     };
     do_parse_tests(tests);
 }
@@ -210,12 +210,12 @@ TEST(Parser, WHILE) {
         VAR x : INTEGER;
         BEGIN
             WHILE x < 10 DO
-                x := x + 1;
+                x := x + 1
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nWHILE x < 10 DO\nx := "
-         "x+1;\nEND;\nRETURN x;\nEND alpha.",
+         "x+1\nEND;\nRETURN x\nEND alpha.",
          ""},
 
         // Errors
@@ -223,9 +223,9 @@ TEST(Parser, WHILE) {
         VAR x : INTEGER;
         BEGIN
             WHILE x < 10
-                x := x + 1;
+                x := x + 1
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "", "5,17: Unexpected token: x - expecting DO"},
     };
@@ -239,11 +239,11 @@ TEST(Parser, REPEAT) {
         VAR x : INTEGER;
         BEGIN
             REPEAT
-                x := x+1;
-            UNTIL x > 10;
+                x := x+1
+            UNTIL x > 10
         END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nx := x+1;\nUNTIL x > "
-         "10;\nEND alpha.",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nx := x+1\nUNTIL x > "
+         "10\nEND alpha.",
          ""},
 
         // Errors
@@ -251,10 +251,10 @@ TEST(Parser, REPEAT) {
         VAR x : INTEGER;
         BEGIN
             REPEAT
-                x := x+1;
-             x > 10;
+                x := x+1
+             x > 10
         END alpha.)",
-         "", "6,16: Unexpected token: > - expecting :="},
+         "", "6,14: Unexpected token: x - expecting UNTIL"},
     };
     do_parse_tests(tests);
 }
@@ -267,12 +267,12 @@ TEST(Parser, LOOP) {
         BEGIN
             LOOP
                 x := x + 1;
-                EXIT;
+                EXIT
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nLOOP\nx := "
-         "x+1;\nEXIT;\nEND;\nRETURN x;\nEND alpha.",
+         "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
          ""},
     };
     do_parse_tests(tests);
@@ -286,12 +286,12 @@ TEST(Parser, BEGIN) {
         BEGIN
             BEGIN
                 x := x + 1;
-                EXIT;
+                EXIT
             END;
-            RETURN x;
+            RETURN x
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nBEGIN\nx := "
-         "x+1;\nEXIT;\nEND;\nRETURN x;\nEND alpha.",
+         "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
          ""},
     };
     do_parse_tests(tests);

@@ -9,5 +9,5 @@ BEGIN
    y := FALSE;
    x := beta;
    x := 3 * alpha;
-   RETURN ~ (x = 72);
+   RETURN ~ (x = 72)
 END c08.

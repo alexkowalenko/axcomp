@@ -52,7 +52,7 @@ arrayType = "ARRAY" "[" INTEGER "]" "OF" type
 
 identList = IDENT ("," IDENT)+
 
-statement_seq = (statement ";")+
+statement_seq = statement (";" statement)+
 
 statement = assignment
     | procedureCall
@@ -117,12 +117,12 @@ VAR
 PROCEDURE f;
     VAR yy : INTEGER;
 BEGIN
-    RETURN;
+    RETURN
 END f;
 
 PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
 BEGIN
-    RETURN x + y * y;
+    RETURN x + y * y
 END g;
 
 BEGIN
@@ -130,36 +130,36 @@ BEGIN
     check := FALSE;
     f();
     IF z < 12 THEN
-        z := z + 1;
+        z := z + 1
     ELSE
-        z := z - 1;
+        z := z - 1
     END;
 
     FOR i := 0 TO 9 BY 2 DO
         a[i] := i * i + z;
-        a[i+1] := i + i;
+        a[i+1] := i + i
     END;
 
     WHILE x > 4 DO
-        x := x - 1;
+        x := x - 1
     END;
 
     REPEAT
-        z := z + 1;
+        z := z + 1
     UNTIL z > 10;
 
     LOOP
         IF x < 3 THEN
-            EXIT;
+            EXIT
         END;
-        x := x - 1;
+        x := x - 1
     END;
 
     BEGIN
-        x := 4;
+        x := 4
     END;
 
-    RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4);
+    RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4)
 END test.
 ```
 

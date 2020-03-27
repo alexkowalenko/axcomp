@@ -14,39 +14,39 @@ TEST(Parser, Proc) {
         {R"(MODULE x;
         PROCEDURE f;
         BEGIN
-            RETURN 12;
+            RETURN 12
         END f;
         BEGIN
-            RETURN 0;
+            RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nRETURN "
-         "0;\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nBEGIN\nRETURN "
+         "0\nEND x.",
          ""},
 
         {R"(MODULE x;
         PROCEDURE f;
         BEGIN
-            RETURN 12;
+            RETURN 12
         END f;
 
         PROCEDURE g;
         BEGIN
-            RETURN 24;
+            RETURN 24
         END g;
         BEGIN
-            RETURN 0;
+            RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
-         "g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\nRETURN 0;\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
+         "g;\nBEGIN\nRETURN 24\nEND g.\nBEGIN\nRETURN 0\nEND x.",
          ""},
 
         // Errors
         {R"(MODULE x;
         PROCEDURE f;
-            RETURN 12;
+            RETURN 12
         END f;
         BEGIN
-            RETURN 0;
+            RETURN 0
         END x.
         )",
          "", "3,18: Unexpected token: RETURN - expecting BEGIN"},
@@ -54,32 +54,32 @@ TEST(Parser, Proc) {
         {R"(MODULE x;
         PROCEDURE f;
         BEGIN
-            RETURN 12;
+            RETURN 12
         END ;
         BEGIN
-            RETURN 0;
+            RETURN 0
         END x.)",
          "", "5,13: Unexpected token: semicolon - expecting indent"},
 
         {R"(MODULE x;
             f;
             BEGIN
-                RETURN 12;
+                RETURN 12
             END f;
             BEGIN
-                RETURN 0;
+                RETURN 0
             END x.)",
          "", "2,13: Unexpected token: f - expecting BEGIN"},
 
         {R"(MODULE x;
             PROCEDURE f;
             BEGIN
-                RETURN 12;
+                RETURN 12
             f;
             BEGIN
-                RETURN 0;
+                RETURN 0
             END x.)",
-         "", "5,14: Unexpected token: semicolon - expecting :="},
+         "", "5,13: Unexpected token: f - expecting END"},
 
     };
     do_parse_tests(tests);
@@ -91,32 +91,32 @@ TEST(Parser, Call) {
         {R"(MODULE x;
             PROCEDURE f;
             BEGIN
-                RETURN 12;
+                RETURN 12
             END f;
             BEGIN
-                f();
+                f()
             END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nBEGIN\nf();\nEND "
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nBEGIN\nf()\nEND "
          "x.",
          ""},
 
         {R"(MODULE x;
         PROCEDURE f;
         BEGIN
-            RETURN 12;
+            RETURN 12
         END f;
 
         PROCEDURE g;
         BEGIN
             f();
-            RETURN 24;
+            RETURN 24
         END g;
         BEGIN
             g();
-            RETURN 0;
+            RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12;\nEND f.\nPROCEDURE "
-         "g;\nBEGIN\nf();\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN 0;\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
+         "g;\nBEGIN\nf();\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN 0\nEND x.",
          ""},
 
         // Error
@@ -138,48 +138,48 @@ TEST(Parser, ReturnType) {
 
         {R"(MODULE x;
             PROCEDURE f(): INTEGER;
-            BEGIN RETURN 12;
+            BEGIN RETURN 12
             END f;
             BEGIN
-            f();
+            f()
             END x.)",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
-         "f.\nBEGIN\nf();\nEND x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
+         "f.\nBEGIN\nf()\nEND x.",
          ""},
 
         {R"(MODULE x;
         PROCEDURE f(): INTEGER;
-        BEGIN RETURN 12;
+        BEGIN RETURN 12
         END f;
         PROCEDURE g;
-        BEGIN RETURN 24;
+        BEGIN RETURN 24
         END g;
         BEGIN
             g();
-        RETURN 0;
+        RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
-         "f.\nPROCEDURE g;\nBEGIN\nRETURN 24;\nEND g.\nBEGIN\ng();\nRETURN "
-         "0;\nEND x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
+         "f.\nPROCEDURE g;\nBEGIN\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN "
+         "0\nEND x.",
          ""},
 
         // Error
         {R"(MODULE x;
         PROCEDURE f() INTEGER;
         BEGIN
-            RETURN 12;
+            RETURN 12
         END f;
         BEGIN
-            f();
+            f()
         END x.)",
          "", "2,29: Unexpected token: INTEGER - expecting semicolon"},
         {R"(MODULE x;
         PROCEDURE f() :
         BEGIN
-            RETURN 12;
+            RETURN 12
         END f;
         BEGIN
-            f();
+            f()
         END x.)",
          "", "3,13: Unexpected token: BEGIN - expecting indent"},
     };
@@ -191,25 +191,25 @@ TEST(Parser, FunctionCall) {
 
         {R"(MODULE x;
             PROCEDURE f(): INTEGER;
-            BEGIN RETURN 12;
+            BEGIN RETURN 12
             END f;
             BEGIN
             RETURN f() 
-                + (f() * f());
+                + (f() * f())
             END x.)",
-         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12;\nEND "
-         "f.\nBEGIN\nRETURN f()+ (f()*f()) ;\nEND x.",
+         "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
+         "f.\nBEGIN\nRETURN f()+ (f()*f()) \nEND x.",
          ""},
 
         // Error
         {R"(MODULE x;
             PROCEDURE f(): INTEGER;
-            BEGIN RETURN 12;
+            BEGIN RETURN 12
             END f;
             BEGIN
-            RETURN f(;
+            RETURN f(
             END x.)",
-         "", "6,22: Unexpected token: semicolon"},
+         "", "7,15: Unexpected token: END"},
     };
     do_parse_tests(tests);
 }
@@ -222,14 +222,14 @@ TEST(Parser, FunctionParams) {
             PROCEDURE f(x : INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN 3;
+            RETURN 3
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
-         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
-         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
+         "f.\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -237,14 +237,14 @@ TEST(Parser, FunctionParams) {
             PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN 3;
+            RETURN 3
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
-         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
-         "f.\nBEGIN\nRETURN 3;\nEND xxx.",
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
+         "f.\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         // Errors
@@ -253,10 +253,10 @@ TEST(Parser, FunctionParams) {
             PROCEDURE f(x  INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN 3;
+            RETURN 3
             END xxx.)",
          "", "3,34: Unexpected token: INTEGER - expecting :"},
         {R"(MODULE xxx;
@@ -264,10 +264,10 @@ TEST(Parser, FunctionParams) {
             PROCEDURE f(x : ) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN 3;
+            RETURN 3
             END xxx.)",
          "", "3,29: Unexpected token: ) - expecting indent"},
         {R"(MODULE xxx;
@@ -275,10 +275,10 @@ TEST(Parser, FunctionParams) {
             PROCEDURE f(x : INTEGER  y: INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN 3;
+            RETURN 3
             END xxx.)",
          "", "3,38: expecting ; or ) in parameter list"},
     };
@@ -293,14 +293,14 @@ TEST(Parser, CallArgs) {
             PROCEDURE f(x : INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN f(3);
+            RETURN f(3)
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
-         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
-         "f.\nBEGIN\nRETURN f(3);\nEND xxx.",
+         "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
+         "f.\nBEGIN\nRETURN f(3)\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -308,29 +308,29 @@ TEST(Parser, CallArgs) {
             PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
-            RETURN zz;
+            RETURN zz
             END f;
             BEGIN
-            RETURN f(3 , 4) + f(2, f(3 + 4));
+            RETURN f(3 , 4) + f(2, f(3 + 4))
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
-         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz;\nEND "
-         "f.\nBEGIN\nRETURN f(3, 4)+f(2, f(3+4));\nEND xxx.",
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
+         "f.\nBEGIN\nRETURN f(3, 4)+f(2, f(3+4))\nEND xxx.",
          ""},
 
         // Errors
         {R"(MODULE xxx;
             VAR z : INTEGER;
             BEGIN
-            RETURN f(3, );
+            RETURN f(3, )
             END xxx.)",
          "", "4,25: Unexpected token: )"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             BEGIN
-            RETURN f(3 ;
+            RETURN f(3 
             END xxx.)",
-         "", "4,24: Unexpected ; expecting , or )"},
+         "", "5,15: Unexpected END expecting , or )"},
     };
     do_parse_tests(tests);
 }

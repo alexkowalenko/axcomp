@@ -23,7 +23,7 @@ inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
-        std::cerr << llvm::formatv(msg...) << std::endl;
+        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
     }
 }
 
@@ -325,16 +325,18 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
 void Parser::parse_statement_block(
     std::vector<std::shared_ptr<ASTStatement>> &stats,
     std::set<TokenType>                         end_tokens) {
-    auto tok = lexer.peek_token();
-    while (true) {
-        if (end_tokens.find(tok.type) != end_tokens.end()) {
-            return;
-        }
 
-        // Statement
+    auto s = parse_statement();
+    stats.push_back(s);
+    auto tok = lexer.peek_token();
+    if (end_tokens.find(tok.type) != end_tokens.end()) {
+        return;
+    }
+    while (tok.type == TokenType::semicolon) {
+        get_token(TokenType::semicolon);
+
         auto s = parse_statement();
         stats.push_back(s);
-        get_token(TokenType::semicolon);
 
         tok = lexer.peek_token();
     }
@@ -367,7 +369,7 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
     ret->set_location(lexer.get_location());
     get_token(TokenType::ret);
     auto tok = lexer.peek_token();
-    if (tok.type != TokenType::semicolon) {
+    if (tok.type != TokenType::semicolon && tok.type != TokenType::end) {
         ret->expr = parse_expr();
     }
     return ret;

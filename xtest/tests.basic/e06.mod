@@ -3,7 +3,7 @@ VAR x : INTEGER;
 BEGIN
     x := 0;
     FOR i := 0 TO 9 DO
-        x := x + i;
+        x := x + i
     END;
-    RETURN x; 
+    RETURN x
 END e06.

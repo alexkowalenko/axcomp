@@ -7,5 +7,5 @@ VAR
 BEGIN
     x := 3;
     y := x + 987;
-    RETURN y;
+    RETURN y
 END c06.

@@ -9,9 +9,9 @@ BEGIN
         y := 0;
         REPEAT
             x := x + 1;
-            y := y + 1;
-        UNTIL y > 9;
+            y := y + 1
+        UNTIL y > 9
     UNTIL x > 100;
-    RETURN x; 
+    RETURN x
 
 END e11.

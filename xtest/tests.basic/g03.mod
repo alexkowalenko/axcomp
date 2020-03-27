@@ -7,7 +7,7 @@ BEGIN
     x[1] := 2;
     x[2] := 3;
     FOR i := 0 TO 2 DO
-        WriteInt(x[i]); WriteLn();
+        WriteInt(x[i]); WriteLn()
     END;
-    RETURN x[0] + x[1] + x[2];
+    RETURN x[0] + x[1] + x[2]
 END g03.

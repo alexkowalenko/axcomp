@@ -3,5 +3,5 @@ VAR
     x : INTEGER;
     y : INTEGER;
 BEGIN
-    RETURN x + y;
+    RETURN x + y
 END c04.
