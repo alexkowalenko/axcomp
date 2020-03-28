@@ -1,0 +1,26 @@
+; ModuleID = 'g06'
+source_filename = "g06"
+
+%0 = type { i64, i64, i64, i1, [3 x i64] }
+%1 = type { i64, i64, i64, i1, [3 x i64] }
+%2 = type { i64, i64, i64 }
+%3 = type { i64, i64, i64 }
+
+@x1 = internal global %0 zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define void @f() {
+entry:
+  %x1 = alloca %2
+  store %3 zeroinitializer, %2* %x1
+  ret void
+}
+
+define i64 @output() {
+entry:
+  %calltmp = call void @f()
+  ret i64 0
+}

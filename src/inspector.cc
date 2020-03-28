@@ -472,7 +472,7 @@ void Inspector::visit_ASTType(ASTType *ast) {
                    },
                    [this, ast](std::shared_ptr<ASTRecord> const &arg) {
                        arg->accept(this);
-                       // ast->type_info = last_type;
+                       ast->type_info = last_type;
                    }},
         ast->type);
 }
@@ -490,10 +490,14 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
 
 void Inspector::visit_ASTRecord(ASTRecord *ast) {
     debug("Inspector::visit_ASTRecord");
-    std::for_each(begin(ast->fields), end(ast->fields), [this](auto const &v) {
-        // check types
-        v.second->accept(this);
-    });
+    auto rec_type = std::make_shared<ax::RecordType>();
+    std::for_each(begin(ast->fields), end(ast->fields),
+                  [this, rec_type](auto const &v) {
+                      // check types
+                      v.second->accept(this);
+                      rec_type->fields.push_back(last_type);
+                  });
+    last_type = rec_type;
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

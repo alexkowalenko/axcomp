@@ -47,4 +47,30 @@ llvm::Constant *ArrayType::get_init() {
                               const_array);
 };
 
+RecordType::operator std::string() {
+    std::string str{"{ "};
+    for (auto &t : fields) {
+        str += std::string(*t);
+        if (t != *(fields.end() - 1)) {
+            str += ",";
+        }
+    }
+    str += "}";
+    return str;
+}
+
+llvm::Type *RecordType::get_llvm() {
+    std::vector<llvm::Type *> fs;
+    std::for_each(begin(fields), end(fields),
+                  [&fs](auto const &f) { fs.push_back(f->get_llvm()); });
+    return StructType::create(fs);
+};
+
+llvm::Constant *RecordType::get_init() {
+    std::vector<llvm::Constant *> fs;
+    std::for_each(begin(fields), end(fields),
+                  [&fs](auto const &f) { fs.push_back(f->get_init()); });
+    return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
+};
+
 } // namespace ax

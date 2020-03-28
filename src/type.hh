@@ -70,7 +70,7 @@ class ProcedureType : public Type {
 
     explicit operator std::string() override;
 
-    TypePtr              ret {nullptr};
+    TypePtr              ret{nullptr};
     std::vector<TypePtr> params{};
 };
 
@@ -86,6 +86,19 @@ class ArrayType : public Type {
 
     TypePtr base_type;
     long    size;
+};
+
+class RecordType : public Type {
+  public:
+    RecordType() = default;
+    ~RecordType() override = default;
+
+    explicit operator std::string() override;
+
+    llvm::Type *    get_llvm() override;
+    llvm::Constant *get_init() override;
+
+    std::vector<TypePtr> fields;
 };
 
 } // namespace ax

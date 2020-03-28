@@ -773,23 +773,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
 
 llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> type) {
     debug("CodeGenerator::getType");
-    llvm::Type *res = nullptr;
-    std::visit(
-        overloaded{
-            [this](auto arg) {},
-            [=, &res](std::shared_ptr<ASTIdentifier> &t) {
-                res = type->type_info->get_llvm();
-            },
-            [&](std::shared_ptr<ASTArray> &t) {
-                debug("generate array type:");
-                auto elem_type = getType(t->type);
-                auto size =
-                    std::dynamic_pointer_cast<ArrayType>(type->type_info)->size;
-                res = llvm::ArrayType::get(elem_type, size);
-            },
-        },
-        type->type);
-    return res;
+    return type->type_info->get_llvm();
 }
 
 void CodeGenerator::setup_builtins() {
