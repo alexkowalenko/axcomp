@@ -247,6 +247,36 @@ TEST(Parser, FunctionParams) {
          "f.\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x, y: INTEGER) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz
+            END f;
+            BEGIN
+            RETURN 3
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
+         "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
+         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(x, y: INTEGER; bx, by : BOOLEAN) : INTEGER;
+            VAR zz : INTEGER;
+            BEGIN
+            RETURN zz
+            END f;
+            BEGIN
+            RETURN 3
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : INTEGER; "
+         "bx : BOOLEAN; by : BOOLEAN): INTEGER;\nVAR\nzz: "
+         "INTEGER;\nBEGIN\nRETURN zz\nEND f.\nBEGIN\nRETURN 3\nEND xxx.",
+         ""},
+
         // Errors
         {R"(MODULE xxx;
             VAR z : INTEGER;

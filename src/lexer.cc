@@ -52,6 +52,7 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"EXIT", Token(TokenType::exit, "EXIT")},
     {"ARRAY", Token(TokenType::array, "ARRAY")},
     {"OF", Token(TokenType::of, "OF")},
+    {"RECORD", Token(TokenType::record, "RECORD")},
 };
 
 static std::unordered_map<char, Token> token_map = {

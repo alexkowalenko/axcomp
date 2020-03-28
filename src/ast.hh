@@ -83,7 +83,8 @@ class ASTType : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
 
-    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTArray>>
+    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTArray>,
+                 std::shared_ptr<ASTRecord>>
             type;
     TypePtr type_info = nullptr; // store information about the type
 };
@@ -101,6 +102,23 @@ class ASTArray : public ASTBase {
 
     std::shared_ptr<ASTInteger> size;
     std::shared_ptr<ASTType>    type;
+};
+
+/**
+ * @brief "RECORD" fieldList ( ";" fieldList )* "END"
+ *
+ */
+
+using VarDec =
+    std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
+
+class ASTRecord : public ASTBase {
+  public:
+    ~ASTRecord() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTRecord(this); };
+
+    std::vector<VarDec> fields;
 };
 
 /////////////////////
@@ -354,9 +372,6 @@ class ASTBlock : public ASTStatement {
 
 //////////////////////
 // Declaration objects
-
-using VarDec =
-    std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
 
 class ASTProcedure : public ASTBase {
   public:

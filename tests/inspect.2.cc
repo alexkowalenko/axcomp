@@ -432,3 +432,31 @@ TEST(Inspector, ArraysIndexAssign) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Record) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n;\nBEGIN\nRETURN 0\nEND alpha."},
+
+        // Errors
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : complex;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "", "3,27: Unknown type: complex"},
+    };
+    do_inspect_tests(tests);
+}

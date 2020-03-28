@@ -44,11 +44,15 @@ formalParameters = "(" [fpection {";" fpSection}] ")" [ ":" type ]
 
 fpSection = ["VAR"] identList ":" type
 
-procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT.
+procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT
 
-type = INDENT | arrayType
+type = INDENT | arrayType | recordType
 
 arrayType = "ARRAY" "[" INTEGER "]" "OF" type
+
+recordType = "RECORD" fieldList ( ";" fieldList )* "END"
+
+fieldList = identList ":" type
 
 identList = IDENT ("," IDENT)+
 
@@ -113,6 +117,9 @@ VAR
     z : INTEGER;
     check : BOOLEAN;
     a : ARRAY [10] OF INTEGER;
+    p : RECORD
+        x, y : INTEGER;
+    END;
 
 PROCEDURE f;
     VAR yy : INTEGER;
@@ -156,8 +163,8 @@ BEGIN
     END;
 
     BEGIN
-        x := 4
-    END;
+        x := 4;
+    END
 
     RETURN (3 * g(1, 3)) + ((2 + (g(2, 3) + 1)) * 4)
 END test.

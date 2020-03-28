@@ -68,6 +68,7 @@ static std::unordered_map<TokenType, std::string> mapping{
     {TokenType::exit, "EXIT"},
     {TokenType::array, "ARRAY"},
     {TokenType::of, "OF"},
+    {TokenType::record, "RECORD"},
 
     {TokenType::eof, "EOF"},
 };

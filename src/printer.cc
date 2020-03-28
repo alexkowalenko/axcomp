@@ -270,6 +270,21 @@ void ASTPrinter::visit_ASTArray(ASTArray *ast) {
     ast->type->accept(this);
 }
 
+void ASTPrinter::visit_ASTRecord(ASTRecord *ast) {
+    os << "RECORD\n";
+    std::for_each(begin(ast->fields), end(ast->fields),
+                  [this, ast](auto const &s) {
+                      os << "  ";
+                      s.first->accept(this);
+                      os << ": ";
+                      s.second->accept(this);
+                      if (s != *(ast->fields.end() - 1)) {
+                          os << ';';
+                      }
+                      os << '\n';
+                  });
+}
+
 void ASTPrinter::visit_ASTBool(ASTBool *ast) {
     if (ast->value) {
         os << string(TokenType::true_k);

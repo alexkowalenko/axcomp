@@ -16,11 +16,11 @@ namespace ax {
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-inline constexpr bool debug_inspect{false};
+inline constexpr bool debug_inspect{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_inspect) {
-        std::cout << formatv(msg...) << std::endl;
+        std::cout << std::string(llvm::formatv(msg...)) << std::endl;
     }
 }
 
@@ -453,6 +453,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 }
 
 void Inspector::visit_ASTType(ASTType *ast) {
+    debug("Inspector::visit_ASTType");
     std::visit(
         overloaded{[this](auto arg) { ; },
                    [this, ast](std::shared_ptr<ASTIdentifier> const &type) {
@@ -468,6 +469,10 @@ void Inspector::visit_ASTType(ASTType *ast) {
                    [this, ast](std::shared_ptr<ASTArray> const &arg) {
                        arg->accept(this);
                        ast->type_info = last_type;
+                   },
+                   [this, ast](std::shared_ptr<ASTRecord> const &arg) {
+                       arg->accept(this);
+                       // ast->type_info = last_type;
                    }},
         ast->type);
 }
@@ -481,6 +486,14 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
     ast->type->accept(this);
     last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
     types.put(last_type->get_name(), last_type);
+}
+
+void Inspector::visit_ASTRecord(ASTRecord *ast) {
+    debug("Inspector::visit_ASTRecord");
+    std::for_each(begin(ast->fields), end(ast->fields), [this](auto const &v) {
+        // check types
+        v.second->accept(this);
+    });
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

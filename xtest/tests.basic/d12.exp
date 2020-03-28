@@ -1,0 +1,38 @@
+; ModuleID = 'd12'
+source_filename = "d12"
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @add(i64 %x, i64 %y) {
+entry:
+  %y2 = alloca i64
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  store i64 %y, i64* %y2
+  %x3 = load i64, i64* %x1
+  %y4 = load i64, i64* %y2
+  %addtmp = add i64 %x3, %y4
+  ret i64 %addtmp
+}
+
+define i64 @mult(i64 %x, i64 %y) {
+entry:
+  %y2 = alloca i64
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  store i64 %y, i64* %y2
+  %x3 = load i64, i64* %x1
+  %y4 = load i64, i64* %y2
+  %multmp = mul i64 %x3, %y4
+  ret i64 %multmp
+}
+
+define i64 @output() {
+entry:
+  %calltmp = call i64 @mult(i64 3, i64 3)
+  %calltmp1 = call i64 @mult(i64 4, i64 4)
+  %calltmp2 = call i64 @add(i64 %calltmp, i64 %calltmp1)
+  ret i64 %calltmp2
+}

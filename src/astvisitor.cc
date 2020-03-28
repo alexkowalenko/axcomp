@@ -163,6 +163,13 @@ void ASTVisitor::visit_ASTArray(ASTArray *ast) {
     ast->type->accept(this);
 };
 
+void ASTVisitor::visit_ASTRecord(ASTRecord *ast) {
+    std::for_each(begin(ast->fields), end(ast->fields), [this](auto const &s) {
+        s.first->accept(this);
+        s.second->accept(this);
+    });
+}
+
 void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}
 
 void ASTVisitor::visit_ASTBool(ASTBool *ast){};

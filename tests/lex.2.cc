@@ -89,6 +89,7 @@ std::vector<LexTests> tests = {
     {"LOOP", TokenType::loop, "LOOP"},
     {"EXIT", TokenType::exit, "EXIT"},
     {"ARRAY", TokenType::array, "ARRAY"},
+    {"RECORD", TokenType::record, "RECORD"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

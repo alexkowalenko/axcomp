@@ -55,6 +55,7 @@ class Parser {
     std::shared_ptr<ASTDesignator> parse_designator();
     std::shared_ptr<ASTType>       parse_type();
     std::shared_ptr<ASTArray>      parse_array();
+    std::shared_ptr<ASTRecord>     parse_record();
     std::shared_ptr<ASTIdentifier> parse_identifier();
     std::shared_ptr<ASTInteger>    parse_integer();
     std::shared_ptr<ASTBool>       parse_boolean();
