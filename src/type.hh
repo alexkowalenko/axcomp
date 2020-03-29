@@ -59,7 +59,15 @@ class IntegerType : public SimpleType {
 
     bool is_numeric() override { return true; };
 
-    std::string name;
+    llvm::Constant *make_value(long i);
+};
+
+class BooleanType : public SimpleType {
+  public:
+    explicit BooleanType() : SimpleType("BOOLEAN"){};
+    ~BooleanType() override = default;
+
+    llvm::Constant *make_value(bool b);
 };
 
 class ProcedureType : public Type {

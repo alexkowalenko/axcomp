@@ -48,7 +48,7 @@ CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
       last_value(nullptr) {
     top_symboltable = std::make_shared<SymbolTable<Value *>>(nullptr);
     current_symboltable = top_symboltable;
-    types.setTypes(context);
+    TypeTable::setTypes(context);
 }
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
@@ -124,7 +124,7 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
-        auto type = getType(c.type);
+        auto *type = getType(c.type);
         module->getOrInsertGlobal(c.ident->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
 
@@ -161,14 +161,14 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
     debug("CodeGenerator::visit_ASTConst");
     for (auto const &c : ast->consts) {
         c.value->accept(this);
-        auto val = last_value;
+        auto *val = last_value;
 
         auto name = c.ident->value;
         debug("create const: {}", name);
 
         // Create const
-        auto function = builder.GetInsertBlock()->getParent();
-        auto alloc = createEntryBlockAlloca(function, name, c.type);
+        auto *function = builder.GetInsertBlock()->getParent();
+        auto *alloc = createEntryBlockAlloca(function, name, c.type);
         builder.CreateStore(val, alloc);
 
         current_symboltable->put(name, alloc);
@@ -183,7 +183,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
         auto name = c.first->value;
         debug("create var: {}", name);
 
-        auto        function = builder.GetInsertBlock()->getParent();
+        auto *      function = builder.GetInsertBlock()->getParent();
         auto        type = c.second;
         AllocaInst *alloc = createEntryBlockAlloca(function, name, type);
         builder.CreateStore(type->type_info->get_init(), alloc);
@@ -205,7 +205,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
                       proto.push_back(type);
                   });
 
-    llvm::Type *returnType;
+    llvm::Type *returnType = nullptr;
     if (ast->return_type == nullptr) {
         returnType = llvm::Type::getVoidTy(context);
     } else {
@@ -258,7 +258,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     debug(" CodeGenerator::visit_ASTAssignment {}", std::string(*(ast->ident)));
     ast->expr->accept(this);
-    auto val = last_value;
+    auto *val = last_value;
 
     visit_ASTDesignatorPtr(ast->ident.get());
     builder.CreateStore(val, last_value);
@@ -291,7 +291,7 @@ void CodeGenerator::visit_ASTExit(ASTExit *ast) {
 void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     debug("CodeGenerator::visit_ASTCall");
     // Look up the name in the global module table.
-    Function *callee;
+    Function *callee = nullptr;
     try {
         callee = module->getFunction(ast->name->value);
         if (!callee) {
@@ -321,14 +321,14 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     ast->if_clause.expr->accept(this);
 
     // Create blocks, insert then block
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *then_block = BasicBlock::Create(context, "then", funct);
     BasicBlock *else_block = BasicBlock::Create(context, "else");
     std::vector<BasicBlock *> elsif_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
                   [&](auto const &e) {
-                      auto e_block =
+                      auto *e_block =
                           BasicBlock::Create(context, formatv("elsif{0}", i++));
                       elsif_blocks.push_back(e_block);
                   });
@@ -402,14 +402,14 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
 
     // Make the new basic block for the loop header, inserting after current
     // block.
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
 
     auto former_symboltable = current_symboltable;
     current_symboltable =
         std::make_shared<SymbolTable<Value *>>(former_symboltable);
-    auto index = createEntryBlockAlloca(funct, ast->ident->value,
-                                        TypeTable::IntType->get_llvm());
+    auto *index = createEntryBlockAlloca(funct, ast->ident->value,
+                                         TypeTable::IntType->get_llvm());
     builder.CreateStore(last_value, index);
     current_symboltable->put(ast->ident->value, index);
 
@@ -423,20 +423,20 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
                   [this](auto const &s) { s->accept(this); });
 
     // Emit the step value.
-    Value *step;
+    Value *step = nullptr;
     if (ast->by) {
         (*ast->by)->accept(this);
         step = last_value;
     } else {
-        step = ConstantInt::get(context, APInt(64, 1, false));
+        step = TypeTable::IntType->make_value(1);
     }
-    auto   tmp = builder.CreateLoad(index);
+    auto * tmp = builder.CreateLoad(index);
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
 
     // Compute the end condition.
     ast->end->accept(this);
-    auto end_value = last_value;
+    auto *end_value = last_value;
 
     // Convert condition to a bool
     Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
@@ -458,7 +458,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhile *ast) {
     debug("CodeGenerator::visit_ASTWhile");
 
     // Create blocks
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *while_block = BasicBlock::Create(context, "while", funct);
     BasicBlock *loop = BasicBlock::Create(context, "loop");
     BasicBlock *end_block = BasicBlock::Create(context, "end");
@@ -489,7 +489,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeat *ast) {
     debug("CodeGenerator::visit_ASTRepeat");
 
     // Create blocks
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *repeat_block = BasicBlock::Create(context, "repeat", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -514,7 +514,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoop *ast) {
     debug("CodeGenerator::visit_ASTLoop");
 
     // Create blocks
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop_block = BasicBlock::Create(context, "loop", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -538,7 +538,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlock *ast) {
     debug("CodeGenerator::visit_ASTBlock");
 
     // Create blocks
-    auto        funct = builder.GetInsertBlock()->getParent();
+    auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *begin_block = BasicBlock::Create(context, "begin", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -561,9 +561,9 @@ void CodeGenerator::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
 
     if (ast->relation) {
-        auto L = last_value;
+        auto *L = last_value;
         (*ast->relation_expr)->accept(this);
-        auto R = last_value;
+        auto *R = last_value;
         switch (*ast->relation) {
         case TokenType::equals:
             last_value = builder.CreateICmpEQ(L, R);
@@ -666,8 +666,8 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 
 void CodeGenerator::get_index(ASTDesignator *ast) {
     visit_ASTIdentifierPtr(ast->ident.get());
-    auto                 array_ptr = last_value;
-    std::vector<Value *> index{ConstantInt::get(context, APInt(64, 0, true))};
+    auto *               array_ptr = last_value;
+    std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
         // calculate index;
@@ -734,12 +734,11 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
 }
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
-    last_value = ConstantInt::get(context, APInt(64, ast->value, true));
+    last_value = TypeTable::IntType->make_value(ast->value);
 }
 
 void CodeGenerator::visit_ASTBool(ASTBool *ast) {
-    last_value = ConstantInt::get(
-        context, APInt(1, static_cast<uint64_t>(ast->value), true));
+    last_value = TypeTable::BoolType->make_value(ast->value);
 }
 
 /**
@@ -771,7 +770,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> type) {
+llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> const &type) {
     debug("CodeGenerator::getType");
     return type->type_info->get_llvm();
 }
@@ -792,9 +791,9 @@ void CodeGenerator::setup_builtins() {
                           proto.push_back(t->get_llvm());
                       });
 
-        auto funcType = FunctionType::get(p->ret->get_llvm(), proto, false);
+        auto *funcType = FunctionType::get(p->ret->get_llvm(), proto, false);
 
-        auto func =
+        auto *func =
             Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
                              f.first, module.get());
         verifyFunction(*func);
@@ -838,7 +837,7 @@ void CodeGenerator::generate_objectcode() {
 
     // Get the target
     std::string error;
-    auto        target = TargetRegistry::lookupTarget(targetTriple, error);
+    const auto *target = TargetRegistry::lookupTarget(targetTriple, error);
 
     // Print an error and exit if we couldn't find the requested target.
     // This generally occurs if we've forgotten to initialise the
@@ -848,12 +847,12 @@ void CodeGenerator::generate_objectcode() {
     }
 
     // Use generic CPU without features
-    auto CPU = "generic";
-    auto features = "";
+    const auto *CPU = "generic";
+    const auto *features = "";
 
     TargetOptions opt;
     auto          RM = Optional<Reloc::Model>();
-    auto          targetMachine =
+    auto *        targetMachine =
         target->createTargetMachine(targetTriple, CPU, features, opt, RM);
 
     module->setDataLayout(targetMachine->createDataLayout());

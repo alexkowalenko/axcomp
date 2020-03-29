@@ -19,7 +19,7 @@ class AXException : std::exception {
     AXException(std::string m, Location const &l)
         : msg(std::move(m)), location(l){};
 
-    std::string error_msg() const;
+    [[nodiscard]] std::string error_msg() const;
 
     std::string msg;
     Location    location;

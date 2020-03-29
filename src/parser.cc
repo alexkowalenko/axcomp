@@ -35,7 +35,7 @@ template <class T> inline std::shared_ptr<T> makeAST(Lexer &lexer) {
 
 std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 
-Token Parser::get_token(TokenType t) {
+Token Parser::get_token(TokenType const &t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
         throw ParseException(
@@ -46,7 +46,7 @@ Token Parser::get_token(TokenType t) {
     return tok;
 }
 
-inline std::set<TokenType> module_ends{TokenType::end};
+inline const std::set<TokenType> module_ends{TokenType::end};
 
 /**
  * @brief module -> "MODULE" IDENT ";"  declarations "BEGIN" statement_seq "END"
@@ -318,10 +318,8 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         lexer.push_token(ident);
         if (tok.type == TokenType::l_paren) {
             return parse_call();
-        } else {
-            return parse_assignment();
         }
-        [[fallthrough]];
+        return parse_assignment();
     }
     default:
         throw ParseException(
@@ -332,7 +330,7 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
 
 void Parser::parse_statement_block(
     std::vector<std::shared_ptr<ASTStatement>> &stats,
-    std::set<TokenType>                         end_tokens) {
+    const std::set<TokenType> &                 end_tokens) {
 
     auto s = parse_statement();
     stats.push_back(s);
@@ -422,8 +420,8 @@ std::shared_ptr<ASTCall> Parser::parse_call() {
     return call;
 }
 
-inline std::set<TokenType> if_ends{TokenType::end, TokenType::elsif,
-                                   TokenType::else_k};
+inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif,
+                                         TokenType::else_k};
 
 /**
  * @brief "IF" expression "THEN" statement_seq
@@ -519,7 +517,7 @@ std::shared_ptr<ASTWhile> Parser::parse_while() {
     return ast;
 }
 
-inline std::set<TokenType> repeat_ends{TokenType::until};
+inline const std::set<TokenType> repeat_ends{TokenType::until};
 
 std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
     auto ast = makeAST<ASTRepeat>(lexer);
@@ -569,9 +567,9 @@ std::shared_ptr<ASTBlock> Parser::parse_block() {
  * @return std::shared_ptr<ASTExpr>
  */
 
-inline std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
-                                          TokenType::less,    TokenType::leq,
-                                          TokenType::greater, TokenType::gteq};
+inline const std::set<TokenType> relationOps = {
+    TokenType::equals, TokenType::hash,    TokenType::less,
+    TokenType::leq,    TokenType::greater, TokenType::gteq};
 
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
     debug("Parser::parse_expr");
@@ -620,8 +618,8 @@ std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
  * @return std::shared_ptr<ASTTerm>
  */
 
-inline std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div,
-                                      TokenType::mod, TokenType::ampersand};
+inline const std::set<TokenType> termOps = {
+    TokenType::asterisk, TokenType::div, TokenType::mod, TokenType::ampersand};
 
 std::shared_ptr<ASTTerm> Parser::parse_term() {
     debug("Parser::parse_term");
@@ -825,7 +823,7 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
     auto ast = makeAST<ASTInteger>(lexer);
 
     auto  tok = get_token(TokenType::integer);
-    char *end;
+    char *end = nullptr;
     ast->value = std::strtol(tok.val.c_str(), &end, 10);
     return ast;
 }

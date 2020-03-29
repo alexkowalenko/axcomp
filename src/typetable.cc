@@ -12,16 +12,16 @@ namespace ax {
 
 using namespace llvm;
 
-TypePtr TypeTable::IntType;
-TypePtr TypeTable::BoolType;
-TypePtr TypeTable::ModuleType;
-TypePtr TypeTable::VoidType;
+std::shared_ptr<IntegerType> TypeTable::IntType;
+std::shared_ptr<BooleanType> TypeTable::BoolType;
+TypePtr                      TypeTable::ModuleType;
+TypePtr                      TypeTable::VoidType;
 
 void TypeTable::initialise() {
     IntType = std::make_shared<IntegerType>();
     table.put(std::string(*IntType), IntType);
 
-    BoolType = std::make_shared<SimpleType>("BOOLEAN");
+    BoolType = std::make_shared<BooleanType>();
     table.put(std::string(*BoolType), BoolType);
 
     ModuleType = std::make_shared<SimpleType>("MODULE");
@@ -33,16 +33,16 @@ void TypeTable::initialise() {
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
     IntType->set_llvm(llvm::Type::getInt64Ty(context));
-    IntType->set_init(ConstantInt::get(context, APInt(64, 0, true)));
+    IntType->set_init(IntType->make_value(0));
 
     BoolType->set_llvm(llvm::Type::getInt1Ty(context));
-    BoolType->set_init(ConstantInt::get(context, APInt(1, 0, true)));
+    BoolType->set_init(BoolType->make_value(false));
 
     ModuleType->set_llvm(llvm::Type::getVoidTy(context));
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }
 
-std::optional<TypePtr> TypeTable::find(std::string name) {
+std::optional<TypePtr> TypeTable::find(std::string const &name) {
     return table.find(name);
 }
 

@@ -15,7 +15,7 @@
 using namespace ax;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::string        s{(const char *)data, size};
+    std::string        s{reinterpret_cast<const char *>(data), size};
     std::istringstream is(s);
     ErrorManager       errors;
     Lexer              lex(is, errors);
@@ -25,8 +25,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     try {
         auto ast = parser.parse();
-    } catch (LexicalException) {
-    } catch (ParseException) {
+    } catch (LexicalException const &) {
+    } catch (ParseException const &) {
     }
 
     return 0;

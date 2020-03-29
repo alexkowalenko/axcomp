@@ -36,7 +36,7 @@ class Parser {
     std::shared_ptr<ASTStatement> parse_statement();
     void
     parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
-                          std::set<TokenType> end_tokens);
+                          const std::set<TokenType> &end_tokens);
 
     std::shared_ptr<ASTAssignment> parse_assignment();
     std::shared_ptr<ASTReturn>     parse_return();
@@ -60,7 +60,7 @@ class Parser {
     std::shared_ptr<ASTInteger>    parse_integer();
     std::shared_ptr<ASTBool>       parse_boolean();
 
-    Token get_token(TokenType t);
+    Token get_token(TokenType const &t);
 
     Lexer &                               lexer;
     std::shared_ptr<SymbolTable<TypePtr>> symbols;

@@ -122,8 +122,9 @@ void ASTPrinter::visit_ASTCall(ASTCall *ast) {
 void ASTPrinter::print_stats(std::vector<std::shared_ptr<ASTStatement>> stats) {
     std::for_each(begin(stats), end(stats), [stats, this](auto const &x) {
         x->accept(this);
-        if (x != *(stats.end() - 1))
+        if (x != *(stats.end() - 1)) {
             os << ';';
+        }
         os << '\n';
     });
 };

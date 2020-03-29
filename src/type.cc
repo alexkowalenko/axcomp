@@ -20,6 +20,14 @@ SimpleType::operator std::string() {
     return name;
 }
 
+llvm::Constant *IntegerType::make_value(long i) {
+    return ConstantInt::get(get_llvm(), i);
+};
+
+llvm::Constant *BooleanType::make_value(bool b) {
+    return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
+};
+
 ProcedureType::operator std::string() {
     std::string res{"("};
     for (auto &t : params) {

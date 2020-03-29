@@ -21,9 +21,9 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-static Token nullToken = Token(TokenType::null);
+static const Token nullToken = Token(TokenType::null);
 
-static std::unordered_map<std::string, Token> keyword_map = {
+static const std::unordered_map<std::string, Token> keyword_map = {
     {"MODULE", Token(TokenType::module, "MODULE")},
     {"BEGIN", Token(TokenType::begin, "BEGIN")},
     {"END", Token(TokenType::end, "END")},
@@ -55,7 +55,7 @@ static std::unordered_map<std::string, Token> keyword_map = {
     {"RECORD", Token(TokenType::record, "RECORD")},
 };
 
-static std::unordered_map<char, Token> token_map = {
+static const std::unordered_map<char, Token> token_map = {
     {-1, Token(TokenType::eof)},
     {';', Token(TokenType::semicolon, ";")},
     {'.', Token(TokenType::period, ".")},
@@ -177,6 +177,7 @@ Token Lexer::get_token() {
             return Token(TokenType::gteq, ">=");
         }
         return Token(TokenType::greater, ">");
+    default:;
     }
     if (std::isdigit(c)) {
         return scan_digit(c);

@@ -12,7 +12,7 @@
 
 namespace ax {
 
-static std::unordered_map<TokenType, std::string> mapping{
+static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::null, "null"},
     {TokenType::integer, "integer"},
     {TokenType::ident, "indent"},
