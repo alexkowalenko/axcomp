@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -106,7 +107,7 @@ class RecordType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    std::vector<TypePtr> fields;
+    std::map<std::string, std::shared_ptr<Type>> fields;
 };
 
 } // namespace ax

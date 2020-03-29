@@ -237,3 +237,63 @@ TEST(Parser, RECORD) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, RecordFields) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN pt.x + pt.y
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n;\nBEGIN\nRETURN pt.x+pt.y\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y, z : INTEGER;
+                    END;
+                BEGIN
+                    pt.x := 1;
+                    pt.y := 2;
+                    pt.z := 3;
+                    RETURN pt.x * pt.y * pt.z
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
+         "INTEGER\n;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z := 3;\nRETURN "
+         "pt.x*pt.y*pt.z\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR a : RECORD
+                        x : INTEGER;
+                        y : ARRAY [3] OF INTEGER;
+                    END;
+                BEGIN
+                    a.x := 1;
+                    a.y[1] := 2;
+                    RETURN a.y[2]
+                END alpha.)",
+         "MODULE alpha;\nVAR\na: RECORD\n  x: INTEGER;\n  y: ARRAY [3] OF "
+         "INTEGER\n;\nBEGIN\na.x := 1;\na.y[1] := 2;\nRETURN a.y[2]\nEND "
+         "alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN pt. + pt.y
+                END alpha.)",
+         "", "7,32: Unexpected token: + - expecting indent"},
+
+    };
+    do_parse_tests(tests);
+}

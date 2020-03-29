@@ -700,6 +700,9 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
  * @return std::shared_ptr<ASTDesignator>
  */
 
+inline const std::set<TokenType> designatorOps = {TokenType::l_bracket,
+                                                  TokenType::period};
+
 std::shared_ptr<ASTDesignator> Parser::parse_designator() {
     debug("Parser::parse_designator");
     auto ast = makeAST<ASTDesignator>(lexer);
@@ -707,11 +710,22 @@ std::shared_ptr<ASTDesignator> Parser::parse_designator() {
     ast->ident = parse_identifier();
 
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::l_bracket) {
-        lexer.get_token(); // [
-        auto expr = parse_expr();
-        get_token(TokenType::r_bracket);
-        ast->selectors.push_back(expr);
+    while (designatorOps.find(tok.type) != designatorOps.end()) {
+        switch (tok.type) {
+        case TokenType::l_bracket: {
+            lexer.get_token(); // [
+            auto expr = parse_expr();
+            get_token(TokenType::r_bracket);
+            ast->selectors.push_back(expr);
+            break;
+        }
+        case TokenType::period:
+            lexer.get_token(); // .
+            ast->selectors.push_back(parse_identifier());
+            break;
+        default:;
+        }
+
         tok = lexer.peek_token();
     }
     return ast;

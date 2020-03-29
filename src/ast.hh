@@ -127,6 +127,8 @@ class ASTRecord : public ASTBase {
 /**
  * @brief IDENT selector
  *
+ * selector = ( '[' expr ']' | '.' IDENT )*
+ *
  */
 
 class ASTDesignator : public ASTBase {

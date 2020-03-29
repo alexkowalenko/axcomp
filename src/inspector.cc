@@ -13,7 +13,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_inspect{true};
+inline constexpr bool debug_inspect{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_inspect) {
@@ -404,51 +404,64 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
     // check type array before processing selectors
     auto array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
-    if (!array_type && !ast->selectors.empty()) {
-        auto e = TypeError(
-            llvm::formatv("variable {0} is not an array", ast->ident->value),
-            ast->get_location());
+    auto record_type = std::dynamic_pointer_cast<RecordType>(last_type);
+    if (!(array_type || record_type) && !ast->selectors.empty()) {
+        auto e =
+            TypeError(llvm::formatv("variable {0} is not an array or record",
+                                    ast->ident->value),
+                      ast->get_location());
         errors.add(e);
     }
 
-    // Not array type - no more checks.
-    if (!array_type) {
+    // Not array or record type - no more checks.
+    if (!(array_type || record_type)) {
         return;
     }
-    debug("Inspector::visit_ASTDesignator type: {}", array_type->get_name());
-    TypePtr current_type = array_type->base_type;
 
-    auto count = 0;
-    for (auto &s : ast->selectors) {
-        count++;
-        std::visit(
-            overloaded{[this](std::shared_ptr<ASTExpr> s) { s->accept(this); },
-                       [this](std::shared_ptr<ASTIdentifier> s) {}},
-            s);
-        if (!last_type->is_numeric()) {
-            auto e = TypeError("expression in array index must be numeric",
-                               ast->get_location());
-            errors.add(e);
-        }
+    for (auto &ss : ast->selectors) {
 
-        debug("Inspector::visit_ASTDesignator selector: {}",
-              current_type->get_name());
-        last_type = current_type;
-        array_type =
-            std::dynamic_pointer_cast<ArrayType>(array_type->base_type);
-        if (!array_type) {
-            break;
+        // can't do a std::visit as need to break out this loop
+        if (std::holds_alternative<std::shared_ptr<ASTExpr>>(ss)) {
+
+            // do ARRAY type
+            debug("Inspector::visit_ASTDesignator array index");
+            auto s = std::get<std::shared_ptr<ASTExpr>>(ss);
+            if (!array_type) {
+                auto e = TypeError("value not ARRAY", s->get_location());
+                errors.add(e);
+                return;
+            }
+
+            s->accept(this);
+            if (!last_type->is_numeric()) {
+                auto e = TypeError("expression in array index must be numeric",
+                                   ast->get_location());
+                errors.add(e);
+            }
+            last_type = array_type->base_type;
+        } else if (std::holds_alternative<std::shared_ptr<ASTIdentifier>>(ss)) {
+
+            // do RECORD type
+            debug("Inspector::visit_ASTDesignator record field");
+            auto s = std::get<std::shared_ptr<ASTIdentifier>>(ss);
+            if (!record_type) {
+                auto e = TypeError("value not RECORD", s->get_location());
+                errors.add(e);
+                return;
+            }
+
+            auto field = record_type->fields.find(s->value);
+            if (field == record_type->fields.end()) {
+                auto e = TypeError(
+                    llvm::formatv("no field <{0}> in RECORD", s->value),
+                    ast->get_location());
+                errors.add(e);
+                return;
+            }
+            last_type = field->second;
         }
-        current_type = array_type->base_type;
-    }
-    debug("Inspector::visit_ASTDesignator size: {} for {}",
-          ast->selectors.size(), count);
-    if (ast->selectors.size() > count) {
-        auto e = TypeError(
-            llvm::formatv("array indexes greater than array defintion: {0}",
-                          std::string(*ast)),
-            ast->get_location());
-        errors.add(e);
+        array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
+        record_type = std::dynamic_pointer_cast<RecordType>(last_type);
     }
 }
 
@@ -491,12 +504,23 @@ void Inspector::visit_ASTRecord(ASTRecord *ast) {
     debug("Inspector::visit_ASTRecord");
     auto rec_type = std::make_shared<ax::RecordType>();
     std::for_each(begin(ast->fields), end(ast->fields),
-                  [this, rec_type](auto const &v) {
+                  [this, rec_type, ast](auto const &v) {
                       // check types
                       v.second->accept(this);
-                      rec_type->fields.push_back(last_type);
+
+                      // check if not already defined
+                      if (rec_type->fields.find(v.first->value) !=
+                          rec_type->fields.end()) {
+                          auto e = TypeError(
+                              llvm::formatv("RECORD already has field {0}",
+                                            v.first->value),
+                              v.first->get_location());
+                          errors.add(e);
+                      }
+                      rec_type->fields.insert({v.first->value, last_type});
                   });
     last_type = rec_type;
+    types.put(last_type->get_name(), last_type);
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

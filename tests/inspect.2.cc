@@ -325,7 +325,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x[1]
                 END alpha.)",
-         "", "4,29: variable x is not an array"},
+         "", "4,29: variable x is not an array or record"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY [5] OF BOOLEAN;
@@ -360,7 +360,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x2[0][2][3]
                 END alpha.)",
-         "", "4,30: array indexes greater than array defintion: x2[0][2][3]"},
+         "", "4,36: value not ARRAY"},
     };
     do_inspect_tests(tests);
 }
@@ -396,7 +396,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,22: variable x is not an array"},
+         "", "4,22: variable x is not an array or record"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY [5] OF BOOLEAN;
@@ -457,6 +457,189 @@ TEST(Inspector, Record) {
                     RETURN 0 
                 END alpha.)",
          "", "3,27: Unknown type: complex"},
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        x : INTEGER
+                    END;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "", "4,25: RECORD already has field x"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, RecordFields) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN pt.x + pt.y
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n;\nBEGIN\nRETURN pt.x+pt.y\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y: INTEGER;
+                        z : BOOLEAN;
+                    END;
+                BEGIN
+                    pt.x := 1;
+                    pt.y := 2;
+                    pt.z := TRUE;
+                    RETURN pt.x * pt.y
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
+         "BOOLEAN\n;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z := TRUE;\nRETURN "
+         "pt.x*pt.y\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y: INTEGER;
+                        z :RECORD
+                            x : INTEGER;
+                            y : INTEGER
+                        END;
+                    END;
+                BEGIN
+                    pt.x := 1;
+                    pt.y := 2;
+                    pt.z.x := 1;
+                    pt.z.y := 1;
+                    RETURN pt.z.x * pt.z.y
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
+         "RECORD\n  x: INTEGER;\n  y: INTEGER\n\n;\nBEGIN\npt.x := 1;\npt.y := "
+         "2;\npt.z.x := 1;\npt.z.y := 1;\nRETURN pt.z.x*pt.z.y\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    RETURN pt.a + pt.y
+                END alpha.)",
+         "", "7,30: no field <a> in RECORD"},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : INTEGER
+                    END;
+                BEGIN
+                    pt.spin := FALSE;
+                    RETURN 0
+                END alpha.)",
+         "", "7,23: no field <spin> in RECORD"},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y: INTEGER;
+                        z :RECORD
+                            x : INTEGER;
+                            y : INTEGER
+                        END;
+                    END;
+                BEGIN
+                    pt.f.x := 1;
+                    RETURN 0
+                END alpha.)",
+         "", "10,23: no field <f> in RECORD"},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y: INTEGER;
+                        z :RECORD
+                            x : INTEGER;
+                            y : INTEGER
+                        END;
+                    END;
+                BEGIN
+                    pt.z.g := 1;
+                    RETURN 0
+                END alpha.)",
+         "", "10,23: no field <g> in RECORD"},
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x, y: INTEGER;
+                        z :RECORD
+                            x : INTEGER;
+                            y : INTEGER
+                        END;
+                    END;
+                BEGIN
+                    gt.z.x := 1;
+                    RETURN 0
+                END alpha.)",
+         "", "10,23: undefined identifier gt"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, RecordArrayMix) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : ARRAY [3] OF INTEGER;
+                    END;
+                BEGIN
+                    pt.y[1] := 1;
+                    RETURN pt.x + pt.y[2]
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: ARRAY [3] OF "
+         "INTEGER\n;\nBEGIN\npt.y[1] := 1;\nRETURN pt.x+pt.y[2]\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR pt : ARRAY [3] OF RECORD
+                        x, y: INTEGER;
+                    END;
+                BEGIN
+                    pt[0].x := 1;
+                    pt[0].y := 2;
+                    RETURN pt[1].x * pt[1].y
+                END alpha.)",
+         "MODULE alpha;\nVAR\npt: ARRAY [3] OF RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n;\nBEGIN\npt[0].x := 1;\npt[0].y := 2;\nRETURN "
+         "pt[1].x*pt[1].y\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                VAR pt : RECORD
+                        x : INTEGER;
+                        y : ARRAY [3] OF INTEGER;
+                    END;
+                BEGIN
+                    pt[1].y := 1;
+                    RETURN 0
+                END alpha.)",
+         "", "7,23: value not ARRAY"},
+
+        {R"(MODULE alpha;
+                VAR pt : ARRAY [3] OF RECORD
+                        x, y: INTEGER;
+                    END;
+                BEGIN
+                    pt.x[0] := 1;
+                    RETURN 0
+                END alpha.)",
+         "", "6,23: value not RECORD"},
+
     };
     do_inspect_tests(tests);
 }

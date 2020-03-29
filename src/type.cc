@@ -56,12 +56,10 @@ llvm::Constant *ArrayType::get_init() {
 };
 
 RecordType::operator std::string() {
-    std::string str{"{ "};
+    std::string str{"{"};
     for (auto &t : fields) {
-        str += std::string(*t);
-        if (t != *(fields.end() - 1)) {
-            str += ",";
-        }
+        str += t.second->get_name();
+        str += ",";
     }
     str += "}";
     return str;
@@ -70,14 +68,14 @@ RecordType::operator std::string() {
 llvm::Type *RecordType::get_llvm() {
     std::vector<llvm::Type *> fs;
     std::for_each(begin(fields), end(fields),
-                  [&fs](auto const &f) { fs.push_back(f->get_llvm()); });
+                  [&fs](auto const &f) { fs.push_back(f.second->get_llvm()); });
     return StructType::create(fs);
 };
 
 llvm::Constant *RecordType::get_init() {
     std::vector<llvm::Constant *> fs;
     std::for_each(begin(fields), end(fields),
-                  [&fs](auto const &f) { fs.push_back(f->get_init()); });
+                  [&fs](auto const &f) { fs.push_back(f.second->get_init()); });
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 };
 
