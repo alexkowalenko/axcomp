@@ -135,8 +135,10 @@ class ASTDesignator : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(this); };
 
-    std::shared_ptr<ASTIdentifier>        ident;
-    std::vector<std::shared_ptr<ASTExpr>> selectors;
+    std::shared_ptr<ASTIdentifier> ident;
+    std::vector<
+        std::variant<std::shared_ptr<ASTExpr>, std::shared_ptr<ASTIdentifier>>>
+        selectors;
 };
 
 /**
@@ -439,5 +441,8 @@ class ASTModule : public ASTBase {
     std::vector<std::shared_ptr<ASTProcedure>> procedures;
     std::vector<std::shared_ptr<ASTStatement>> stats;
 };
+
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 } // namespace ax

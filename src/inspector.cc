@@ -13,9 +13,6 @@
 
 namespace ax {
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
 inline constexpr bool debug_inspect{true};
 
 template <typename... T> inline void debug(const T &... msg) {
@@ -424,7 +421,10 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     auto count = 0;
     for (auto &s : ast->selectors) {
         count++;
-        s->accept(this);
+        std::visit(
+            overloaded{[this](std::shared_ptr<ASTExpr> s) { s->accept(this); },
+                       [this](std::shared_ptr<ASTIdentifier> s) {}},
+            s);
         if (!last_type->is_numeric()) {
             auto e = TypeError("expression in array index must be numeric",
                                ast->get_location());
@@ -455,8 +455,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
     std::visit(
-        overloaded{[this](auto arg) { ; },
-                   [this, ast](std::shared_ptr<ASTIdentifier> const &type) {
+        overloaded{[this, ast](std::shared_ptr<ASTIdentifier> const &type) {
                        auto result = types.find(type->value);
                        if (!result) {
                            throw TypeError(

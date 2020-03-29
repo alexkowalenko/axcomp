@@ -147,8 +147,10 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
 
 void ASTVisitor::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
-    std::for_each(begin(ast->selectors), end(ast->selectors),
-                  [this](auto &&arg) { arg->accept(this); });
+    std::for_each(
+        begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
+            std::visit([this](auto const &arg) { arg->accept(this); }, arg);
+        });
 }
 
 void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}

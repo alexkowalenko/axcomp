@@ -15,9 +15,6 @@
 
 namespace ax {
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << std::string(llvm::formatv("MODULE {0};\n", ast->name));
     ast->decs->accept(this);
@@ -246,9 +243,16 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
 void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
-        this->os << "[";
-        s->accept(this);
-        this->os << "]";
+        std::visit(overloaded{[this](std::shared_ptr<ASTExpr> s) {
+                                  os << '[';
+                                  s->accept(this);
+                                  os << ']';
+                              },
+                              [this](std::shared_ptr<ASTIdentifier> s) {
+                                  os << '.';
+                                  s->accept(this);
+                              }},
+                   s);
     });
 }
 

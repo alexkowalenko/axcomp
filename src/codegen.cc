@@ -35,9 +35,6 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
 using namespace llvm::sys;
 
 inline const std::string file_ext_llvmri{".ll"};
@@ -649,10 +646,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm *ast) {
 void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
     debug("CodeGenerator::visit_ASTFactor");
     // Visit the appropriate variant
-    std::visit(overloaded{[this](auto arg) {
-                              debug("visit_ASTFactor: wrong ");
-                              arg->accept(this);
-                          },
+    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
                           [this, ast](std::shared_ptr<ASTFactor> const &arg) {
                               debug("visit_ASTFactor: not ");
                               if (ast->is_not) {
@@ -670,10 +664,19 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
-        // calculate index;
-        s->expr->accept(this);
-        debug("GEP index is Int: {}", last_value->getType()->isIntegerTy());
-        index.push_back(last_value);
+
+        std::visit(overloaded{[this, &index](std::shared_ptr<ASTExpr> s) {
+                                  // calculate index;
+                                  s->expr->accept(this);
+                                  debug("GEP index is Int: {}",
+                                        last_value->getType()->isIntegerTy());
+                                  index.push_back(last_value);
+                              },
+                              [this, &index](std::shared_ptr<ASTIdentifier> s) {
+                                  // calculate index
+                                  ;
+                              }},
+                   s);
     }
     debug("GEP is Ptr: {}", array_ptr->getType()->isPointerTy());
     assert(array_ptr->getType()->isPointerTy());
