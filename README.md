@@ -100,7 +100,7 @@ factor = designator | procedureCall | INTEGER | "TRUE" | "FALSE" | '(' expr ')' 
 
 designator = IDENT selector
 
-selector = ( '[' expr ']' )*
+selector = ( "." INDENT |  '[' expr ']' )*
 
 IDENT = letter (letter | digit | '_')*
 

@@ -450,15 +450,19 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
                 return;
             }
 
-            auto field = record_type->fields.find(s->value);
-            if (field == record_type->fields.end()) {
+            auto field = record_type->get_type(s->value);
+            if (!field) {
                 auto e = TypeError(
                     llvm::formatv("no field <{0}> in RECORD", s->value),
                     ast->get_location());
                 errors.add(e);
                 return;
             }
-            last_type = field->second;
+
+            // Store field index with identifier, for use later in code
+            // generator.
+
+            last_type = *field;
         }
         array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
         record_type = std::dynamic_pointer_cast<RecordType>(last_type);
@@ -509,15 +513,14 @@ void Inspector::visit_ASTRecord(ASTRecord *ast) {
                       v.second->accept(this);
 
                       // check if not already defined
-                      if (rec_type->fields.find(v.first->value) !=
-                          rec_type->fields.end()) {
+                      if (rec_type->has_field(v.first->value)) {
                           auto e = TypeError(
                               llvm::formatv("RECORD already has field {0}",
                                             v.first->value),
                               v.first->get_location());
                           errors.add(e);
                       }
-                      rec_type->fields.insert({v.first->value, last_type});
+                      rec_type->insert(v.first->value, last_type);
                   });
     last_type = rec_type;
     types.put(last_type->get_name(), last_type);

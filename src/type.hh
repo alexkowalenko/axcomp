@@ -107,7 +107,14 @@ class RecordType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    std::map<std::string, std::shared_ptr<Type>> fields;
+    void                   insert(std::string field, TypePtr type);
+    bool                   has_field(std::string field);
+    std::optional<TypePtr> get_type(std::string field);
+    int                    get_index(std::string field);
+
+  private:
+    std::map<std::string, TypePtr> fields;
+    std::vector<std::string>       index;
 };
 
 } // namespace ax

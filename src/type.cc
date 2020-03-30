@@ -57,26 +57,50 @@ llvm::Constant *ArrayType::get_init() {
 
 RecordType::operator std::string() {
     std::string str{"{"};
-    for (auto &t : fields) {
-        str += t.second->get_name();
+    std::for_each(begin(index), end(index), [&str](auto const &name) {
+        str += name;
         str += ",";
-    }
+    });
     str += "}";
     return str;
 }
 
 llvm::Type *RecordType::get_llvm() {
     std::vector<llvm::Type *> fs;
-    std::for_each(begin(fields), end(fields),
-                  [&fs](auto const &f) { fs.push_back(f.second->get_llvm()); });
+    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
+        fs.push_back(fields[name]->get_llvm());
+    });
     return StructType::create(fs);
 };
 
 llvm::Constant *RecordType::get_init() {
     std::vector<llvm::Constant *> fs;
-    std::for_each(begin(fields), end(fields),
-                  [&fs](auto const &f) { fs.push_back(f.second->get_init()); });
+    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
+        fs.push_back(fields[name]->get_init());
+    });
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 };
+
+void RecordType::insert(std::string field, TypePtr type) {
+    fields[field] = type;
+    index.push_back(field);
+}
+
+bool RecordType::has_field(std::string field) {
+    return fields.find(field) != fields.end();
+}
+
+std::optional<TypePtr> RecordType::get_type(std::string field) {
+    auto res = fields.find(field);
+    if (res != fields.end()) {
+        return std::make_optional<TypePtr>(res->second);
+    }
+    return std::nullopt;
+}
+
+int RecordType::get_index(std::string field) {
+    auto it = std::find(begin(index), end(index), field);
+    return std::distance(begin(index), it);
+}
 
 } // namespace ax

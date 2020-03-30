@@ -1,0 +1,19 @@
+; ModuleID = 'g07'
+source_filename = "g07"
+
+%0 = type { i64, i64, i64 }
+%1 = type { i64, i64, i64 }
+
+@pt = internal global %0 zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  store i64 3, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  %pt = load %0, %0* @pt
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  ret i64 %idx
+}

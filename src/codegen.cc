@@ -27,11 +27,11 @@
 
 namespace ax {
 
-inline constexpr bool debug_codegen{false};
+inline constexpr bool debug_codegen{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
-        std::cerr << formatv(msg...) << std::endl;
+        std::cerr << std::string(formatv(msg...)) << std::endl;
     }
 }
 
@@ -660,7 +660,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 
 void CodeGenerator::get_index(ASTDesignator *ast) {
     visit_ASTIdentifierPtr(ast->ident.get());
-    auto *               array_ptr = last_value;
+    auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
@@ -668,19 +668,24 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
         std::visit(overloaded{[this, &index](std::shared_ptr<ASTExpr> s) {
                                   // calculate index;
                                   s->expr->accept(this);
-                                  debug("GEP index is Int: {}",
+                                  debug("GEP index is Int: {0}",
                                         last_value->getType()->isIntegerTy());
                                   index.push_back(last_value);
                               },
                               [this, &index](std::shared_ptr<ASTIdentifier> s) {
                                   // calculate index
-                                  ;
+                                  // extract the field index
+
+                                  // record indexes are 32 bit integers
+                                  auto idx = ConstantInt::get(
+                                      llvm::Type::getInt32Ty(context), 0);
+                                  index.push_back(idx);
                               }},
                    s);
     }
-    debug("GEP is Ptr: {}", array_ptr->getType()->isPointerTy());
-    assert(array_ptr->getType()->isPointerTy());
-    last_value = builder.CreateGEP(array_ptr, index, "idx");
+    debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
+    assert(arg_ptr->getType()->isPointerTy());
+    last_value = builder.CreateGEP(arg_ptr, index, "idx");
 }
 
 /**
