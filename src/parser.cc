@@ -116,6 +116,17 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             }
             break;
         }
+        case TokenType::type: {
+            auto types = parse_typedec();
+            if (!decs->type) {
+                decs->type = types;
+            } else {
+                decs->type->types.insert(decs->var->vars.end(),
+                                         begin(types->types),
+                                         end(types->types));
+            }
+            break;
+        }
         case TokenType::var: {
             auto vars = parse_var();
             if (!decs->var) {
@@ -159,6 +170,25 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         tok = lexer.peek_token();
     }
     return cnst;
+}
+
+std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
+    debug("Parser::parse_typedec");
+    auto type = makeAST<ASTTypeDec>(lexer);
+
+    lexer.get_token(); // TYPE
+    auto tok = lexer.peek_token();
+    while (tok.type == TokenType::ident) {
+        VarDec dec;
+        dec.first = parse_identifier();
+        get_token(TokenType::equals);
+        dec.second = parse_type();
+        get_token(TokenType::semicolon);
+
+        type->types.push_back(dec);
+        tok = lexer.peek_token();
+    }
+    return type;
 }
 
 /**

@@ -24,26 +24,28 @@ void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
         ast->cnst->accept(this);
     }
+    if (ast->type) {
+        ast->type->accept(this);
+    }
     if (ast->var) {
         ast->var->accept(this);
     }
 }
 
 void ASTVisitor::visit_ASTConst(ASTConst *ast) {
-    if (!ast->consts.empty()) {
-        std::for_each(ast->consts.begin(), ast->consts.end(),
-                      [this](auto const &c) {
-                          c.ident->accept(this);
-                          c.value->accept(this);
-                      });
-    }
+    std::for_each(ast->consts.begin(), ast->consts.end(),
+                  [this](auto const &c) {
+                      c.ident->accept(this);
+                      c.value->accept(this);
+                  });
 }
 
+void ASTVisitor::visit_ASTTypeDec(ASTTypeDec *) {}
+
 void ASTVisitor::visit_ASTVar(ASTVar *ast) {
-    if (!ast->vars.empty()) {
-        std::for_each(ast->vars.begin(), ast->vars.end(),
-                      [this](auto const &v) { v.first->accept(this); });
-    }
+
+    std::for_each(ast->vars.begin(), ast->vars.end(),
+                  [this](auto const &v) { v.first->accept(this); });
 }
 
 void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {

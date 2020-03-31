@@ -29,6 +29,7 @@ class Parser {
     std::shared_ptr<ASTModule>      parse_module();
     std::shared_ptr<ASTDeclaration> parse_declaration();
     std::shared_ptr<ASTConst>       parse_const();
+    std::shared_ptr<ASTTypeDec>     parse_typedec();
     std::shared_ptr<ASTVar>         parse_var();
     std::shared_ptr<ASTProcedure>   parse_procedure();
     void parse_parameters(std::vector<VarDec> &params);

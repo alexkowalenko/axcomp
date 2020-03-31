@@ -10,6 +10,7 @@ namespace ax {
 
 class ASTModule;
 class ASTDeclaration;
+class ASTTypeDec;
 class ASTConst;
 class ASTVar;
 class ASTProcedure;
@@ -44,6 +45,7 @@ class ASTVisitor {
     virtual void visit_ASTModule(ASTModule *ast);
     virtual void visit_ASTDeclaration(ASTDeclaration *ast);
     virtual void visit_ASTConst(ASTConst *ast);
+    virtual void visit_ASTTypeDec(ASTTypeDec *);
     virtual void visit_ASTVar(ASTVar *ast);
     virtual void visit_ASTProcedure(ASTProcedure *ast);
     virtual void visit_ASTAssignment(ASTAssignment *ast);

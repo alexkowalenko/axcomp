@@ -404,6 +404,19 @@ class ASTVar : public ASTBase {
     std::vector<VarDec> vars;
 };
 
+/**
+ * @brief "TYPE" (IDENT "=" type ";")*
+ *
+ */
+class ASTTypeDec : public ASTBase {
+  public:
+    ~ASTTypeDec() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTTypeDec(this); };
+
+    std::vector<VarDec> types;
+};
+
 struct ConstDec {
     std::shared_ptr<ASTIdentifier> ident;
     std::shared_ptr<ASTInteger>    value;
@@ -429,8 +442,9 @@ class ASTDeclaration : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDeclaration(this); };
 
-    std::shared_ptr<ASTConst> cnst;
-    std::shared_ptr<ASTVar>   var;
+    std::shared_ptr<ASTTypeDec> type;
+    std::shared_ptr<ASTConst>   cnst;
+    std::shared_ptr<ASTVar>     var;
 };
 
 class ASTModule : public ASTBase {

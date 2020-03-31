@@ -180,7 +180,7 @@ WriteLn()
 Changes to the standard definition:
 
 * PROCEDUREs don't have nested procedures.
-* CONSTs must be integers or boolean constants - not expressions.
+* CONSTs must be integers or boolean constants - not expressions (yet).
 * ARRAY sizes must be integers.
 
 ## Program options

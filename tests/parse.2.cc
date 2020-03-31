@@ -107,3 +107,21 @@ TEST(Parser, Bools) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, TYPES) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                     spin = BOOLEAN;
+                VAR seconds : time;
+                    orientation : spin;
+                BEGIN
+                    RETURN seconds
+                END alpha.)",
+         "MODULE alpha;\nTYPE\ntime = INTEGER;\nspin = BOOLEAN;\nVAR\nseconds: "
+         "time;\norientation: spin;\nBEGIN\nRETURN seconds\nEND alpha.",
+         ""},
+    };
+    do_parse_tests(tests);
+}

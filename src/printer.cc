@@ -29,6 +29,9 @@ void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
         ast->cnst->accept(this);
     }
+    if (ast->type) {
+        ast->type->accept(this);
+    }
     if (ast->var) {
         ast->var->accept(this);
     }
@@ -42,6 +45,19 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
                           c.ident->accept(this);
                           os << " = ";
                           c.value->accept(this);
+                          os << ";\n";
+                      });
+    }
+}
+
+void ASTPrinter::visit_ASTTypeDec(ASTTypeDec *ast) {
+    if (!ast->types.empty()) {
+        os << "TYPE\n";
+        std::for_each(begin(ast->types), end(ast->types),
+                      [this](auto const &v) {
+                          v.first->accept(this);
+                          os << " = ";
+                          v.second->accept(this);
                           os << ";\n";
                       });
     }
