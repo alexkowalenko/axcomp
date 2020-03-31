@@ -66,7 +66,7 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
-
+    debug("Inspector::visit_ASTProcedure");
     // Check return type
     auto retType = TypeTable::VoidType;
     if (ast->return_type != nullptr) {
@@ -75,6 +75,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     }
 
     // Check parameter types
+    debug("Inspector::visit_ASTProcedure check parameter types");
     std::vector<TypePtr> argTypes;
     std::for_each(ast->params.begin(), ast->params.end(),
                   [this, &argTypes](auto const &p) {
@@ -88,6 +89,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 
     last_proc = ast;
 
+    debug("Inspector::visit_ASTProcedure new symbol table");
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable =
@@ -96,27 +98,29 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
             std::visit(
                 overloaded{
-                    [this](auto) {},
+                    [this](auto arg) {
+                        arg->accept(this);
+                    }, // lambda arg can't be reference here
                     [this, p](std::shared_ptr<ASTIdentifier> const &tname) {
+                        debug("Inspector::visit_ASTProcedure param type ident");
                         auto type = types.find(tname->value);
                         current_symboltable->put(p.first->value, *type);
-                    },
-                },
+                    }},
                 p.second->type);
+            current_symboltable->put(p.first->value, last_type);
         });
     ast->decs->accept(this);
-    std::for_each(
-        ast->stats.begin(), ast->stats.end(), [this, ast](auto const &x) {
-            has_return = false;
-            x->accept(this);
-            if (!has_return) {
-                auto e = CodeGenException(
-                    llvm::formatv("PROCEDURE {0} has no RETURN function",
-                                  ast->name),
-                    ast->get_location());
-                errors.add(e);
-            }
-        });
+    std::for_each(ast->stats.begin(), ast->stats.end(),
+                  [this, ast](auto const &x) {
+                      has_return = false;
+                      x->accept(this);
+                  });
+    if (!has_return) {
+        auto e = CodeGenException(
+            llvm::formatv("PROCEDURE {0} has no RETURN function", ast->name),
+            ast->get_location());
+        errors.add(e);
+    }
     current_symboltable = former_symboltable;
 }
 
@@ -137,12 +141,12 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
 }
 
 void Inspector::visit_ASTReturn(ASTReturn *ast) {
+    debug("Inspector::visit_ASTReturn");
     has_return = true;
+    TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);
-    } else {
-        // No expression with RETURN statement
-        last_type = TypeTable::VoidType;
+        expr_type = last_type;
     }
 
     // check return type
@@ -151,7 +155,10 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         auto retType = TypeTable::VoidType;
         if (type != nullptr) {
             std::visit(overloaded{
-                           [this](auto) {},
+                           [this, &retType](auto arg) {
+                               arg->accept(this);
+                               retType = last_type;
+                           },
                            [this, &retType](
                                std::shared_ptr<ASTIdentifier> const &type) {
                                if (auto t = types.find(type->value); t) {
@@ -162,7 +169,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                        type->type);
         }
 
-        if (!last_type->equiv(retType)) {
+        if (!expr_type->equiv(retType)) {
             auto e = TypeError(
                 llvm::formatv(
                     "RETURN does not match return type for function {0}",
@@ -170,7 +177,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                 ast->get_location());
             errors.add(e);
         }
-    }
+    } // namespace ax
 }
 
 void Inspector::visit_ASTCall(ASTCall *ast) {
@@ -477,12 +484,14 @@ void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
     std::visit(
         overloaded{[this, ast](std::shared_ptr<ASTIdentifier> const &type) {
+                       debug("Inspector::visit_ASTType {0}", type->value);
                        auto result = types.find(type->value);
                        if (!result) {
                            throw TypeError(
                                llvm::formatv("Unknown type: {0}", type->value),
                                ast->get_location());
                        }
+                       debug("Inspector::visit_ASTType 2 {0}", type->value);
                        ast->type_info = *result;
                        last_type = *result;
                    },

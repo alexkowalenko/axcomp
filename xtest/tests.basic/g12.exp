@@ -1,0 +1,50 @@
+; ModuleID = 'g12'
+source_filename = "g12"
+
+%0 = type { i64, i64 }
+%1 = type { i64, i64 }
+%2 = type { i64, i64 }
+%3 = type { i64, i64 }
+%4 = type { i64, i64 }
+%5 = type { i64, i64 }
+%6 = type { i64, i64 }
+
+@pt = internal global %0 zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define %2 @identity(%3 %a) {
+entry:
+  %a1 = alloca %4
+  store %3 %a, %4* %a1
+  %a2 = load %4, %4* %a1
+  ret %4 %a2
+}
+
+define i64 @sum(%5 %a) {
+entry:
+  %total = alloca i64
+  %a1 = alloca %6
+  store %5 %a, %6* %a1
+  store i64 0, i64* %total
+  %a2 = load %6, %6* %a1
+  %idx = getelementptr %6, %6* %a1, i64 0, i32 0
+  %idx3 = load i64, i64* %idx
+  %a4 = load %6, %6* %a1
+  %idx5 = getelementptr %6, %6* %a1, i64 0, i32 1
+  %idx6 = load i64, i64* %idx5
+  %addtmp = add i64 %idx3, %idx6
+  ret i64 %addtmp
+}
+
+define i64 @output() {
+entry:
+  store i64 12, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  store i64 24, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
+  %pt = load %0, %0* @pt
+  %calltmp = call %2 @identity(%0 %pt)
+  %calltmp1 = call i64 @sum(%2 %calltmp)
+  ret i64 %calltmp1
+}

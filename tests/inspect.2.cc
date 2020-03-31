@@ -643,3 +643,76 @@ TEST(Inspector, RecordArrayMix) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, RecordArrayProcedure) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE g11; (* Mix ARRAY and RECORD *)
+        
+            VAR pt : ARRAY [3] OF INTEGER;
+
+            PROCEDURE identity(a : ARRAY [3] OF INTEGER) : ARRAY [3] OF INTEGER;
+            BEGIN
+                RETURN a
+            END identity;
+
+            PROCEDURE sum(a : ARRAY [3] OF INTEGER) : INTEGER;
+            VAR total : INTEGER;
+            BEGIN
+                FOR i := 0 TO 2 DO
+                    total := total + a[i]
+                END;
+                RETURN total
+            END sum;
+
+            BEGIN
+                FOR i := 0 TO 2 DO
+                    pt[i] := i*i + i + 1
+                END;
+                RETURN sum(identity(pt))
+            END g11.)",
+         "MODULE g11;\nVAR\npt: ARRAY [3] OF INTEGER;\nPROCEDURE identity(a : "
+         "ARRAY [3] OF INTEGER): ARRAY [3] OF INTEGER;\nBEGIN\nRETURN a\nEND "
+         "identity.\nPROCEDURE sum(a : ARRAY [3] OF INTEGER): "
+         "INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
+         "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 "
+         "DO\npt[i] := i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
+         ""},
+
+        {R"(MODULE g12; (* Mix ARRAY and RECORD *)
+        
+            VAR pt : RECORD x, y : INTEGER; END;
+
+            PROCEDURE identity(a : RECORD x, y : INTEGER END) : RECORD x, y : INTEGER END;
+            BEGIN
+                RETURN a
+            END identity;
+
+            PROCEDURE sum(a : RECORD x, y : INTEGER END) : INTEGER;
+            VAR total : INTEGER;
+            BEGIN
+                RETURN a.x + a.y
+            END sum;
+
+            BEGIN
+                pt.x := 12;
+                pt.y := 24;
+                RETURN sum(identity(pt))
+            END g12.)",
+         "MODULE g12;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n;\nPROCEDURE identity(a : RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n): RECORD\n  x: INTEGER;\n  y: INTEGER\n;\nBEGIN\nRETURN "
+         "a\nEND identity.\nPROCEDURE sum(a : RECORD\n  x: INTEGER;\n  y: "
+         "INTEGER\n): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN "
+         "a.x+a.y\nEND sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN "
+         "sum(identity(pt))\nEND g12.",
+         ""},
+
+        // Errors
+
+        // Checking calling procedures with incorrect type arguments not
+        // implemented yet.
+
+    };
+    do_inspect_tests(tests);
+}
