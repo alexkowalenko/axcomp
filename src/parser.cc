@@ -721,7 +721,7 @@ std::shared_ptr<ASTDesignator> Parser::parse_designator() {
         }
         case TokenType::period:
             lexer.get_token(); // .
-            ast->selectors.push_back(parse_identifier());
+            ast->selectors.push_back(FieldRef{parse_identifier(), -1});
             break;
         default:;
         }

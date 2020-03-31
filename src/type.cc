@@ -81,16 +81,16 @@ llvm::Constant *RecordType::get_init() {
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 };
 
-void RecordType::insert(std::string field, TypePtr type) {
+void RecordType::insert(std::string const &field, TypePtr type) {
     fields[field] = type;
     index.push_back(field);
 }
 
-bool RecordType::has_field(std::string field) {
+bool RecordType::has_field(std::string const &field) {
     return fields.find(field) != fields.end();
 }
 
-std::optional<TypePtr> RecordType::get_type(std::string field) {
+std::optional<TypePtr> RecordType::get_type(std::string const &field) {
     auto res = fields.find(field);
     if (res != fields.end()) {
         return std::make_optional<TypePtr>(res->second);
@@ -98,7 +98,7 @@ std::optional<TypePtr> RecordType::get_type(std::string field) {
     return std::nullopt;
 }
 
-int RecordType::get_index(std::string field) {
+int RecordType::get_index(std::string const &field) {
     auto it = std::find(begin(index), end(index), field);
     return std::distance(begin(index), it);
 }

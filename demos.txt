@@ -1,0 +1,121 @@
+MODULE y; BEGIN (12); 24; END y.
+
+MODULE y; BEGIN 12; 24; END y.
+
+MODULE y; BEGIN 12 + 24; END y.
+
+MODULE y; BEGIN (3 + 4) * 5; END y.
+
+MODULE y; BEGIN 3 + (4 * 5); END y.
+
+MODULE x; CONST y = 1+10; z= 3; BEGIN z; END x.
+
+MODULE x; BEGIN c; END x.
+
+MODULE x; VAR y: INTEGER; BEGIN 12; END x.
+
+MODULE x; BEGIN RETURN 12; END x.
+
+MODULE x; 
+    VAR z: INTEGER; 
+BEGIN 
+    RETURN 10;
+END x.
+
+MODULE xx;
+ VAR
+        z : INTEGER;
+  PROCEDURE f;
+  VAR zz : INTEGER;
+  BEGIN
+      RETURN zz;
+  END f;
+BEGIN
+    z := 30;
+    RETURN z;
+END xx.
+
+MODULE x;
+  CONST
+        y = 3;
+  VAR
+    z : INTEGER;
+
+  PROCEDURE f;
+  BEGIN
+      RETURN 12;
+  END f;
+
+  PROCEDURE g;
+  BEGIN
+      RETURN 24;
+  END g;
+BEGIN
+    RETURN 0;
+END x.
+
+MODULE xx;
+ VAR z : INTEGER;
+  PROCEDURE f() : INTEGER;
+  VAR zz : INTEGER;
+  BEGIN
+      RETURN zz;
+  END f;
+BEGIN
+    f();
+    RETURN f() + 3;
+END xx.
+
+MODULE xxx;
+ VAR z : INTEGER;
+  PROCEDURE f(x : INTEGER; y: INTEGER) : INTEGER;
+  VAR zz : INTEGER;
+  BEGIN
+      RETURN zz;
+  END f;
+BEGIN
+    f();
+    RETURN f() + 3;
+END xxx.
+
+MODULE xxx;
+ VAR z : INTEGER;
+  PROCEDURE f(y: INTEGER) : INTEGER;
+  BEGIN
+      RETURN y + y;
+  END f;
+BEGIN
+    RETURN f(2) + 3;
+END xxx.
+
+MODULE xxx;
+VAR z : BOOLEAN;
+BEGIN
+    z := TRUE;
+    RETURN z = TRUE;
+END xxx.
+
+MODULE alpha;
+VAR x : INTEGER;
+BEGIN
+    x := 0;
+    IF x = 1 THEN
+        x := 0;
+    ELSIF x = 2 THEN
+        x := 1;
+    ELSE
+        x := 2;
+    END;
+    RETURN x; 
+END alpha.
+
+MODULE alpha;
+VAR x : INTEGER;
+BEGIN
+    x := 0;
+    FOR i := 0 TO 9 DO
+        x := x + i * i;
+    END;
+    RETURN x; 
+END alpha.
+

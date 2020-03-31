@@ -27,7 +27,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_codegen{true};
+inline constexpr bool debug_codegen{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
@@ -659,29 +659,35 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 }
 
 void CodeGenerator::get_index(ASTDesignator *ast) {
+    debug("CodeGenerator::get_index");
     visit_ASTIdentifierPtr(ast->ident.get());
     auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
 
-        std::visit(overloaded{[this, &index](std::shared_ptr<ASTExpr> s) {
-                                  // calculate index;
-                                  s->expr->accept(this);
-                                  debug("GEP index is Int: {0}",
-                                        last_value->getType()->isIntegerTy());
-                                  index.push_back(last_value);
-                              },
-                              [this, &index](std::shared_ptr<ASTIdentifier> s) {
-                                  // calculate index
-                                  // extract the field index
+        std::visit(
+            overloaded{
+                [this, &index](std::shared_ptr<ASTExpr> s) {
+                    // calculate index;
+                    s->expr->accept(this);
+                    debug("GEP index is Int: {0}",
+                          last_value->getType()->isIntegerTy());
+                    index.push_back(last_value);
+                },
+                [this, &index](FieldRef const &s) {
+                    // calculate index
+                    // extract the field index
+                    debug("CodeGenerator::get_index record index {0} for {1}",
+                          s.second, s.first->value);
+                    assert(s.second >= 0);
 
-                                  // record indexes are 32 bit integers
-                                  auto idx = ConstantInt::get(
-                                      llvm::Type::getInt32Ty(context), 0);
-                                  index.push_back(idx);
-                              }},
-                   s);
+                    // record indexes are 32 bit integers
+                    auto *idx = ConstantInt::get(
+                        llvm::Type::getInt32Ty(context), s.second);
+                    index.push_back(idx);
+                }},
+            s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
     assert(arg_ptr->getType()->isPointerTy());
@@ -765,7 +771,7 @@ CodeGenerator::createEntryBlockAlloca(Function *               function,
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());
     std::visit(
-        [&](auto &t) { res = TmpB.CreateAlloca(getType(type), nullptr, name); },
+        [&](auto) { res = TmpB.CreateAlloca(getType(type), nullptr, name); },
         type->type);
     return res;
 }

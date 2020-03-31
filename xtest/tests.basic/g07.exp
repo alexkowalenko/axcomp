@@ -13,7 +13,15 @@ declare void @WriteLn()
 define i64 @output() {
 entry:
   store i64 3, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  store i64 2, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
+  store i64 5, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2)
   %pt = load %0, %0* @pt
   %idx = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
-  ret i64 %idx
+  %pt1 = load %0, %0* @pt
+  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
+  %addtmp = add i64 %idx, %idx2
+  %pt3 = load %0, %0* @pt
+  %idx4 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2)
+  %addtmp5 = add i64 %addtmp, %idx4
+  ret i64 %addtmp5
 }

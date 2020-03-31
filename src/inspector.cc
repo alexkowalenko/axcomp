@@ -96,7 +96,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
             std::visit(
                 overloaded{
-                    [this](auto arg) { ; },
+                    [this](auto) {},
                     [this, p](std::shared_ptr<ASTIdentifier> const &tname) {
                         auto type = types.find(tname->value);
                         current_symboltable->put(p.first->value, *type);
@@ -151,7 +151,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         auto retType = TypeTable::VoidType;
         if (type != nullptr) {
             std::visit(overloaded{
-                           [this](auto arg) { ; },
+                           [this](auto) {},
                            [this, &retType](
                                std::shared_ptr<ASTIdentifier> const &type) {
                                if (auto t = types.find(type->value); t) {
@@ -439,21 +439,21 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
                 errors.add(e);
             }
             last_type = array_type->base_type;
-        } else if (std::holds_alternative<std::shared_ptr<ASTIdentifier>>(ss)) {
+        } else if (std::holds_alternative<FieldRef>(ss)) {
 
             // do RECORD type
             debug("Inspector::visit_ASTDesignator record field");
-            auto s = std::get<std::shared_ptr<ASTIdentifier>>(ss);
+            auto &s = std::get<FieldRef>(ss);
             if (!record_type) {
-                auto e = TypeError("value not RECORD", s->get_location());
+                auto e = TypeError("value not RECORD", s.first->get_location());
                 errors.add(e);
                 return;
             }
 
-            auto field = record_type->get_type(s->value);
+            auto field = record_type->get_type(s.first->value);
             if (!field) {
                 auto e = TypeError(
-                    llvm::formatv("no field <{0}> in RECORD", s->value),
+                    llvm::formatv("no field <{0}> in RECORD", s.first->value),
                     ast->get_location());
                 errors.add(e);
                 return;
@@ -461,6 +461,10 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
             // Store field index with identifier, for use later in code
             // generator.
+
+            s.second = record_type->get_index(s.first->value);
+            debug("Inspector::visit_ASTDesignator record index {0} for {1}",
+                  s.second, s.first->value);
 
             last_type = *field;
         }

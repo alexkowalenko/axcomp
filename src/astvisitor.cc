@@ -149,7 +149,13 @@ void ASTVisitor::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
     std::for_each(
         begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
-            std::visit([this](auto const &arg) { arg->accept(this); }, arg);
+            std::visit(overloaded{[this](std::shared_ptr<ASTExpr> const &s) {
+                                      s->accept(this);
+                                  },
+                                  [this](FieldRef const &s) {
+                                      s.first->accept(this);
+                                  }},
+                       arg);
         });
 }
 

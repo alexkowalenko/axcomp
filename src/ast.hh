@@ -131,16 +131,16 @@ class ASTRecord : public ASTBase {
  *
  */
 
+using FieldRef = std::pair<std::shared_ptr<ASTIdentifier>, int>;
+
 class ASTDesignator : public ASTBase {
   public:
     ~ASTDesignator() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(this); };
 
-    std::shared_ptr<ASTIdentifier> ident;
-    std::vector<
-        std::variant<std::shared_ptr<ASTExpr>, std::shared_ptr<ASTIdentifier>>>
-        selectors;
+    std::shared_ptr<ASTIdentifier>                                ident;
+    std::vector<std::variant<std::shared_ptr<ASTExpr>, FieldRef>> selectors;
 };
 
 /**

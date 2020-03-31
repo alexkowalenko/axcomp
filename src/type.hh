@@ -107,10 +107,10 @@ class RecordType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    void                   insert(std::string field, TypePtr type);
-    bool                   has_field(std::string field);
-    std::optional<TypePtr> get_type(std::string field);
-    int                    get_index(std::string field);
+    void                   insert(std::string const &field, TypePtr type);
+    bool                   has_field(std::string const &field);
+    std::optional<TypePtr> get_type(std::string const &field);
+    int                    get_index(std::string const &field);
 
   private:
     std::map<std::string, TypePtr> fields;

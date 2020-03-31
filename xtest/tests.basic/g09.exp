@@ -1,0 +1,31 @@
+; ModuleID = 'g09'
+source_filename = "g09"
+
+%0 = type { i64, [3 x i64] }
+%1 = type { i64, [3 x i64] }
+
+@pt = internal global %0 zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  store i64 2, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 0)
+  store i64 2, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 1)
+  store i64 4, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 2)
+  %pt = load %0, %0* @pt
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
+  %pt1 = load %0, %0* @pt
+  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 0)
+  %addtmp = add i64 %idx, %idx2
+  %pt3 = load %0, %0* @pt
+  %idx4 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 1)
+  %addtmp5 = add i64 %addtmp, %idx4
+  %pt6 = load %0, %0* @pt
+  %idx7 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1, i64 2)
+  %addtmp8 = add i64 %addtmp5, %idx7
+  ret i64 %addtmp8
+}

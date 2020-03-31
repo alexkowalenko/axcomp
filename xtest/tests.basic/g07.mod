@@ -6,5 +6,7 @@ VAR pt : RECORD
 
 BEGIN
     pt.x := 3;
-    RETURN pt.x
+    pt.y := 2;
+    pt.z := 5;
+    RETURN pt.x + pt.y + pt.z
 END g07.

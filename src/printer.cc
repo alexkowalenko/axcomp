@@ -243,14 +243,14 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
 void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
-        std::visit(overloaded{[this](std::shared_ptr<ASTExpr> s) {
+        std::visit(overloaded{[this](std::shared_ptr<ASTExpr> const &s) {
                                   os << '[';
                                   s->accept(this);
                                   os << ']';
                               },
-                              [this](std::shared_ptr<ASTIdentifier> s) {
+                              [this](FieldRef const &s) {
                                   os << '.';
-                                  s->accept(this);
+                                  s.first->accept(this);
                               }},
                    s);
     });
