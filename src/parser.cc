@@ -792,9 +792,7 @@ std::shared_ptr<ASTArray> Parser::parse_array() {
     auto ast = makeAST<ASTArray>(lexer);
 
     get_token(TokenType::array);
-    get_token(TokenType::l_bracket);
     ast->size = parse_integer();
-    get_token(TokenType::r_bracket);
     get_token(TokenType::of);
     ast->type = parse_type();
     return ast;

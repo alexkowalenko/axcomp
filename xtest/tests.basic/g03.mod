@@ -1,6 +1,6 @@
 MODULE g03; (* Arrays *)
 
-VAR x : ARRAY [3] OF INTEGER;
+VAR x : ARRAY 3 OF INTEGER;
 
 BEGIN
     x[0] := 1;

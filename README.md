@@ -48,7 +48,7 @@ procedureBody = declarations ["BEGIN" statement_seq] "END" IDENT
 
 type = INDENT | arrayType | recordType
 
-arrayType = "ARRAY" "[" INTEGER "]" "OF" type
+arrayType = "ARRAY" INTEGER "OF" type
 
 recordType = "RECORD" fieldList ( ";" fieldList )* "END"
 

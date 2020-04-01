@@ -2,7 +2,7 @@ MODULE g09; (* Mix ARRAY and RECORD *)
 
 VAR pt : RECORD
         x : INTEGER;
-        y : ARRAY [3] OF INTEGER;
+        y : ARRAY 3 OF INTEGER;
 END;
 
 BEGIN

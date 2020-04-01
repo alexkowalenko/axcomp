@@ -3,7 +3,7 @@ MODULE g06; (* Records *)
 VAR x1 : RECORD 
         x, y, z : INTEGER;
         a : BOOLEAN
-        j : ARRAY [3] OF INTEGER;
+        j : ARRAY 3 OF INTEGER;
     END;
 
 PROCEDURE f;

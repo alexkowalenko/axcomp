@@ -262,10 +262,10 @@ TEST(Inspector, Arrays) {
     std::vector<ParseTests> tests = {
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
-                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+                VAR x : ARRAY 5 OF BOOLEAN;
+                VAR y : ARRAY 5 OF ARRAY 5 OF INTEGER;
 
-                PROCEDURE sum(a : ARRAY [3] OF BOOLEAN) : INTEGER;
+                PROCEDURE sum(a : ARRAY 3 OF BOOLEAN) : INTEGER;
                 BEGIN
                     RETURN 0
                 END sum;
@@ -273,24 +273,24 @@ TEST(Inspector, Arrays) {
                 BEGIN
                     RETURN 0
                 END alpha.)",
-         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
-         "[5] OF INTEGER;\nPROCEDURE sum(a : ARRAY [3] OF BOOLEAN): "
+         "MODULE alpha;\nVAR\nx: ARRAY 5 OF BOOLEAN;\ny: ARRAY 5 OF ARRAY "
+         "5 OF INTEGER;\nPROCEDURE sum(a : ARRAY 3 OF BOOLEAN): "
          "INTEGER;\nBEGIN\nRETURN 0\nEND sum.\nBEGIN\nRETURN 0\nEND alpha."},
 
         // Errors
 
         {R"(MODULE alpha;
-            VAR x : ARRAY [5] OF complex;
+            VAR x : ARRAY 5 OF complex;
             BEGIN
                 RETURN 0
             END alpha.)",
-         "", "2,32: Unknown type: complex"},
+         "", "2,30: Unknown type: complex"},
         {R"(MODULE alpha;
-            VAR x : ARRAY [TRUE] OF complex;
+            VAR x : ARRAY TRUE OF complex;
             BEGIN
                 RETURN 0 
             END alpha.)",
-         "", "2,31: Unexpected token: TRUE - expecting integer"},
+         "", "2,30: Unexpected token: TRUE - expecting integer"},
     };
     do_inspect_tests(tests);
 }
@@ -299,24 +299,24 @@ TEST(Inspector, ArraysIndex) {
     std::vector<ParseTests> tests = {
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
-                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+                VAR x : ARRAY 5 OF BOOLEAN;
+                VAR y : ARRAY 5 OF ARRAY 5 OF INTEGER;
 
                 BEGIN
                     RETURN x[1]
                 END alpha.)",
-         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
-         "[5] OF INTEGER;\nBEGIN\nRETURN x[1]\nEND alpha."},
+         "MODULE alpha;\nVAR\nx: ARRAY 5 OF BOOLEAN;\ny: ARRAY 5 OF ARRAY "
+         "5 OF INTEGER;\nBEGIN\nRETURN x[1]\nEND alpha."},
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
-                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+                VAR x : ARRAY 5 OF BOOLEAN;
+                VAR y : ARRAY 5 OF ARRAY 5 OF INTEGER;
 
                 BEGIN
                     RETURN y[1][2] + y[2 + 3][2] 
                 END alpha.)",
-         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\ny: ARRAY [5] OF ARRAY "
-         "[5] OF INTEGER;\nBEGIN\nRETURN y[1][2]+y[2+3][2]\nEND alpha."},
+         "MODULE alpha;\nVAR\nx: ARRAY 5 OF BOOLEAN;\ny: ARRAY 5 OF ARRAY "
+         "5 OF INTEGER;\nBEGIN\nRETURN y[1][2]+y[2+3][2]\nEND alpha."},
 
         // Errors
 
@@ -328,35 +328,35 @@ TEST(Inspector, ArraysIndex) {
          "", "4,29: variable x is not an array or record"},
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR x : ARRAY 5 OF BOOLEAN;
                 BEGIN
                     RETURN x[1] + 1
                 END alpha.)",
          "", "4,28: types in expression don't match BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
-                VAR x3 : ARRAY [6] OF BOOLEAN;
+                VAR x3 : ARRAY 6 OF BOOLEAN;
                 BEGIN
                     RETURN x3[0] + 1
                 END alpha.)",
          "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
-                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     RETURN x2[0] + 1
                 END alpha.)",
          "", "4,29: types in expression don't match INTEGER[5] and INTEGER"},
 
         {R"(MODULE alpha;
-                VAR x2 : ARRAY [5] OF ARRAY[5] OF BOOLEAN;
+                VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
                 BEGIN
                     RETURN x2[0][0] + 1
                 END alpha.)",
          "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
-                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     RETURN x2[0][2][3]
                 END alpha.)",
@@ -369,23 +369,23 @@ TEST(Inspector, ArraysIndexAssign) {
     std::vector<ParseTests> tests = {
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR x : ARRAY 5 OF BOOLEAN;
 
                 BEGIN
                     x[1] := TRUE;
                     RETURN 0
                 END alpha.)",
-         "MODULE alpha;\nVAR\nx: ARRAY [5] OF BOOLEAN;\nBEGIN\nx[1] := "
+         "MODULE alpha;\nVAR\nx: ARRAY 5 OF BOOLEAN;\nBEGIN\nx[1] := "
          "TRUE;\nRETURN 0\nEND alpha."},
 
         {R"(MODULE alpha;
-                VAR y : ARRAY [5] OF ARRAY [5] OF INTEGER;
+                VAR y : ARRAY 5 OF ARRAY 5 OF INTEGER;
 
                 BEGIN
                     y[1][2] := 8;
                     RETURN 0
                 END alpha.)",
-         "MODULE alpha;\nVAR\ny: ARRAY [5] OF ARRAY [5] OF "
+         "MODULE alpha;\nVAR\ny: ARRAY 5 OF ARRAY 5 OF "
          "INTEGER;\nBEGIN\ny[1][2] := 8;\nRETURN 0\nEND alpha."},
 
         // Errors
@@ -399,7 +399,7 @@ TEST(Inspector, ArraysIndexAssign) {
          "", "4,22: variable x is not an array or record"},
 
         {R"(MODULE alpha;
-                VAR x : ARRAY [5] OF BOOLEAN;
+                VAR x : ARRAY 5 OF BOOLEAN;
                 BEGIN
                     x[0] := 1;
                     RETURN 0
@@ -407,7 +407,7 @@ TEST(Inspector, ArraysIndexAssign) {
          "", "4,22: Can't assign expression of type INTEGER to x[0]"},
 
         {R"(MODULE alpha;
-                VAR x3 : ARRAY [6] OF INTEGER;
+                VAR x3 : ARRAY 6 OF INTEGER;
                 BEGIN
                     x3[2] := TRUE;
                     RETURN 0
@@ -415,7 +415,7 @@ TEST(Inspector, ArraysIndexAssign) {
          "", "4,23: Can't assign expression of type BOOLEAN to x3[2]"},
 
         {R"(MODULE alpha;
-                VAR x2 : ARRAY [5] OF ARRAY[5] OF INTEGER;
+                VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     x2[1] := 1;
                     RETURN 0
@@ -423,7 +423,7 @@ TEST(Inspector, ArraysIndexAssign) {
          "", "4,23: Can't assign expression of type INTEGER to x2[1]"},
 
         {R"(MODULE alpha;
-                VAR x2 : ARRAY [5] OF ARRAY[5] OF BOOLEAN;
+                VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
                 BEGIN
                     x2[1][2] := 1;
                     RETURN 0
@@ -594,18 +594,18 @@ TEST(Inspector, RecordArrayMix) {
         {R"(MODULE alpha;
                 VAR pt : RECORD
                         x : INTEGER;
-                        y : ARRAY [3] OF INTEGER;
+                        y : ARRAY 3 OF INTEGER;
                     END;
                 BEGIN
                     pt.y[1] := 1;
                     RETURN pt.x + pt.y[2]
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: ARRAY [3] OF "
+         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: ARRAY 3 OF "
          "INTEGER\n;\nBEGIN\npt.y[1] := 1;\nRETURN pt.x+pt.y[2]\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
-                VAR pt : ARRAY [3] OF RECORD
+                VAR pt : ARRAY 3 OF RECORD
                         x, y: INTEGER;
                     END;
                 BEGIN
@@ -613,7 +613,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt[0].y := 2;
                     RETURN pt[1].x * pt[1].y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: ARRAY [3] OF RECORD\n  x: INTEGER;\n  y: "
+         "MODULE alpha;\nVAR\npt: ARRAY 3 OF RECORD\n  x: INTEGER;\n  y: "
          "INTEGER\n;\nBEGIN\npt[0].x := 1;\npt[0].y := 2;\nRETURN "
          "pt[1].x*pt[1].y\nEND alpha.",
          ""},
@@ -622,7 +622,7 @@ TEST(Inspector, RecordArrayMix) {
         {R"(MODULE alpha;
                 VAR pt : RECORD
                         x : INTEGER;
-                        y : ARRAY [3] OF INTEGER;
+                        y : ARRAY 3 OF INTEGER;
                     END;
                 BEGIN
                     pt[1].y := 1;
@@ -631,7 +631,7 @@ TEST(Inspector, RecordArrayMix) {
          "", "7,23: value not ARRAY"},
 
         {R"(MODULE alpha;
-                VAR pt : ARRAY [3] OF RECORD
+                VAR pt : ARRAY 3 OF RECORD
                         x, y: INTEGER;
                     END;
                 BEGIN
@@ -649,14 +649,14 @@ TEST(Inspector, RecordArrayProcedure) {
 
         {R"(MODULE g11; (* Mix ARRAY and RECORD *)
         
-            VAR pt : ARRAY [3] OF INTEGER;
+            VAR pt : ARRAY 3 OF INTEGER;
 
-            PROCEDURE identity(a : ARRAY [3] OF INTEGER) : ARRAY [3] OF INTEGER;
+            PROCEDURE identity(a : ARRAY 3 OF INTEGER) : ARRAY 3 OF INTEGER;
             BEGIN
                 RETURN a
             END identity;
 
-            PROCEDURE sum(a : ARRAY [3] OF INTEGER) : INTEGER;
+            PROCEDURE sum(a : ARRAY 3 OF INTEGER) : INTEGER;
             VAR total : INTEGER;
             BEGIN
                 FOR i := 0 TO 2 DO
@@ -671,9 +671,9 @@ TEST(Inspector, RecordArrayProcedure) {
                 END;
                 RETURN sum(identity(pt))
             END g11.)",
-         "MODULE g11;\nVAR\npt: ARRAY [3] OF INTEGER;\nPROCEDURE identity(a : "
-         "ARRAY [3] OF INTEGER): ARRAY [3] OF INTEGER;\nBEGIN\nRETURN a\nEND "
-         "identity.\nPROCEDURE sum(a : ARRAY [3] OF INTEGER): "
+         "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : "
+         "ARRAY 3 OF INTEGER): ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND "
+         "identity.\nPROCEDURE sum(a : ARRAY 3 OF INTEGER): "
          "INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
          "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 "
          "DO\npt[i] := i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",

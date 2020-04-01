@@ -1,6 +1,6 @@
 MODULE g10; (* Mix ARRAY and RECORD *)
         
-VAR pt : ARRAY [3] OF RECORD
+VAR pt : ARRAY 3 OF RECORD
         x, y: INTEGER;
     END;
 

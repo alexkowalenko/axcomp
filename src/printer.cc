@@ -25,18 +25,6 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 
-void ASTPrinter::visit_ASTDeclaration(ASTDeclaration *ast) {
-    if (ast->cnst) {
-        ast->cnst->accept(this);
-    }
-    if (ast->type) {
-        ast->type->accept(this);
-    }
-    if (ast->var) {
-        ast->var->accept(this);
-    }
-}
-
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
         os << "CONST\n";
@@ -285,9 +273,9 @@ void ASTPrinter::visit_ASTType(ASTType *ast) {
 }
 
 void ASTPrinter::visit_ASTArray(ASTArray *ast) {
-    os << "ARRAY [";
+    os << "ARRAY ";
     ast->size->accept(this);
-    os << "] OF ";
+    os << " OF ";
     ast->type->accept(this);
 }
 

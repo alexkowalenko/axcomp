@@ -1,6 +1,6 @@
 MODULE g05; (* Arrays *)
 
-VAR a : ARRAY [3] OF ARRAY [3] OF INTEGER;
+VAR a : ARRAY 3 OF ARRAY 3 OF INTEGER;
     sum : INTEGER;
 
 BEGIN
