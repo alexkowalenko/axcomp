@@ -117,4 +117,18 @@ class RecordType : public Type {
     std::vector<std::string>       index;
 };
 
+class TypeAlias : public Type {
+  public:
+    TypeAlias(std::string n, TypePtr t) : name{n}, alias{t} {};
+    ~TypeAlias() override = default;
+
+    explicit operator std::string() override { return name; };
+
+    TypePtr get_alias() { return alias; }
+
+  private:
+    std::string name;
+    TypePtr     alias;
+};
+
 } // namespace ax

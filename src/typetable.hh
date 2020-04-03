@@ -25,6 +25,7 @@ class TypeTable {
     static void setTypes(llvm::LLVMContext &context);
 
     std::optional<TypePtr> find(std::string const &name);
+    std::optional<TypePtr> resolve(std::string const &name);
     void                   put(std::string const &name, TypePtr const &t);
 
     // Standard types

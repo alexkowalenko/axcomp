@@ -1,0 +1,41 @@
+; ModuleID = 'c10'
+source_filename = "c10"
+
+%0 = type { i64, i64, i64 }
+%1 = type { i64, i64, i64 }
+%2 = type { i64, i64, i64 }
+%3 = type { i64, i64, i64 }
+
+@z0 = internal global %0 zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @sum(%2 %a) {
+entry:
+  %a1 = alloca %3
+  store %2 %a, %3* %a1
+  %a2 = load %3, %3* %a1
+  %idx = getelementptr %3, %3* %a1, i64 0, i32 0
+  %idx3 = load i64, i64* %idx
+  %a4 = load %3, %3* %a1
+  %idx5 = getelementptr %3, %3* %a1, i64 0, i32 1
+  %idx6 = load i64, i64* %idx5
+  %addtmp = add i64 %idx3, %idx6
+  %a7 = load %3, %3* %a1
+  %idx8 = getelementptr %3, %3* %a1, i64 0, i32 2
+  %idx9 = load i64, i64* %idx8
+  %addtmp10 = add i64 %addtmp, %idx9
+  ret i64 %addtmp10
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 0)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 1)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 2)
+  %z0 = load %0, %0* @z0
+  %calltmp = call i64 @sum(%0 %z0)
+  ret i64 %calltmp
+}

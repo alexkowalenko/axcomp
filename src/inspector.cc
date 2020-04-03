@@ -41,28 +41,37 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
 }
 
 void Inspector::visit_ASTConst(ASTConst *ast) {
-    if (!ast->consts.empty()) {
-        for (auto &c : ast->consts) {
-            c.value->accept(this);
-            c.type = std::make_shared<ASTType>();
-            c.type->type_info = last_type;
-            current_symboltable->put(c.ident->value, last_type);
-        }
-    }
+    debug("Inspector::visit_ASTConst");
+    std::for_each(begin(ast->consts), end(ast->consts), [this](auto &c) {
+        c.value->accept(this);
+        c.type = std::make_shared<ASTType>();
+        c.type->type_info = last_type;
+        c.type->type = std::make_shared<ASTIdentifier>(last_type->get_name());
+        debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
+        current_symboltable->put(c.ident->value, last_type);
+    });
+}
+
+void Inspector::visit_ASTTypeDec(ASTTypeDec *ast) {
+    debug("Inspector::visit_ASTTypeDec");
+    std::for_each(begin(ast->types), end(ast->types), [this](auto const &t) {
+        t.second->accept(this);
+        auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
+        debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
+        types.put(t.first->value, type);
+    });
 }
 
 void Inspector::visit_ASTVar(ASTVar *ast) {
     debug("Inspector::visit_ASTVar");
-    if (!ast->vars.empty()) {
-        std::for_each(ast->vars.begin(), ast->vars.end(),
-                      [this](auto const &v) {
-                          // No need to check the identifier - its being
-                          // defined.
-                          v.second->accept(this);
-                          // Update VAR declaration symbols with type
-                          current_symboltable->put(v.first->value, last_type);
-                      });
-    }
+
+    std::for_each(ast->vars.begin(), ast->vars.end(), [this](auto const &v) {
+        // No need to check the identifier - its being
+        // defined.
+        v.second->accept(this);
+        // Update VAR declaration symbols with type
+        current_symboltable->put(v.first->value, last_type);
+    });
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
@@ -131,6 +140,15 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
 
     ast->ident->accept(this);
     debug("type of ident: {} ", last_type->get_name());
+    auto alias = types.resolve(last_type->get_name());
+    if (!alias) {
+        auto e = TypeError(
+            llvm::formatv("Can't assign expression of type {0} to {1}",
+                          std::string(*expr_type), std::string(*ast->ident)),
+            ast->get_location());
+        errors.add(e);
+    }
+    last_type = *alias;
     if (!last_type->equiv(expr_type)) {
         auto e = TypeError(
             llvm::formatv("Can't assign expression of type {0} to {1}",
@@ -548,7 +566,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
             ast->get_location());
     }
     // debug("find type: {} for {}", res, res->name);
-    auto resType = types.find((*res)->get_name());
+    auto resType = types.resolve((*res)->get_name());
     if (!resType) {
         auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
                                          (*res)->get_name(), ast->value),

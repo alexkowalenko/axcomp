@@ -73,15 +73,17 @@ class CodeGenerator : ASTVisitor {
   private:
     void init(std::string const &module_name);
 
-    static AllocaInst *createEntryBlockAlloca(Function *         TheFunction,
-                                              std::string const &name,
-                                              std::shared_ptr<ASTType> type);
+    AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
+                                       std::string const &      name,
+                                       std::shared_ptr<ASTType> type);
 
-    static AllocaInst *createEntryBlockAlloca(Function *         function,
-                                              std::string const &name,
-                                              llvm::Type *       type);
+    AllocaInst *createEntryBlockAlloca(Function *         function,
+                                       std::string const &name,
+                                       llvm::Type *       type);
 
-    static llvm::Type *getType(std::shared_ptr<ASTType> const &type);
+    TypePtr     resolve_type(std::shared_ptr<ASTType> const &t);
+    llvm::Type *getType(std::shared_ptr<ASTType> const &type);
+    Constant *  getType_init(std::shared_ptr<ASTType> const &type);
 
     Options &                             options;
     TypeTable &                           types;

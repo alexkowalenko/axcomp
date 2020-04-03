@@ -1,0 +1,17 @@
+; ModuleID = 'c09'
+source_filename = "c09"
+
+@seconds = internal global i64 0
+@orientation = internal global i1 false
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  store i64 60, i64* @seconds
+  store i1 true, i1* @orientation
+  %seconds = load i64, i64* @seconds
+  ret i64 %seconds
+}

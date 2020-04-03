@@ -65,6 +65,8 @@ class ASTBool : public ASTBase {
 
 class ASTIdentifier : public ASTBase {
   public:
+    ASTIdentifier() = default;
+    ASTIdentifier(std::string const &n) : value(n){};
     ~ASTIdentifier() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(this); };

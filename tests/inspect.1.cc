@@ -382,3 +382,65 @@ TEST(Inspector, Factor) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, TypeDef) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                     spin = BOOLEAN;
+                VAR seconds : time;
+                    orientation : spin;
+                BEGIN
+                    RETURN seconds
+                END alpha.)",
+         "MODULE alpha;\nTYPE\ntime = INTEGER;\nspin = BOOLEAN;\nVAR\nseconds: "
+         "time;\norientation: spin;\nBEGIN\nRETURN seconds\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                     spin = BOOLEAN;
+                VAR seconds : complex;
+                    orientation : spin;
+                BEGIN
+                    RETURN seconds
+                END alpha.)",
+         "", "4,29: Unknown type: complex"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, TypeAssign) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                     spin = BOOLEAN;
+                VAR seconds : time;
+                    orientation : spin;
+                BEGIN
+                    seconds := 0;
+                    orientation := FALSE;
+                    RETURN seconds
+                END alpha.)",
+         "MODULE alpha;\nTYPE\ntime = INTEGER;\nspin = BOOLEAN;\nVAR\nseconds: "
+         "time;\norientation: spin;\nBEGIN\nseconds := 0;\norientation := "
+         "FALSE;\nRETURN seconds\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                VAR seconds : time;
+                BEGIN
+                    seconds := TRUE;
+                    RETURN seconds
+                END alpha.)",
+         "", "5,30: Can't assign expression of type BOOLEAN to seconds"},
+    };
+    do_inspect_tests(tests);
+}

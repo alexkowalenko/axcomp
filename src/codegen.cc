@@ -113,7 +113,8 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
         GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
 
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
-        gVar->setInitializer(c.second->type_info->get_init());
+        auto *init = getType_init(c.second);
+        gVar->setInitializer(init);
         current_symboltable->put(c.first->value, gVar);
     }
 }
@@ -121,6 +122,8 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
 void CodeGenerator::doTopConsts(ASTConst *ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
+        debug("CodeGenerator::doTopConsts type: {0}",
+              c.type->type_info->get_name());
         auto *type = getType(c.type);
         module->getOrInsertGlobal(c.ident->value, type);
         GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
@@ -183,7 +186,8 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
         auto *      function = builder.GetInsertBlock()->getParent();
         auto        type = c.second;
         AllocaInst *alloc = createEntryBlockAlloca(function, name, type);
-        builder.CreateStore(type->type_info->get_init(), alloc);
+        auto *      init = getType_init(type);
+        builder.CreateStore(init, alloc);
 
         alloc->setName(name);
         debug("set name: {}", name);
@@ -784,10 +788,32 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> const &type) {
-    debug("CodeGenerator::getType");
-    return type->type_info->get_llvm();
+TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
+    debug("CodeGenerator::resolve_type");
+    TypePtr result;
+    std::visit(
+        overloaded{[this, &result](std::shared_ptr<ASTIdentifier> const &type) {
+                       auto res = types.resolve(type->value);
+                       if (!res) {
+                           // should be a resloved type this far down
+                           assert(!res);
+                       };
+                       result = *res;
+                   },
+                   [t, &result](auto x) { result = t->type_info; }},
+        t->type);
+    return result;
 }
+
+llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> const &t) {
+    debug("CodeGenerator::getType");
+    return resolve_type(t)->get_llvm();
+}
+
+Constant *CodeGenerator::getType_init(std::shared_ptr<ASTType> const &t) {
+    debug("CodeGenerator::getType_init");
+    return resolve_type(t)->get_init();
+};
 
 void CodeGenerator::setup_builtins() {
     debug("CodeGenerator::setup_builtins");

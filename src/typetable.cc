@@ -46,6 +46,23 @@ std::optional<TypePtr> TypeTable::find(std::string const &name) {
     return table.find(name);
 }
 
+std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
+    auto name = n;
+    while (true) {
+        auto res = table.find(name);
+        if (!res) {
+            // not found
+            return res;
+        }
+        auto alias = std::dynamic_pointer_cast<TypeAlias>(*res);
+        if (!alias) {
+            // normal type
+            return res;
+        }
+        name = alias->get_alias()->get_name();
+    }
+}
+
 void TypeTable::put(std::string const &name, TypePtr const &t) {
     table.put(name, t);
 }
