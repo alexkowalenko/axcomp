@@ -20,8 +20,7 @@ class Inspector : public ASTVisitor {
 
   public:
     explicit Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
-                       TypeTable &t, ErrorManager &e)
-        : top_symboltable(s), current_symboltable(s), types(t), errors(e){};
+                       TypeTable &t, ErrorManager &e);
 
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTConst(ASTConst *ast) override;
@@ -57,10 +56,14 @@ class Inspector : public ASTVisitor {
     std::shared_ptr<SymbolTable<TypePtr>> top_symboltable;
     std::shared_ptr<SymbolTable<TypePtr>> current_symboltable;
 
+    std::shared_ptr<SymbolTable<TypePtr>> top_consts;
+    std::shared_ptr<SymbolTable<TypePtr>> current_consts;
+
     TypeTable &   types;
     ErrorManager &errors;
 
     bool          has_return{false};
+    bool          is_const{false};
     TypePtr       last_type{nullptr};
     ASTProcedure *last_proc{nullptr};
 };

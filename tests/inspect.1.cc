@@ -468,3 +468,43 @@ TEST(Inspector, TypeExpr) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Const) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                CONST time = 60 * 60;
+                BEGIN
+                    RETURN time
+                END alpha.)",
+         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                CONST seconds = 60;
+                      minutes = 60 * seconds;
+                BEGIN
+                    RETURN minutes
+                END alpha.)",
+         "MODULE alpha;\nCONST\nseconds = 60;\nminutes = "
+         "60*seconds;\nBEGIN\nRETURN minutes\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha;
+                CONST time = 60 * 60;
+                
+                PROCEDURE f (x : INTEGER); 
+                CONST y = x;
+                BEGIN 
+                    RETURN y
+                END f;
+
+                BEGIN
+                    RETURN time
+                END alpha.)",
+         "", "5,21: CONST y is not a constant expression"},
+    };
+    do_inspect_tests(tests);
+}

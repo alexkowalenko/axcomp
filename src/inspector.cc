@@ -21,6 +21,15 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
+Inspector::Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
+                     TypeTable &t, ErrorManager &e)
+    : top_symboltable(s), current_symboltable{s}, types(t), errors(e) {
+
+    // Make const symbol table
+    top_consts = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+    current_consts = top_consts;
+};
+
 void Inspector::visit_ASTModule(ASTModule *ast) {
     debug("Inspector::visit_ASTModule");
     ast->decs->accept(this);
@@ -42,13 +51,21 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
 
 void Inspector::visit_ASTConst(ASTConst *ast) {
     debug("Inspector::visit_ASTConst");
-    std::for_each(begin(ast->consts), end(ast->consts), [this](auto &c) {
+    std::for_each(begin(ast->consts), end(ast->consts), [this, ast](auto &c) {
         c.value->accept(this);
+        if (!is_const) {
+            auto e = TypeError(
+                llvm::formatv("CONST {0} is not a constant expression",
+                              c.ident->value),
+                ast->get_location());
+            errors.add(e);
+        }
         c.type = std::make_shared<ASTType>();
         c.type->type_info = last_type;
         c.type->type = std::make_shared<ASTIdentifier>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
         current_symboltable->put(c.ident->value, last_type);
+        current_consts->put(c.ident->value, last_type);
     });
 }
 
@@ -103,6 +120,9 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     auto former_symboltable = current_symboltable;
     current_symboltable =
         std::shared_ptr<SymbolTable<TypePtr>>(former_symboltable);
+    auto former_consts = current_consts;
+    current_consts = std::make_shared<SymbolTable<TypePtr>>(former_consts);
+    current_consts = top_consts;
     std::for_each(
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
             std::visit(
@@ -131,6 +151,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         errors.add(e);
     }
     current_symboltable = former_symboltable;
+    current_consts = former_consts;
 }
 
 void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
@@ -322,6 +343,7 @@ void Inspector::visit_ASTBlock(ASTBlock *ast) {
 
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
+    auto c1 = is_const;
     if (ast->relation) {
         auto t1 = last_type;
         (*ast->relation_expr)->accept(this);
@@ -335,13 +357,16 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
         }
         // Comparison operators return BOOLEAN
         last_type = TypeTable::BoolType;
+        c1 = c1 && is_const; // if both are const
+        is_const = c1;       // return the const value
     }
 }
 
 void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
     auto t1 = last_type;
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
+    auto c1 = is_const;
+    for (auto t : ast->rest) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             auto e = TypeError(
@@ -366,13 +391,16 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
             }
         }
         t1 = last_type;
-    });
+        c1 = c1 && is_const; // if both are const
+        is_const = c1;       // return the const value
+    };
 }
 
 void Inspector::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
     auto t1 = last_type;
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this, ast, &t1](auto t) {
+    auto c1 = is_const;
+    for (auto t : ast->rest) {
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             auto e = TypeError(
@@ -396,8 +424,11 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
                 errors.add(e);
             }
         }
+        c1 = c1 && is_const; // if both are const
+        is_const = c1;       // return the const value
+
         t1 = last_type;
-    });
+    };
 }
 
 void Inspector::visit_ASTFactor(ASTFactor *ast) {
@@ -530,6 +561,11 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
         auto e = TypeError("ARRAY expecting numeric size", ast->get_location());
         errors.add(e);
     }
+    if (!is_const) {
+        auto e = TypeError("ARRAY expecting constant expression",
+                           ast->get_location());
+        errors.add(e);
+    }
     ast->type->accept(this);
     last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
     types.put(last_type->get_name(), last_type);
@@ -574,14 +610,21 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
         errors.add(e);
     }
     last_type = *resType;
+    if (current_consts->find(ast->value)) {
+        is_const = true;
+    } else {
+        is_const = false;
+    }
 }
 
 void Inspector::visit_ASTInteger(ASTInteger *) {
     last_type = TypeTable::IntType;
+    is_const = true;
 }
 
 void Inspector::visit_ASTBool(ASTBool *ast) {
     last_type = TypeTable::BoolType;
+    is_const = true;
 }
 
 } // namespace ax

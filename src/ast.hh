@@ -421,7 +421,7 @@ class ASTTypeDec : public ASTBase {
 
 struct ConstDec {
     std::shared_ptr<ASTIdentifier> ident;
-    std::shared_ptr<ASTInteger>    value;
+    std::shared_ptr<ASTExpr>       value;
     std::shared_ptr<ASTType>       type;
 };
 

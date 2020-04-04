@@ -161,7 +161,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
         ConstDec dec;
         dec.ident = parse_identifier();
         get_token(TokenType::equals);
-        dec.value = parse_integer();
+        dec.value = parse_expr();
         get_token(TokenType::semicolon);
 
         // Not sure what type this const is yet.
