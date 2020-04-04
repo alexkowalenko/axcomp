@@ -1,0 +1,195 @@
+; ModuleID = 'PrimeNumbers'
+source_filename = "PrimeNumbers"
+
+@n = internal global i64 0
+@p = internal global [400 x i64] zeroinitializer
+@v = internal global [20 x i64] zeroinitializer
+
+declare void @WriteInt(i64)
+
+declare void @WriteLn()
+
+define void @Primes(i64 %n) {
+entry:
+  %prim = alloca i1
+  %sqr = alloca i64
+  %lim = alloca i64
+  %inc = alloca i64
+  %x = alloca i64
+  %m = alloca i64
+  %k = alloca i64
+  %i = alloca i64
+  %n1 = alloca i64
+  store i64 %n, i64* %n1
+  store i64 0, i64* %i
+  store i64 0, i64* %k
+  store i64 0, i64* %m
+  store i64 0, i64* %x
+  store i64 0, i64* %inc
+  store i64 0, i64* %lim
+  store i64 0, i64* %sqr
+  store i1 false, i1* %prim
+  store i64 1, i64* %x
+  store i64 4, i64* %inc
+  store i64 1, i64* %lim
+  store i64 4, i64* %sqr
+  store i64 0, i64* %m
+  store i64 3, i64* %i
+  br label %while
+
+while:                                            ; preds = %ifcont62, %entry
+  %i2 = load i64, i64* %i
+  %n3 = load i64, i64* %n1
+  %0 = icmp sle i64 %i2, %n3
+  br i1 %0, label %loop, label %end65
+
+loop:                                             ; preds = %while
+  br label %repeat
+
+repeat:                                           ; preds = %end, %loop
+  %x4 = load i64, i64* %x
+  %inc5 = load i64, i64* %inc
+  %addtmp = add i64 %x4, %inc5
+  store i64 %addtmp, i64* %x
+  %inc6 = load i64, i64* %inc
+  %subtmp = sub i64 6, %inc6
+  store i64 %subtmp, i64* %inc
+  %sqr7 = load i64, i64* %sqr
+  %x8 = load i64, i64* %x
+  %1 = icmp sle i64 %sqr7, %x8
+  br i1 %1, label %then, label %else
+
+then:                                             ; preds = %repeat
+  %sqr9 = load i64, i64* %sqr
+  %lim10 = load i64, i64* %lim
+  %idx = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %lim10
+  store i64 %sqr9, i64* %idx
+  %lim11 = load i64, i64* %lim
+  %addtmp12 = add i64 %lim11, 1
+  store i64 %addtmp12, i64* %lim
+  %p = load [400 x i64], [400 x i64]* @p
+  %lim13 = load i64, i64* %lim
+  %idx14 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %lim13
+  %idx15 = load i64, i64* %idx14
+  %p16 = load [400 x i64], [400 x i64]* @p
+  %lim17 = load i64, i64* %lim
+  %idx18 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %lim17
+  %idx19 = load i64, i64* %idx18
+  %multmp = mul i64 %idx15, %idx19
+  store i64 %multmp, i64* %sqr
+  br label %ifcont
+
+else:                                             ; preds = %repeat
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
+  store i64 2, i64* %k
+  store i1 true, i1* %prim
+  br label %while20
+
+while20:                                          ; preds = %ifcont44, %ifcont
+  %prim21 = load i1, i1* %prim
+  %k22 = load i64, i64* %k
+  %lim23 = load i64, i64* %lim
+  %2 = icmp slt i64 %k22, %lim23
+  %modtmp = and i1 %prim21, %2
+  br i1 %modtmp, label %loop24, label %end
+
+loop24:                                           ; preds = %while20
+  %k25 = load i64, i64* %k
+  %addtmp26 = add i64 %k25, 1
+  store i64 %addtmp26, i64* %k
+  %v = load [20 x i64], [20 x i64]* @v
+  %k27 = load i64, i64* %k
+  %idx28 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k27
+  %idx29 = load i64, i64* %idx28
+  %x30 = load i64, i64* %x
+  %3 = icmp slt i64 %idx29, %x30
+  br i1 %3, label %then31, label %else43
+
+then31:                                           ; preds = %loop24
+  %v32 = load [20 x i64], [20 x i64]* @v
+  %k33 = load i64, i64* %k
+  %idx34 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k33
+  %idx35 = load i64, i64* %idx34
+  %p36 = load [400 x i64], [400 x i64]* @p
+  %k37 = load i64, i64* %k
+  %idx38 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %k37
+  %idx39 = load i64, i64* %idx38
+  %addtmp40 = add i64 %idx35, %idx39
+  %k41 = load i64, i64* %k
+  %idx42 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k41
+  store i64 %addtmp40, i64* %idx42
+  br label %ifcont44
+
+else43:                                           ; preds = %loop24
+  br label %ifcont44
+
+ifcont44:                                         ; preds = %else43, %then31
+  %x45 = load i64, i64* %x
+  %v46 = load [20 x i64], [20 x i64]* @v
+  %k47 = load i64, i64* %k
+  %idx48 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k47
+  %idx49 = load i64, i64* %idx48
+  %4 = icmp ne i64 %x45, %idx49
+  store i1 %4, i1* %prim
+  br label %while20
+
+end:                                              ; preds = %while20
+  %prim50 = load i1, i1* %prim
+  br i1 %prim50, label %end51, label %repeat
+
+end51:                                            ; preds = %end
+  %x52 = load i64, i64* %x
+  %i53 = load i64, i64* %i
+  %idx54 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %i53
+  store i64 %x52, i64* %idx54
+  %x55 = load i64, i64* %x
+  %calltmp = call void @WriteInt(i64 %x55)
+  %m56 = load i64, i64* %m
+  %5 = icmp eq i64 %m56, 10
+  br i1 %5, label %then57, label %else59
+
+then57:                                           ; preds = %end51
+  %calltmp58 = call void @WriteLn()
+  store i64 0, i64* %m
+  br label %ifcont62
+
+else59:                                           ; preds = %end51
+  %m60 = load i64, i64* %m
+  %addtmp61 = add i64 %m60, 1
+  store i64 %addtmp61, i64* %m
+  br label %ifcont62
+
+ifcont62:                                         ; preds = %else59, %then57
+  %i63 = load i64, i64* %i
+  %addtmp64 = add i64 %i63, 1
+  store i64 %addtmp64, i64* %i
+  br label %while
+
+end65:                                            ; preds = %while
+  %m66 = load i64, i64* %m
+  %6 = icmp sgt i64 %m66, 0
+  br i1 %6, label %then67, label %else69
+
+then67:                                           ; preds = %end65
+  %calltmp68 = call void @WriteLn()
+  br label %ifcont70
+
+else69:                                           ; preds = %end65
+  br label %ifcont70
+
+ifcont70:                                         ; preds = %else69, %then67
+  ret void
+}
+
+define i64 @output() {
+entry:
+  store i64 283, i64* @n
+  %n = load i64, i64* @n
+  %calltmp = call void @WriteInt(i64 %n)
+  %calltmp1 = call void @WriteLn()
+  %n2 = load i64, i64* @n
+  %calltmp3 = call void @Primes(i64 %n2)
+  ret i64 0
+}

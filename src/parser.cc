@@ -172,6 +172,20 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     return cnst;
 }
 
+void Parser::parse_identList(
+    std::vector<std::shared_ptr<ASTIdentifier>> &list) {
+
+    auto id = parse_identifier();
+    list.push_back(id);
+    auto tok = lexer.peek_token();
+    while (tok.type == TokenType::comma) {
+        lexer.get_token();
+        id = parse_identifier();
+        list.push_back(id);
+        tok = lexer.peek_token();
+    }
+}
+
 std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
     debug("Parser::parse_typedec");
     auto type = makeAST<ASTTypeDec>(lexer);
@@ -192,7 +206,7 @@ std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
 }
 
 /**
- * @brief  "VAR" (IDENT ":" type ";")*
+ * @brief  "VAR" (identList ":" type ";")*
  *
  * @return std::shared_ptr<ASTVar>
  */
@@ -203,16 +217,20 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
     lexer.get_token(); // VAR
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
-        VarDec dec;
-        dec.first = parse_identifier();
+        std::vector<std::shared_ptr<ASTIdentifier>> list;
+        parse_identList(list);
         get_token(TokenType::colon);
-        dec.second = parse_type();
+        auto type = parse_type();
         get_token(TokenType::semicolon);
 
-        // Not sure what type this const is yet.
-        symbols->put(dec.first->value, TypeTable::VoidType);
-
-        var->vars.push_back(dec);
+        std::for_each(begin(list), end(list), [=](auto const &i) {
+            VarDec dec;
+            dec.first = i;
+            dec.second = type;
+            // delay type assignment to inspector
+            symbols->put(dec.first->value, TypeTable::VoidType);
+            var->vars.push_back(dec);
+        });
         tok = lexer.peek_token();
     }
     return var;
@@ -811,15 +829,7 @@ std::shared_ptr<ASTRecord> Parser::parse_record() {
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
         std::vector<std::shared_ptr<ASTIdentifier>> ids;
-        auto                                        id = parse_identifier();
-        ids.push_back(id);
-        tok = lexer.peek_token();
-        while (tok.type == TokenType::comma) {
-            lexer.get_token();
-            id = parse_identifier();
-            ids.push_back(id);
-            tok = lexer.peek_token();
-        }
+        parse_identList(ids);
 
         get_token(TokenType::colon);
         auto type = parse_type();

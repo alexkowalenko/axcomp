@@ -444,3 +444,27 @@ TEST(Inspector, TypeAssign) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, TypeExpr) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                     spin = BOOLEAN;
+                VAR seconds : time;
+                    orientation : spin;
+                BEGIN
+                    seconds := 60;
+                    seconds := seconds + 1;
+                    orientation := FALSE;
+                    RETURN seconds
+                END alpha.)",
+         "MODULE alpha;\nTYPE\ntime = INTEGER;\nspin = BOOLEAN;\nVAR\nseconds: "
+         "time;\norientation: spin;\nBEGIN\nseconds := 60;\nseconds := "
+         "seconds+1;\norientation := FALSE;\nRETURN seconds\nEND alpha.",
+         ""},
+
+        // Errors
+    };
+    do_inspect_tests(tests);
+}

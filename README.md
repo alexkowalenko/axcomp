@@ -32,7 +32,7 @@ module = "MODULE" IDENT ";"
 
 declarations = ["CONST" (IDENT "=" INTEGER ";")* ]
                ["TYPE" (IDENT "=" type ";")* ]
-               ["VAR" (IDENT ":" type ";")* ]
+               ["VAR" (identList ":" type ";")* ]
 
 procedures = ( procedureDeclaration ";")*
 

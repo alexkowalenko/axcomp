@@ -1,9 +1,16 @@
 #!env python3
+#
+# AX compiler
+#
+# Copyright © 2020 Alex Kowalenko
+#
 
 from glob import glob
 from pathlib import Path
 import os
 from colored import fg, bg, attr
+
+import argparse
 
 install_dir = "../../bin"
 
@@ -90,8 +97,20 @@ def get_tests():
 
 
 def main():
-    tests = get_tests()
+
+    argsParser = argparse.ArgumentParser()
+    argsParser.add_argument(
+        '-t', '--tests', help="run test on these directories")
+    args = argsParser.parse_args()
+
     res = 0
+    if args.tests:
+        x = args.tests
+        tests = x.split(",")
+    else:
+        tests = get_tests()
+
+    print(f"tests {tests}")
     for d in tests:
         res = res + do_tests_dir(d)
     return res

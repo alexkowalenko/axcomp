@@ -69,6 +69,20 @@ TEST(Parser, Var) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, VarList) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE y;
+            VAR x, y: INTEGER;
+            BEGIN 
+                RETURN 12 
+            END y.)",
+         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nRETURN 12\nEND y."},
+
+    };
+    do_parse_tests(tests);
+}
+
 TEST(Parser, Assignment) {
     std::vector<ParseTests> tests = {
 

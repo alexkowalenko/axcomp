@@ -103,8 +103,22 @@ message(STATUS "Using LLVM libs: ${llvm_libs}")
 add_subdirectory(docs)
 
 # src dir
-file(GLOB source_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.cc)
-add_library(libax STATIC ${source_files})
+add_library(libax STATIC 
+  src/ast.cc
+  src/error.cc 
+  src/inspector.cc 
+  src/lexer.cc 
+  src/location.cc
+  src/parser.cc
+  src/token.cc
+  src/type.cc
+  src/typetable.cc
+  src/astvisitor.cc
+  src/printer.cc
+  src/parser.cc
+  src/inspector.cc 
+  src/codegen.cc
+)
 include_directories(src)
 include_directories(extern/CLI11/include)
 
