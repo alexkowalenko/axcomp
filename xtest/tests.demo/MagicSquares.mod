@@ -18,11 +18,9 @@ PROCEDURE Generate;  (*magic square of order 3, 5, 7, ... *)
     REPEAT j := 0;
       REPEAT WriteInt(M[i][j]); j := j+1 UNTIL j = n;
       WriteLn(); i := i+1
-    UNTIL i = n;
-    RETURN
+    UNTIL i = n
   END Generate;
 
 BEGIN 
-    Generate();
-    RETURN 0
+    Generate()
 END MagicSquares.

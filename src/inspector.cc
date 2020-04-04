@@ -36,17 +36,10 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
 
-    has_return = false;
     last_proc = nullptr;
 
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
-    if (!has_return) {
-        auto e = CodeGenException(
-            llvm::formatv("MODULE {0} has no RETURN function", ast->name),
-            ast->get_location());
-        errors.add(e);
-    }
 }
 
 void Inspector::visit_ASTConst(ASTConst *ast) {
@@ -140,16 +133,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         });
     ast->decs->accept(this);
     std::for_each(ast->stats.begin(), ast->stats.end(),
-                  [this, ast](auto const &x) {
-                      has_return = false;
-                      x->accept(this);
-                  });
-    if (!has_return) {
-        auto e = CodeGenException(
-            llvm::formatv("PROCEDURE {0} has no RETURN function", ast->name),
-            ast->get_location());
-        errors.add(e);
-    }
+                  [this, ast](auto const &x) { x->accept(this); });
     current_symboltable = former_symboltable;
     current_consts = former_consts;
 }
@@ -181,7 +165,6 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
 
 void Inspector::visit_ASTReturn(ASTReturn *ast) {
     debug("Inspector::visit_ASTReturn");
-    has_return = true;
     TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);

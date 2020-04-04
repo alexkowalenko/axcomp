@@ -86,8 +86,12 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     ast->decs->accept(this);
 
     // Go through the statements
+    has_return = false;
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
+    if (!has_return) {
+        builder.CreateRet(TypeTable::IntType->get_init());
+    }
 
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
@@ -247,9 +251,16 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     ast->decs->accept(this);
 
     // Go through the statements
+    has_return = false;
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
-
+    if (!has_return) {
+        if (ast->return_type == nullptr) {
+            builder.CreateRetVoid();
+        } else {
+            builder.CreateRet(last_value);
+        }
+    }
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
 
@@ -278,6 +289,7 @@ void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
     } else {
         builder.CreateRetVoid();
     }
+    has_return = true;
 }
 
 void CodeGenerator::visit_ASTExit(ASTExit *ast) {

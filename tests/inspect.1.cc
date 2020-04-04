@@ -40,8 +40,6 @@ TEST(Inspector, Return) {
          "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nz := 10;\nRETURN z\nEND x.", ""},
 
         // Errors
-        {"MODULE x; VAR z: INTEGER; BEGIN z := 10 END x.", "",
-         "1,0: MODULE x has no RETURN function"},
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN z := 1 END y; "
          "BEGIN z := 10; END x.",
          "", "1,77: Unexpected token: END"},

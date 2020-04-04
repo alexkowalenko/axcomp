@@ -29,13 +29,11 @@ BEGIN x := 1; inc := 4; lim := 1; sqr := 4; m := 0; i := 3;
       END;
       i := i+1
     END ;
-    IF m > 0 THEN WriteLn() END;
-    RETURN
+    IF m > 0 THEN WriteLn() END
 END Primes;
 
 BEGIN 
     n := 283; (*ReadInt(n); *) 
     WriteInt(n); WriteLn(); 
-    Primes(n);
-    RETURN 0
+    Primes(n)
 END PrimeNumbers.

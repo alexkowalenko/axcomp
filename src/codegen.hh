@@ -98,6 +98,7 @@ class CodeGenerator : ASTVisitor {
     bool        top_level{true};   // am I in the top level of the module?
     Value *     last_value;        // holds last value of compilation
     BasicBlock *last_end{nullptr}; // last end block in loop, used for EXIT
+    bool        has_return{false};
 };
 
 } // namespace ax

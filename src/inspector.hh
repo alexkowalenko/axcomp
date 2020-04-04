@@ -62,7 +62,6 @@ class Inspector : public ASTVisitor {
     TypeTable &   types;
     ErrorManager &errors;
 
-    bool          has_return{false};
     bool          is_const{false};
     TypePtr       last_type{nullptr};
     ASTProcedure *last_proc{nullptr};
