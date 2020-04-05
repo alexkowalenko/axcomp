@@ -31,7 +31,10 @@ llvm::Constant *BooleanType::make_value(bool b) {
 ProcedureType::operator std::string() {
     std::string res{"("};
     for (auto &t : params) {
-        res += std::string(*t);
+        if (t.second == Attr::var) {
+            res += " VAR ";
+        }
+        res += std::string(*t.first);
         if (t != *(params.end() - 1)) {
             res += ",";
         }

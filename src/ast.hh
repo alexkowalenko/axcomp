@@ -11,6 +11,7 @@
 #include <variant>
 
 #include "astvisitor.hh"
+#include "attr.hh"
 #include "location.hh"
 #include "token.hh"
 #include "type.hh"
@@ -62,11 +63,6 @@ class ASTBool : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTBool(this); };
 
     bool value{false};
-};
-
-enum class Attr {
-    null = 0,
-    var, // VAR parameters
 };
 
 class ASTIdentifier : public ASTBase {

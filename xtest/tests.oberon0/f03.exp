@@ -17,8 +17,8 @@ loop:                                             ; preds = %loop, %entry
   %i1 = load i64, i64* %i
   %modtmp = srem i64 %i1, 2
   %0 = icmp eq i64 %modtmp, 0
-  %calltmp = call void @WriteBoolean(i1 %0)
-  %calltmp2 = call void @WriteLn()
+  call void @WriteBoolean(i1 %0)
+  call void @WriteLn()
   %1 = load i64, i64* %i
   %nextvar = add i64 %1, 1
   store i64 %nextvar, i64* %i

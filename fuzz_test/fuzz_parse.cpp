@@ -20,8 +20,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ErrorManager       errors;
     Lexer              lex(is, errors);
 
-    auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-    Parser parser(lex, symbols, errors);
+    auto      symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+    TypeTable types;
+    types.initialise();
+    Parser parser(lex, symbols, types, errors);
 
     try {
         auto ast = parser.parse();

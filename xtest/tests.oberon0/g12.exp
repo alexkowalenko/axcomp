@@ -46,7 +46,7 @@ entry:
   store i64 12, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
   store i64 24, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
   %pt = load %0, %0* @pt
-  %calltmp = call %2 @identity(%0 %pt)
-  %calltmp1 = call i64 @sum(%2 %calltmp)
-  ret i64 %calltmp1
+  %0 = call %2 @identity(%0 %pt)
+  %1 = call i64 @sum(%2 %0)
+  ret i64 %1
 }

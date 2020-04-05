@@ -29,8 +29,8 @@ loop:                                             ; preds = %loop, %entry
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 2
   store i64 %nextvar, i64* %i
-  %calltmp = call i64 @f()
-  %loopcond = icmp sle i64 %nextvar, %calltmp
+  %1 = call i64 @f()
+  %loopcond = icmp sle i64 %nextvar, %1
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop

@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     types.initialise();
 
     auto       symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-    ax::Parser parser(lexer, symbols, errors);
+    ax::Parser parser(lexer, symbols, types, errors);
     parser.setup_builtins();
 
     try {

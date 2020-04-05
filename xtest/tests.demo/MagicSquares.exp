@@ -107,7 +107,7 @@ repeat36:                                         ; preds = %repeat36, %repeat
   %j39 = load i64, i64* %j
   %idx40 = getelementptr [13 x [13 x i64]], [13 x [13 x i64]]* %M, i64 0, i64 %i38, i64 %j39
   %idx41 = load i64, i64* %idx40
-  %calltmp = call void @WriteInt(i64 %idx41)
+  call void @WriteInt(i64 %idx41)
   %j42 = load i64, i64* %j
   %addtmp43 = add i64 %j42, 1
   store i64 %addtmp43, i64* %j
@@ -117,21 +117,21 @@ repeat36:                                         ; preds = %repeat36, %repeat
   br i1 %2, label %end46, label %repeat36
 
 end46:                                            ; preds = %repeat36
-  %calltmp47 = call void @WriteLn()
-  %i48 = load i64, i64* %i
-  %addtmp49 = add i64 %i48, 1
-  store i64 %addtmp49, i64* %i
-  %i50 = load i64, i64* %i
-  %n51 = load i64, i64* %n
-  %3 = icmp eq i64 %i50, %n51
-  br i1 %3, label %end52, label %repeat
+  call void @WriteLn()
+  %i47 = load i64, i64* %i
+  %addtmp48 = add i64 %i47, 1
+  store i64 %addtmp48, i64* %i
+  %i49 = load i64, i64* %i
+  %n50 = load i64, i64* %n
+  %3 = icmp eq i64 %i49, %n50
+  br i1 %3, label %end51, label %repeat
 
-end52:                                            ; preds = %end46
+end51:                                            ; preds = %end46
   ret void
 }
 
 define i64 @output() {
 entry:
-  %calltmp = call void @Generate()
+  call void @Generate()
   ret i64 0
 }

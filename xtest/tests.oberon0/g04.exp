@@ -23,8 +23,8 @@ loop:                                             ; preds = %loop, %entry
   %i1 = load i64, i64* %i
   %idx = getelementptr [3 x i1], [3 x i1]* @x, i64 0, i64 %i1
   %idx2 = load i1, i1* %idx
-  %calltmp = call void @WriteBoolean(i1 %idx2)
-  %calltmp3 = call void @WriteLn()
+  call void @WriteBoolean(i1 %idx2)
+  call void @WriteLn()
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
@@ -32,14 +32,14 @@ loop:                                             ; preds = %loop, %entry
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  %x4 = load [3 x i1], [3 x i1]* @x
-  %idx5 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 0)
-  %x6 = load [3 x i1], [3 x i1]* @x
-  %idx7 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 1)
-  %subtmp = or i1 %idx5, %idx7
-  %x8 = load [3 x i1], [3 x i1]* @x
-  %idx9 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 2)
-  %subtmp10 = or i1 %subtmp, %idx9
-  %1 = zext i1 %subtmp10 to i64
+  %x3 = load [3 x i1], [3 x i1]* @x
+  %idx4 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 0)
+  %x5 = load [3 x i1], [3 x i1]* @x
+  %idx6 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 1)
+  %subtmp = or i1 %idx4, %idx6
+  %x7 = load [3 x i1], [3 x i1]* @x
+  %idx8 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @x, i64 0, i64 2)
+  %subtmp9 = or i1 %subtmp, %idx8
+  %1 = zext i1 %subtmp9 to i64
   ret i64 %1
 }

@@ -32,8 +32,8 @@ entry:
   %x21 = load [5 x i64], [5 x i64]* @x2
   %idx2 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @x2, i64 0, i64 1)
   %addtmp = add i64 %idx, %idx2
-  %calltmp = call i64 @f()
-  %addtmp3 = add i64 %addtmp, %calltmp
+  %0 = call i64 @f()
+  %addtmp3 = add i64 %addtmp, %0
   store i64 %addtmp3, i64* @x1
   %x24 = load [5 x i64], [5 x i64]* @x2
   %idx5 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @x2, i64 0, i64 3)

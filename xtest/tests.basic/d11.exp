@@ -33,10 +33,10 @@ entry:
 
 define i64 @output() {
 entry:
-  %calltmp = call i1 @eq(i64 1, i64 1)
-  %calltmp1 = call i1 @neq(i64 1, i64 1)
-  %modtmp = and i1 %calltmp, %calltmp1
-  %0 = xor i1 %modtmp, true
-  %1 = zext i1 %0 to i64
-  ret i64 %1
+  %0 = call i1 @eq(i64 1, i64 1)
+  %1 = call i1 @neq(i64 1, i64 1)
+  %modtmp = and i1 %0, %1
+  %2 = xor i1 %modtmp, true
+  %3 = zext i1 %2 to i64
+  ret i64 %3
 }

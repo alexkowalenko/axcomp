@@ -23,6 +23,6 @@ entry:
 
 define i64 @output() {
 entry:
-  %calltmp = call void @f()
+  call void @f()
   ret i64 0
 }

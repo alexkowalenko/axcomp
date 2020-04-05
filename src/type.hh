@@ -14,6 +14,8 @@
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 
+#include "attr.hh"
+
 namespace ax {
 
 class Type;
@@ -73,14 +75,16 @@ class BooleanType : public SimpleType {
 
 class ProcedureType : public Type {
   public:
-    ProcedureType(TypePtr returns, std::vector<TypePtr> params)
+    explicit ProcedureType() = default;
+    ProcedureType(TypePtr returns, std::vector<std::pair<TypePtr, Attr>> params)
         : ret(std::move(returns)), params(std::move(params)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
 
-    TypePtr              ret{nullptr};
-    std::vector<TypePtr> params{};
+    TypePtr ret{nullptr};
+    using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
+    ParamsList params{};
 };
 
 class ArrayType : public Type {

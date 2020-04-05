@@ -914,17 +914,21 @@ void Parser::setup_builtins() {
     builtins = {
         {"WriteInt",
          std::make_shared<ProcedureType>(
-             TypeTable::VoidType, std::vector<TypePtr>{TypeTable::IntType})},
+             TypeTable::VoidType,
+             ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
 
         {"WriteBoolean",
          std::make_shared<ProcedureType>(
-             TypeTable::VoidType, std::vector<TypePtr>{TypeTable::BoolType})},
+             TypeTable::VoidType,
+             ProcedureType::ParamsList{{TypeTable::BoolType, Attr::null}})},
 
-        {"WriteLn", std::make_shared<ProcedureType>(TypeTable::VoidType,
-                                                    std::vector<TypePtr>{})}};
+        {"WriteLn", std::make_shared<ProcedureType>(
+                        TypeTable::VoidType, ProcedureType::ParamsList{})}};
 
-    std::for_each(begin(builtins), end(builtins),
-                  [this](auto &f) { symbols->put(f.first, f.second); });
+    std::for_each(begin(builtins), end(builtins), [this](auto &f) {
+        symbols->put(f.first, f.second);
+        types.put(f.first, f.second);
+    });
 }
 
 }; // namespace ax

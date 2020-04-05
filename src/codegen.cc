@@ -43,7 +43,8 @@ inline const std::string file_ext_obj{".o"};
 CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
     : options(o), types(t), filename("output"), builder(context),
       last_value(nullptr) {
-    top_symboltable = std::make_shared<SymbolTable<Value *>>(nullptr);
+    top_symboltable =
+        std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(nullptr);
     current_symboltable = top_symboltable;
     TypeTable::setTypes(context);
 }
@@ -119,7 +120,7 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         auto *init = getType_init(c.second);
         gVar->setInitializer(init);
-        current_symboltable->put(c.first->value, gVar);
+        current_symboltable->put(c.first->value, {gVar, Attr::null});
     }
 }
 
@@ -142,7 +143,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         }
         gVar->setConstant(true);
 
-        current_symboltable->put(c.ident->value, gVar);
+        current_symboltable->put(c.ident->value, {gVar, Attr::null});
     }
 }
 
@@ -175,7 +176,7 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         auto *alloc = createEntryBlockAlloca(function, name, c.type);
         builder.CreateStore(val, alloc);
 
-        current_symboltable->put(name, alloc);
+        current_symboltable->put(name, {alloc, Attr::null});
     }
 }
 
@@ -195,7 +196,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 
         alloc->setName(name);
         debug("set name: {}", name);
-        current_symboltable->put(name, alloc);
+        current_symboltable->put(name, {alloc, Attr::null});
     }
     debug("finish var");
 }
@@ -207,6 +208,11 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     std::for_each(ast->params.begin(), ast->params.end(),
                   [this, ast, &proto](auto const &p) {
                       auto type = getType(p.second);
+                      if (p.first->is(Attr::var)) {
+                          debug(" CodeGenerator::visit_ASTProcedure VAR {0}",
+                                p.first->value);
+                          type = type->getPointerTo();
+                      }
                       proto.push_back(type);
                   });
 
@@ -227,7 +233,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     auto former_symboltable = current_symboltable;
     current_symboltable =
-        std::make_shared<SymbolTable<Value *>>(former_symboltable);
+        std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(
+            former_symboltable);
 
     // Set paramater names
     unsigned i = 0;
@@ -235,14 +242,20 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         auto param_name = ast->params[i].first->value;
         arg.setName(param_name);
         auto type_name = ast->params[i].second;
+
+        Attr attr = Attr::null;
+        if (ast->params[i].first->is(Attr::var)) {
+            attr = Attr::var;
+        }
         // Create an alloca for this variable.
-        AllocaInst *alloca = createEntryBlockAlloca(f, param_name, type_name);
+        AllocaInst *alloca =
+            createEntryBlockAlloca(f, param_name, type_name, attr == Attr::var);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
 
         // put also into symbol table
-        current_symboltable->put(param_name, alloca);
+        current_symboltable->put(param_name, {alloca, attr});
         debug("put {} into symboltable", param_name);
         i++;
     };
@@ -319,12 +332,26 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
             ast->get_location());
     }
 
+    auto res = types.find(ast->name->value);
+    if (!res) {
+        throw CodeGenException(
+            formatv("function: {0} not found", ast->name->value),
+            ast->get_location());
+    }
+    auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(*res);
+    assert(typeFunction);
+
     std::vector<Value *> args;
+    auto                 i = 0;
     for (auto const &a : ast->args) {
         a->accept(this);
+        if (typeFunction->params[i].second == Attr::var) {
+            debug("CodeGenerator::visit_ASTCall VAR param");
+        }
         args.push_back(last_value);
+        i++;
     }
-    last_value = builder.CreateCall(callee, args, "calltmp");
+    last_value = builder.CreateCall(callee, args);
 }
 
 void CodeGenerator::visit_ASTIf(ASTIf *ast) {
@@ -420,11 +447,12 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
 
     auto former_symboltable = current_symboltable;
     current_symboltable =
-        std::make_shared<SymbolTable<Value *>>(former_symboltable);
+        std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(
+            former_symboltable);
     auto *index = createEntryBlockAlloca(funct, ast->ident->value,
                                          TypeTable::IntType->get_llvm());
     builder.CreateStore(last_value, index);
-    current_symboltable->put(ast->ident->value, index);
+    current_symboltable->put(ast->ident->value, {index, Attr::null});
 
     // Insert an explicit fall through from the current block to the Loop.
     // Start insertion in LoopBB.
@@ -735,8 +763,15 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
-    debug("CodeGenerator::visit_ASTDesignatorPtr {}", std::string(*ast));
-    visit_ASTIdentifierPtr(ast->ident.get());
+    debug("CodeGenerator::visit_ASTDesignatorPtr {0}", std::string(*ast));
+
+    if (ast->ident->is(Attr::var)) {
+        debug("CodeGenerator::visit_ASTDesignatorPtr VAR {0}",
+              std::string(*ast));
+        visit_ASTIdentifier(ast->ident.get());
+    } else {
+        visit_ASTIdentifierPtr(ast->ident.get());
+    }
 
     // Check if has selectors
     if (ast->selectors.empty()) {
@@ -748,15 +783,20 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
 }
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
-    debug("CodeGenerator::visit_ASTIdentifier {}", ast->value);
+    debug("CodeGenerator::visit_ASTIdentifier {0}", ast->value);
     visit_ASTIdentifierPtr(ast);
     last_value = builder.CreateLoad(last_value, ast->value);
 }
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
-    debug("CodeGenerator::getPtr {}", ast->value);
-    if (auto res = current_symboltable->find(ast->value)) {
-        last_value = *res;
+    debug("CodeGenerator::getPtr {0}", ast->value);
+    if (auto res = current_symboltable->find(ast->value); res) {
+        last_value = res->first;
+        if (res->second == Attr::var) {
+            debug("CodeGenerator::getPtr VAR {0}", ast->value);
+            last_value = builder.CreateLoad(last_value, ast->value);
+        }
+        last_value = res->first;
         return;
     }
     throw CodeGenException(formatv("identifier {0} unknown", ast->value),
@@ -779,15 +819,22 @@ void CodeGenerator::visit_ASTBool(ASTBool *ast) {
  * @param name
  * @return AllocaInst*
  */
-AllocaInst *
-CodeGenerator::createEntryBlockAlloca(Function *               function,
-                                      std::string const &      name,
-                                      std::shared_ptr<ASTType> type) {
+AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *         function,
+                                                  std::string const &name,
+                                                  std::shared_ptr<ASTType> type,
+                                                  bool var) {
     AllocaInst *res = nullptr;
     IRBuilder<> TmpB(&function->getEntryBlock(),
                      function->getEntryBlock().begin());
+
     std::visit(
-        [&](auto) { res = TmpB.CreateAlloca(getType(type), nullptr, name); },
+        [&](auto) {
+            llvm::Type *t = getType(type);
+            if (var) {
+                t = t->getPointerTo();
+            }
+            res = TmpB.CreateAlloca(t, nullptr, name);
+        },
         type->type);
     return res;
 }
@@ -839,8 +886,8 @@ void CodeGenerator::setup_builtins() {
         std::vector<llvm::Type *> proto;
         std::for_each(begin(p->params), end(p->params),
                       [this, &proto](auto const &t) {
-                          debug("param: {} ", t->get_name());
-                          proto.push_back(t->get_llvm());
+                          debug("param: {} ", t.first->get_name());
+                          proto.push_back(t.first->get_llvm());
                       });
 
         auto *funcType = FunctionType::get(p->ret->get_llvm(), proto, false);

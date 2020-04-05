@@ -38,6 +38,6 @@ entry:
   store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 1)
   store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 2)
   %z0 = load %0, %0* @z0
-  %calltmp = call i64 @sum(%0 %z0)
-  ret i64 %calltmp
+  %0 = call i64 @sum(%0 %z0)
+  ret i64 %0
 }

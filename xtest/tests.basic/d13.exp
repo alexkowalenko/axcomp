@@ -1,0 +1,35 @@
+; ModuleID = 'd13'
+source_filename = "d13"
+
+@a = internal global i64 0
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+define void @f(i64 %x) {
+entry:
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  %x2 = load i64, i64* %x1
+  call void @WriteInt(i64 %x2)
+  call void @WriteLn()
+  store i64 10, i64* %x1
+  %x3 = load i64, i64* %x1
+  call void @WriteInt(i64 %x3)
+  call void @WriteLn()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* @a
+  %a = load i64, i64* @a
+  call void @f(i64 %a)
+  %a1 = load i64, i64* @a
+  call void @WriteInt(i64 %a1)
+  call void @WriteLn()
+  ret i64 0
+}

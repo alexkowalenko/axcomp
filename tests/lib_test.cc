@@ -22,17 +22,17 @@
 using namespace ax;
 
 void do_parse_tests(std::vector<ParseTests> &tests) {
-    TypeTable types;
-    types.initialise();
 
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
         Lexer              lex(is, errors);
+        TypeTable          types;
+        types.initialise();
 
         auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-        Parser parser(lex, symbols, errors);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {
@@ -56,17 +56,17 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 }
 
 void do_inspect_tests(std::vector<ParseTests> &tests) {
-    TypeTable types;
-    types.initialise();
 
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
         Lexer              lex(is, errors);
+        TypeTable          types;
+        types.initialise();
 
         auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-        Parser parser(lex, symbols, errors);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {

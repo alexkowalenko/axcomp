@@ -95,11 +95,15 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Check parameter types
     debug("Inspector::visit_ASTProcedure check parameter types");
-    std::vector<TypePtr> argTypes;
+    ProcedureType::ParamsList argTypes;
     std::for_each(ast->params.begin(), ast->params.end(),
                   [this, &argTypes](auto const &p) {
                       p.second->accept(this);
-                      argTypes.push_back(last_type);
+                      auto attr = Attr::null;
+                      if (p.first->is(Attr::var)) {
+                          attr = Attr::var;
+                      }
+                      argTypes.push_back({last_type, attr});
                   });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
@@ -238,13 +242,13 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
          call_iter++, proc_iter++) {
         (*call_iter)->accept(this);
         auto base_last = types.resolve(last_type->get_name());
-        auto proc_base = types.resolve((*proc_iter)->get_name());
+        auto proc_base = types.resolve((*proc_iter).first->get_name());
         if (!(*base_last)->equiv(*proc_base)) {
             throw TypeError(llvm::formatv("procedure call {0} has incorrect "
                                           "type {1} for parameter {2}",
                                           ast->name->value,
                                           last_type->get_name(),
-                                          (*proc_iter)->get_name()),
+                                          (*proc_iter).first->get_name()),
                             ast->get_location());
         };
     }

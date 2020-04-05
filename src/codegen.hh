@@ -75,7 +75,8 @@ class CodeGenerator : ASTVisitor {
 
     AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
                                        std::string const &      name,
-                                       std::shared_ptr<ASTType> type);
+                                       std::shared_ptr<ASTType> type,
+                                       bool                     var = false);
 
     AllocaInst *createEntryBlockAlloca(Function *         function,
                                        std::string const &name,
@@ -85,10 +86,14 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(std::shared_ptr<ASTType> const &type);
     Constant *  getType_init(std::shared_ptr<ASTType> const &type);
 
-    Options &                             options;
-    TypeTable &                           types;
-    std::shared_ptr<SymbolTable<Value *>> top_symboltable;
-    std::shared_ptr<SymbolTable<Value *>> current_symboltable;
+    Options &  options;
+    TypeTable &types;
+
+    using ValueSymbolTable =
+        std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;
+
+    ValueSymbolTable top_symboltable;
+    ValueSymbolTable current_symboltable;
 
     std::string             filename;
     LLVMContext             context;

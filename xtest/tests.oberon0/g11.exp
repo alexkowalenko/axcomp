@@ -70,7 +70,7 @@ loop:                                             ; preds = %loop, %entry
 
 afterloop:                                        ; preds = %loop
   %pt = load [3 x i64], [3 x i64]* @pt
-  %calltmp = call [3 x i64] @identity([3 x i64] %pt)
-  %calltmp6 = call i64 @sum([3 x i64] %calltmp)
-  ret i64 %calltmp6
+  %1 = call [3 x i64] @identity([3 x i64] %pt)
+  %2 = call i64 @sum([3 x i64] %1)
+  ret i64 %2
 }

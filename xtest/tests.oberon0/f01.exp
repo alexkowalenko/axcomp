@@ -13,7 +13,7 @@ define i64 @output() {
 entry:
   store i64 12, i64* @x
   %x = load i64, i64* @x
-  %calltmp = call void @WriteInt(i64 %x)
-  %calltmp1 = call void @WriteLn()
+  call void @WriteInt(i64 %x)
+  call void @WriteLn()
   ret i64 0
 }
