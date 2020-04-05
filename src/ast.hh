@@ -7,6 +7,7 @@
 #pragma once
 
 #include <optional>
+#include <unordered_set>
 #include <variant>
 
 #include "astvisitor.hh"
@@ -63,6 +64,11 @@ class ASTBool : public ASTBase {
     bool value{false};
 };
 
+enum class Attr {
+    null = 0,
+    var, // VAR parameters
+};
+
 class ASTIdentifier : public ASTBase {
   public:
     ASTIdentifier() = default;
@@ -71,8 +77,13 @@ class ASTIdentifier : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(this); };
 
-    std::string value;
-};
+    bool is(Attr attr) { return attrs.find(attr) != attrs.end(); }
+    void set(Attr attr) { attrs.insert(attr); }
+
+    std::string              value;
+    std::unordered_set<Attr> attrs;
+
+}; // namespace ax
 
 /**
  * @brief INDENT | arrayType

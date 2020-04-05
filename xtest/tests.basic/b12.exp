@@ -3,6 +3,8 @@ source_filename = "b12"
 
 declare void @WriteInt(i64)
 
+declare void @WriteBoolean(i1)
+
 declare void @WriteLn()
 
 define i64 @output() {

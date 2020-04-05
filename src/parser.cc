@@ -288,7 +288,8 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
 
 /**
  * @brief formalParameters
- * = "(" [(identList : INDENT)* (";"  (identList : INDENT)*)] "")"
+ * = "(" [ ["VAR"] (identList : INDENT)* (";"  ["VAR"] (identList : INDENT)*)]
+ * "")"
  *
  * @return std::vector<VarDec>
  */
@@ -296,13 +297,27 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
     lexer.get_token(); // get (
     auto tok = lexer.peek_token();
     while (tok.type != TokenType::r_paren) {
+
+        Attr attr = Attr::null;
+
+        auto tok = lexer.peek_token();
+        if (tok.type == TokenType::var) {
+            lexer.get_token();
+            attr = Attr::var;
+        }
         std::vector<std::shared_ptr<ASTIdentifier>> ids;
         auto                                        id = parse_identifier();
+        if (attr == Attr::var) {
+            id->set(attr);
+        }
         ids.push_back(id);
-        auto tok = lexer.peek_token();
+        tok = lexer.peek_token();
         while (tok.type == TokenType::comma) {
             lexer.get_token();
             id = parse_identifier();
+            if (attr == Attr::var) {
+                id->set(attr);
+            }
             ids.push_back(id);
             tok = lexer.peek_token();
         }
@@ -896,12 +911,17 @@ std::shared_ptr<ASTModule> Parser::parse() {
 void Parser::setup_builtins() {
     debug("Parser::setup_builtins");
 
-    builtins = {{"WriteInt", std::make_shared<ProcedureType>(
-                                 TypeTable::VoidType,
-                                 std::vector<TypePtr>{TypeTable::IntType})},
+    builtins = {
+        {"WriteInt",
+         std::make_shared<ProcedureType>(
+             TypeTable::VoidType, std::vector<TypePtr>{TypeTable::IntType})},
 
-                {"WriteLn", std::make_shared<ProcedureType>(
-                                TypeTable::VoidType, std::vector<TypePtr>{})}};
+        {"WriteBoolean",
+         std::make_shared<ProcedureType>(
+             TypeTable::VoidType, std::vector<TypePtr>{TypeTable::BoolType})},
+
+        {"WriteLn", std::make_shared<ProcedureType>(TypeTable::VoidType,
+                                                    std::vector<TypePtr>{})}};
 
     std::for_each(begin(builtins), end(builtins),
                   [this](auto &f) { symbols->put(f.first, f.second); });

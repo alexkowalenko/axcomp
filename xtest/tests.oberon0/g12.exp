@@ -13,6 +13,8 @@ source_filename = "g12"
 
 declare void @WriteInt(i64)
 
+declare void @WriteBoolean(i1)
+
 declare void @WriteLn()
 
 define %2 @identity(%3 %a) {

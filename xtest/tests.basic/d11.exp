@@ -3,6 +3,8 @@ source_filename = "d11"
 
 declare void @WriteInt(i64)
 
+declare void @WriteBoolean(i1)
+
 declare void @WriteLn()
 
 define i1 @eq(i64 %x, i64 %y) {

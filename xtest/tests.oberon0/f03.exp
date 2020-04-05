@@ -1,7 +1,5 @@
-; ModuleID = 'e06'
-source_filename = "e06"
-
-@x = internal global i64 0
+; ModuleID = 'f03'
+source_filename = "f03"
 
 declare void @WriteInt(i64)
 
@@ -12,22 +10,21 @@ declare void @WriteLn()
 define i64 @output() {
 entry:
   %i = alloca i64
-  store i64 0, i64* @x
-  store i64 0, i64* %i
+  store i64 1, i64* %i
   br label %loop
 
 loop:                                             ; preds = %loop, %entry
-  %x = load i64, i64* @x
   %i1 = load i64, i64* %i
-  %addtmp = add i64 %x, %i1
-  store i64 %addtmp, i64* @x
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
+  %modtmp = srem i64 %i1, 2
+  %0 = icmp eq i64 %modtmp, 0
+  %calltmp = call void @WriteBoolean(i1 %0)
+  %calltmp2 = call void @WriteLn()
+  %1 = load i64, i64* %i
+  %nextvar = add i64 %1, 1
   store i64 %nextvar, i64* %i
-  %loopcond = icmp sle i64 %nextvar, 9
+  %loopcond = icmp sle i64 %nextvar, 12
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  %x2 = load i64, i64* @x
-  ret i64 %x2
+  ret i64 0
 }

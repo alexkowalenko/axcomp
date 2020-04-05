@@ -5,6 +5,8 @@ source_filename = "g11"
 
 declare void @WriteInt(i64)
 
+declare void @WriteBoolean(i1)
+
 declare void @WriteLn()
 
 define [3 x i64] @identity([3 x i64] %a) {

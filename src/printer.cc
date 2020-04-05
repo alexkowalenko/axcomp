@@ -70,6 +70,9 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
         os << "(";
         std::for_each(ast->params.begin(), ast->params.end(),
                       [this, ast](auto const &p) {
+                          if (p.first->is(Attr::var)) {
+                              os << "VAR ";
+                          }
                           p.first->accept(this);
                           os << " : ";
                           p.second->accept(this);

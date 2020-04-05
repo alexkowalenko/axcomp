@@ -127,7 +127,7 @@ BEGIN
     RETURN
 END f;
 
-PROCEDURE g(x: INTEGER; y: INTEGER): INTEGER;
+PROCEDURE g(x: INTEGER; VAR y: INTEGER): INTEGER;
 BEGIN
     RETURN x + y * y
 END g;
@@ -173,15 +173,17 @@ END test.
 ## Builtin functions
 
 WriteInt(x: INTEGER)
+WriteBoolean(x : BOOLEAN)
 WriteLn()
 
 ## Notes
 
-Changes to the standard definition:
+Changes to the standard:
 
 * PROCEDUREs don't have nested procedures.
-* CONSTs must be integers or boolean constants - not expressions (yet).
+* CONSTs must const expressions.
 * ARRAY sizes must be integers.
+* PROCEDURE calls without arguments still need parenthesis.
 
 ## Program options
 

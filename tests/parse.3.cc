@@ -364,3 +364,63 @@ TEST(Parser, CallArgs) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, VarArgs) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(VAR x : INTEGER) : INTEGER;
+            BEGIN
+            RETURN x
+            END f;
+            BEGIN
+            RETURN f(3)
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER): "
+         "INTEGER;\nBEGIN\nRETURN x\nEND f.\nBEGIN\nRETURN f(3)\nEND xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(VAR x ,y: INTEGER) : INTEGER;
+            BEGIN
+            RETURN x
+            END f;
+            BEGIN
+            RETURN 0
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER; VAR y : "
+         "INTEGER): INTEGER;\nBEGIN\nRETURN x\nEND f.\nBEGIN\nRETURN 0\nEND "
+         "xxx.",
+         ""},
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(VAR x ,y: INTEGER; z : BOOLEAN) : INTEGER;
+            BEGIN
+            RETURN x
+            END f;
+            BEGIN
+            RETURN 0
+            END xxx.)",
+         "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER; VAR y : "
+         "INTEGER; z : BOOLEAN): INTEGER;\nBEGIN\nRETURN x\nEND "
+         "f.\nBEGIN\nRETURN 0\nEND xxx.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE xxx;
+            VAR z : INTEGER;
+            PROCEDURE f(VAR VAR x: INTEGER) : INTEGER;
+            BEGIN
+            RETURN x
+            END f;
+            BEGIN
+            RETURN 0
+            END xxx.)",
+         "", "3,31: Unexpected token: VAR - expecting indent"},
+    };
+    do_parse_tests(tests);
+}

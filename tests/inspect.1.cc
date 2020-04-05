@@ -180,6 +180,72 @@ TEST(Inspector, Call) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, CallType) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE y; 
+        PROCEDURE f(x: INTEGER); 
+        BEGIN 
+            RETURN
+        END f; 
+        BEGIN
+            f(1) 
+        END y.)",
+         "MODULE y;\nPROCEDURE f(x : INTEGER);\nBEGIN\nRETURN \nEND "
+         "f.\nBEGIN\nf(1)\nEND y.",
+         ""},
+
+        {R"(MODULE y; 
+        PROCEDURE f(x, y: INTEGER); 
+        BEGIN 
+            RETURN
+        END f; 
+        BEGIN
+            f(1,2)
+        END y.)",
+         "MODULE y;\nPROCEDURE f(x : INTEGER; y : INTEGER);\nBEGIN\nRETURN "
+         "\nEND f.\nBEGIN\nf(1, 2)\nEND y.",
+         ""},
+
+        // Errors
+        {R"(MODULE y; 
+        PROCEDURE f(x: INTEGER); 
+        BEGIN 
+            RETURN
+        END f; 
+        BEGIN
+            f(TRUE)
+        END y.)",
+         "",
+         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "INTEGER"},
+
+        {R"(MODULE y; 
+        PROCEDURE f(x, y: INTEGER); 
+        BEGIN 
+            RETURN
+        END f; 
+        BEGIN
+            f(TRUE,2)
+        END y.)",
+         "",
+         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "INTEGER"},
+
+        {R"(MODULE y; 
+        PROCEDURE f(x, y: INTEGER); 
+        BEGIN 
+            RETURN
+        END f; 
+        BEGIN
+            f(1,TRUE)
+        END y.)",
+         "",
+         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "INTEGER"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, FunctionParams) {
     std::vector<ParseTests> tests = {
 
@@ -503,6 +569,29 @@ TEST(Inspector, Const) {
                     RETURN time
                 END alpha.)",
          "", "5,21: CONST y is not a constant expression"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, ConstAssign) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                CONST time = 60 * 60;
+                BEGIN
+                    RETURN time
+                END alpha.)",
+         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                CONST time = 60 * 60;
+                BEGIN
+                    time := 40;
+                    RETURN time
+                END alpha.)",
+         "", "4,27: Can't assign to CONST variable time"},
     };
     do_inspect_tests(tests);
 }

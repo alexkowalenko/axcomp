@@ -143,6 +143,13 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     ast->expr->accept(this);
     auto expr_type = last_type;
 
+    if (current_consts->find(ast->ident->ident->value)) {
+        auto e = TypeError(llvm::formatv("Can't assign to CONST variable {0}",
+                                         std::string(*ast->ident)),
+                           ast->get_location());
+        errors.add(e);
+    }
+
     ast->ident->accept(this);
     debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
@@ -223,6 +230,23 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
                           ast->name->value, ast->args.size(),
                           procType->params.size()),
             ast->get_location());
+    }
+
+    // Check argument types
+    auto proc_iter = procType->params.begin();
+    for (auto call_iter = ast->args.begin(); call_iter != ast->args.end();
+         call_iter++, proc_iter++) {
+        (*call_iter)->accept(this);
+        auto base_last = types.resolve(last_type->get_name());
+        auto proc_base = types.resolve((*proc_iter)->get_name());
+        if (!(*base_last)->equiv(*proc_base)) {
+            throw TypeError(llvm::formatv("procedure call {0} has incorrect "
+                                          "type {1} for parameter {2}",
+                                          ast->name->value,
+                                          last_type->get_name(),
+                                          (*proc_iter)->get_name()),
+                            ast->get_location());
+        };
     }
 
     last_type = procType->ret;

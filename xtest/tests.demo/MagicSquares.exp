@@ -3,6 +3,8 @@ source_filename = "MagicSquares"
 
 declare void @WriteInt(i64)
 
+declare void @WriteBoolean(i1)
+
 declare void @WriteLn()
 
 define void @Generate() {
