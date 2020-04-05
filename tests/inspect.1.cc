@@ -39,10 +39,11 @@ TEST(Inspector, Return) {
         {"MODULE x; VAR z: INTEGER; BEGIN z := 10; RETURN z END x.",
          "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nz := 10;\nRETURN z\nEND x.", ""},
 
-        // Errors
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN z := 1 END y; "
          "BEGIN z := 10; END x.",
-         "", "1,77: Unexpected token: END"},
+         "MODULE x;\nVAR\nz: INTEGER;\nPROCEDURE y;\nBEGIN\nz := 1\nEND "
+         "y.\nBEGIN\nz := 10\nEND x.",
+         ""},
     };
     do_inspect_tests(tests);
 }

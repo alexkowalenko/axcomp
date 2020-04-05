@@ -111,7 +111,7 @@ TEST(Parser, ArrayIndex) {
             BEGIN
                 RETURN x 2]
             END alpha.)",
-         "", "4,26: Unexpected token: integer(2) - expecting END"},
+         "", "4,26: Unexpected token: integer(2)"},
         {R"(MODULE alpha;
             VAR x : ARRAY 5 OF INTEGER;
             BEGIN

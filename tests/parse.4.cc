@@ -94,7 +94,7 @@ TEST(Parser, IF) {
                 RETURN 1
             
         END alpha.)",
-         "", "8,17: Unexpected token: alpha - expecting END"},
+         "", "8,19: Unexpected token: EOF - expecting indent"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -198,7 +198,7 @@ TEST(Parser, FOR) {
                 x := x + i
             RETURN x
         END alpha.)",
-         "", "6,18: Unexpected token: RETURN - expecting END"},
+         "", "7,19: Unexpected token: EOF - expecting indent"},
     };
     do_parse_tests(tests);
 }
@@ -254,7 +254,7 @@ TEST(Parser, REPEAT) {
                 x := x+1
              x > 10
         END alpha.)",
-         "", "6,14: Unexpected token: x - expecting UNTIL"},
+         "", "6,16: Unexpected token: > - expecting :="},
     };
     do_parse_tests(tests);
 }

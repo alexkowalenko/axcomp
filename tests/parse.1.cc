@@ -58,7 +58,7 @@ TEST(Parser, Module) {
          "1,16: Unexpected token: RETURN - expecting BEGIN"},
 
         {"MODULE y; BEGIN RETURN 12 y.", "",
-         "1,27: Unexpected token: y - expecting END"},
+         "1,29: Unexpected token: EOF - expecting indent"},
         {"MODULE y; BEGIN RETURN 12 END .", "",
          "1,31: Unexpected token: period - expecting indent"},
         {"MODULE y; BEGIN RETURN 12 END y", "",
@@ -169,7 +169,7 @@ TEST(Parser, Parentheses) {
         {"MODULE y; BEGIN RETURN (2 ; END y.", "",
          "1,27: Unexpected token: semicolon - expecting )"},
         {"MODULE y; BEGIN RETURN (2 + 4) * (3 DIV 1)) ; END y.", "",
-         "1,43: Unexpected token: ) - expecting END"},
+         "1,43: Unexpected token: )"},
     };
     do_parse_tests(tests);
 }

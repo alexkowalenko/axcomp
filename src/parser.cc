@@ -395,15 +395,15 @@ void Parser::parse_statement_block(
     auto s = parse_statement();
     stats.push_back(s);
     auto tok = lexer.peek_token();
-    if (end_tokens.find(tok.type) != end_tokens.end()) {
-        return;
-    }
-    while (tok.type == TokenType::semicolon) {
-        get_token(TokenType::semicolon);
-
-        auto s = parse_statement();
-        stats.push_back(s);
-
+    while (true) {
+        if (tok.type == TokenType::semicolon) {
+            get_token(TokenType::semicolon);
+        } else if (end_tokens.find(tok.type) != end_tokens.end()) {
+            return;
+        } else {
+            auto s = parse_statement();
+            stats.push_back(s);
+        }
         tok = lexer.peek_token();
     }
 }

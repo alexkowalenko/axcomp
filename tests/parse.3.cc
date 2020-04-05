@@ -79,7 +79,7 @@ TEST(Parser, Proc) {
             BEGIN
                 RETURN 0
             END x.)",
-         "", "5,13: Unexpected token: f - expecting END"},
+         "", "5,14: Unexpected token: semicolon - expecting :="},
 
     };
     do_parse_tests(tests);
