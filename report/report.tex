@@ -1,0 +1,597 @@
+\documentclass[12pt]{article}
+
+\usepackage{report}
+
+\title{AX Oberon-0 Language Report}
+
+\begin{document}
+    
+\maketitle
+
+\abstract{
+This report describes the syntax and semantics of the programming language Oberon-0 as it is supported by the AX Oberon compiler.
+}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+This report is in the tradition of other Oberon language reports, defining the language supported by the compiler. This document used {\em The Programming Language Oberon (Revision 1.10.90)} by N. Wirth as it's base.
+
+Oberon-0 is defined in {\em Compiler Construction }(1996, 2017).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Syntax}
+
+To describe the syntax, an extended Backus-Naur Formalism called EBNF is used. Brackets [ and ] denote optionality of the enclosed sentential form, and braces \{ and \} denote its repetition (possibly 0 times). Syntactic entities (non-terminal symbols) are denoted by English words expressing their intuitive meaning. Symbols of the language vocabulary (terminal symbols) are denoted by strings enclosed in quote marks or words written in capital letters, so-called reserved words.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Vocabulary and representation}
+
+The representation of symbols in terms of characters is defined using the ASCII set. Symbols are identifiers, numbers, operators, delimiters, and comments. The following lexical rules must be observed. Blanks and line breaks must not occur within symbols (except in comments). They are ignored unless they are essential to separate two consecutive symbols. Capital and lower-case letters are considered as being distinct.
+
+\begin{enumerate}
+    \item  Identifiers are sequences of letters and digits. The first character must be a letter.
+    
+\begin{lstlisting}[style=ebnf]
+Identifier = Letter {Letter | Digit | '_' }.
+\end{lstlisting}
+
+Examples:
+
+\begin{lstlisting}[style=example]
+    x scan Oberon GetSymbol firstLetter
+\end{lstlisting}
+
+\item Numbers are (unsigned) integers. Integers are sequences of digits.
+
+\begin{lstlisting}[style=ebnf]
+    integer = digit {digit}.
+
+    digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
+\end{lstlisting}
+
+\item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words consist exclusively of capital letters and cannot be used in the role of identifiers.
+
+\begin{lstlisting}
+    +   :=  ARRAY   MOD         TO
+    -   ^   BEGIN   MODULE      TYPE
+    *   =   CONST   OF          VAR        
+    /   #   DIV     OR          WHILE
+    ~   <   DO      PROCEDURE
+    &   >   ELSE    RECORD   
+    .   <=  ELSIF   RETURN
+    ,   >=  END     
+    (   )   IF           
+    |   :   ;        
+    [   ]           
+\end{lstlisting}
+
+\item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences opened by the bracket \lstinline"(*" and closed by \lstinline"*)". Comments do not affect the meaning of a program.
+
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Declarations and scope rules}
+
+Every identifier occurring in a program must be introduced by a declaration, unless it is a predefined identifier. Declarations also serve to specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure.
+
+The identifier is then used to refer to the associated object. This is possible in those parts of a program only which are within the scope of the declaration. No identifier may denote more than one object within a given scope. The scope extends textually from the point of the declaration to the end of the block (procedure or module) to which the declaration belongs and hence to which the object is local. 
+
+The scope rule has the following amendments:
+\begin{enumerate}
+    \item Field identifiers of a record declaration (see \ref{records}) are valid in field designators only.
+\end{enumerate}
+
+The following identifiers are predefined; their meaning is defined in the indicated sections:
+\begin{tabbing}
+    XXXXXXXXXX \= \kill
+    \WriteInt \> (\ref{predefined}) \\
+    \WriteBoolean \> (\ref{predefined}) \\
+    \WriteLn \> (\ref{predefined}) \\
+\end{tabbing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Constant declarations}
+
+A constant declaration associates an identifier with a constant value.
+
+\begin{lstlisting}[style=ebnf]
+ConstantDeclaration = ident "=" ConstExpression. 
+
+ConstExpression = expression.
+\end{lstlisting}
+
+A constant expression is an expression based on constant values and constant variables. Examples of constant declarations are:
+
+\begin{lstlisting}[style=example]
+N     =   100
+limit =   2 * N - 1
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Type declarations}
+\label{types}
+
+A data type determines the set of values which variables of that type may assume, and the operators that are applicable. A type declaration is used to associate an identifier with the type. Such association may be with unstructured (basic) types, or it may be with structured types, in which case it defines the structure of variables of this type and, by implication, the operators that are applicable to the components. There are two different structures, namely arrays and records, with different component selectors.
+
+\begin{lstlisting}[style=ebnf]
+    TypeDeclaration = ident "=" type.
+
+    type = ident | ArrayType | RecordType.
+\end{lstlisting}
+
+Examples:
+
+\begin{lstlisting}[style=example]
+Table = ARRAY 10 OF INTEGER
+Node =  RECORD key: INTEGER; left, right: Tree END
+\end{lstlisting}
+
+\subsection{Basic types}
+
+The following basic types are denoted by predeclared identifiers. The associated operators are defined in \ref{operators}, and the predeclared function procedures in \ref{predefined}. The values of a given basic type are the following:
+
+\begin{enumerate}
+    \item \BOOLEAN -- the truth values \TRUE\ and \FALSE.
+    \item \INTEGER -- the integers of a 64-bit signed integer.
+\end{enumerate}
+
+\subsection{Array types}
+
+\begin{lstlisting}[style=ebnf]
+ArrayType = ARRAY integer OF type. 
+\end{lstlisting}
+
+Examples of array types:
+\begin{lstlisting}[style=example]
+ARRAY 10 OF INTEGER 
+\end{lstlisting}
+
+\subsection{Record types}
+\label{records}
+A record type is a structure consisting of a fixed number of elements of possibly different types. The record type declaration specifies for each element, called field, its type and an identifier which denotes the field. The scope of these field identifiers is the record definition itself, but they are also visible within field designators (see \ref{operands}) referring to elements of record variables.
+
+\begin{lstlisting}[style=ebnf]
+RecordType = RECORD FieldListSequence END.
+
+FieldListSequence = FieldList {";" FieldList}.
+
+FieldList = [IdentList ":" type].
+
+IdentList = ident {"," ident}.
+\end{lstlisting}
+
+Examples of record types:
+\begin{lstlisting}[style=example]
+RECORD day, month, year: INTEGER 
+END
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variable declarations}
+
+Variable declarations serve to introduce variables and associate them with identifiers that must be unique within the given scope. They also serve to associate fixed data types with the variables.
+
+\begin{lstlisting}[style=ebnf]
+VariableDeclaration = IdentList ":" type.
+\end{lstlisting}
+
+Variables whose identifiers appear in the same list are all of the same type. Examples of variable declarations (refer to examples in section \ref{types}):
+
+\begin{lstlisting}[style=example]
+i, j, k: INTEGER
+p, q: BOOLEAN
+a: ARRAY 100 OF INTEGER
+w: ARRAY 16 OF
+    RECORD count: INTEGER
+    END
+t: Tree
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Expressions}
+
+Expressions are constructs denoting rules of computation whereby constants and current values of variables are combined to derive other values by the application of operators and function procedures. Expressions consist of operands and operators. Parentheses may be used to express specific associations of operators and operands.
+
+\subsection{Operands}
+\label{operands}
+
+With the exception of sets and literal constants, i.e. numbers, operands are denoted by designators. A designator consists of an identifier referring to the constant, variable, or procedure to be designated. 
+
+This identifier may possibly be followed by selectors, if the designated object is an element of a structure.
+
+If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type.
+If r designates a record, then r.f denotes the field f of r.
+
+\begin{lstlisting}[style=ebnf]
+designator = ident {"." ident | "[" expression "]" }.
+\end{lstlisting}
+
+If the designated object is a variable, then the designator refers to the variable's current value.
+
+Examples of designators (see examples in section \ref{types}):
+
+\begin{tabbing}
+    XXXXXX \= \kill
+    i \> (\INTEGER) \\
+    a[i] \> (\INTEGER) \\
+    w[3].count \> (\INTEGER) \\
+\end{tabbing}
+
+\subsection{Operators}
+\label{operators}
+
+The syntax of expressions distinguishes between four classes of operators with different precedences (binding strengths). The operator ~ has the highest precedence, followed by multiplication operators, addition operators, and relations. Operators of the same precedence associate from left to right. For example, x-y-z stands for (x-y)-z.
+
+\begin{lstlisting}[style=ebnf]
+expression = SimpleExpression [relation SimpleExpression]. 
+
+relation = "=" | "#" | "<" | "<=" | ">" | ">=". 
+
+SimpleExpression = [ "+" | "-" ] term {AddOperator term}.
+
+AddOperator =  = "+" | "-" | OR
+
+term = factor {MulOperator factor}.
+
+MulOperator = "*" | "/" | DIV | MOD | "&".
+
+factor = number 
+        | designator [ experssion ] 
+        | "(" expression ")" 
+        | "~" factor. 
+\end{lstlisting}
+
+The available operators are listed in the following tables. In some instances, several different operations are designated by the same operator symbol. In these cases, the actual operation is identified by the type of the operands.
+
+\subsubsection{Logical operators}
+
+\begin{tabular}{l|l}
+    symbol & result \\
+    \hline
+    \OR & logical disjunction \\
+    \& & logical conjuction \\
+    \~{} & negation
+\end{tabular}   
+
+\subsubsection{Arithmetic operators}
+
+\begin{tabular}{l|l}
+    symbol & result \\
+    \hline
+    + & sum \\
+    - & difference \\
+    \** & product \\
+    / & quotient \\
+    \DIV & integer quotient \\
+    \MOD & modulus \\
+\end{tabular}   
+    
+The operators +, -, *, and / apply to operands of numeric types. The type of the result is that
+operand's type which includes the other operand's type, except for division (/), where the result is the real type which includes both operand types. When used as operators with a single operand, - denotes sign inversion and + denotes the identity operation.
+
+The operators \DIV\ and \MOD\ apply to integer operands only. They are related by the following formulas defined for any dividend x and positive divisors y:
+
+\begin{lstlisting}[style=example]
+x = (x DIV y) * y + (x MOD y)
+0 ≤ (x MOD y) < y
+\end{lstlisting}   
+
+\subsubsection{Relations}
+
+\begin{tabular}{l|l}
+    symbol & result \\
+    \hline
+    = & equal \\
+    \# & unequal \\
+    < & less \\
+    <= & less or equal \\
+    >= & greater \\
+    > & greater or equal \\
+\end{tabular}
+
+Relations are Boolean. The ordering relations <, <=, >, and >= apply to the numeric types. The relations = and \# also apply to the type \BOOLEAN.
+
+\begin{tabbing}
+    XXXXXXXXXXX \= \kill
+    1987 \> (\INTEGER) \\
+    i DIV 3 \> (\INTEGER) \\
+    ~p OR q \> (\BOOLEAN) \\
+    a[i+j] * a[i-j] \> (\INTEGER) \\
+    (0<=i) \& (i<100) \> (\BOOLEAN) \\
+    t.key = 0 \> (\BOOLEAN) \\
+\end{tabbing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Statements}
+
+Statements denote actions. There are elementary and structured statements. Elementary statements are not composed of any parts that are themselves statements. They are the assignment, the procedure call, and the return. 
+Structured statements are composed of parts that are themselves statements. They are used to express sequencing and conditional, selective, and repetitive execution.
+
+\begin{lstlisting}[style=ebnf]
+statement = [assignment | ProcedureCall | IfStatement | WhileStatement 
+            | RETURN [expression] ].
+\end{lstlisting}
+
+\subsection{Assignments}
+\label{assignment}
+
+The assignment serves to replace the current value of a variable by a new value specified by an expression. The assignment operator is written as ":=" and pronounced as becomes.
+
+\begin{lstlisting}[style=ebnf]
+    assignment = designator ":=" expression.
+\end{lstlisting} 
+
+The type of the expression must be included by the type of the variable
+
+Examples of assignments (see examples in \ref{types}):
+
+\begin{lstlisting}[style=example]
+i := 0
+p := i = j
+x := i + 1
+a[i] := (x+y) * (x-y)
+t.key := i
+w[i+1].count := 100
+\end{lstlisting} 
+
+\subsection{Procedure calls}
+
+A procedure call serves to activate a procedure. The procedure call may contain a list of actual parameters which are substituted in place of their corresponding formal parameters defined in the procedure declaration (see section \ref{procedures}). The correspondence is established by the positions of the parameters in the lists of actual and formal parameters respectively. There exist two kinds of parameters: variable and value parameters.
+
+In the case of variable parameters, the actual parameter must be a designator denoting a variable. If it designates an element of a structured variable, the selector is evaluated when the formal/actual parameter substitution takes place, i.e. before the execution of the procedure. If the parameter is a value parameter, the corresponding actual parameter must be an expression. This expression is evaluated prior to the procedure activation, and the resulting value is assigned to the formal parameter which now constitutes a local variable (see also \ref{parameters}).
+
+\begin{lstlisting}[style=ebnf]
+    ProcedureCall = designator [ActualParameters].
+\end{lstlisting} 
+
+Examples of procedure calls:
+
+\begin{lstlisting}[style=example]
+    WriteInt(j * 2 + 1) 
+\end{lstlisting} 
+
+\subsection{Statement sequences}
+
+Statement sequences denote the sequence of actions specified by the component statements which are separated by semicolons.
+
+\begin{lstlisting}[style=ebnf]
+    StatementSequence = statement {";" statement}.
+\end{lstlisting} 
+
+\subsection{\IF\ statements}
+
+\begin{lstlisting}[style=ebnf]
+IfStatement = IF expression THEN StatementSequence 
+              {ELSIF expression THEN StatementSequence} 
+              [ELSE StatementSequence]
+              END.
+\end{lstlisting} 
+
+If statements specify the conditional execution of guarded statements. The boolean expression preceding a statement is called its guard. The guards are evaluated in sequence of occurrence, until one evaluates to \TRUE, whereafter its associated statement sequence is executed. If no guard is satisfied, the statement sequence following the symbol \ELSE\ is executed, if there is one.
+
+\begin{lstlisting}[style=example]
+    IF (ch >= "A") & (ch <= "Z") THEN ReadIdentifier 
+    ELSIF (ch >= "0") & (ch <= "9") THEN ReadNumber 
+    ELSIF ch = 22X THEN ReadString
+    END
+\end{lstlisting} 
+
+\subsection{\WHILE\ statement}
+
+While statements specify repetition. If the Boolean expression (guard) yields \TRUE, the statement sequence is executed. The expression evaluation and the statement execution are repeated as long as the Boolean expression yields \TRUE.
+
+\begin{lstlisting}[style=ebnf]
+WhileStatement = WHILE expression DO StatementSequence END.
+\end{lstlisting} 
+    
+Examples:
+    
+\begin{lstlisting}[style=example]
+WHILE j > 0 DO
+    j := j DIV 2; i := i+1
+END
+\end{lstlisting} 
+
+\subsection{\RETURN\ statements}
+
+A return statement consists of the symbol \RETURN, possibly followed by an expression. It indicates the termination of a procedure, and the expression specifies the result of a function procedure. Its type must be identical to the result type specified in the procedure heading (see \ref{procedures}).
+
+Function procedures require the presence of a return statement indicating the result value. There may be several, although only one will be executed. In proper procedures, a return statement is implied by the end of the procedure body. An explicit return statement therefore appears as an additional (probably exceptional) termination point.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Procedure declarations}
+\label{procedures}
+
+Procedure declarations consist of a procedure heading and a procedure body. The heading specifies the procedure identifier, the formal parameters, and the result type (if any). The body contains declarations and statements. The procedure identifier is repeated at the end of the procedure declaration.
+
+There are two kinds of procedures, namely proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression, and yield a result that is an operand in the expression. Proper procedures are activated by a procedure call. The function procedure is distinguished in the declaration by indication of the type of its result following the parameter list. Its body must contain a \RETURN\ statement which defines the result of the function procedure.
+
+All constants, variables, types, and procedures declared within a procedure body are local to the procedure. The values of local variables are undefined upon entry to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested.
+
+In addition to its formal parameters and locally declared objects, the objects declared in the environment of the procedure are also visible in the procedure (with the exception of those objects that have the same name as an object declared locally).
+
+The use of the procedure identifier in a call within its declaration implies recursive activation of the procedure.
+
+\begin{lstlisting}[style=ebnf]
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
+
+ProcedureHeading = PROCEDURE ident [FormalParameters]. 
+
+ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END. 
+
+DeclarationSequence = {CONST {ConstantDeclaration ";"} 
+                    | TYPE {TypeDeclaration ";"} 
+                    | VAR {VariableDeclaration ";"}}.
+\end{lstlisting} 
+
+\subsection{Formal parameters}
+\label{parameters}
+
+Formal parameters are identifiers which denote actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are two kinds of parameters, namely value and variable parameters. The kind is indicated in the formal parameter list. Value parameters stand for local variables to which the result of the evaluation of the corresponding actual parameter is assigned as initial value. Variable parameters correspond to actual parameters that are variables, and they stand for these variables. Variable parameters are indicated by the symbol \VAR, value parameters by the absence of the symbol \VAR. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too.
+
+Formal parameters are local to the procedure, i.e. their scope is the program text which constitutes the procedure declaration.
+
+\begin{lstlisting}[style=ebnf]
+FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" type]. 
+
+FPSection = [VAR] ident {"," ident} ":" type.
+\end{lstlisting} 
+
+The type of each formal parameter is specified in the parameter list. For variable parameters, it must be identical to the corresponding actual parameter's type, except in the case of a record, where it must be a base type of the corresponding actual parameter's type. For value parameters, the rule of assignment holds (see \ref{assignment}).
+
+Examples of procedure declarations:
+
+\begin{lstlisting}[style=example]
+PROCEDURE add(x : INTEGER; y : INTEGER): INTEGER;
+  BEGIN
+      RETURN x + y
+  END add;
+
+PROCEDURE mult(x : INTEGER; y : INTEGER): INTEGER;
+  BEGIN
+      RETURN x * y
+  END mult;
+\end{lstlisting} 
+
+\subsection{Predefined Procedures}
+\label{predefined}
+The following table lists the predefined procedures. Some are generic procedures, i.e. they apply to several types of operands. v stands for a variable, x and n for expressions.
+
+\begin{tabular}{lll}
+    Name & Argument types & Function \\
+    \hline
+    \WriteInt(x) & \INTEGER & print x to standard output. \\
+    \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\
+    \WriteLn() &  & print new line character to standard output. \\
+\end{tabular}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Modules}
+
+A module is a collection of declarations of constants, types, variables, and procedures, and a sequence of statements for the purpose of assigning initial values to the variables. A module typically constitutes a text that is compilable as a unit.
+
+\begin{lstlisting}[style=ebnf]
+Module = MODULE ident ";" 
+         DeclarationSequence 
+         [BEGIN StatementSequence] 
+         END ident "." .
+\end{lstlisting} 
+
+The statement sequence following the symbol \BEGIN\ is executed when the module is executed as the start module in an executable. The entry point is marked via compiler flags when the module is compiled.
+
+\begin{lstlisting}[style=example]
+MODULE g10; (* ARRAY and RECORD *)
+    
+VAR pt : ARRAY 3 OF RECORD
+        x, y: INTEGER;
+    END;
+
+BEGIN
+    FOR i := 0 TO 2 DO
+        pt[i].x := i;
+        pt[i].y := i * 3
+    END;
+    RETURN pt[1].x + pt[1].y
+END g10.    
+\end{lstlisting} 
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+
+\section{Syntax of Oberon-0}
+
+Oberon-0 as defined in {\em Compiler Construction} (1996, 2017).
+
+{\scriptsize
+\begin{lstlisting}[style=EBNF]
+
+module = "MODULE" ident ";" declarations 
+         ["BEGIN" StatementSequence] 
+         "END" ident "."
+
+declarations = ["CONST" {ident "=" expression ";"}]
+         ["TYPE" {ident "=" type ";"}] 
+         ["VAR" {IdentList ":" type ";"}] 
+         {ProcedureDeclaration ";"}.
+
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody. 
+
+ProcedureBody = declarations ["BEGIN" StatementSequence]"END" ident. 
+
+ProcedureHeading = "PROCEDURE" ident [FormalParameters]. 
+
+FormalParameters = "(" [FPSection {";" FPSection}] ")".
+
+FPSection = ["VAR"] IdentList ":" type.
+
+type = ident | ArrayType | RecordType.
+
+RecordType = "RECORD" FieldList {";" FieldList} "END".
+
+FieldList = [IdentList ":" type].
+
+ArrayType = "ARRAY" expression "OF" type.
+
+IdentList = ident {"," ident}.
+
+StatementSequence = statement {";" statement}.
+
+statement = [assignment | ProcedureCall | IfStatement | WhileStatement].
+
+WhileStatement = "WHILE" expression "DO" StatementSequence "END". 
+
+IfStatement = "IF" expression "THEN" StatementSequence
+  {"ELSIF" expression "THEN" StatementSequence}
+  ["ELSE" StatementSequence] "END".
+
+ProcedureCall = ident selector [ActualParameters]. 
+
+ActualParameters = "(" [expression {"," expression}] ")" . 
+
+assignment = ident selector ":=" expression. 
+
+expression = SimpleExpression [("=" | "#" | "<" | "<=" | ">" | ">=") SimpleExpression].
+
+SimpleExpression = ["+"|"-"] term {("+"|"-" | "OR") term}. 
+
+term = factor {("*" | "DIV" | "MOD" | "&") factor}. 
+
+factor = ident selector | number | "(" expression ")" | "~" factor. 
+
+number = integer.
+
+selector = {"." ident | "[" expression "]"}.
+
+integer = digit {digit}.
+
+ident = letter {letter | digit}. 
+\end{lstlisting}}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The ax compiler}
+
+Program \lstinline"ax" options are: 
+\begin{itemize}
+    \item \lstinline"-f", \lstinline"--file filename" - compile named file.
+    \item \lstinline"-m" \lstinline"--main" the  \BEGIN\ part of this module will be executed as the entry point of the program.
+    \item  \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
+    \item \lstinline"-D"x - Debugging options `x' is composed of the following characters.
+    \begin{itemize}
+        \item \lstinline"p" - print out parsed tree.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Implementation details}
+\begin{itemize}
+    \item \PROCEDURE s don't have nested procedures.
+    \item \ARRAY\ sizes must be integers.
+    \item procedure calls to procedures without arguments still need parenthesis.
+\end{itemize}
+
+
+\end{document}

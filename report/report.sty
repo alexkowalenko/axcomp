@@ -1,0 +1,192 @@
+
+
+\usepackage{fontspec}
+\usepackage{fancyvrb}
+\usepackage[a4paper,margin=2cm]{geometry}
+
+\setmonofont[Scale=0.85]{Fira Code}
+
+\newcommand{\changefont}[3]{\fontfamily{#1}\fontseries{#2}\fontshape{#3}\selectfont}
+
+\usepackage{listings}
+%\newcommand{\progfont}{\changefont{pcr}{m}{n}}
+\newcommand{\progfont}{\ttfamily}
+\newcommand{\kwfont}{\changefont{cmr}{b}{n}}
+
+\lstdefinelanguage{ebnf}[]{}
+{morekeywords={},
+sensitive=true,
+comment=[l]{//},
+comment=[s]{(*}{*)},
+morestring=[b]',
+morestring=[b]",
+}
+
+\lstdefinelanguage{Oberon}[]{Pascal}%
+  {morekeywords={range,len,dim,incr,all},%
+   sensitive=t,%
+   comment=[s]{(*}{*)},
+  }[keywords]%
+
+
+  \newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
+  % narrow font for code
+  \newcommand{\srcfontn}{\usefont{T1}{lmvtt}{b}{n}}
+  % font for verbatim envirnoment. Note: must be fixed width!
+  \fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
+  }
+  
+  \lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
+  tabsize = 2,
+  basicstyle=\srcfont,
+  keywordstyle=\srcfont,
+  %identifierstyle=\kw,
+  commentstyle=\color{darkgrey},
+  stringstyle=, showstringspaces=false,
+  %keepspaces=true,
+  numbers=none, numberstyle=\tiny, stepnumber=1, numbersep=5pt, captionpos=b,
+  columns=flexible % flexible, fixed, fullflexible
+  %framerule=1mm,%frame=shadowbox, rulesepcolor=\color{blue}, % frame = shadowbox
+  %xleftmargin=2mm,xrightmargin=2mm,
+  %backgroundcolor = \color{code}
+  }
+  
+  \lstdefinestyle{example}{
+  basicstyle=\srcfont\small,
+  language=Oberon,
+  }
+  \lstdefinestyle{oberon}{
+  basicstyle=\srcfont\small,
+  language=Oberon,
+  %backgroundcolor = \color{code}
+  frame=lines
+  }
+  \lstdefinestyle{ebnf}{
+  basicstyle=\srcfont\small,
+  language=ebnf,
+  %backgroundcolor = \color{code},
+  frame=lines
+  }
+
+\newcommand{\MODULE}{\lstinline"MODULE"}
+\newcommand{\IMPORT}{\lstinline"IMPORT"}
+\newcommand{\IF}{\lstinline"IF"}
+\newcommand{\THEN}{\lstinline"THEN"}
+\newcommand{\ELSIF}{\lstinline"ELSIF"}
+\newcommand{\ELSE}{\lstinline"ELSE"}
+\newcommand{\END}{\lstinline"END"}
+\newcommand{\CASE}{\lstinline"CASE"}
+\newcommand{\DO}{\lstinline"DO"}
+\newcommand{\FOR}{\lstinline"FOR"}
+\newcommand{\BY}{\lstinline"BY"}
+\newcommand{\WHILE}{\lstinline"WHILE"}
+\newcommand{\REPEAT}{\lstinline"REPEAT"}
+\newcommand{\UNTIL}{\lstinline"UNTIL"}
+\newcommand{\LOOP}{\lstinline"LOOP"}
+\newcommand{\EXIT}{\lstinline"EXIT"}
+\newcommand{\RECORD}{\lstinline"RECORD"}
+\newcommand{\OBJECT}{\lstinline"OBJECT"}
+\newcommand{\BEGIN}{\lstinline"BEGIN"}
+\newcommand{\WITH}{\lstinline"WITH"}
+\newcommand{\PROCEDURE}{\lstinline"PROCEDURE"}
+\newcommand{\OPERATOR}{\lstinline"OPERATOR"}
+\newcommand{\RETURN}{\lstinline"RETURN"}
+\newcommand{\CONST}{\lstinline"CONST"}
+\newcommand{\VAR}{\lstinline"VAR"}
+\newcommand{\TYPE}{\lstinline"TYPE"}
+\newcommand{\POINTER}{\lstinline"POINTER"}
+\newcommand{\TO}{\lstinline"TO"}
+\newcommand{\ARRAY}{\lstinline"ARRAY"}
+\newcommand{\OF}{\lstinline"OF"}
+\newcommand{\TENSOR}{\lstinline"TENSOR"}
+\newcommand{\AWAIT}{\lstinline"AWAIT"}
+\newcommand{\IGNORE}{\lstinline"IGNORE"}
+\newcommand{\DIV}{\lstinline"DIV"}
+\newcommand{\MOD}{\lstinline"MOD"}
+\newcommand{\OR}{\lstinline"OR"}
+\newcommand{\IN}{\lstinline"IN"}
+\newcommand{\IS}{\lstinline"IS"}
+\newcommand{\NIL}{\lstinline"NIL"}
+\newcommand{\CODE}{\lstinline"CODE"}
+\newcommand{\TRUE}{\lstinline"TRUE"}
+\newcommand{\FALSE}{\lstinline"FALSE"}
+\newcommand{\FINALLY}{\lstinline"FINALLY"}
+\newcommand{\ALL}{\lstinline"ALL"}
+
+
+\newcommand{\SYSTEM}{\lstinline"SYSTEM"}
+\newcommand{\SELF}{\lstinline"SELF"}
+\newcommand{\CHAR}{\lstinline"CHAR"}
+\newcommand{\INTEGER}{\lstinline"INTEGER"}
+\newcommand{\SIGNED}{\lstinline"SIGNED"}
+\newcommand{\UNSIGNED}{\lstinline"UNSIGNED"}
+\newcommand{\REAL}{\lstinline"REAL"}
+\newcommand{\COMPLEX}{\lstinline"COMPLEX"}
+\newcommand{\FLOAT}{\lstinline"FLOAT"}
+\newcommand{\BOOLEAN}{\lstinline"BOOLEAN"}
+\newcommand{\SET}{\lstinline"SET"}
+\newcommand{\SETS}{\lstinline"SET8"}
+\newcommand{\SETI}{\lstinline"SET16"}
+\newcommand{\SETL}{\lstinline"SET32"}
+\newcommand{\SETH}{\lstinline"SET64"}
+\newcommand{\ANY}{\lstinline"ANY"}
+\newcommand{\ABS}{\lstinline"ABS"}
+\newcommand{\CAP}{\lstinline"CAP"}
+\newcommand{\CHR}{\lstinline"CHR"}
+\newcommand{\ENTIER}{\lstinline"ENTIER"}
+\newcommand{\ENTIERH}{\lstinline"ENTIERH"}
+\newcommand{\LEN}{\lstinline"LEN"}
+\newcommand{\LONG}{\lstinline"LONG"}
+\newcommand{\MAX}{\lstinline"MAX"}
+\newcommand{\MIN}{\lstinline"MIN"}
+\newcommand{\ODD}{\lstinline"ODD"}
+\newcommand{\ORD}{\lstinline"ORD"}
+\newcommand{\SHORT}{\lstinline"SHORT"}
+\newcommand{\ADDRESS}{\lstinline"ADDRESS"}
+\newcommand{\SIZE}{\lstinline"SIZE"}
+\newcommand{\ASSERT}{\lstinline"ASSERT"}
+\newcommand{\COPY}{\lstinline"COPY"}
+\newcommand{\DEC}{\lstinline"DEC"}
+\newcommand{\EXCL}{\lstinline"EXCL"}
+\newcommand{\HALT}{\lstinline"HALT"}
+\newcommand{\INCL}{\lstinline"INCL"}
+\newcommand{\NEW}{\lstinline"NEW"}
+\newcommand{\BYTE}{\lstinline"BYTE"}
+\newcommand{\GETPROCEDURE}{\lstinline"GETPROCEDURE"}
+\newcommand{\GET}{\lstinline"\SYSTEM.GET"}
+\newcommand{\PUT}{\lstinline"\SYSTEM.PUT"}
+\newcommand{\GETH}{\lstinline"\SYSTEM.GET64"}
+\newcommand{\GETL}{\lstinline"\SYSTEM.GET32"}
+\newcommand{\GETI}{\lstinline"\SYSTEM.GET16"}
+\newcommand{\GETS}{\lstinline"\SYSTEM.GET8"}
+\newcommand{\PUTH}{\lstinline"\SYSTEM.PUT64"}
+\newcommand{\PUTL}{\lstinline"\SYSTEM.PUT32"}
+\newcommand{\PUTI}{\lstinline"\SYSTEM.PUT16"}
+\newcommand{\PUTS}{\lstinline"\SYSTEM.PUT8"}
+\newcommand{\ROT}{\lstinline"ROT"}
+\newcommand{\LSH}{\lstinline"LSH"}
+\newcommand{\ASH}{\lstinline"ASH"}
+\newcommand{\SHL}{\lstinline"SHL"}
+\newcommand{\SHR}{\lstinline"SHR"}
+\newcommand{\ROL}{\lstinline"ROL"}
+\newcommand{\ROR}{\lstinline"ROR"}
+\newcommand{\VAL}{\lstinline"\SYSTEM.VAL"}
+\newcommand{\DIM}{\lstinline"DIM"}
+\newcommand{\INCR}{\lstinline"INCR"}
+%\newcommand{\TYPECODE}{\lstinline"\SYSTEM.typecode"}
+\newcommand{\GETREG}{\lstinline"\SYSTEM.getreg"}
+\newcommand{\PUTGREG}{\lstinline"\SYSTEM.putreg"}
+\newcommand{\MOVE}{\lstinline"\SYSTEM.move"}
+\newcommand{\SYSTEMNEW}{\lstinline"\SYSTEM.new"}
+\newcommand{\PORTOUT}{\lstinline"\SYSTEM.protout"}
+\newcommand{\PORTIN}{\lstinline"\SYSTEM.portin"}
+\newcommand{\CLI}{\lstinline"\SYSTEM.cli"}
+\newcommand{\STI}{\lstinline"\SYSTEM.sti"}
+\newcommand{\RESHAPE}{\lstinline"\SYSTEM.reshape"}
+\newcommand{\SYSTEMHALT}{\lstinline"\SYSTEM.halt"}
+
+\newcommand{\WriteInt}{\lstinline"WriteInt"}
+\newcommand{\WriteBoolean}{\lstinline"WriteBoolean"}
+\newcommand{\WriteLn}{\lstinline"WriteLn"}
+
+\usepackage{hyperref}
