@@ -214,6 +214,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
 }
 
 void Inspector::visit_ASTCall(ASTCall *ast) {
+    debug("Inspector::visit_ASTCall");
     auto res = current_symboltable->find(ast->name->value);
     if (!res) {
         throw CodeGenException(
@@ -240,17 +241,31 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     auto proc_iter = procType->params.begin();
     for (auto call_iter = ast->args.begin(); call_iter != ast->args.end();
          call_iter++, proc_iter++) {
+
         (*call_iter)->accept(this);
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
+
         if (!(*base_last)->equiv(*proc_base)) {
-            throw TypeError(llvm::formatv("procedure call {0} has incorrect "
-                                          "type {1} for parameter {2}",
-                                          ast->name->value,
-                                          last_type->get_name(),
-                                          (*proc_iter).first->get_name()),
-                            ast->get_location());
-        };
+            auto e =
+                TypeError(llvm::formatv("procedure call {0} has incorrect "
+                                        "type {1} for parameter {2}",
+                                        ast->name->value, last_type->get_name(),
+                                        (*proc_iter).first->get_name()),
+                          ast->get_location());
+            errors.add(e);
+        }
+
+        if ((*proc_iter).second == Attr::var && !is_lvalue) {
+            debug("Inspector::visit_ASTCall is_lvalue");
+            auto e = TypeError(
+                llvm::formatv("procedure call {0} does not have a variable "
+                              "reference for VAR parameter {2}",
+                              ast->name->value, last_type->get_name(),
+                              (*proc_iter).first->get_name()),
+                ast->get_location());
+            errors.add(e);
+        }
     }
 
     last_type = procType->ret;
@@ -356,6 +371,7 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
     ast->expr->accept(this);
     auto c1 = is_const;
     if (ast->relation) {
+        is_lvalue = false;
         auto t1 = last_type;
         (*ast->relation_expr)->accept(this);
         // Types have to be the same BOOLEANs or INTEGERs
@@ -377,7 +393,8 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     visit_ASTTerm(ast->term.get());
     auto t1 = last_type;
     auto c1 = is_const;
-    for (auto t : ast->rest) {
+    for (auto const &t : ast->rest) {
+        is_lvalue = false;
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             auto e = TypeError(
@@ -411,7 +428,8 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
     visit_ASTFactor(ast->factor.get());
     auto t1 = last_type;
     auto c1 = is_const;
-    for (auto t : ast->rest) {
+    for (auto const &t : ast->rest) {
+        is_lvalue = false;
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
             auto e = TypeError(
@@ -448,6 +466,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                    [this](std::shared_ptr<ASTCall> const &factor) {
                        // need to pass on return type */
                        factor->accept(this);
+                       is_lvalue = false;
                    },
                    [this, ast](std::shared_ptr<ASTFactor> const &arg) {
                        if (ast->is_not) {
@@ -458,6 +477,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                                    ast->get_location());
                                errors.add(e);
                            }
+                           is_lvalue = false;
                        }
                    },
 
@@ -482,9 +502,11 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
     // Not array or record type - no more checks.
     if (!(array_type || record_type)) {
+        is_lvalue = true;
         return;
     }
 
+    is_lvalue = false; // no lvalues for aggregate values
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop
@@ -626,16 +648,19 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     } else {
         is_const = false;
     }
+    is_lvalue = true;
 }
 
 void Inspector::visit_ASTInteger(ASTInteger *) {
     last_type = TypeTable::IntType;
     is_const = true;
+    is_lvalue = false;
 }
 
 void Inspector::visit_ASTBool(ASTBool *ast) {
     last_type = TypeTable::BoolType;
     is_const = true;
+    is_lvalue = false;
 }
 
 } // namespace ax

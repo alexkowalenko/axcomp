@@ -247,6 +247,71 @@ TEST(Inspector, CallType) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, CallVar) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE y; 
+        VAR y : INTEGER;
+        PROCEDURE f(VAR x: INTEGER); 
+        BEGIN
+            x := 0;
+            RETURN
+        END f; 
+        BEGIN
+            f(y) 
+        END y.)",
+         "MODULE y;\nVAR\ny: INTEGER;\nPROCEDURE f(VAR x : "
+         "INTEGER);\nBEGIN\nx "
+         ":= 0;\nRETURN \nEND f.\nBEGIN\nf(y)\nEND y.",
+         ""},
+
+        {R"(MODULE y; 
+        VAR y : INTEGER;
+        PROCEDURE f(x : INTEGER; VAR y: INTEGER); 
+        BEGIN
+            x := 0;
+            RETURN
+        END f; 
+        BEGIN
+            f(1, y) 
+        END y.)",
+         "MODULE y;\nVAR\ny: INTEGER;\nPROCEDURE f(x : INTEGER; VAR y : "
+         "INTEGER);\nBEGIN\nx := 0;\nRETURN \nEND f.\nBEGIN\nf(1, y)\nEND y.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE y; 
+        VAR y : INTEGER;
+        PROCEDURE f(VAR x: INTEGER); 
+        BEGIN
+            x := 0;
+            RETURN
+        END f; 
+        BEGIN
+            f(1) 
+        END y.)",
+         "",
+         "9,14: procedure call f does not have a variable reference for VAR "
+         "parameter INTEGER"},
+
+        {R"(MODULE y; 
+        VAR y : INTEGER;
+        PROCEDURE f(VAR x: INTEGER); 
+        BEGIN
+            x := 0;
+            RETURN
+        END f; 
+        BEGIN
+            f(y + 1) 
+        END y.)",
+         "",
+         "9,14: procedure call f does not have a variable reference for VAR "
+         "parameter INTEGER"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, FunctionParams) {
     std::vector<ParseTests> tests = {
 

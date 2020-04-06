@@ -85,7 +85,7 @@ llvm::Constant *RecordType::get_init() {
 };
 
 void RecordType::insert(std::string const &field, TypePtr type) {
-    fields[field] = type;
+    fields[field] = std::move(type);
     index.push_back(field);
 }
 

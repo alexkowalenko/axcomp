@@ -123,7 +123,7 @@ class RecordType : public Type {
 
 class TypeAlias : public Type {
   public:
-    TypeAlias(std::string n, TypePtr t) : name{n}, alias{t} {};
+    TypeAlias(std::string n, TypePtr t) : name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
     explicit operator std::string() override { return name; };

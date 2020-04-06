@@ -712,7 +712,7 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
 
         std::visit(
             overloaded{
-                [this, &index](std::shared_ptr<ASTExpr> s) {
+                [this, &index](std::shared_ptr<ASTExpr> const &s) {
                     // calculate index;
                     s->expr->accept(this);
                     debug("GEP index is Int: {0}",
