@@ -281,12 +281,21 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
-    debug(" CodeGenerator::visit_ASTAssignment {}", std::string(*(ast->ident)));
+    debug(" CodeGenerator::visit_ASTAssignment {0}",
+          std::string(*(ast->ident)));
     ast->expr->accept(this);
     auto *val = last_value;
 
-    visit_ASTDesignatorPtr(ast->ident.get());
-    builder.CreateStore(val, last_value);
+    auto var = find_var_Identifier(ast->ident.get());
+    debug(" CodeGenerator::visit_ASTAssignment VAR {0}", var);
+    if (var) {
+        // Handle VAR assignment
+        visit_ASTDesignator(ast->ident.get());
+        builder.CreateStore(val, last_value);
+    } else {
+        visit_ASTDesignatorPtr(ast->ident.get());
+        builder.CreateStore(val, last_value);
+    }
 }
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
@@ -344,9 +353,22 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     std::vector<Value *> args;
     auto                 i = 0;
     for (auto const &a : ast->args) {
-        a->accept(this);
         if (typeFunction->params[i].second == Attr::var) {
-            debug("CodeGenerator::visit_ASTCall VAR param");
+            debug("CodeGenerator::visit_ASTCall VAR parameter");
+            // Var Parameter
+
+            // Get Identifier, get pointer set to last_value
+            // visit_ASTIdentifierPtr
+            // This works, since the Inspector checks that VAR arguments are
+            // only identifiers
+            auto ptr = a->expr->term->factor->factor;
+            auto p2 = std::get<std::shared_ptr<ASTDesignator>>(ptr)->ident;
+
+            debug("CodeGenerator::visit_ASTCall identifier {0}", p2->value);
+            visit_ASTIdentifierPtr(p2.get());
+        } else {
+            // Reference Parameter
+            a->accept(this);
         }
         args.push_back(last_value);
         i++;
@@ -744,7 +766,7 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
-    debug("CodeGenerator::visit_ASTDesignator {}", std::string(*ast));
+    debug("CodeGenerator::visit_ASTDesignator {0}", std::string(*ast));
     ast->ident->accept(this);
 
     // Check if has selectors
@@ -765,13 +787,7 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
     debug("CodeGenerator::visit_ASTDesignatorPtr {0}", std::string(*ast));
 
-    if (ast->ident->is(Attr::var)) {
-        debug("CodeGenerator::visit_ASTDesignatorPtr VAR {0}",
-              std::string(*ast));
-        visit_ASTIdentifier(ast->ident.get());
-    } else {
-        visit_ASTIdentifierPtr(ast->ident.get());
-    }
+    visit_ASTIdentifierPtr(ast->ident.get());
 
     // Check if has selectors
     if (ast->selectors.empty()) {
@@ -790,6 +806,7 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
     debug("CodeGenerator::getPtr {0}", ast->value);
+
     if (auto res = current_symboltable->find(ast->value); res) {
         last_value = res->first;
         if (res->second == Attr::var) {
@@ -801,6 +818,15 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
     }
     throw CodeGenException(formatv("identifier {0} unknown", ast->value),
                            ast->get_location());
+}
+
+bool CodeGenerator::find_var_Identifier(ASTDesignator *ast) {
+    if (auto res = current_symboltable->find(ast->ident->value); res) {
+        if (res->second == Attr::var) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {

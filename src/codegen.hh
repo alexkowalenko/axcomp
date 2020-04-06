@@ -86,6 +86,8 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(std::shared_ptr<ASTType> const &type);
     Constant *  getType_init(std::shared_ptr<ASTType> const &type);
 
+    bool find_var_Identifier(ASTDesignator *ast);
+
     Options &  options;
     TypeTable &types;
 

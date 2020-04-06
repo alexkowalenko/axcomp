@@ -14,3 +14,10 @@ BEGIN
     f(a);
     WriteInt(a); WriteLn()
 END d13.
+
+(*
+1
+10
+1
+output: 0
+*)

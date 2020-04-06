@@ -12,5 +12,12 @@ END g;
 BEGIN
     a := 2;
     g(a)
-    (*WriteInt(a); WriteLn()*) (* should be 10 *)
+    WriteInt(a); WriteLn() (* should be 10 *)
 END d14.
+
+(*
+2
+10
+10
+output: 0
+*)

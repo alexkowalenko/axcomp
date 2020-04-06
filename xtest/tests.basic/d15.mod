@@ -17,5 +17,15 @@ BEGIN
     b := 2;
     h(a, b);
     WriteInt(a); WriteLn()
-    (*WriteInt(b); WriteLn() *) (* should be 20 *)
+    WriteInt(b); WriteLn() (* should be 20 *)
 END d15.
+
+(*
+1
+2
+10
+20
+1
+20
+output: 0
+*)
