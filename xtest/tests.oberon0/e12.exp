@@ -1,0 +1,40 @@
+; ModuleID = 'e12'
+source_filename = "e12"
+
+@x = internal global i64 0
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+define i64 @output() {
+entry:
+  store i64 0, i64* @x
+  br label %while
+
+while:                                            ; preds = %ifcont, %entry
+  %x = load i64, i64* @x
+  %0 = icmp slt i64 %x, 10
+  br i1 %0, label %loop, label %end
+
+loop:                                             ; preds = %while
+  %x1 = load i64, i64* @x
+  %addtmp = add i64 %x1, 1
+  store i64 %addtmp, i64* @x
+  %x2 = load i64, i64* @x
+  %1 = icmp eq i64 %x2, 5
+  br i1 %1, label %then, label %ifcont
+
+then:                                             ; preds = %loop
+  ret i64 5
+  br label %ifcont
+
+ifcont:                                           ; preds = %then, %loop
+  br label %while
+
+end:                                              ; preds = %while
+  %x3 = load i64, i64* @x
+  ret i64 %x3
+}

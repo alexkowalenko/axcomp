@@ -16,16 +16,13 @@ entry:
   %x1 = load i64, i64* @x
   %1 = icmp eq i64 %x1, 7
   %subtmp = or i1 %0, %1
-  br i1 %subtmp, label %then, label %else
+  br i1 %subtmp, label %then, label %ifcont
 
 then:                                             ; preds = %entry
   store i64 77, i64* @x
   br label %ifcont
 
-else:                                             ; preds = %entry
-  br label %ifcont
-
-ifcont:                                           ; preds = %else, %then
+ifcont:                                           ; preds = %then, %entry
   %x2 = load i64, i64* @x
   ret i64 %x2
 }

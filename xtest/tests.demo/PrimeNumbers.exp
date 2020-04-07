@@ -39,11 +39,11 @@ entry:
   store i64 3, i64* %i
   br label %while
 
-while:                                            ; preds = %ifcont61, %entry
+while:                                            ; preds = %ifcont59, %entry
   %i2 = load i64, i64* %i
   %n3 = load i64, i64* %n1
   %0 = icmp sle i64 %i2, %n3
-  br i1 %0, label %loop, label %end64
+  br i1 %0, label %loop, label %end62
 
 loop:                                             ; preds = %while
   br label %repeat
@@ -59,7 +59,7 @@ repeat:                                           ; preds = %end, %loop
   %sqr7 = load i64, i64* %sqr
   %x8 = load i64, i64* %x
   %1 = icmp sle i64 %sqr7, %x8
-  br i1 %1, label %then, label %else
+  br i1 %1, label %then, label %ifcont
 
 then:                                             ; preds = %repeat
   %sqr9 = load i64, i64* %sqr
@@ -81,15 +81,12 @@ then:                                             ; preds = %repeat
   store i64 %multmp, i64* %sqr
   br label %ifcont
 
-else:                                             ; preds = %repeat
-  br label %ifcont
-
-ifcont:                                           ; preds = %else, %then
+ifcont:                                           ; preds = %then, %repeat
   store i64 2, i64* %k
   store i1 true, i1* %prim
   br label %while20
 
-while20:                                          ; preds = %ifcont44, %ifcont
+while20:                                          ; preds = %ifcont43, %ifcont
   %prim21 = load i1, i1* %prim
   %k22 = load i64, i64* %k
   %lim23 = load i64, i64* %lim
@@ -107,7 +104,7 @@ loop24:                                           ; preds = %while20
   %idx29 = load i64, i64* %idx28
   %x30 = load i64, i64* %x
   %3 = icmp slt i64 %idx29, %x30
-  br i1 %3, label %then31, label %else43
+  br i1 %3, label %then31, label %ifcont43
 
 then31:                                           ; preds = %loop24
   %v32 = load [20 x i64], [20 x i64]* @v
@@ -122,66 +119,60 @@ then31:                                           ; preds = %loop24
   %k41 = load i64, i64* %k
   %idx42 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k41
   store i64 %addtmp40, i64* %idx42
-  br label %ifcont44
+  br label %ifcont43
 
-else43:                                           ; preds = %loop24
-  br label %ifcont44
-
-ifcont44:                                         ; preds = %else43, %then31
-  %x45 = load i64, i64* %x
-  %v46 = load [20 x i64], [20 x i64]* @v
-  %k47 = load i64, i64* %k
-  %idx48 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k47
-  %idx49 = load i64, i64* %idx48
-  %4 = icmp ne i64 %x45, %idx49
+ifcont43:                                         ; preds = %then31, %loop24
+  %x44 = load i64, i64* %x
+  %v45 = load [20 x i64], [20 x i64]* @v
+  %k46 = load i64, i64* %k
+  %idx47 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k46
+  %idx48 = load i64, i64* %idx47
+  %4 = icmp ne i64 %x44, %idx48
   store i1 %4, i1* %prim
   br label %while20
 
 end:                                              ; preds = %while20
-  %prim50 = load i1, i1* %prim
-  br i1 %prim50, label %end51, label %repeat
+  %prim49 = load i1, i1* %prim
+  br i1 %prim49, label %end50, label %repeat
 
-end51:                                            ; preds = %end
-  %x52 = load i64, i64* %x
-  %i53 = load i64, i64* %i
-  %idx54 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %i53
-  store i64 %x52, i64* %idx54
-  %x55 = load i64, i64* %x
-  call void @WriteInt(i64 %x55)
-  %m56 = load i64, i64* %m
-  %5 = icmp eq i64 %m56, 10
-  br i1 %5, label %then57, label %else58
+end50:                                            ; preds = %end
+  %x51 = load i64, i64* %x
+  %i52 = load i64, i64* %i
+  %idx53 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %i52
+  store i64 %x51, i64* %idx53
+  %x54 = load i64, i64* %x
+  call void @WriteInt(i64 %x54)
+  %m55 = load i64, i64* %m
+  %5 = icmp eq i64 %m55, 10
+  br i1 %5, label %then56, label %else
 
-then57:                                           ; preds = %end51
+then56:                                           ; preds = %end50
   call void @WriteLn()
   store i64 0, i64* %m
-  br label %ifcont61
+  br label %ifcont59
 
-else58:                                           ; preds = %end51
-  %m59 = load i64, i64* %m
-  %addtmp60 = add i64 %m59, 1
-  store i64 %addtmp60, i64* %m
-  br label %ifcont61
+else:                                             ; preds = %end50
+  %m57 = load i64, i64* %m
+  %addtmp58 = add i64 %m57, 1
+  store i64 %addtmp58, i64* %m
+  br label %ifcont59
 
-ifcont61:                                         ; preds = %else58, %then57
-  %i62 = load i64, i64* %i
-  %addtmp63 = add i64 %i62, 1
-  store i64 %addtmp63, i64* %i
+ifcont59:                                         ; preds = %else, %then56
+  %i60 = load i64, i64* %i
+  %addtmp61 = add i64 %i60, 1
+  store i64 %addtmp61, i64* %i
   br label %while
 
-end64:                                            ; preds = %while
-  %m65 = load i64, i64* %m
-  %6 = icmp sgt i64 %m65, 0
-  br i1 %6, label %then66, label %else67
+end62:                                            ; preds = %while
+  %m63 = load i64, i64* %m
+  %6 = icmp sgt i64 %m63, 0
+  br i1 %6, label %then64, label %ifcont65
 
-then66:                                           ; preds = %end64
+then64:                                           ; preds = %end62
   call void @WriteLn()
-  br label %ifcont68
+  br label %ifcont65
 
-else67:                                           ; preds = %end64
-  br label %ifcont68
-
-ifcont68:                                         ; preds = %else67, %then66
+ifcont65:                                         ; preds = %then64, %end62
   ret void
 }
 

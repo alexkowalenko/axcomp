@@ -401,21 +401,24 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     if (!ast->elsif_clause.empty()) {
         builder.CreateCondBr(last_value, then_block, elsif_blocks[0]);
     } else {
-        builder.CreateCondBr(last_value, then_block, else_block);
+        if (ast->else_clause) {
+            builder.CreateCondBr(last_value, then_block, else_block);
+        } else {
+            builder.CreateCondBr(last_value, then_block, merge_block);
+        }
     }
 
-    // Emit then value.
+    // THEN
     builder.SetInsertPoint(then_block);
 
     std::for_each(begin(ast->if_clause.stats), end(ast->if_clause.stats),
                   [this](auto const &s) { s->accept(this); });
     builder.CreateBr(merge_block);
 
-    // Codegen of THEN can change the current block, update then_block
-    then_block = builder.GetInsertBlock();
-
     i = 0;
     for (auto const &e : ast->elsif_clause) {
+
+        // ELSEIF
         funct->getBasicBlockList().push_back(elsif_blocks[i]);
         builder.SetInsertPoint(elsif_blocks[i]);
 
@@ -427,7 +430,11 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
             builder.CreateCondBr(last_value, t_block, elsif_blocks[i + 1]);
         } else {
             // last ELSIF block - branch to else_block
-            builder.CreateCondBr(last_value, t_block, else_block);
+            if (ast->else_clause) {
+                builder.CreateCondBr(last_value, t_block, else_block);
+            } else {
+                builder.CreateCondBr(last_value, t_block, merge_block);
+            }
         }
 
         // THEN
@@ -435,23 +442,22 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
         std::for_each(begin(e.stats), end(e.stats),
                       [this](auto const &s) { s->accept(this); });
         builder.CreateBr(merge_block);
-        elsif_blocks[i] = builder.GetInsertBlock();
         i++;
     }
 
     // Emit ELSE block.
-    funct->getBasicBlockList().push_back(else_block);
-    builder.SetInsertPoint(else_block);
 
     if (ast->else_clause) {
+        funct->getBasicBlockList().push_back(else_block);
+        builder.SetInsertPoint(else_block);
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses),
                       [this](auto const &s) { s->accept(this); });
+        builder.CreateBr(merge_block);
     }
 
-    builder.CreateBr(merge_block);
     // codegen of ELSE can change the current block, update else_block
-    else_block = builder.GetInsertBlock();
+    // else_block = builder.GetInsertBlock();
 
     // Emit merge block.
     funct->getBasicBlockList().push_back(merge_block);
@@ -507,7 +513,6 @@ void CodeGenerator::visit_ASTFor(ASTFor *ast) {
     Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
 
     // Create the "after loop" block and insert it.
-    BasicBlock *loopEnd = builder.GetInsertBlock();
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
 
     // Insert the conditional branch into the end of Loop.
@@ -529,7 +534,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhile *ast) {
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
 
-    builder.CreateBr(while_block); // enter new block, crashes without this
+    builder.CreateBr(while_block);
     builder.SetInsertPoint(while_block);
 
     // Expr
@@ -560,7 +565,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeat *ast) {
     last_end = end_block;
 
     // REPEAT
-    builder.CreateBr(repeat_block); // enter new block, crashes without this
+    builder.CreateBr(repeat_block);
     builder.SetInsertPoint(repeat_block);
 
     std::for_each(begin(ast->stats), end(ast->stats),
@@ -585,13 +590,11 @@ void CodeGenerator::visit_ASTLoop(ASTLoop *ast) {
     last_end = end_block;
 
     // LOOP
-    builder.CreateBr(loop_block); // enter new block, crashes without this
+    builder.CreateBr(loop_block);
     builder.SetInsertPoint(loop_block);
 
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &s) { s->accept(this); });
-
-    loop_block = builder.GetInsertBlock();
     builder.CreateBr(loop_block);
 
     // END
@@ -609,7 +612,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlock *ast) {
     last_end = end_block;
 
     // BEGIN
-    builder.CreateBr(begin_block); // enter new block, crashes without this
+    builder.CreateBr(begin_block);
     builder.SetInsertPoint(begin_block);
 
     // BEGIN

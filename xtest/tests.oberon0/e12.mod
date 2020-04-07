@@ -5,7 +5,7 @@ BEGIN
     WHILE x < 10 DO
         x := x + 1;
         IF x = 5 THEN
-            EXIT;
+            RETURN 5;
         END;
     END;
     RETURN x; 
