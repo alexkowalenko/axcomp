@@ -41,7 +41,7 @@ inline const std::string file_ext_llvmri{".ll"};
 inline const std::string file_ext_obj{".o"};
 
 CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
-    : options(o), types(t), filename("output"), builder(context),
+    : options(o), types(t), filename("main"), builder(context),
       last_value(nullptr) {
     top_symboltable =
         std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(nullptr);
@@ -72,8 +72,8 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
         FunctionType::get(llvm::Type::getInt64Ty(context), proto, false);
 
     auto function_name = filename;
-    if (options.main_module) {
-        function_name = "main";
+    if (options.output_funct) {
+        function_name = "output";
     }
     Function *f = Function::Create(ft, Function::ExternalLinkage, function_name,
                                    module.get());
@@ -202,7 +202,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 }
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
-    debug(" CodeGenerator::visit_ASTProcedure");
+    debug(" CodeGenerator::visit_ASTProcedure {0}", ast->name);
     // Make the function arguments
     std::vector<llvm::Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
@@ -290,12 +290,14 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     debug(" CodeGenerator::visit_ASTAssignment VAR {0}", var);
     if (var) {
         // Handle VAR assignment
+        is_var = true; // Set change in visit_ASTIdentifierPtr to notify this is
+                       // a write of a VAR variable
         visit_ASTDesignator(ast->ident.get());
-        builder.CreateStore(val, last_value);
     } else {
         visit_ASTDesignatorPtr(ast->ident.get());
-        builder.CreateStore(val, last_value);
     }
+    builder.CreateStore(val, last_value);
+    is_var = false;
 }
 
 void CodeGenerator::visit_ASTReturn(ASTReturn *ast) {
@@ -767,7 +769,7 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
  */
 void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
     debug("CodeGenerator::visit_ASTDesignator {0}", std::string(*ast));
-    ast->ident->accept(this);
+    visit_ASTIdentifier(ast->ident.get());
 
     // Check if has selectors
     if (ast->selectors.empty()) {
@@ -813,7 +815,10 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
             debug("CodeGenerator::getPtr VAR {0}", ast->value);
             last_value = builder.CreateLoad(last_value, ast->value);
         }
-        last_value = res->first;
+        if (is_var) {
+            // This is a write of a VAR variable, preseve this value
+            last_value = res->first;
+        }
         return;
     }
     throw CodeGenException(formatv("identifier {0} unknown", ast->value),

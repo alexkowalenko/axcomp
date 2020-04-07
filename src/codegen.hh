@@ -106,6 +106,8 @@ class CodeGenerator : ASTVisitor {
     Value *     last_value;        // holds last value of compilation
     BasicBlock *last_end{nullptr}; // last end block in loop, used for EXIT
     bool        has_return{false};
+
+    bool is_var{false}; // Do VAR change in IndentifierPtr
 };
 
 } // namespace ax

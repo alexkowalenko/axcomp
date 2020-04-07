@@ -14,7 +14,7 @@ import argparse
 
 install_dir = "../../bin"
 
-compiler = f"{install_dir}/ax"
+compiler = f"{install_dir}/ax --output_funct "
 linker = f"clang++ ../main.cc -L {install_dir} -lAx "
 
 red = fg('red_1')

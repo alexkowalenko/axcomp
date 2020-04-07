@@ -28,7 +28,8 @@ int main(int argc, char **argv) {
     app.add_option("-D", debug_options, "Debug options : p=parse");
     app.add_option("--file,-f", options.file_name, "file to compile")
         ->check(CLI::ExistingFile);
-    app.add_flag("--main,-m", options.main_module, "compile as main module");
+    app.add_flag("--output_funct,-o", options.output_funct,
+                 "compile as test function output");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
     app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
 

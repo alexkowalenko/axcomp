@@ -23,50 +23,53 @@ morestring=[b]",
 }
 
 \lstdefinelanguage{Oberon}[]{Pascal}%
-  {morekeywords={range,len,dim,incr,all},%
-   sensitive=t,%
-   comment=[s]{(*}{*)},
-  }[keywords]%
+{morekeywords={range,len,dim,incr,all},%
+  sensitive=f,%
+  comment=[s]{(*}{*)},
+}[keywords]%
 
 
-  \newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
-  % narrow font for code
-  \newcommand{\srcfontn}{\usefont{T1}{lmvtt}{b}{n}}
-  % font for verbatim envirnoment. Note: must be fixed width!
-  \fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
-  }
+\newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
+\newcommand{\lispfont}{\fontspec{LispM-Monospace}[Scale=0.9]}
+
+% font for verbatim envirnoment. Note: must be fixed width!
+\fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
+}
   
-  \lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
-  tabsize = 2,
-  basicstyle=\srcfont,
-  keywordstyle=\srcfont,
-  %identifierstyle=\kw,
-  commentstyle=\color{darkgrey},
-  stringstyle=, showstringspaces=false,
-  %keepspaces=true,
-  numbers=none, numberstyle=\tiny, stepnumber=1, numbersep=5pt, captionpos=b,
-  columns=flexible % flexible, fixed, fullflexible
-  %framerule=1mm,%frame=shadowbox, rulesepcolor=\color{blue}, % frame = shadowbox
-  %xleftmargin=2mm,xrightmargin=2mm,
-  %backgroundcolor = \color{code}
-  }
+\lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
+tabsize = 2,
+basicstyle=\srcfont,
+keywordstyle=\srcfont,
+%identifierstyle=\kw,
+commentstyle=\color{darkgrey},
+stringstyle=, showstringspaces=false,
+%keepspaces=true,
+numbers=none, numberstyle=\tiny, stepnumber=1, numbersep=5pt, captionpos=b,
+columns=flexible % flexible, fixed, fullflexible
+%framerule=1mm,%frame=shadowbox, rulesepcolor=\color{blue}, % frame = shadowbox
+%xleftmargin=2mm,xrightmargin=2mm,
+%backgroundcolor = \color{code}
+}
   
-  \lstdefinestyle{example}{
-  basicstyle=\srcfont\small,
-  language=Oberon,
-  }
-  \lstdefinestyle{oberon}{
-  basicstyle=\srcfont\small,
-  language=Oberon,
-  %backgroundcolor = \color{code}
-  frame=lines
-  }
-  \lstdefinestyle{ebnf}{
+\lstdefinestyle{example}{
+basicstyle=\lispfont,
+keywordstyle=\srcfont,
+language=Oberon,
+}
+
+\lstdefinestyle{oberon}{
+basicstyle=\lispfont,
+language=Oberon,
+%backgroundcolor = \color{code}
+frame=lines
+}
+  
+\lstdefinestyle{ebnf}{
   basicstyle=\srcfont\small,
   language=ebnf,
   %backgroundcolor = \color{code},
   frame=lines
-  }
+}
 
 \newcommand{\MODULE}{\lstinline"MODULE"}
 \newcommand{\IMPORT}{\lstinline"IMPORT"}

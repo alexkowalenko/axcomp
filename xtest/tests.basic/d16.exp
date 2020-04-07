@@ -1,0 +1,56 @@
+; ModuleID = 'd16'
+source_filename = "d16"
+
+@a = internal global i64 0
+@b = internal global i64 0
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+define void @h(i64* %x, i64* %y) {
+entry:
+  %y2 = alloca i64*
+  %x1 = alloca i64*
+  store i64* %x, i64** %x1
+  store i64* %y, i64** %y2
+  %x3 = load i64*, i64** %x1
+  %x4 = load i64, i64* %x3
+  call void @WriteInt(i64 %x4)
+  call void @WriteLn()
+  %y5 = load i64*, i64** %y2
+  %y6 = load i64, i64* %y5
+  call void @WriteInt(i64 %y6)
+  call void @WriteLn()
+  %x7 = load i64*, i64** %x1
+  %x8 = load i64*, i64** %x1
+  store i64 10, i64* %x8
+  %y9 = load i64*, i64** %y2
+  %y10 = load i64*, i64** %y2
+  store i64 20, i64* %y10
+  %x11 = load i64*, i64** %x1
+  %x12 = load i64, i64* %x11
+  call void @WriteInt(i64 %x12)
+  call void @WriteLn()
+  %y13 = load i64*, i64** %y2
+  %y14 = load i64, i64* %y13
+  call void @WriteInt(i64 %y14)
+  call void @WriteLn()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* @a
+  store i64 2, i64* @b
+  call void @h(i64* @a, i64* @b)
+  %a = load i64, i64* @a
+  call void @WriteInt(i64 %a)
+  call void @WriteLn()
+  %b = load i64, i64* @b
+  call void @WriteInt(i64 %b)
+  call void @WriteLn()
+  ret i64 0
+}

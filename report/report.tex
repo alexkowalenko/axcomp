@@ -480,9 +480,9 @@ Module = MODULE ident ";"
          END ident "." .
 \end{lstlisting} 
 
-The statement sequence following the symbol \BEGIN\ is executed when the module is executed as the start module in an executable. The entry point is marked via compiler flags when the module is compiled.
+The statement sequence following the symbol \BEGIN\ is executed when the module is executed as the entry point in an executable.
 
-\begin{lstlisting}[style=example]
+\begin{lstlisting}[style=oberon]
 MODULE g10; (* ARRAY and RECORD *)
     
 VAR pt : ARRAY 3 OF RECORD
@@ -578,8 +578,8 @@ ident = letter {letter | digit}.
 Program \lstinline"ax" options are: 
 \begin{itemize}
     \item \lstinline"-f", \lstinline"--file filename" - compile named file.
-    \item \lstinline"-m" \lstinline"--main" the  \BEGIN\ part of this module will be executed as the entry point of the program.
-    \item  \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
+    \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
+    \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function output(). Used in unit tests for the compiler.
     \item \lstinline"-D"x - Debugging options `x' is composed of the following characters.
     \begin{itemize}
         \item \lstinline"p" - print out parsed tree.

@@ -14,15 +14,15 @@ entry:
   %x1 = alloca i64*
   store i64* %x, i64** %x1
   %x2 = load i64*, i64** %x1
-  %x3 = load i64*, i64** %x1
-  call void @WriteInt(i64* %x3)
+  %x3 = load i64, i64* %x2
+  call void @WriteInt(i64 %x3)
   call void @WriteLn()
   %x4 = load i64*, i64** %x1
   %x5 = load i64*, i64** %x1
   store i64 10, i64* %x5
   %x6 = load i64*, i64** %x1
-  %x7 = load i64*, i64** %x1
-  call void @WriteInt(i64* %x7)
+  %x7 = load i64, i64* %x6
+  call void @WriteInt(i64 %x7)
   call void @WriteLn()
   ret void
 }
