@@ -22,7 +22,7 @@ BEGIN x := 1; inc := 4; lim := 1; sqr := 4; m := 0; i := 3;
       UNTIL prim;
       p[i] := x; WriteInt(x);
       IF m = 10 THEN 
-        WriteLn(); 
+        WriteLn; 
         m := 0 
       ELSE 
         m := m+1 
@@ -34,6 +34,6 @@ END Primes;
 
 BEGIN 
     n := 283; (*ReadInt(n); *) 
-    WriteInt(n); WriteLn(); 
+    WriteInt(n); WriteLn; 
     Primes(n)
 END PrimeNumbers.

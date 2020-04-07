@@ -1,0 +1,41 @@
+; ModuleID = 'factorial'
+source_filename = "factorial"
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+define i64 @factor(i64 %x) {
+entry:
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  %x2 = load i64, i64* %x1
+  call void @WriteInt(i64 %x2)
+  call void @WriteLn()
+  %x3 = load i64, i64* %x1
+  %0 = icmp sle i64 %x3, 1
+  br i1 %0, label %then, label %else
+
+then:                                             ; preds = %entry
+  ret i64 1
+  br label %ifcont
+
+else:                                             ; preds = %entry
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
+  %x4 = load i64, i64* %x1
+  %x5 = load i64, i64* %x1
+  %subtmp = sub i64 %x5, 1
+  %1 = call i64 @factor(i64 %subtmp)
+  %multmp = mul i64 %x4, %1
+  ret i64 %multmp
+}
+
+define i64 @output() {
+entry:
+  %0 = call i64 @factor(i64 10)
+  ret i64 %0
+}

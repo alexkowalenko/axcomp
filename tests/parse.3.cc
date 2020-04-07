@@ -79,7 +79,7 @@ TEST(Parser, Proc) {
             BEGIN
                 RETURN 0
             END x.)",
-         "", "5,14: Unexpected token: semicolon - expecting :="},
+         "", "8,19: Unexpected token: EOF - expecting indent"},
 
     };
     do_parse_tests(tests);
@@ -113,6 +113,25 @@ TEST(Parser, Call) {
         END g;
         BEGIN
             g();
+            RETURN 0
+        END x.)",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
+         "g;\nBEGIN\nf();\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN 0\nEND x.",
+         ""},
+
+        {R"(MODULE x;
+        PROCEDURE f;
+        BEGIN
+            RETURN 12
+        END f;
+
+        PROCEDURE g;
+        BEGIN
+            f;
+            RETURN 24
+        END g;
+        BEGIN
+            g;
             RETURN 0
         END x.)",
          "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
