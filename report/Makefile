@@ -1,9 +1,11 @@
-TEX = lualatex -shell-escape -interaction=nonstopmode -file-line-error
-TEX = lualatex --shell-escape --file-line-error
+TEX = xelatex -shell-escape -interaction=nonstopmode -file-line-error
+TEX = xelatex --shell-escape --file-line-error
 
 .PHONY: all view clean
 
 SRC = report.tex
+
+report.pdf : report.sty
 
 all : report.pdf
 

@@ -784,7 +784,7 @@ std::shared_ptr<ASTDesignator> Parser::parse_designator() {
             lexer.get_token(); // [
             auto expr = parse_expr();
             get_token(TokenType::r_bracket);
-            ast->selectors.push_back(expr);
+            ast->selectors.emplace_back(expr);
             break;
         }
         case TokenType::period:

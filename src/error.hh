@@ -53,7 +53,7 @@ class CodeGenException : public AXException {
 class ErrorManager {
   public:
     void add(AXException const &e) { error_list.push_back(e); };
-    bool has_errors() { return !error_list.empty(); };
+    bool has_errors() const { return !error_list.empty(); };
 
     void print_errors(std::ostream &out);
     auto first() { return error_list.begin(); };

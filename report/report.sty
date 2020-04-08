@@ -3,6 +3,7 @@
 \usepackage{fontspec}
 \usepackage{fancyvrb}
 \usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{xcolor}
 
 \setmonofont[Scale=0.85]{Fira Code}
 
@@ -12,6 +13,8 @@
 %\newcommand{\progfont}{\changefont{pcr}{m}{n}}
 \newcommand{\progfont}{\ttfamily}
 \newcommand{\kwfont}{\changefont{cmr}{b}{n}}
+
+\definecolor{darkgrey}{rgb}{0.4,0.4,0.4}
 
 \lstdefinelanguage{ebnf}[]{}
 {morekeywords={},
@@ -31,17 +34,18 @@ morestring=[b]",
 
 \newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
 \newcommand{\lispfont}{\fontspec{LispM-Monospace}[Scale=0.9]}
-
+\newcommand{\lispfontBold}{\fontspec{LispM-Monospace}[Scale=0.9, AutoFakeBold=3.5]}
+\newcommand{\lispfontCommet}{\fontspec{LispM-Monospace}[Scale=0.9, FakeSlant=0.3, Color=darkgrey]}
 % font for verbatim envirnoment. Note: must be fixed width!
 \fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
 }
   
 \lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
 tabsize = 2,
-basicstyle=\srcfont,
-keywordstyle=\srcfont,
+basicstyle=\lispfont,
+keywordstyle=\lispfontBold,
 %identifierstyle=\kw,
-commentstyle=\color{darkgrey},
+commentstyle=\lispfontCommet,
 stringstyle=, showstringspaces=false,
 %keepspaces=true,
 numbers=none, numberstyle=\tiny, stepnumber=1, numbersep=5pt, captionpos=b,
@@ -52,13 +56,11 @@ columns=flexible % flexible, fixed, fullflexible
 }
   
 \lstdefinestyle{example}{
-basicstyle=\lispfont,
-keywordstyle=\srcfont,
 language=Oberon,
 }
 
 \lstdefinestyle{oberon}{
-basicstyle=\lispfont,
+%basicstyle=\lispfont,
 language=Oberon,
 %backgroundcolor = \color{code}
 frame=lines
