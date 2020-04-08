@@ -2,14 +2,14 @@
 
 \usepackage{report}
 
-\title{AX Oberon-0 Language Report}
+\title{AX Oberon-2/07 Language Report}
 
 \begin{document}
     
 \maketitle
 
 \abstract{
-This report describes the syntax and semantics of the programming language Oberon-0 as it is supported by the AX Oberon compiler.
+This report describes the syntax and semantics of the programming language Oberon-2/07 as it is supported by the AX Oberon compiler.
 }
 
 \tableofcontents
@@ -17,9 +17,9 @@ This report describes the syntax and semantics of the programming language Obero
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-This report is in the tradition of other Oberon language reports, defining the language supported by the compiler. This document used {\em The Programming Language Oberon (Revision 1.10.90)} by N. Wirth as it's base.
+This report is in the tradition of other Oberon language reports, defining the language supported by the compiler. This document used {\em The Programming Language Oberon-2} by H. Hössenböck and N. Wirth as it's base. Also the Oberon-07 document {\em The Programming Language Oberon (Revision 1.10.2013/3.5.2016)}, by N. Wirth.
 
-Oberon-0 is defined in {\em Compiler Construction }(1996, 2017).
+Oberon-07 seems to be a refinement of Oberon-2 with some features taken out. We will support a common maximum variant of the language.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Syntax}
@@ -56,16 +56,17 @@ Examples:
 
 \begin{lstlisting}
     +   :=  ARRAY   MOD         TO
-    -   ^   BEGIN   MODULE      TYPE
-    *   =   CONST   OF          VAR        
-    /   #   DIV     OR          WHILE
-    ~   <   DO      PROCEDURE
-    &   >   ELSE    RECORD   
-    .   <=  ELSIF   RETURN
-    ,   >=  END     
-    (   )   IF           
-    |   :   ;        
-    [   ]           
+    -   ^   BEGIN   MODULE      THEN
+    *   =   CONST   OF          TYPE       
+    /   #   DIV     OR          UNTIL
+    ~   <   DO      PROCEDURE   VAR
+    &   >   ELSE    RECORD      WHILE
+    .   <=  ELSIF   REPEAT
+    ,   >=  END     RETURN
+    (   )   EXIT           
+    |   :   FOR     
+    [   ]   IF
+    ;       LOOP    
 \end{lstlisting}
 
 \item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences opened by the bracket \lstinline"(*" and closed by \lstinline"*)". Comments do not affect the meaning of a program.
@@ -379,7 +380,7 @@ If statements specify the conditional execution of guarded statements. The boole
     END
 \end{lstlisting} 
 
-\subsection{\WHILE\ statement}
+\subsection{\WHILE\ statements}
 
 While statements specify repetition. If the Boolean expression (guard) yields \TRUE, the statement sequence is executed. The expression evaluation and the statement execution are repeated as long as the Boolean expression yields \TRUE.
 
@@ -395,11 +396,93 @@ WHILE j > 0 DO
 END
 \end{lstlisting} 
 
+\subsection{\REPEAT\ statments}
+
+A repeat statement specifies the repeated execution of a statement sequence until a condition specified by a Boolean expression is satisfied. The statement sequence is executed at least once.
+
+\begin{lstlisting}[style=ebnf]
+RepeatStatement = REPEAT StatementSequence UNTIL Expression.
+\end{lstlisting} 
+
+\subsection{\FOR\ statements}
+
+A for statement specifies the repeated execution of a statement sequence for a fixed number of times while a progression of values is assigned to an integer variable called the control variable of the for statement.
+
+\begin{lstlisting}[style=ebnf]
+ForStatement = FOR ident ":=" Expression TO Expression 
+               [BY ConstExpression] DO StatementSequence END.
+\end{lstlisting} 
+
+The statement
+
+\begin{lstlisting}[style=example]
+FOR v := low TO high BY step DO statements END
+\end{lstlisting} 
+
+is equivalent to
+
+\begin{lstlisting}[style=example]
+v := low; temp := high; 
+IF step > 0 THEN
+    WHILE v <= temp DO statements; v := v + step END 
+ELSE
+    WHILE v >= temp DO statements; v := v + step END 
+END
+\end{lstlisting} 
+    
+\lstinline!low! must be assignment compatible with \lstinline!v!, \lstinline!high! must be expression compatible (i.e. comparable) with \lstinline!v!, and step must be a nonzero constant expression of an integer type. If step is not specified, it is assumed to be 1.
+
+Examples:
+\begin{lstlisting}[style=example]
+FOR i := 0 TO 79 DO k := k + a[i] END
+FOR i := 79 TO 1 BY -1 DO a[i] := a[i-1] END
+\end{lstlisting} 
+
+\subsection{\LOOP\ statements}
+
+A loop statement specifies the repeated execution of a statement sequence. It is terminated upon execution of an exit statement within that sequence (see \ref{return}).
+
+\begin{lstlisting}[style=example]
+LoopStatement = LOOP StatementSequence END.
+\end{lstlisting} 
+
+Example:
+\begin{lstlisting}[style=example]
+LOOP
+    ReadInt(i);
+    IF i < 0 THEN EXIT END; 
+    WriteInt(i)
+END
+\end{lstlisting} 
+
+Loop statements are useful to express repetitions with several exit points or cases where the exit condition is in the middle of the repeated statement sequence.
+
+\subsection{\BEGIN\ statements}
+
+This is non-standard Oberon. A begin statement specifies a collection of statements. There is no looping function.  It is terminated upon execution of an exit statement within that sequence (see \ref{return}), or completion of the final statement in the \BEGIN\ \END\ block.
+
+\begin{lstlisting}[style=example]
+LoopStatement = BEGIN StatementSequence END.
+\end{lstlisting} 
+
+Example:
+\begin{lstlisting}[style=example]
+BEGIN
+    ReadInt(i);
+    IF i < 0 THEN EXIT END; 
+    WriteInt(i)
+END
+\end{lstlisting} 
+
 \subsection{\RETURN\ statements}
+\label{return}
 
 A return statement consists of the symbol \RETURN, possibly followed by an expression. It indicates the termination of a procedure, and the expression specifies the result of a function procedure. Its type must be identical to the result type specified in the procedure heading (see \ref{procedures}).
 
 Function procedures require the presence of a return statement indicating the result value. There may be several, although only one will be executed. In proper procedures, a return statement is implied by the end of the procedure body. An explicit return statement therefore appears as an additional (probably exceptional) termination point.
+
+An exit statement is denoted by the symbol \EXIT. It specifies termination of the enclosing loop
+statement and continuation with the statement following that loop statement. Exit statements are contextually, although not syntactically associated with the loop statement which contains them.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Procedure declarations}
@@ -502,13 +585,238 @@ END g10.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
-\section{Syntax of Oberon-0}
+\section{Syntax of Oberon-2/07}
 
-Oberon-0 as defined in {\em Compiler Construction} (1996, 2017).
+\subsection{Oberon-2}
+
+Oberon-2 as defined in {\em The Programming Language Oberon-2} (1991).
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]
+Module = MODULE ident ";" 
+         [ImportList] 
+         DeclSeq 
+         [BEGIN StatementSeq] END ident ".".
 
+ImportList = IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
+
+DeclSeq = { CONST {ConstDecl ";" } 
+            | TYPE {TypeDecl ";"} 
+            | VAR {VarDecl ";"}} 
+            {ProcDecl ";" | ForwardDecl ";"}.
+
+ConstDecl = IdentDef "=" ConstExpr.
+
+TypeDecl = IdentDef "=" Type.
+
+VarDecl = IdentList ":" Type.
+
+ProcDecl = PROCEDURE [Receiver] IdentDef [FormalPars] ";" DeclSeq 
+           [BEGIN StatementSeq] END ident.
+
+ForwardDecl = PROCEDURE "^" [Receiver] IdentDef [FormalPars].
+
+FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Qualident].
+
+FPSection = [VAR] ident {"," ident} ":" Type.
+
+Receiver = "(" [VAR] ident ":" ident ")".
+
+Type = Qualident
+    | ARRAY [ConstExpr { "," ConstExpr }] OF Type
+    | RECORD [ "(" Qualident ")" ] FieldList { ";" FieldList } END 
+    | POINTER TO Type
+    | PROCEDURE [ FormalPars ].
+
+FieldList = [ IdentList ":" Type ].
+    
+StatementSeq = Statement { ";" Statement }.
+
+Statement = [ Designator ":=" Expr
+      | Designator ["(" [ExprList] ")"]
+      | IF Expr THEN StatementSeq 
+        {ELSIF Expr THEN StatementSeq } 
+        [ ELSE StatementSeq ] END
+      | CASE Expr OF Case { "|" Case } [ ELSE StatementSeq ] END
+      | WHILE Expr DO StatementSeq END
+      | REPEAT StatementSeq UNTIL Expr
+      | FOR ident ":=" Expr TO Expr [BY ConstExpr ] DO StatementSeq END
+      | LOOP StatementSeq END
+      | WITH Guard DO StatementSeq 
+        { "|" Guard DO StatementSeq } 
+        [ ELSE StatementSeq ] END
+      | EXIT
+      | RETURN [Expr] 
+      ].
+
+Case = [ CaseLabels {"," CaseLabels} ":" StatementSeq ].
+
+CaseLabel = ConstExpr [ ".." ConstExpr ].
+
+Guard = Qualident ":" Qualident.
+
+ConstExpr = Expr.
+
+Expr = SimpleExpr [Relation SimpleExpr].
+
+SimpleExpr = ["+" | "-"] Term {AddOp Term}.
+
+Term = Factor {MulOp Factor}.
+
+Factor = Designator ["(" [ExprList] ")"] 
+         | number 
+         | character 
+         | string 
+         | NIL 
+         | Set 
+         | "(" Expr ")" 
+         | "~" Factor. 
+
+Set = "{" [Element {"," Element}] "}".
+
+Element = Expr [".." Expr].
+
+Relation = "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
+
+AddOp = "+" | "-" | OR.
+
+MulOp = "*" | "/" | DIV | MOD | "&".
+
+Designator = Qualident { "." ident | "[" ExprList "]" | " ^ " | "(" Qualident ")" }. 
+
+ExprList = Expr {"," Expr}.
+
+IdentList = IdentDef {"," IdentDef}.
+
+Qualident = [ident "."] ident.
+
+IdentDef = ident [" * " | "-"].
+\end{lstlisting}}
+
+\subsection{Oberon-07}
+
+Oberon-07 as defined in {\em The Programming Language Oberon (Revision 1.10.2013/3.5.2016)}, by N. Wirth.
+
+{\scriptsize
+\begin{lstlisting}[style=EBNF]
+module = MODULE ident ";" 
+[ImportList] DeclarationSequence [BEGIN StatementSequence] END ident "."
+
+ImportList = IMPORT import {"," import} ";". import = ident [":=" ident]
+
+statement = [assignment 
+             | ProcedureCall 
+             | IfStatement 
+             | CaseStatement 
+             | WhileStatement 
+             | RepeatStatement 
+             | ForStatement].
+
+assignment = designator ":=" expression. 
+
+ProcedureCall = designator [ActualParameters]. 
+
+StatementSequence = statement {";" statement}. 
+
+IfStatement = IF expression THEN StatementSequence
+              {ELSIF expression THEN StatementSequence} 
+              [ELSE StatementSequence] 
+              END.
+
+CaseStatement = CASE expression OF case {"|" case} END. 
+case = [CaseLabelList ":" StatementSequence]. 
+CaseLabelList = LabelRange {"," LabelRange}.
+LabelRange = label [".." label].
+label = integer | string | qualident.
+
+WhileStatement = WHILE expression DO StatementSequence
+                 {ELSIF expression DO StatementSequence} END.
+
+RepeatStatement = REPEAT StatementSequence UNTIL expression. 
+
+ForStatement = FOR ident ":=" expression TO expression [BY ConstExpression]
+               DO StatementSequence END.
+
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
+ProcedureHeading = PROCEDURE identdef [FormalParameters]. 
+ProcedureBody = DeclarationSequence [BEGIN StatementSequence] [RETURN expression] END.
+
+DeclarationSequence = [CONST {ConstDeclaration ";"}]
+                      [TYPE {TypeDeclaration ";"}] 
+                      [VAR {VariableDeclaration ";"}] 
+                      {ProcedureDeclaration ";"}.
+
+FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" qualident]. 
+FPSection = [VAR] ident {"," ident} ":" FormalType.
+FormalType = {ARRAY OF} qualident.
+
+expression = SimpleExpression [relation SimpleExpression]. 
+relation = "="|"#"|"<"|"<="|">"|">="|IN|IS. 
+
+SimpleExpression = ["+" | "-"] term {AddOperator term}. 
+AddOperator = "+" | "-" | OR.
+
+term = factor {MulOperator factor}. 
+MulOperator = "*" | "/" | DIV | MOD | "&".
+
+factor = number 
+         | string 
+         | NIL 
+         | TRUE | FALSE 
+         | set 
+         | designator [ActualParameters] 
+         | "(" expression ")" 
+         | "~" factor. 
+         
+designator = qualident {selector}.
+selector = "." ident | "[" ExpList "]" | "^" | "(" qualident ")".
+
+set = "{" [element {"," element}] "}".
+element = expression [".." expression]. 
+
+ExpList = expression {"," expression}. 
+ActualParameters = "(" [ExpList] ")" .
+
+ConstDeclaration = identdef "=" ConstExpression. 
+ConstExpression = expression.
+
+TypeDeclaration = identdef "=" type.
+type = qualident | ArrayType | RecordType | PointerType | ProcedureType. 
+
+ArrayType = ARRAY length {"," length} OF type.
+length = ConstExpression.
+
+RecordType = RECORD ["(" BaseType ")"] [FieldListSequence] END. 
+BaseType = qualident.
+FieldListSequence = FieldList {";" FieldList}.
+FieldList = IdentList ":" type.
+
+IdentList = identdef {"," identdef}.
+
+PointerType = POINTER TO type.
+
+ProcedureType = PROCEDURE [FormalParameters].
+
+VariableDeclaration = IdentList ":" type.
+
+integer = digit {digit} | digit {hexDigit} "H". 
+real = digit {digit} "." {digit} [ScaleFactor]. 
+ScaleFactor = "E" ["+" | "-"] digit {digit}. 
+number = integer | real.
+
+string = """ {character} """ | digit {hexDigit} "X".
+
+letter = "A"|"B"|...|"Z"|"a"|"b"|...|"z".
+digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9". hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F".
+ident = letter {letter | digit}. qualident = [ident "."] ident. identdef = ident ["*"].
+\end{lstlisting}}
+
+\subsection{Oberon-0}
+
+Oberon-0 as defined in {\em Compiler Construction} (1996, 2017). This was the base of the syntax of the compiler.
+
+{\scriptsize
+\begin{lstlisting}[style=EBNF]
 module = "MODULE" ident ";" declarations 
          ["BEGIN" StatementSequence] 
          "END" ident "."

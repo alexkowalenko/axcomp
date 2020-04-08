@@ -3,3 +3,9 @@ bin/**
 .vscode/***
 .mypy_cache/*
 *.fail
+
+*.aux
+*.log
+*.out
+*.toc
+report.pdf
