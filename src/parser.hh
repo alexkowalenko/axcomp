@@ -64,6 +64,8 @@ class Parser {
 
     Token get_token(TokenType const &t);
 
+    void set_attrs(std::shared_ptr<ASTIdentifier> const &ident);
+
     Lexer &                               lexer;
     std::shared_ptr<SymbolTable<TypePtr>> symbols;
     TypeTable &                           types;

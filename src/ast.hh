@@ -73,11 +73,11 @@ class ASTIdentifier : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(this); };
 
-    bool is(Attr attr) { return attrs.find(attr) != attrs.end(); }
-    void set(Attr attr) { attrs.insert(attr); }
+    bool is(Attr attr) { return attrs.contains(attr); }
+    void set(Attr attr) { attrs.set(attr); }
 
-    std::string              value;
-    std::unordered_set<Attr> attrs;
+    std::string value;
+    Attrs       attrs;
 
 }; // namespace ax
 
@@ -392,7 +392,7 @@ class ASTProcedure : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
-    std::string                                name;
+    std::shared_ptr<ASTIdentifier>             name;
     bool                                       is_external{true};
     std::shared_ptr<ASTType>                   return_type{nullptr};
     std::vector<VarDec>                        params;

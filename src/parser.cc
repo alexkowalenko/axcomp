@@ -30,7 +30,29 @@ template <class T> inline std::shared_ptr<T> makeAST(Lexer &lexer) {
     return ast;
 }
 
+// builtin procedures
 std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
+
+// module identifier markers
+inline const std::set<TokenType> module_markers{TokenType::asterisk,
+                                                TokenType::dash};
+
+void Parser::set_attrs(std::shared_ptr<ASTIdentifier> const &ident) {
+    auto tok = lexer.peek_token();
+    if (module_markers.find(tok.type) != module_markers.end()) {
+        lexer.get_token();
+        switch (tok.type) {
+        case TokenType::asterisk:
+            ident->set(Attr::global);
+            return;
+        case TokenType::dash:
+            ident->set(Attr::read_only);
+            return;
+        default:
+            return;
+        }
+    }
+}
 
 Token Parser::get_token(TokenType const &t) {
     auto tok = lexer.get_token();
@@ -147,7 +169,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
 };
 
 /**
- * @brief "CONST" (IDENT "=" INTEGER ";")*
+ * @brief "CONST" (IdentDef "=" INTEGER ";")*
  *
  * @return std::shared_ptr<ASTConst>
  */
@@ -160,6 +182,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     while (tok.type == TokenType::ident) {
         ConstDec dec;
         dec.ident = parse_identifier();
+        set_attrs(dec.ident);
         get_token(TokenType::equals);
         dec.value = parse_expr();
         get_token(TokenType::semicolon);
@@ -172,20 +195,32 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
     return cnst;
 }
 
+/**
+ * @brief IdentList = IdentDef {"," IdentDef}.
+ *
+ * @param list
+ */
 void Parser::parse_identList(
     std::vector<std::shared_ptr<ASTIdentifier>> &list) {
 
     auto id = parse_identifier();
+    set_attrs(id);
     list.push_back(id);
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::comma) {
         lexer.get_token();
         id = parse_identifier();
+        set_attrs(id);
         list.push_back(id);
         tok = lexer.peek_token();
     }
 }
 
+/**
+ * @brief TypeDeclaration = IdentDef "=" type.
+ *
+ * @return std::shared_ptr<ASTTypeDec>
+ */
 std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
     debug("Parser::parse_typedec");
     auto type = makeAST<ASTTypeDec>(lexer);
@@ -195,6 +230,7 @@ std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
     while (tok.type == TokenType::ident) {
         VarDec dec;
         dec.first = parse_identifier();
+        set_attrs(dec.first);
         get_token(TokenType::equals);
         dec.second = parse_type();
         get_token(TokenType::semicolon);
@@ -237,7 +273,7 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
 }
 
 /**
- * @brief "PROCEDURE" ident [formalParameters] [ ":" type ]
+ * @brief "PROCEDURE" IdentDef [formalParameters] [ ":" type ]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
  *
  * @return std::shared_ptr<ASTProcedure>
@@ -247,11 +283,11 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     auto proc = makeAST<ASTProcedure>(lexer);
 
     lexer.get_token(); // PROCEDURE
-    auto tok = get_token(TokenType::ident);
-    proc->name = tok.val;
+    proc->name = parse_identifier();
+    set_attrs(proc->name);
 
     // Parameters
-    tok = lexer.peek_token();
+    auto tok = lexer.peek_token();
     if (tok.type == TokenType::l_paren) {
         parse_parameters(proc->params);
     }
@@ -276,10 +312,10 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     // END
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
-    if (tok.val != proc->name) {
+    if (tok.val != proc->name->value) {
         throw ParseException(
             llvm::formatv("END name: {0} doesn't match procedure name: {1}",
-                          tok.val, proc->name),
+                          tok.val, proc->name->value),
             lexer.get_location());
     }
     get_token(TokenType::semicolon);
@@ -344,8 +380,14 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
 /**
  * @brief assignment
     | procedureCall
+    | assignmentStatement
     | ifStatment
     | forStatement
+    | whileStatement
+    | repeatStatement
+    | EXIT
+    | loopStatement
+    | blockStatement
     | "RETURN" [expr]
  *
  * @return std::shared_ptr<ASTStatement>

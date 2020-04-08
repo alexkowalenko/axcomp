@@ -224,8 +224,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     }
 
     FunctionType *ft = FunctionType::get(returnType, proto, false);
-    Function *    f = Function::Create(ft, Function::ExternalLinkage, ast->name,
-                                   module.get());
+    Function *    f = Function::Create(ft, Function::ExternalLinkage,
+                                   ast->name->value, module.get());
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);

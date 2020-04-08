@@ -75,15 +75,25 @@ Examples:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Declarations and scope rules}
+\label{declarations}
 
 Every identifier occurring in a program must be introduced by a declaration, unless it is a predefined identifier. Declarations also serve to specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure.
 
-The identifier is then used to refer to the associated object. This is possible in those parts of a program only which are within the scope of the declaration. No identifier may denote more than one object within a given scope. The scope extends textually from the point of the declaration to the end of the block (procedure or module) to which the declaration belongs and hence to which the object is local. 
+The scope of an object x extends textually from the point of its declaration to the end of the block (module, procedure, or record) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks. The scope rules are:
 
 The scope rule has the following amendments:
 \begin{enumerate}
+    \item No identifier may denote more than one object within a given scope (i.e. no identifier may be declared twice in a block);
+    \item An object may only be referenced within its scope;
     \item Field identifiers of a record declaration (see \ref{records}) are valid in field designators only.
 \end{enumerate}
+
+An identifier declared in a module block may be followed by an export mark (\lstinline!*! or \lstinline!-!) in its declaration to indicate that it is exported. An identifier \lstinline!x! exported by a module \lstinline!M! may be used in other modules, if they import M (see \ref{modules}). The identifier is then denoted as \lstinline!M.x! in these modules and is called a qualified identifier. Variables and record fields marked with \lstinline!-! in their declaration are read-only in importing modules.
+
+\begin{lstlisting}[style=ebnf]
+Qualident = [ident "."] ident. 
+IdentDef = ident ["*" | "-"].
+\end{lstlisting}
 
 The following identifiers are predefined; their meaning is defined in the indicated sections:
 \begin{tabbing}
@@ -99,7 +109,7 @@ The following identifiers are predefined; their meaning is defined in the indica
 A constant declaration associates an identifier with a constant value.
 
 \begin{lstlisting}[style=ebnf]
-ConstantDeclaration = ident "=" ConstExpression. 
+ConstantDeclaration = IdentDef "=" ConstExpression. 
 
 ConstExpression = expression.
 \end{lstlisting}
@@ -118,7 +128,7 @@ limit =   2 * N - 1
 A data type determines the set of values which variables of that type may assume, and the operators that are applicable. A type declaration is used to associate an identifier with the type. Such association may be with unstructured (basic) types, or it may be with structured types, in which case it defines the structure of variables of this type and, by implication, the operators that are applicable to the components. There are two different structures, namely arrays and records, with different component selectors.
 
 \begin{lstlisting}[style=ebnf]
-    TypeDeclaration = ident "=" type.
+    TypeDeclaration = IdentDef "=" type.
 
     type = ident | ArrayType | RecordType.
 \end{lstlisting}
@@ -161,7 +171,7 @@ FieldListSequence = FieldList {";" FieldList}.
 
 FieldList = [IdentList ":" type].
 
-IdentList = ident {"," ident}.
+IdentList = IdentDef {"," IdentDef}.
 \end{lstlisting}
 
 Examples of record types:
@@ -501,7 +511,7 @@ The use of the procedure identifier in a call within its declaration implies rec
 \begin{lstlisting}[style=ebnf]
 ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
 
-ProcedureHeading = PROCEDURE ident [FormalParameters]. 
+ProcedureHeading = PROCEDURE IdentDef [FormalParameters]. 
 
 ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END. 
 
@@ -553,15 +563,25 @@ The following table lists the predefined procedures. Some are generic procedures
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modules}
+\label{modules}
 
 A module is a collection of declarations of constants, types, variables, and procedures, and a sequence of statements for the purpose of assigning initial values to the variables. A module typically constitutes a text that is compilable as a unit.
 
 \begin{lstlisting}[style=ebnf]
-Module = MODULE ident ";" 
+Module = MODULE ident ";"
+         [ImportList] 
          DeclarationSequence 
          [BEGIN StatementSequence] 
          END ident "." .
+
+
+ImportList = IMPORT Import {"," Import} ";".
+
+Import = = [ident ":="] ident.
 \end{lstlisting} 
+
+The import list specifies the names of the imported modules. If a module A is imported by a module M and A exports an identifier x, then x is referred to as A.x within M. If A is imported as B := A, the object x must be referenced as B.x. This allows short alias names in qualified identifiers. A module must not import itself. Identifiers that are to be exported (i.e. that are to be visible in client modules) must be marked by an export mark in their declaration (see section \ref{declarations}).
+
 
 The statement sequence following the symbol \BEGIN\ is executed when the module is executed as the entry point in an executable.
 

@@ -53,6 +53,12 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
                 ast->get_location());
             errors.add(e);
         }
+        if (c.ident->is(Attr::read_only)) {
+            auto e = TypeError(
+                llvm::formatv("CONST {0} is always read only", c.ident->value),
+                ast->get_location());
+            errors.add(e);
+        }
         c.type = std::make_shared<ASTType>();
         c.type->type_info = last_type;
         c.type->type = std::make_shared<ASTIdentifier>(last_type->get_name());
@@ -64,12 +70,19 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
 
 void Inspector::visit_ASTTypeDec(ASTTypeDec *ast) {
     debug("Inspector::visit_ASTTypeDec");
-    std::for_each(begin(ast->types), end(ast->types), [this](auto const &t) {
-        t.second->accept(this);
-        auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
-        debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
-        types.put(t.first->value, type);
-    });
+    std::for_each(
+        begin(ast->types), end(ast->types), [this, ast](auto const &t) {
+            if (t.first->is(Attr::read_only)) {
+                auto e = TypeError(llvm::formatv("TYPE {0} is always read only",
+                                                 t.first->value),
+                                   ast->get_location());
+                errors.add(e);
+            }
+            t.second->accept(this);
+            auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
+            debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
+            types.put(t.first->value, type);
+        });
 }
 
 void Inspector::visit_ASTVar(ASTVar *ast) {
@@ -93,6 +106,14 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         retType = last_type;
     }
 
+    // Check global modifiers
+    if (ast->name->is(Attr::read_only)) {
+        auto e = TypeError(llvm::formatv("PROCEDURE {0} is always read only",
+                                         ast->name->value),
+                           ast->get_location());
+        errors.add(e);
+    }
+
     // Check parameter types
     debug("Inspector::visit_ASTProcedure check parameter types");
     ProcedureType::ParamsList argTypes;
@@ -107,8 +128,8 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                   });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
-    current_symboltable->put(ast->name, proc_type);
-    types.put(ast->name, proc_type);
+    current_symboltable->put(ast->name->value, proc_type);
+    types.put(ast->name->value, proc_type);
 
     last_proc = ast;
 
@@ -206,7 +227,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
             auto e = TypeError(
                 llvm::formatv(
                     "RETURN does not match return type for function {0}",
-                    last_proc->name),
+                    last_proc->name->value),
                 ast->get_location());
             errors.add(e);
         }

@@ -9,3 +9,4 @@ bin/**
 *.out
 *.toc
 report.pdf
+*.synctex.gz

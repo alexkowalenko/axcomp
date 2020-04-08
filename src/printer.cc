@@ -15,6 +15,20 @@
 
 namespace ax {
 
+std::string star("*");
+std::string dash("-");
+std::string empty("");
+
+std::string &print_attr(Attrs const &attrs) {
+    if (attrs.contains(Attr::global)) {
+        return star;
+    }
+    if (attrs.contains(Attr::read_only)) {
+        return dash;
+    }
+    return empty;
+}
+
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << std::string(llvm::formatv("MODULE {0};\n", ast->name));
     ast->decs->accept(this);
@@ -31,6 +45,7 @@ void ASTPrinter::visit_ASTConst(ASTConst *ast) {
         std::for_each(ast->consts.begin(), ast->consts.end(),
                       [this](auto const &c) {
                           c.ident->accept(this);
+                          os << print_attr(c.ident->attrs);
                           os << " = ";
                           c.value->accept(this);
                           os << ";\n";
@@ -44,6 +59,7 @@ void ASTPrinter::visit_ASTTypeDec(ASTTypeDec *ast) {
         std::for_each(begin(ast->types), end(ast->types),
                       [this](auto const &v) {
                           v.first->accept(this);
+                          os << print_attr(v.first->attrs);
                           os << " = ";
                           v.second->accept(this);
                           os << ";\n";
@@ -57,6 +73,7 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
         std::for_each(ast->vars.begin(), ast->vars.end(),
                       [this](auto const &v) {
                           v.first->accept(this);
+                          os << print_attr(v.first->attrs);
                           os << ": ";
                           v.second->accept(this);
                           os << ";\n";
@@ -65,7 +82,8 @@ void ASTPrinter::visit_ASTVar(ASTVar *ast) {
 }
 
 void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
-    os << std::string(llvm::formatv("PROCEDURE {0}", ast->name));
+    os << std::string(llvm::formatv("PROCEDURE {0}", ast->name->value))
+       << print_attr(ast->name->attrs);
     if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";
         std::for_each(ast->params.begin(), ast->params.end(),
@@ -90,7 +108,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure *ast) {
     ast->decs->accept(this);
     os << "BEGIN\n";
     print_stats(ast->stats);
-    os << std::string(llvm::formatv("END {0}.\n", ast->name));
+    os << std::string(llvm::formatv("END {0}.\n", ast->name->value));
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignment *ast) {
@@ -288,6 +306,7 @@ void ASTPrinter::visit_ASTRecord(ASTRecord *ast) {
                   [this, ast](auto const &s) {
                       os << "  ";
                       s.first->accept(this);
+                      os << print_attr(s.first->attrs);
                       os << ": ";
                       s.second->accept(this);
                       if (s != *(ast->fields.end() - 1)) {
