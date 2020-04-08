@@ -109,39 +109,6 @@ TEST(Inspector, IF) {
     do_inspect_tests(tests);
 }
 
-TEST(Inspector, For) {
-    std::vector<ParseTests> tests = {
-        {R"(MODULE e06;
-            BEGIN 
-            FOR i := 0 TO 9 DO
-                RETURN i
-            END;
-            RETURN
-            END e06.)",
-         "MODULE e06;\nBEGIN\nFOR i := 0 TO 9 DO\nRETURN i\nEND;\nRETURN \nEND "
-         "e06.",
-         ""},
-
-        // Errors
-        {R"(MODULE e06;
-            BEGIN 
-            FOR i := 0 TO TRUE DO 
-                RETURN i
-            END;
-            RETURN
-            END e06.)",
-         "", "3,15: FOR end expression must be numeric type"},
-        {R"(MODULE e06;
-            BEGIN 
-            FOR i := FALSE TO TRUE DO 
-                RETURN i
-            END;
-            RETURN
-            END e06.)",
-         "", "3,15: FOR start expression must be numeric type"},
-    };
-    do_inspect_tests(tests);
-}
 
 TEST(Inspector, WHILE) {
     std::vector<ParseTests> tests = {
@@ -168,72 +135,6 @@ TEST(Inspector, WHILE) {
             RETURN x
         END alpha.)",
          "", "4,17: WHILE expression must be type BOOLEAN"},
-    };
-    do_inspect_tests(tests);
-}
-
-TEST(Inspector, REPEAT) {
-    std::vector<ParseTests> tests = {
-
-        {R"(MODULE alpha;
-        VAR x : INTEGER;
-        BEGIN
-            REPEAT
-                x := x+1
-            UNTIL x > 10;
-            RETURN
-        END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nx := x+1\nUNTIL x > "
-         "10;\nRETURN \nEND alpha.",
-         ""},
-
-        // Errors
-        {R"(MODULE alpha;
-        VAR x : INTEGER;
-        BEGIN
-            REPEAT
-                x := x+1
-            UNTIL  10
-        END alpha.)",
-         "", "4,18: REPEAT expression must be type BOOLEAN"},
-    };
-    do_inspect_tests(tests);
-}
-
-TEST(Inspector, LOOP) {
-    std::vector<ParseTests> tests = {
-
-        {R"(MODULE alpha;
-        VAR x : INTEGER;
-        BEGIN
-            LOOP
-                x := x + 1;
-                EXIT
-            END;
-            RETURN x
-        END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nLOOP\nx := "
-         "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
-         ""},
-    };
-    do_inspect_tests(tests);
-}
-
-TEST(Inspector, BEGIN) {
-    std::vector<ParseTests> tests = {
-
-        {R"(MODULE alpha;
-        VAR x : INTEGER;
-        BEGIN
-            BEGIN
-                x := x + 1;
-                EXIT
-            END;
-            RETURN x
-        END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nBEGIN\nx := "
-         "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
-         ""},
     };
     do_inspect_tests(tests);
 }
