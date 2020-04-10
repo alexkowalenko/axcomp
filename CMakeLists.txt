@@ -118,6 +118,7 @@ add_library(libax STATIC
   src/parser.cc
   src/inspector.cc 
   src/codegen.cc
+  src/defprinter.cc
 )
 include_directories(src)
 include_directories(extern/CLI11/include)

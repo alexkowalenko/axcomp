@@ -51,7 +51,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTBool(ASTBool *ast) override;
 
-  private:
+  protected:
     std::ostream &os;
 };
 
