@@ -78,8 +78,7 @@ class ASTIdentifier : public ASTBase {
 
     std::string value;
     Attrs       attrs;
-
-}; // namespace ax
+};
 
 /**
  * @brief INDENT | arrayType

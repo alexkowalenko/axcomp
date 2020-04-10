@@ -90,6 +90,7 @@ std::vector<LexTests> tests = {
     {"EXIT", TokenType::exit, "EXIT"},
     {"ARRAY", TokenType::array, "ARRAY"},
     {"RECORD", TokenType::record, "RECORD"},
+    {"DEFINITION", TokenType::definition, "DEFINITION"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

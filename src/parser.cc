@@ -7,7 +7,6 @@
 #include "parser.hh"
 
 #include <optional>
-#include <set>
 
 #include <llvm/Support/FormatVariadic.h>
 
@@ -22,12 +21,6 @@ template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
         std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
     }
-}
-
-template <class T> inline std::shared_ptr<T> makeAST(Lexer &lexer) {
-    auto ast = std::make_shared<T>();
-    ast->set_location(lexer.get_location());
-    return ast;
 }
 
 // builtin procedures

@@ -18,6 +18,7 @@ struct ParseTests {
 void do_parse_tests(std::vector<ParseTests> &tests);
 void do_inspect_tests(std::vector<ParseTests> &tests);
 void do_def_tests(std::vector<ParseTests> &tests);
+void do_defparse_tests(std::vector<ParseTests> &tests);
 
 inline void rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(),

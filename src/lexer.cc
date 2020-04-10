@@ -53,6 +53,7 @@ static const std::unordered_map<std::string, Token> keyword_map = {
     {"ARRAY", Token(TokenType::array, "ARRAY")},
     {"OF", Token(TokenType::of, "OF")},
     {"RECORD", Token(TokenType::record, "RECORD")},
+    {"DEFINITION", Token(TokenType::definition, "DEFINITION")},
 };
 
 static const std::unordered_map<char, Token> token_map = {

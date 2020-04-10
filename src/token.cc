@@ -69,6 +69,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::array, "ARRAY"},
     {TokenType::of, "OF"},
     {TokenType::record, "RECORD"},
+    {TokenType::definition, "DEFINITION"},
 
     {TokenType::eof, "EOF"},
 };

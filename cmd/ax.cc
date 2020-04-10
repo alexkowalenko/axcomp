@@ -9,6 +9,7 @@
 #include <CLI/CLI.hpp>
 
 #include "codegen.hh"
+#include "defprinter.hh"
 #include "error.hh"
 #include "inspector.hh"
 #include "lexer.hh"
@@ -19,6 +20,18 @@
 
 using namespace ax;
 
+void output_defs(std::shared_ptr<ASTModule> ast, Options const &options) {
+    std::string def_file{"out.def"};
+    if (!options.file_name.empty()) {
+        auto filename = options.file_name;
+        def_file = filename.substr(0, filename.rfind(".")) + ".def";
+    }
+
+    std::ofstream output(def_file);
+    DefPrinter    defs(output);
+    defs.print(ast);
+}
+
 int main(int argc, char **argv) {
 
     Options  options;
@@ -26,6 +39,7 @@ int main(int argc, char **argv) {
 
     std::string debug_options;
     app.add_option("-D", debug_options, "Debug options : p=parse");
+    app.add_flag("--defs, -d", options.output_defs, "output .def file");
     app.add_option("--file,-f", options.file_name, "file to compile")
         ->check(CLI::ExistingFile);
     app.add_flag("--output_funct,-o", options.output_funct,
@@ -66,6 +80,11 @@ int main(int argc, char **argv) {
         if (errors.has_errors()) {
             errors.print_errors(std::cout);
             return -1;
+        }
+
+        if (options.output_defs) {
+            output_defs(ast, options);
+            return 0;
         }
 
         ax::CodeGenerator code(options, types);

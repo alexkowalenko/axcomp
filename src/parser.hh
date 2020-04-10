@@ -15,6 +15,7 @@
 #include "typetable.hh"
 
 namespace ax {
+
 class Parser {
   public:
     explicit Parser(Lexer &l, std::shared_ptr<SymbolTable<TypePtr>> s,
@@ -25,7 +26,7 @@ class Parser {
 
     void setup_builtins();
 
-  private:
+  protected:
     std::shared_ptr<ASTModule>      parse_module();
     std::shared_ptr<ASTDeclaration> parse_declaration();
     std::shared_ptr<ASTConst>       parse_const();
@@ -74,5 +75,11 @@ class Parser {
 
 extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>>
     builtins;
+
+template <class T> inline std::shared_ptr<T> makeAST(Lexer &lexer) {
+    auto ast = std::make_shared<T>();
+    ast->set_location(lexer.get_location());
+    return ast;
+}
 
 } // namespace ax
