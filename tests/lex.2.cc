@@ -91,6 +91,7 @@ std::vector<LexTests> tests = {
     {"ARRAY", TokenType::array, "ARRAY"},
     {"RECORD", TokenType::record, "RECORD"},
     {"DEFINITION", TokenType::definition, "DEFINITION"},
+    {"IMPORT", TokenType::import, "IMPORT"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

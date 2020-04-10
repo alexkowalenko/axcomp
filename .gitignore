@@ -2,6 +2,9 @@ build/***
 bin/**
 .vscode/***
 .mypy_cache/*
+.clangd
+.idea
+compile_commands.json
 *.fail
 
 *.aux

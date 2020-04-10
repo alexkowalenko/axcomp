@@ -63,3 +63,42 @@ TEST(Parser, Globals) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, IMPORT) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            IMPORT System;
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nIMPORT System;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+            IMPORT B := A;
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nIMPORT B := A;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+            IMPORT System, B := A;
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nIMPORT System,\nB := A;\nBEGIN\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            IMPORT System, B := A, C := D; 
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nIMPORT System,\nB := A,\nC := D;\nBEGIN\nRETURN "
+         "0\nEND alpha.",
+         ""},
+
+        // Errors
+    };
+    do_parse_tests(tests);
+}

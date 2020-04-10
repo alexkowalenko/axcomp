@@ -14,11 +14,21 @@ namespace ax {
 
 void ASTVisitor::visit_ASTModule(ASTModule *ast) {
     ast->decs->accept(this);
-    std::for_each(ast->procedures.begin(), ast->procedures.end(),
+    std::for_each(begin(ast->procedures), end(ast->procedures),
                   [this](auto const &proc) { proc->accept(this); });
-    std::for_each(ast->stats.begin(), ast->stats.end(),
+    std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &x) { x->accept(this); });
 }
+
+void ASTVisitor::visit_ASTImport(ASTImport *ast) {
+    std::for_each(begin(ast->imports), end(ast->imports),
+                  [this](auto const &i) {
+                      i.first->accept(this);
+                      if (i.second) {
+                          i.second->accept(this);
+                      }
+                  });
+};
 
 void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
     if (ast->cnst) {
@@ -33,25 +43,24 @@ void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
 }
 
 void ASTVisitor::visit_ASTConst(ASTConst *ast) {
-    std::for_each(ast->consts.begin(), ast->consts.end(),
-                  [this](auto const &c) {
-                      c.ident->accept(this);
-                      c.value->accept(this);
-                  });
+    std::for_each(begin(ast->consts), end(ast->consts), [this](auto const &c) {
+        c.ident->accept(this);
+        c.value->accept(this);
+    });
 }
 
-void ASTVisitor::visit_ASTTypeDec(ASTTypeDec *) {}
+void ASTVisitor::visit_ASTTypeDec(ASTTypeDec * /*unused*/) {}
 
 void ASTVisitor::visit_ASTVar(ASTVar *ast) {
 
-    std::for_each(ast->vars.begin(), ast->vars.end(),
+    std::for_each(begin(ast->vars), end(ast->vars),
                   [this](auto const &v) { v.first->accept(this); });
 }
 
 void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {
     ast->return_type->accept(this);
     ast->decs->accept(this);
-    std::for_each(ast->stats.begin(), ast->stats.end(),
+    std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &x) { x->accept(this); });
 }
 

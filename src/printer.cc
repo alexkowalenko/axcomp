@@ -17,6 +17,9 @@ namespace ax {
 
 void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     os << std::string(llvm::formatv("MODULE {0};\n", ast->name));
+    if (ast->import) {
+        ast->import->accept(this);
+    }
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
@@ -24,6 +27,24 @@ void ASTPrinter::visit_ASTModule(ASTModule *ast) {
     print_stats(ast->stats);
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
+
+void ASTPrinter::visit_ASTImport(ASTImport *ast) {
+    if (!ast->imports.empty()) {
+        os << "IMPORT ";
+        std::for_each(begin(ast->imports), end(ast->imports),
+                      [this, ast](auto const &i) {
+                          if (i.second) {
+                              i.second->accept(this);
+                              os << " := ";
+                          }
+                          i.first->accept(this);
+                          if (i != *(ast->imports.end() - 1)) {
+                              os << ",\n";
+                          }
+                      });
+        os << ";\n";
+    }
+};
 
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {
@@ -110,7 +131,7 @@ void ASTPrinter::visit_ASTReturn(ASTReturn *ast) {
     }
 }
 
-void ASTPrinter::visit_ASTExit(ASTExit *ast) {
+void ASTPrinter::visit_ASTExit(ASTExit * /*ast*/) {
     os << "EXIT";
 }
 

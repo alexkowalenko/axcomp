@@ -20,8 +20,9 @@ void DefPrinter::visit_ASTModule(ASTModule *ast) {
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) {
-                      if (proc->name->is(Attr::global))
+                      if (proc->name->is(Attr::global)) {
                           proc->accept(this);
+                      }
                   });
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }

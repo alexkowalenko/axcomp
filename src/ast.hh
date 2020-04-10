@@ -73,8 +73,8 @@ class ASTIdentifier : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(this); };
 
-    bool is(Attr attr) { return attrs.contains(attr); }
-    void set(Attr attr) { attrs.set(attr); }
+    [[nodiscard]] bool is(Attr attr) const { return attrs.contains(attr); }
+    void               set(Attr attr) { attrs.set(attr); }
 
     std::string value;
     Attrs       attrs;
@@ -455,12 +455,31 @@ class ASTDeclaration : public ASTBase {
     std::shared_ptr<ASTVar>     var;
 };
 
+/**
+ * @brief "IMPORT" Import {"," Import} ";".
+ *
+ * Import = = [ident ":="] ident.
+ *
+ */
+class ASTImport : public ASTBase {
+  public:
+    ~ASTImport() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTImport(this); };
+
+    using Pair = std::pair<std::shared_ptr<ASTIdentifier>,  // Module
+                           std::shared_ptr<ASTIdentifier>>; // Alias
+
+    std::vector<Pair> imports;
+};
+
 class ASTModule : public ASTBase {
   public:
     ~ASTModule() override = default;
     void accept(ASTVisitor *v) override { v->visit_ASTModule(this); };
 
     std::string                                name;
+    std::shared_ptr<ASTImport>                 import;
     std::shared_ptr<ASTDeclaration>            decs;
     std::vector<std::shared_ptr<ASTProcedure>> procedures;
     std::vector<std::shared_ptr<ASTStatement>> stats;

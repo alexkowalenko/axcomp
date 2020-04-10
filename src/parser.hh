@@ -28,6 +28,7 @@ class Parser {
 
   protected:
     std::shared_ptr<ASTModule>      parse_module();
+    std::shared_ptr<ASTImport>      parse_import();
     std::shared_ptr<ASTDeclaration> parse_declaration();
     std::shared_ptr<ASTConst>       parse_const();
     std::shared_ptr<ASTTypeDec>     parse_typedec();

@@ -6,11 +6,13 @@
 
 #include "parser.hh"
 
+#include <cstddef>
 #include <optional>
 
 #include <llvm/Support/FormatVariadic.h>
 
 #include "error.hh"
+#include "token.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -75,6 +77,13 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     module->name = tok.val;
     symbols->put(module->name, TypeTable::ModuleType);
     get_token(TokenType::semicolon);
+
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::import) {
+        module->import = parse_import();
+    }
+
+    // Declarations
     module->decs = parse_declaration();
 
     // Procedures
@@ -101,6 +110,40 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     }
     get_token(TokenType::period);
     return module;
+}
+
+/**
+ * @brief "IMPORT" Import {"," Import} ";".
+ *
+ * Import = = [ident ":="] ident.
+ *
+ * @return std::shared_ptr<ASTImport>
+ */
+std::shared_ptr<ASTImport> Parser::parse_import() {
+    debug("Parser::parse_import");
+    auto ast = makeAST<ASTImport>(lexer);
+
+    lexer.get_token(); // IMPORT
+
+    while (true) {
+        auto ident = parse_identifier();
+
+        auto tok = lexer.peek_token();
+        if (tok.type == TokenType::assign) {
+            lexer.get_token(); // :=
+            auto second = parse_identifier();
+            ast->imports.emplace_back(ASTImport::Pair{second, ident});
+        } else {
+            ast->imports.emplace_back(ASTImport::Pair{ident, nullptr});
+        }
+        tok = lexer.peek_token();
+        if (tok.type != TokenType::comma) {
+            break;
+        }
+        get_token(TokenType::comma);
+    }
+    get_token(TokenType::semicolon);
+    return ast;
 }
 
 /**
@@ -317,7 +360,8 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
 
 /**
  * @brief formalParameters
- * = "(" [ ["VAR"] (identList : INDENT)* (";"  ["VAR"] (identList : INDENT)*)]
+ * = "(" [ ["VAR"] (identList : INDENT)* (";"  ["VAR"] (identList :
+ * INDENT)*)]
  * "")"
  *
  * @return std::vector<VarDec>
