@@ -647,6 +647,12 @@ void Inspector::visit_ASTRecord(ASTRecord *ast) {
     types.put(last_type->get_name(), last_type);
 }
 
+void Inspector::visit_ASTQualident(ASTQualident *ast) {
+
+    // For now behave like a identifier
+    visit_ASTIdentifier(ast);
+}
+
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     debug("Inspector::visit_ASTIdentifier");
     auto res = current_symboltable->find(ast->value);
@@ -664,21 +670,17 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
         errors.add(e);
     }
     last_type = *resType;
-    if (current_consts->find(ast->value)) {
-        is_const = true;
-    } else {
-        is_const = false;
-    }
+    is_const = static_cast<bool>(current_consts->find(ast->value));
     is_lvalue = true;
 }
 
-void Inspector::visit_ASTInteger(ASTInteger *) {
+void Inspector::visit_ASTInteger(ASTInteger * /* not used */) {
     last_type = TypeTable::IntType;
     is_const = true;
     is_lvalue = false;
 }
 
-void Inspector::visit_ASTBool(ASTBool *ast) {
+void Inspector::visit_ASTBool(ASTBool * /* not used */) {
     last_type = TypeTable::BoolType;
     is_const = true;
     is_lvalue = false;

@@ -76,8 +76,28 @@ class ASTIdentifier : public ASTBase {
     [[nodiscard]] bool is(Attr attr) const { return attrs.contains(attr); }
     void               set(Attr attr) { attrs.set(attr); }
 
+    explicit virtual operator std::string() { return value; };
+
     std::string value;
     Attrs       attrs;
+};
+
+/**
+ * @brief Qualident = [ident "."] ident.
+ *
+ */
+class ASTQualident : public ASTIdentifier {
+  public:
+    ASTQualident() = default;
+    ~ASTQualident() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTQualident(this); };
+
+    std::string qual;
+
+    explicit operator std::string() override {
+        return qual.empty() ? value : qual + "." + value;
+    };
 };
 
 /**
@@ -147,7 +167,7 @@ class ASTDesignator : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(this); };
 
-    std::shared_ptr<ASTIdentifier>                                ident;
+    std::shared_ptr<ASTQualident>                                 ident;
     std::vector<std::variant<std::shared_ptr<ASTExpr>, FieldRef>> selectors;
 };
 

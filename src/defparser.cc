@@ -15,14 +15,6 @@
 
 namespace ax {
 
-inline constexpr bool debug_defparser{false};
-
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_defparser) {
-        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
-    }
-}
-
 /**
  * @brief module -> "DEFINITION" IDENT ";"  declarations "END" IDENT "."
  *
@@ -66,7 +58,6 @@ std::shared_ptr<ASTModule> DefParser::parse_module() {
  * @return std::shared_ptr<ASTProcedure>
  */
 std::shared_ptr<ASTProcedure> DefParser::parse_procedure() {
-    debug("DefParser::parse_procedure");
     auto proc = makeAST<ASTProcedure>(lexer);
 
     lexer.get_token(); // PROCEDURE

@@ -170,6 +170,8 @@ void ASTVisitor::visit_ASTDesignator(ASTDesignator *ast) {
         });
 }
 
+void ASTVisitor::visit_ASTQualident(ASTQualident *ast) {}
+
 void ASTVisitor::visit_ASTIdentifier(ASTIdentifier *ast) {}
 
 void ASTVisitor::visit_ASTType(ASTType *ast) {

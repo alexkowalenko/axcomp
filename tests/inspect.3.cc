@@ -90,3 +90,40 @@ TEST(Inspector, ReadOnly) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Qualident) {
+    std::vector<ParseTests> tests = {
+
+        // Errors
+
+        {R"(MODULE alpha;
+            IMPORT System;
+            BEGIN
+                RETURN System.x;
+            END alpha.)",
+         "", "4,30: undefined identifier x"},
+
+        {R"(MODULE alpha;
+            IMPORT S := System;
+            BEGIN
+                RETURN S.x;
+            END alpha.)",
+         "", "4,25: undefined identifier x"},
+
+        {R"(MODULE alpha;
+            IMPORT System;
+            BEGIN
+                RETURN Oberon.x;
+            END alpha.)",
+         "", "4,30: undefined identifier Oberon"},
+
+        {R"(MODULE alpha;
+            IMPORT S := System;
+            BEGIN
+                RETURN System.x;
+            END alpha.)",
+         "", "4,30: undefined identifier System"},
+
+    };
+    do_inspect_tests(tests);
+}

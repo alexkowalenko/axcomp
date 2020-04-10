@@ -288,6 +288,13 @@ void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
     });
 }
 
+void ASTPrinter::visit_ASTQualident(ASTQualident *ast) {
+    if (!ast->qual.empty()) {
+        os << ast->qual + ".";
+    }
+    os << ast->value;
+}
+
 void ASTPrinter::visit_ASTIdentifier(ASTIdentifier *ast) {
     os << ast->value;
 }

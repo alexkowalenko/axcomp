@@ -123,7 +123,8 @@ class RecordType : public Type {
 
 class TypeAlias : public Type {
   public:
-    TypeAlias(std::string n, TypePtr t) : name{std::move(n)}, alias{std::move(t)} {};
+    TypeAlias(std::string n, TypePtr t)
+        : name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
     explicit operator std::string() override { return name; };
@@ -133,6 +134,17 @@ class TypeAlias : public Type {
   private:
     std::string name;
     TypePtr     alias;
+};
+
+class ModuleType : public Type {
+  public:
+    explicit ModuleType(std::string n) : name{std::move(n)} {};
+    ~ModuleType() override = default;
+
+    explicit operator std::string() override { return name; };
+
+  private:
+    std::string name;
 };
 
 } // namespace ax

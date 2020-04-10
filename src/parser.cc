@@ -11,8 +11,10 @@
 
 #include <llvm/Support/FormatVariadic.h>
 
+#include "ast.hh"
 #include "error.hh"
 #include "token.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -133,8 +135,12 @@ std::shared_ptr<ASTImport> Parser::parse_import() {
             lexer.get_token(); // :=
             auto second = parse_identifier();
             ast->imports.emplace_back(ASTImport::Pair{second, ident});
+            auto module = std::make_shared<ModuleType>(second->value);
+            symbols->put(ident->value, module);
         } else {
             ast->imports.emplace_back(ASTImport::Pair{ident, nullptr});
+            auto module = std::make_shared<ModuleType>(ident->value);
+            symbols->put(ident->value, module);
         }
         tok = lexer.peek_token();
         if (tok.type != TokenType::comma) {
@@ -854,7 +860,7 @@ std::shared_ptr<ASTDesignator> Parser::parse_designator() {
     debug("Parser::parse_designator");
     auto ast = makeAST<ASTDesignator>(lexer);
 
-    ast->ident = parse_identifier();
+    ast->ident = parse_qualident();
 
     auto tok = lexer.peek_token();
     while (designatorOps.find(tok.type) != designatorOps.end()) {
@@ -944,6 +950,45 @@ std::shared_ptr<ASTRecord> Parser::parse_record() {
         }
     }
     get_token(TokenType::end);
+    return ast;
+}
+
+/**
+ * @brief Qualident = [ident "."] ident.
+ *
+ * @return std::shared_ptr<ASTIdentifier>
+ */
+std::shared_ptr<ASTQualident> Parser::parse_qualident() {
+    debug("Parser::parse_qualident");
+    auto ast = makeAST<ASTQualident>(lexer);
+
+    auto first = get_token(TokenType::ident);
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::period) {
+
+        // Check if identifier is a imported module
+        // If a module then make a full qualified identifier,
+        // else it is a record access.
+
+        lexer.get_token(); // .
+        auto ident = get_token(TokenType::ident);
+
+        auto res = symbols->find(first.val);
+        if (res && std::dynamic_pointer_cast<ModuleType>(*res)) {
+            debug("Parser::parse_qualident found module {0}", first.val);
+            ast->qual = first.val;
+            ast->value = ident.val;
+        } else {
+            debug("Parser::parse_qualident not found module {0}", first.val);
+            // push back tokens
+            lexer.push_token(ident);
+            lexer.push_token(tok);
+            ast->value = first.val;
+        }
+    } else {
+        ast->value = first.val;
+    }
+    debug("Parser::parse_qualident: {0}", std::string(*ast));
     return ast;
 }
 

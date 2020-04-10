@@ -625,7 +625,7 @@ TEST(Inspector, Const) {
         {R"(MODULE alpha;
                 CONST time = 60 * 60;
                 
-                PROCEDURE f (x : INTEGER); 
+                PROCEDURE f (x : INTEGER): INTEGER; 
                 CONST y = x;
                 BEGIN 
                     RETURN y

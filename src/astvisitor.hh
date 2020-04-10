@@ -5,7 +5,6 @@
 //
 
 #pragma once
-
 namespace ax {
 
 class ASTModule;
@@ -36,6 +35,7 @@ class ASTBool;
 class ASTType;
 class ASTArray;
 class ASTRecord;
+class ASTQualident;
 class ASTIdentifier;
 
 class ASTVisitor {
@@ -69,6 +69,7 @@ class ASTVisitor {
     virtual void visit_ASTType(ASTType *ast);
     virtual void visit_ASTArray(ASTArray *ast);
     virtual void visit_ASTRecord(ASTRecord *ast);
+    virtual void visit_ASTQualident(ASTQualident *ast);
     virtual void visit_ASTIdentifier(ASTIdentifier *ast);
     virtual void visit_ASTBool(ASTBool *ast);
 };

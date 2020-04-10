@@ -99,6 +99,44 @@ TEST(Parser, IMPORT) {
          ""},
 
         // Errors
+        {R"(MODULE alpha;
+            IMPORT ;
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "", "2,20: Unexpected token: semicolon - expecting indent"},
+
+        {R"(MODULE alpha;
+            IMPORT B := ;
+            BEGIN
+                RETURN 0
+            END alpha.)",
+         "", "2,25: Unexpected token: semicolon - expecting indent"},
+
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, Qualident) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            IMPORT System;
+            BEGIN
+                System.x := System.y + 1;
+                RETURN System.error;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT System;\nBEGIN\nSystem.x := "
+         "System.y+1;\nRETURN System.error\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+            IMPORT System;
+            BEGIN
+                RETURN System.
+            END alpha.)",
+         "", "5,15: Unexpected token: END - expecting indent"},
     };
     do_parse_tests(tests);
 }

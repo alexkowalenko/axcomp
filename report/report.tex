@@ -55,18 +55,21 @@ Examples:
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words consist exclusively of capital letters and cannot be used in the role of identifiers.
 
 \begin{lstlisting}
-    +   :=  ARRAY   MOD         TO
-    -   ^   BEGIN   MODULE      THEN
-    *   =   CONST   OF          TYPE       
-    /   #   DIV     OR          UNTIL
-    ~   <   DO      PROCEDURE   VAR
-    &   >   ELSE    RECORD      WHILE
-    .   <=  ELSIF   REPEAT
-    ,   >=  END     RETURN
-    (   )   EXIT           
-    |   :   FOR     
-    [   ]   IF
-    ;       LOOP    
+    + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ;       
+
+    ARRAY   MOD         TO
+    BEGIN   MODULE      THEN
+    CONST   OF          TYPE       
+    DIV     OR          UNTIL
+    DO      PROCEDURE   VAR
+    ELSE    RECORD      WHILE
+    ELSIF   REPEAT
+    END     RETURN
+    EXIT           
+    FOR     
+    IF
+    IMPORT
+    LOOP    
 \end{lstlisting}
 
 \item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences opened by the bracket \lstinline"(*" and closed by \lstinline"*)". Comments do not affect the meaning of a program.
@@ -92,6 +95,7 @@ An identifier declared in a module block may be followed by an export mark (\lst
 
 \begin{lstlisting}[style=ebnf]
 Qualident = [ident "."] ident. 
+
 IdentDef = ident ["*" | "-"].
 \end{lstlisting}
 
@@ -130,7 +134,7 @@ A data type determines the set of values which variables of that type may assume
 \begin{lstlisting}[style=ebnf]
     TypeDeclaration = IdentDef "=" type.
 
-    type = ident | ArrayType | RecordType.
+    type = Qualident | ArrayType | RecordType.
 \end{lstlisting}
 
 Examples:
@@ -217,7 +221,7 @@ If A designates an array, then A[E] denotes that element of A whose index is the
 If r designates a record, then r.f denotes the field f of r.
 
 \begin{lstlisting}[style=ebnf]
-designator = ident {"." ident | "[" expression "]" }.
+designator = Qualident {"." ident | "[" expression "]" }.
 \end{lstlisting}
 
 If the designated object is a variable, then the designator refers to the variable's current value.
@@ -573,7 +577,6 @@ Module = MODULE ident ";"
          DeclarationSequence 
          [BEGIN StatementSequence] 
          END ident "." .
-
 
 ImportList = IMPORT Import {"," Import} ";".
 
