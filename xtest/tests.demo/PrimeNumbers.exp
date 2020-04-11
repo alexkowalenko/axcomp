@@ -11,7 +11,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @PrimeNumbers_Primes(i64 %n) {
+define internal void @PrimeNumbers_Primes(i64 %n) {
 entry:
   %prim = alloca i1
   %sqr = alloca i64

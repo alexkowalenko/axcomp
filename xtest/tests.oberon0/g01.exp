@@ -11,7 +11,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @g01_f() {
+define internal void @g01_f() {
 entry:
   %z3 = alloca [6 x i1]
   %z2 = alloca [4 x i64]

@@ -17,7 +17,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define %2 @g12_identity(%3 %a) {
+define internal %2 @g12_identity(%3 %a) {
 entry:
   %a1 = alloca %4
   store %3 %a, %4* %a1
@@ -25,7 +25,7 @@ entry:
   ret %4 %a2
 }
 
-define i64 @g12_sum(%5 %a) {
+define internal i64 @g12_sum(%5 %a) {
 entry:
   %total = alloca i64
   %a1 = alloca %6

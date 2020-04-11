@@ -120,7 +120,13 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
         module->getOrInsertGlobal(var_name, type);
         GlobalVariable *gVar = module->getNamedGlobal(var_name);
 
-        gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
+        GlobalValue::LinkageTypes linkage;
+        if (c.first->is(Attr::global)) {
+            linkage = GlobalValue::LinkageTypes::ExternalLinkage;
+        } else {
+            linkage = GlobalValue::LinkageTypes::InternalLinkage;
+        }
+        gVar->setLinkage(linkage);
         auto *init = getType_init(c.second);
         gVar->setInitializer(init);
         current_symboltable->put(c.first->value, {gVar, Attr::null});
@@ -138,7 +144,13 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         GlobalVariable *gVar = module->getNamedGlobal(const_name);
 
         c.value->accept(this);
-        gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
+        GlobalValue::LinkageTypes linkage;
+        if (c.ident->is(Attr::global)) {
+            linkage = GlobalValue::LinkageTypes::ExternalLinkage;
+        } else {
+            linkage = GlobalValue::LinkageTypes::InternalLinkage;
+        }
+        gVar->setLinkage(linkage);
         if (isa<ConstantInt>(last_value)) {
             gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
         } else {
@@ -228,10 +240,15 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         returnType = getType(ast->return_type);
     }
 
-    auto          proc_name = gen_module_id(ast->name->value);
-    FunctionType *ft = FunctionType::get(returnType, proto, false);
-    Function *    f = Function::Create(ft, Function::ExternalLinkage, proc_name,
-                                   module.get());
+    auto                      proc_name = gen_module_id(ast->name->value);
+    FunctionType *            ft = FunctionType::get(returnType, proto, false);
+    GlobalValue::LinkageTypes linkage;
+    if (ast->name->is(Attr::global)) {
+        linkage = Function::ExternalLinkage;
+    } else {
+        linkage = Function::InternalLinkage;
+    }
+    Function *f = Function::Create(ft, linkage, proc_name, module.get());
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);

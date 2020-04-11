@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @MagicSquares_Generate() {
+define internal void @MagicSquares_Generate() {
 entry:
   %M = alloca [13 x [13 x i64]]
   %n = alloca i64

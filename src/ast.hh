@@ -414,7 +414,6 @@ class ASTProcedure : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
     std::shared_ptr<ASTIdentifier>             name;
-    bool                                       is_external{true};
     std::shared_ptr<ASTType>                   return_type{nullptr};
     std::vector<VarDec>                        params;
     std::shared_ptr<ASTDeclaration>            decs;

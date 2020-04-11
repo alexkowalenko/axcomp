@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i1 @d11_eq(i64 %x, i64 %y) {
+define internal i1 @d11_eq(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64
@@ -19,7 +19,7 @@ entry:
   ret i1 %0
 }
 
-define i1 @d11_neq(i64 %x, i64 %y) {
+define internal i1 @d11_neq(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64

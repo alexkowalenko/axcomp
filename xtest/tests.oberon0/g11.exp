@@ -9,7 +9,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define [3 x i64] @g11_identity([3 x i64] %a) {
+define internal [3 x i64] @g11_identity([3 x i64] %a) {
 entry:
   %a1 = alloca [3 x i64]
   store [3 x i64] %a, [3 x i64]* %a1
@@ -17,7 +17,7 @@ entry:
   ret [3 x i64] %a2
 }
 
-define i64 @g11_sum([3 x i64] %a) {
+define internal i64 @g11_sum([3 x i64] %a) {
 entry:
   %i = alloca i64
   %total = alloca i64

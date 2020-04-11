@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @factorial_factor(i64 %x) {
+define internal i64 @factorial_factor(i64 %x) {
 entry:
   %x1 = alloca i64
   store i64 %x, i64* %x1

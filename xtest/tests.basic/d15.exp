@@ -10,7 +10,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @d15_h(i64 %x, i64* %y) {
+define internal void @d15_h(i64 %x, i64* %y) {
 entry:
   %y2 = alloca i64*
   %x1 = alloca i64

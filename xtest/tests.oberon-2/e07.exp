@@ -9,7 +9,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @e07_f() {
+define internal i64 @e07_f() {
 entry:
   ret i64 9
 }
