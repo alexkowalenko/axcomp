@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @add(i64 %x, i64 %y) {
+define i64 @d12_add(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64
@@ -19,7 +19,7 @@ entry:
   ret i64 %addtmp
 }
 
-define i64 @mult(i64 %x, i64 %y) {
+define i64 @d12_mult(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64
@@ -33,8 +33,8 @@ entry:
 
 define i64 @output() {
 entry:
-  %0 = call i64 @mult(i64 3, i64 3)
-  %1 = call i64 @mult(i64 4, i64 4)
-  %2 = call i64 @add(i64 %0, i64 %1)
+  %0 = call i64 @d12_mult(i64 3, i64 3)
+  %1 = call i64 @d12_mult(i64 4, i64 4)
+  %2 = call i64 @d12_add(i64 %0, i64 %1)
   ret i64 %2
 }

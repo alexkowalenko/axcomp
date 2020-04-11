@@ -1,9 +1,9 @@
 ; ModuleID = 'g02'
 source_filename = "g02"
 
-@x1 = internal global i64 0
-@x2 = internal global [5 x i64] zeroinitializer
-@x3 = internal global [6 x i1] zeroinitializer
+@g02_x1 = internal global i64 0
+@g02_x2 = internal global [5 x i64] zeroinitializer
+@g02_x3 = internal global [6 x i1] zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -11,7 +11,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @f() {
+define i64 @g02_f() {
 entry:
   %z3 = alloca [6 x i1]
   %z2 = alloca [4 x i64]
@@ -27,17 +27,17 @@ entry:
 
 define i64 @output() {
 entry:
-  %x2 = load [5 x i64], [5 x i64]* @x2
-  %idx = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @x2, i64 0, i64 0)
-  %x21 = load [5 x i64], [5 x i64]* @x2
-  %idx2 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @x2, i64 0, i64 1)
+  %x2 = load [5 x i64], [5 x i64]* @g02_x2
+  %idx = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @g02_x2, i64 0, i64 0)
+  %x21 = load [5 x i64], [5 x i64]* @g02_x2
+  %idx2 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @g02_x2, i64 0, i64 1)
   %addtmp = add i64 %idx, %idx2
-  %0 = call i64 @f()
+  %0 = call i64 @g02_f()
   %addtmp3 = add i64 %addtmp, %0
-  store i64 %addtmp3, i64* @x1
-  %x24 = load [5 x i64], [5 x i64]* @x2
-  %idx5 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @x2, i64 0, i64 3)
-  %x1 = load i64, i64* @x1
+  store i64 %addtmp3, i64* @g02_x1
+  %x24 = load [5 x i64], [5 x i64]* @g02_x2
+  %idx5 = load i64, i64* getelementptr inbounds ([5 x i64], [5 x i64]* @g02_x2, i64 0, i64 3)
+  %x1 = load i64, i64* @g02_x1
   %addtmp6 = add i64 %idx5, %x1
   ret i64 %addtmp6
 }

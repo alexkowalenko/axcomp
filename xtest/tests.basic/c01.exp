@@ -1,8 +1,8 @@
 ; ModuleID = 'c01'
 source_filename = "c01"
 
-@x = internal constant i64 1
-@y = internal constant i64 2
+@c01_x = internal constant i64 1
+@c01_y = internal constant i64 2
 
 declare void @WriteInt(i64)
 

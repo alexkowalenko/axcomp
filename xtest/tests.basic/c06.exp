@@ -1,9 +1,9 @@
 ; ModuleID = 'c06'
 source_filename = "c06"
 
-@alpha = internal constant i64 24
-@x = internal global i64 0
-@y = internal global i64 0
+@c06_alpha = internal constant i64 24
+@c06_x = internal global i64 0
+@c06_y = internal global i64 0
 
 declare void @WriteInt(i64)
 
@@ -13,10 +13,10 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  store i64 3, i64* @x
-  %x = load i64, i64* @x
+  store i64 3, i64* @c06_x
+  %x = load i64, i64* @c06_x
   %addtmp = add i64 %x, 987
-  store i64 %addtmp, i64* @y
-  %y = load i64, i64* @y
+  store i64 %addtmp, i64* @c06_y
+  %y = load i64, i64* @c06_y
   ret i64 %y
 }

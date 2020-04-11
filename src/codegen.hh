@@ -71,7 +71,7 @@ class CodeGenerator : ASTVisitor {
     void generate_llcode();
 
   private:
-    void init(std::string const &module_name);
+    void init();
 
     AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
                                        std::string const &      name,
@@ -86,7 +86,8 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(std::shared_ptr<ASTType> const &type);
     Constant *  getType_init(std::shared_ptr<ASTType> const &type);
 
-    bool find_var_Identifier(ASTDesignator *ast);
+    bool        find_var_Identifier(ASTDesignator *ast);
+    std::string gen_module_id(std::string const &id) const;
 
     Options &  options;
     TypeTable &types;
@@ -97,6 +98,7 @@ class CodeGenerator : ASTVisitor {
     ValueSymbolTable top_symboltable;
     ValueSymbolTable current_symboltable;
 
+    std::string             module_name;
     std::string             filename;
     LLVMContext             context;
     IRBuilder<>             builder;

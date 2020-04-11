@@ -52,7 +52,8 @@ CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
 
 void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     // Set up code generation
-    init(ast->name);
+    module_name = ast->name;
+    init();
 
     // Set up builtins
     setup_builtins();
@@ -115,8 +116,9 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
         llvm::Type *type = getType(c.second);
-        module->getOrInsertGlobal(c.first->value, type);
-        GlobalVariable *gVar = module->getNamedGlobal(c.first->value);
+        auto        var_name = gen_module_id(c.first->value);
+        module->getOrInsertGlobal(var_name, type);
+        GlobalVariable *gVar = module->getNamedGlobal(var_name);
 
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
         auto *init = getType_init(c.second);
@@ -131,8 +133,9 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         debug("CodeGenerator::doTopConsts type: {0}",
               c.type->type_info->get_name());
         auto *type = getType(c.type);
-        module->getOrInsertGlobal(c.ident->value, type);
-        GlobalVariable *gVar = module->getNamedGlobal(c.ident->value);
+        auto  const_name = gen_module_id(c.ident->value);
+        module->getOrInsertGlobal(const_name, type);
+        GlobalVariable *gVar = module->getNamedGlobal(const_name);
 
         c.value->accept(this);
         gVar->setLinkage(GlobalValue::LinkageTypes::InternalLinkage);
@@ -169,7 +172,8 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         c.value->accept(this);
         auto *val = last_value;
 
-        auto name = c.ident->value;
+        auto name =
+            c.ident->value; // consts within procedures don't need to be renamed
         debug("create const: {}", name);
 
         // Create const
@@ -224,9 +228,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
         returnType = getType(ast->return_type);
     }
 
+    auto          proc_name = gen_module_id(ast->name->value);
     FunctionType *ft = FunctionType::get(returnType, proto, false);
-    Function *    f = Function::Create(ft, Function::ExternalLinkage,
-                                   ast->name->value, module.get());
+    Function *    f = Function::Create(ft, Function::ExternalLinkage, proc_name,
+                                   module.get());
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
@@ -264,6 +269,9 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
     // Do declarations
     ast->decs->accept(this);
 
+    // for recursion
+    top_symboltable->put(ast->name->value, {f, Attr::null});
+
     // Go through the statements
     has_return = false;
     std::for_each(ast->stats.begin(), ast->stats.end(),
@@ -275,10 +283,9 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
             builder.CreateRet(last_value);
         }
     }
+    current_symboltable = former_symboltable;
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
-
-    current_symboltable = former_symboltable;
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
@@ -331,23 +338,25 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     // Look up the name in the global module table.
     Function *callee = nullptr;
     try {
-        callee = module->getFunction(ast->name->value);
-        if (!callee) {
+        auto res = current_symboltable->find(ast->name->value);
+        if (!res) {
             throw CodeGenException(
-                formatv("function: {0} not found", ast->name->value),
+                formatv("function: {0} not found 1", ast->name->value),
                 ast->get_location());
         }
+        callee = llvm::dyn_cast<Function>(res->first);
+        assert(callee != nullptr);
     } catch (...) {
         debug("CodeGenerator::visit_ASTCall exception");
         throw CodeGenException(
-            formatv("function: {0} not found", ast->name->value),
+            formatv("function: {0} not found 2", ast->name->value),
             ast->get_location());
     }
 
     auto res = types.find(ast->name->value);
     if (!res) {
         throw CodeGenException(
-            formatv("function: {0} not found", ast->name->value),
+            formatv("function: {0} not found 3", ast->name->value),
             ast->get_location());
     }
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(*res);
@@ -846,6 +855,10 @@ void CodeGenerator::visit_ASTBool(ASTBool *ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }
 
+std::string CodeGenerator::gen_module_id(std::string const &id) const {
+    return module_name + "_" + id;
+}
+
 /**
  * @brief Create an alloca instruction in the entry block of the function.
  * This is used for mutable variables etc.
@@ -931,10 +944,11 @@ void CodeGenerator::setup_builtins() {
             Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
                              f.first, module.get());
         verifyFunction(*func);
+        current_symboltable->put(f.first, {func, Attr::null});
     }
 }
 
-void CodeGenerator::init(std::string const &module_name) {
+void CodeGenerator::init() {
     module = std::make_unique<Module>(module_name, context);
     module->setSourceFileName(module_name);
 }

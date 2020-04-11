@@ -6,7 +6,7 @@ source_filename = "g06"
 %2 = type { i64, i64, i64 }
 %3 = type { i64, i64, i64 }
 
-@x1 = internal global %0 zeroinitializer
+@g06_x1 = internal global %0 zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -14,7 +14,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @f() {
+define void @g06_f() {
 entry:
   %x1 = alloca %2
   store %3 zeroinitializer, %2* %x1
@@ -23,6 +23,6 @@ entry:
 
 define i64 @output() {
 entry:
-  call void @f()
+  call void @g06_f()
   ret i64 0
 }

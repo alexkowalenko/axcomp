@@ -1,7 +1,7 @@
 ; ModuleID = 'e02'
 source_filename = "e02"
 
-@x = internal global i64 0
+@e02_x = internal global i64 0
 
 declare void @WriteInt(i64)
 
@@ -11,18 +11,18 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  %x = load i64, i64* @x
+  %x = load i64, i64* @e02_x
   %0 = icmp eq i64 %x, 0
-  %x1 = load i64, i64* @x
+  %x1 = load i64, i64* @e02_x
   %1 = icmp eq i64 %x1, 7
   %subtmp = or i1 %0, %1
   br i1 %subtmp, label %then, label %ifcont
 
 then:                                             ; preds = %entry
-  store i64 77, i64* @x
+  store i64 77, i64* @e02_x
   br label %ifcont
 
 ifcont:                                           ; preds = %then, %entry
-  %x2 = load i64, i64* @x
+  %x2 = load i64, i64* @e02_x
   ret i64 %x2
 }

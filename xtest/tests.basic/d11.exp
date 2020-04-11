@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i1 @eq(i64 %x, i64 %y) {
+define i1 @d11_eq(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64
@@ -19,7 +19,7 @@ entry:
   ret i1 %0
 }
 
-define i1 @neq(i64 %x, i64 %y) {
+define i1 @d11_neq(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64
   %x1 = alloca i64
@@ -33,8 +33,8 @@ entry:
 
 define i64 @output() {
 entry:
-  %0 = call i1 @eq(i64 1, i64 1)
-  %1 = call i1 @neq(i64 1, i64 1)
+  %0 = call i1 @d11_eq(i64 1, i64 1)
+  %1 = call i1 @d11_neq(i64 1, i64 1)
   %modtmp = and i1 %0, %1
   %2 = xor i1 %modtmp, true
   %3 = zext i1 %2 to i64

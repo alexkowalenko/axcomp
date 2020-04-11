@@ -1,7 +1,7 @@
 ; ModuleID = 'e06'
 source_filename = "e06"
 
-@x = internal global i64 0
+@e06_x = internal global i64 0
 
 declare void @WriteInt(i64)
 
@@ -12,15 +12,15 @@ declare void @WriteLn()
 define i64 @output() {
 entry:
   %i = alloca i64
-  store i64 0, i64* @x
+  store i64 0, i64* @e06_x
   store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %loop, %entry
-  %x = load i64, i64* @x
+  %x = load i64, i64* @e06_x
   %i1 = load i64, i64* %i
   %addtmp = add i64 %x, %i1
-  store i64 %addtmp, i64* @x
+  store i64 %addtmp, i64* @e06_x
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
@@ -28,6 +28,6 @@ loop:                                             ; preds = %loop, %entry
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  %x2 = load i64, i64* @x
+  %x2 = load i64, i64* @e06_x
   ret i64 %x2
 }

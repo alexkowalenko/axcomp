@@ -1,10 +1,10 @@
 ; ModuleID = 'c08'
 source_filename = "c08"
 
-@alpha = internal constant i64 24
-@beta = internal constant i64 48
-@x = internal global i64 0
-@y = internal global i1 false
+@c08_alpha = internal constant i64 24
+@c08_beta = internal constant i64 48
+@c08_x = internal global i64 0
+@c08_y = internal global i1 false
 
 declare void @WriteInt(i64)
 
@@ -14,13 +14,13 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  store i1 false, i1* @y
-  %beta = load i64, i64* @beta
-  store i64 %beta, i64* @x
-  %alpha = load i64, i64* @alpha
+  store i1 false, i1* @c08_y
+  %beta = load i64, i64* @c08_beta
+  store i64 %beta, i64* @c08_x
+  %alpha = load i64, i64* @c08_alpha
   %multmp = mul i64 3, %alpha
-  store i64 %multmp, i64* @x
-  %x = load i64, i64* @x
+  store i64 %multmp, i64* @c08_x
+  %x = load i64, i64* @c08_x
   %0 = icmp eq i64 %x, 72
   %1 = xor i1 %0, true
   %2 = zext i1 %1 to i64

@@ -1,7 +1,7 @@
 ; ModuleID = 'd07'
 source_filename = "d07"
 
-@y = internal global i64 0
+@d07_y = internal global i64 0
 
 declare void @WriteInt(i64)
 
@@ -9,7 +9,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @f() {
+define i64 @d07_f() {
 entry:
   %yy = alloca i64
   store i64 0, i64* %yy
@@ -20,10 +20,10 @@ entry:
 
 define i64 @output() {
 entry:
-  %0 = call i64 @f()
+  %0 = call i64 @d07_f()
   %addtmp = add i64 5, %0
-  %1 = call i64 @f()
-  %2 = call i64 @f()
+  %1 = call i64 @d07_f()
+  %2 = call i64 @d07_f()
   %multmp = mul i64 %1, %2
   %addtmp1 = add i64 %addtmp, %multmp
   ret i64 %addtmp1

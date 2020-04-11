@@ -1,9 +1,9 @@
 ; ModuleID = 'PrimeNumbers'
 source_filename = "PrimeNumbers"
 
-@n = internal global i64 0
-@p = internal global [400 x i64] zeroinitializer
-@v = internal global [20 x i64] zeroinitializer
+@PrimeNumbers_n = internal global i64 0
+@PrimeNumbers_p = internal global [400 x i64] zeroinitializer
+@PrimeNumbers_v = internal global [20 x i64] zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -11,7 +11,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @Primes(i64 %n) {
+define void @PrimeNumbers_Primes(i64 %n) {
 entry:
   %prim = alloca i1
   %sqr = alloca i64
@@ -64,18 +64,18 @@ repeat:                                           ; preds = %end, %loop
 then:                                             ; preds = %repeat
   %sqr9 = load i64, i64* %sqr
   %lim10 = load i64, i64* %lim
-  %idx = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %lim10
+  %idx = getelementptr [20 x i64], [20 x i64]* @PrimeNumbers_v, i64 0, i64 %lim10
   store i64 %sqr9, i64* %idx
   %lim11 = load i64, i64* %lim
   %addtmp12 = add i64 %lim11, 1
   store i64 %addtmp12, i64* %lim
-  %p = load [400 x i64], [400 x i64]* @p
+  %p = load [400 x i64], [400 x i64]* @PrimeNumbers_p
   %lim13 = load i64, i64* %lim
-  %idx14 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %lim13
+  %idx14 = getelementptr [400 x i64], [400 x i64]* @PrimeNumbers_p, i64 0, i64 %lim13
   %idx15 = load i64, i64* %idx14
-  %p16 = load [400 x i64], [400 x i64]* @p
+  %p16 = load [400 x i64], [400 x i64]* @PrimeNumbers_p
   %lim17 = load i64, i64* %lim
-  %idx18 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %lim17
+  %idx18 = getelementptr [400 x i64], [400 x i64]* @PrimeNumbers_p, i64 0, i64 %lim17
   %idx19 = load i64, i64* %idx18
   %multmp = mul i64 %idx15, %idx19
   store i64 %multmp, i64* %sqr
@@ -98,34 +98,34 @@ loop24:                                           ; preds = %while20
   %k25 = load i64, i64* %k
   %addtmp26 = add i64 %k25, 1
   store i64 %addtmp26, i64* %k
-  %v = load [20 x i64], [20 x i64]* @v
+  %v = load [20 x i64], [20 x i64]* @PrimeNumbers_v
   %k27 = load i64, i64* %k
-  %idx28 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k27
+  %idx28 = getelementptr [20 x i64], [20 x i64]* @PrimeNumbers_v, i64 0, i64 %k27
   %idx29 = load i64, i64* %idx28
   %x30 = load i64, i64* %x
   %3 = icmp slt i64 %idx29, %x30
   br i1 %3, label %then31, label %ifcont43
 
 then31:                                           ; preds = %loop24
-  %v32 = load [20 x i64], [20 x i64]* @v
+  %v32 = load [20 x i64], [20 x i64]* @PrimeNumbers_v
   %k33 = load i64, i64* %k
-  %idx34 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k33
+  %idx34 = getelementptr [20 x i64], [20 x i64]* @PrimeNumbers_v, i64 0, i64 %k33
   %idx35 = load i64, i64* %idx34
-  %p36 = load [400 x i64], [400 x i64]* @p
+  %p36 = load [400 x i64], [400 x i64]* @PrimeNumbers_p
   %k37 = load i64, i64* %k
-  %idx38 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %k37
+  %idx38 = getelementptr [400 x i64], [400 x i64]* @PrimeNumbers_p, i64 0, i64 %k37
   %idx39 = load i64, i64* %idx38
   %addtmp40 = add i64 %idx35, %idx39
   %k41 = load i64, i64* %k
-  %idx42 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k41
+  %idx42 = getelementptr [20 x i64], [20 x i64]* @PrimeNumbers_v, i64 0, i64 %k41
   store i64 %addtmp40, i64* %idx42
   br label %ifcont43
 
 ifcont43:                                         ; preds = %then31, %loop24
   %x44 = load i64, i64* %x
-  %v45 = load [20 x i64], [20 x i64]* @v
+  %v45 = load [20 x i64], [20 x i64]* @PrimeNumbers_v
   %k46 = load i64, i64* %k
-  %idx47 = getelementptr [20 x i64], [20 x i64]* @v, i64 0, i64 %k46
+  %idx47 = getelementptr [20 x i64], [20 x i64]* @PrimeNumbers_v, i64 0, i64 %k46
   %idx48 = load i64, i64* %idx47
   %4 = icmp ne i64 %x44, %idx48
   store i1 %4, i1* %prim
@@ -138,7 +138,7 @@ end:                                              ; preds = %while20
 end50:                                            ; preds = %end
   %x51 = load i64, i64* %x
   %i52 = load i64, i64* %i
-  %idx53 = getelementptr [400 x i64], [400 x i64]* @p, i64 0, i64 %i52
+  %idx53 = getelementptr [400 x i64], [400 x i64]* @PrimeNumbers_p, i64 0, i64 %i52
   store i64 %x51, i64* %idx53
   %x54 = load i64, i64* %x
   call void @WriteInt(i64 %x54)
@@ -178,11 +178,11 @@ ifcont65:                                         ; preds = %then64, %end62
 
 define i64 @output() {
 entry:
-  store i64 283, i64* @n
-  %n = load i64, i64* @n
+  store i64 283, i64* @PrimeNumbers_n
+  %n = load i64, i64* @PrimeNumbers_n
   call void @WriteInt(i64 %n)
   call void @WriteLn()
-  %n1 = load i64, i64* @n
-  call void @Primes(i64 %n1)
+  %n1 = load i64, i64* @PrimeNumbers_n
+  call void @PrimeNumbers_Primes(i64 %n1)
   ret i64 0
 }

@@ -1,7 +1,7 @@
 ; ModuleID = 'g11'
 source_filename = "g11"
 
-@pt = internal global [3 x i64] zeroinitializer
+@g11_pt = internal global [3 x i64] zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -9,7 +9,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define [3 x i64] @identity([3 x i64] %a) {
+define [3 x i64] @g11_identity([3 x i64] %a) {
 entry:
   %a1 = alloca [3 x i64]
   store [3 x i64] %a, [3 x i64]* %a1
@@ -17,7 +17,7 @@ entry:
   ret [3 x i64] %a2
 }
 
-define i64 @sum([3 x i64] %a) {
+define i64 @g11_sum([3 x i64] %a) {
 entry:
   %i = alloca i64
   %total = alloca i64
@@ -60,7 +60,7 @@ loop:                                             ; preds = %loop, %entry
   %addtmp = add i64 %multmp, %i3
   %addtmp4 = add i64 %addtmp, 1
   %i5 = load i64, i64* %i
-  %idx = getelementptr [3 x i64], [3 x i64]* @pt, i64 0, i64 %i5
+  %idx = getelementptr [3 x i64], [3 x i64]* @g11_pt, i64 0, i64 %i5
   store i64 %addtmp4, i64* %idx
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
@@ -69,8 +69,8 @@ loop:                                             ; preds = %loop, %entry
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  %pt = load [3 x i64], [3 x i64]* @pt
-  %1 = call [3 x i64] @identity([3 x i64] %pt)
-  %2 = call i64 @sum([3 x i64] %1)
+  %pt = load [3 x i64], [3 x i64]* @g11_pt
+  %1 = call [3 x i64] @g11_identity([3 x i64] %pt)
+  %2 = call i64 @g11_sum([3 x i64] %1)
   ret i64 %2
 }

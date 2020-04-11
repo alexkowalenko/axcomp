@@ -6,7 +6,7 @@ source_filename = "g08"
 %2 = type { i64, i64, %3, i1 }
 %3 = type { i64, i64 }
 
-@pt = internal global %0 zeroinitializer
+@g08_pt = internal global %0 zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -16,21 +16,21 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  store i64 1, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
-  store i64 2, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2, i32 0)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2, i32 1)
-  store i1 true, i1* getelementptr inbounds (%0, %0* @pt, i64 0, i32 3)
-  %pt = load %0, %0* @pt
-  %idx = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
-  %pt1 = load %0, %0* @pt
-  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 0)
+  store i64 2, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 1)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 2, i32 0)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 2, i32 1)
+  store i1 true, i1* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 3)
+  %pt = load %0, %0* @g08_pt
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 0)
+  %pt1 = load %0, %0* @g08_pt
+  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 1)
   %addtmp = add i64 %idx, %idx2
-  %pt3 = load %0, %0* @pt
-  %idx4 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2, i32 0)
+  %pt3 = load %0, %0* @g08_pt
+  %idx4 = load i64, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 2, i32 0)
   %addtmp5 = add i64 %addtmp, %idx4
-  %pt6 = load %0, %0* @pt
-  %idx7 = load i64, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 2, i32 1)
+  %pt6 = load %0, %0* @g08_pt
+  %idx7 = load i64, i64* getelementptr inbounds (%0, %0* @g08_pt, i64 0, i32 2, i32 1)
   %addtmp8 = add i64 %addtmp5, %idx7
   ret i64 %addtmp8
 }

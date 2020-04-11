@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @f(i64 %x) {
+define i64 @d09_f(i64 %x) {
 entry:
   %x1 = alloca i64
   store i64 %x, i64* %x1
@@ -18,10 +18,10 @@ entry:
 
 define i64 @output() {
 entry:
-  %0 = call i64 @f(i64 2)
+  %0 = call i64 @d09_f(i64 2)
   %addtmp = add i64 5, %0
-  %1 = call i64 @f(i64 3)
-  %2 = call i64 @f(i64 4)
+  %1 = call i64 @d09_f(i64 3)
+  %2 = call i64 @d09_f(i64 4)
   %multmp = mul i64 %1, %2
   %addtmp1 = add i64 %addtmp, %multmp
   ret i64 %addtmp1

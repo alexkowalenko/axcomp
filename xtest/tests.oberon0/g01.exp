@@ -1,9 +1,9 @@
 ; ModuleID = 'g01'
 source_filename = "g01"
 
-@x1 = internal global i64 0
-@x2 = internal global [5 x i64] zeroinitializer
-@x3 = internal global [6 x i1] zeroinitializer
+@g01_x1 = internal global i64 0
+@g01_x2 = internal global [5 x i64] zeroinitializer
+@g01_x3 = internal global [6 x i1] zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -11,7 +11,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @f() {
+define void @g01_f() {
 entry:
   %z3 = alloca [6 x i1]
   %z2 = alloca [4 x i64]
@@ -24,6 +24,6 @@ entry:
 
 define i64 @output() {
 entry:
-  call void @f()
+  call void @g01_f()
   ret i64 0
 }

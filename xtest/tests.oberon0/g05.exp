@@ -1,8 +1,8 @@
 ; ModuleID = 'g05'
 source_filename = "g05"
 
-@a = internal global [3 x [3 x i64]] zeroinitializer
-@sum = internal global i64 0
+@g05_a = internal global [3 x [3 x i64]] zeroinitializer
+@g05_sum = internal global i64 0
 
 declare void @WriteInt(i64)
 
@@ -29,7 +29,7 @@ loop1:                                            ; preds = %loop1, %loop
   %addtmp = add i64 %x2, %y3
   %x4 = load i64, i64* %x
   %y5 = load i64, i64* %y
-  %idx = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @a, i64 0, i64 %x4, i64 %y5
+  %idx = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x4, i64 %y5
   store i64 %addtmp, i64* %idx
   %0 = load i64, i64* %x
   %nextvar = add i64 %0, 1
@@ -53,15 +53,15 @@ loop9:                                            ; preds = %afterloop20, %after
   br label %loop11
 
 loop11:                                           ; preds = %loop11, %loop9
-  %a = load [3 x [3 x i64]], [3 x [3 x i64]]* @a
+  %a = load [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a
   %x13 = load i64, i64* %x12
   %y14 = load i64, i64* %y10
-  %idx15 = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @a, i64 0, i64 %x13, i64 %y14
+  %idx15 = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x13, i64 %y14
   %idx16 = load i64, i64* %idx15
   call void @WriteInt(i64 %idx16)
-  %sum = load i64, i64* @sum
+  %sum = load i64, i64* @g05_sum
   %addtmp17 = add i64 %sum, 1
-  store i64 %addtmp17, i64* @sum
+  store i64 %addtmp17, i64* @g05_sum
   %2 = load i64, i64* %x12
   %nextvar18 = add i64 %2, 1
   store i64 %nextvar18, i64* %x12
@@ -77,7 +77,7 @@ afterloop20:                                      ; preds = %loop11
   br i1 %loopcond22, label %loop9, label %afterloop23
 
 afterloop23:                                      ; preds = %afterloop20
-  %sum24 = load i64, i64* @sum
+  %sum24 = load i64, i64* @g05_sum
   call void @WriteInt(i64 %sum24)
   call void @WriteLn()
   ret i64 0

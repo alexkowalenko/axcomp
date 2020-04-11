@@ -100,6 +100,9 @@ int main(int argc, char **argv) {
         }
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;
+        if (options.print_symbols) {
+            symbols->dump(std::cout);
+        }
         return -1;
     } catch (std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;

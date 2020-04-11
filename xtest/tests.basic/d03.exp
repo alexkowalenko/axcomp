@@ -7,13 +7,13 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @f() {
+define i64 @d03_f() {
 entry:
   ret i64 12
 }
 
 define i64 @output() {
 entry:
-  %0 = call i64 @f()
+  %0 = call i64 @d03_f()
   ret i64 0
 }

@@ -9,7 +9,7 @@ source_filename = "g12"
 %5 = type { i64, i64 }
 %6 = type { i64, i64 }
 
-@pt = internal global %0 zeroinitializer
+@g12_pt = internal global %0 zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -17,7 +17,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define %2 @identity(%3 %a) {
+define %2 @g12_identity(%3 %a) {
 entry:
   %a1 = alloca %4
   store %3 %a, %4* %a1
@@ -25,7 +25,7 @@ entry:
   ret %4 %a2
 }
 
-define i64 @sum(%5 %a) {
+define i64 @g12_sum(%5 %a) {
 entry:
   %total = alloca i64
   %a1 = alloca %6
@@ -43,10 +43,10 @@ entry:
 
 define i64 @output() {
 entry:
-  store i64 12, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 0)
-  store i64 24, i64* getelementptr inbounds (%0, %0* @pt, i64 0, i32 1)
-  %pt = load %0, %0* @pt
-  %0 = call %2 @identity(%0 %pt)
-  %1 = call i64 @sum(%2 %0)
+  store i64 12, i64* getelementptr inbounds (%0, %0* @g12_pt, i64 0, i32 0)
+  store i64 24, i64* getelementptr inbounds (%0, %0* @g12_pt, i64 0, i32 1)
+  %pt = load %0, %0* @g12_pt
+  %0 = call %2 @g12_identity(%0 %pt)
+  %1 = call i64 @g12_sum(%2 %0)
   ret i64 %1
 }

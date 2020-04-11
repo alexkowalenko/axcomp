@@ -7,17 +7,17 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define void @f() {
+define void @d02_f() {
 entry:
   ret void
 }
 
-define i64 @g() {
+define i64 @d02_g() {
 entry:
   ret i64 24
 }
 
-define i64 @h() {
+define i64 @d02_h() {
 entry:
   ret i64 36
 }

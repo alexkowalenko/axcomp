@@ -1,8 +1,8 @@
 ; ModuleID = 'c03'
 source_filename = "c03"
 
-@x = internal constant i64 3
-@y = internal constant i64 2
+@c03_x = internal constant i64 3
+@c03_y = internal constant i64 2
 
 declare void @WriteInt(i64)
 
@@ -12,10 +12,10 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  %y = load i64, i64* @y
-  %x = load i64, i64* @x
+  %y = load i64, i64* @c03_y
+  %x = load i64, i64* @c03_x
   %addtmp = add i64 %y, %x
-  %x1 = load i64, i64* @x
+  %x1 = load i64, i64* @c03_x
   %multmp = mul i64 %addtmp, %x1
   ret i64 %multmp
 }

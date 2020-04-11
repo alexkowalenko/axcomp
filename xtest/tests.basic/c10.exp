@@ -6,7 +6,7 @@ source_filename = "c10"
 %2 = type { i64, i64, i64 }
 %3 = type { i64, i64, i64 }
 
-@z0 = internal global %0 zeroinitializer
+@c10_z0 = internal global %0 zeroinitializer
 
 declare void @WriteInt(i64)
 
@@ -14,7 +14,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @sum(%2 %a) {
+define i64 @c10_sum(%2 %a) {
 entry:
   %a1 = alloca %3
   store %2 %a, %3* %a1
@@ -34,10 +34,10 @@ entry:
 
 define i64 @output() {
 entry:
-  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 0)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 1)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @z0, i64 0, i32 2)
-  %z0 = load %0, %0* @z0
-  %0 = call i64 @sum(%0 %z0)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 0)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 1)
+  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 2)
+  %z0 = load %0, %0* @c10_z0
+  %0 = call i64 @c10_sum(%0 %z0)
   ret i64 %0
 }

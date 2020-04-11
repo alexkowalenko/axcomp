@@ -7,7 +7,7 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-define i64 @factor(i64 %x) {
+define i64 @factorial_factor(i64 %x) {
 entry:
   %x1 = alloca i64
   store i64 %x, i64* %x1
@@ -26,13 +26,13 @@ ifcont:                                           ; preds = %then, %entry
   %x4 = load i64, i64* %x1
   %x5 = load i64, i64* %x1
   %subtmp = sub i64 %x5, 1
-  %1 = call i64 @factor(i64 %subtmp)
+  %1 = call i64 @factorial_factor(i64 %subtmp)
   %multmp = mul i64 %x4, %1
   ret i64 %multmp
 }
 
 define i64 @output() {
 entry:
-  %0 = call i64 @factor(i64 10)
+  %0 = call i64 @factorial_factor(i64 10)
   ret i64 %0
 }
