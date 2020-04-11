@@ -124,6 +124,14 @@ TEST(Inspector, Qualident) {
             END alpha.)",
          "", "4,30: undefined identifier System"},
 
+        {R"(MODULE alpha;
+            IMPORT System;
+            TYPE tt = System.t;
+            BEGIN
+                RETURN System.x;
+            END alpha.)",
+         "", "3,21: Unknown type: t"},
+
     };
     do_inspect_tests(tests);
 }

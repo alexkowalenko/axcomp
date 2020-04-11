@@ -22,6 +22,7 @@
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 
+#include "ast.hh"
 #include "error.hh"
 #include "parser.hh"
 
@@ -391,7 +392,7 @@ void CodeGenerator::visit_ASTIf(ASTIf *ast) {
     std::vector<BasicBlock *> elsif_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
-                  [&](auto const &e) {
+                  [&](auto const & /*not used*/) {
                       auto *e_block =
                           BasicBlock::Create(context, formatv("elsif{0}", i++));
                       elsif_blocks.push_back(e_block);
@@ -885,7 +886,7 @@ TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
     debug("CodeGenerator::resolve_type");
     TypePtr result;
     std::visit(
-        overloaded{[this, &result](std::shared_ptr<ASTIdentifier> const &type) {
+        overloaded{[this, &result](std::shared_ptr<ASTQualident> const &type) {
                        auto res = types.resolve(type->value);
                        if (!res) {
                            // should be a resloved type this far down
@@ -893,7 +894,7 @@ TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
                        };
                        result = *res;
                    },
-                   [t, &result](auto x) { result = t->type_info; }},
+                   [t, &result](auto /* not used*/) { result = t->type_info; }},
         t->type);
     return result;
 }

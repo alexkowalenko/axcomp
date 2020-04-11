@@ -130,6 +130,24 @@ TEST(Parser, Qualident) {
          "System.y+1;\nRETURN System.error\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha;
+            IMPORT System;
+            TYPE sys = System.Type;
+            VAR x : System.error;
+            PROCEDURE f* (y : System.Jones): System.Jones;
+                BEGIN
+                    RETURN y
+                END f;
+            BEGIN
+                System.x := System.y + 1;
+                RETURN System.error;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT System;\nTYPE\nsys = System.Type;\nVAR\nx: "
+         "System.error;\nPROCEDURE f*(y : System.Jones): "
+         "System.Jones;\nBEGIN\nRETURN y\nEND f.\nBEGIN\nSystem.x := "
+         "System.y+1;\nRETURN System.error\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE alpha;
             IMPORT System;
@@ -137,6 +155,14 @@ TEST(Parser, Qualident) {
                 RETURN System.
             END alpha.)",
          "", "5,15: Unexpected token: END - expecting indent"},
+
+        {R"(MODULE alpha;
+            IMPORT System;
+            TYPE sys = System.;
+            BEGIN
+                RETURN 0;
+            END alpha.)",
+         "", "3,31: Unexpected token: semicolon - expecting indent"},
     };
     do_parse_tests(tests);
 }

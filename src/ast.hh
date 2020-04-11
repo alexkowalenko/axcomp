@@ -8,6 +8,7 @@
 
 #include <optional>
 #include <unordered_set>
+#include <utility>
 #include <variant>
 
 #include "astvisitor.hh"
@@ -89,6 +90,7 @@ class ASTIdentifier : public ASTBase {
 class ASTQualident : public ASTIdentifier {
   public:
     ASTQualident() = default;
+    explicit ASTQualident(std::string n) : ASTIdentifier(std::move(n)){};
     ~ASTQualident() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTQualident(this); };
@@ -111,7 +113,7 @@ class ASTType : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
 
-    std::variant<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTArray>,
+    std::variant<std::shared_ptr<ASTQualident>, std::shared_ptr<ASTArray>,
                  std::shared_ptr<ASTRecord>>
             type;
     TypePtr type_info = nullptr; // store information about the type

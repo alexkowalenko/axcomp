@@ -901,7 +901,7 @@ std::shared_ptr<ASTType> Parser::parse_type() {
         ast->type = parse_record();
         return ast;
     default:
-        ast->type = parse_identifier();
+        ast->type = parse_qualident();
         return ast;
     }
 }

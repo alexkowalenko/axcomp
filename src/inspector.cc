@@ -61,7 +61,7 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
         }
         c.type = std::make_shared<ASTType>();
         c.type->type_info = last_type;
-        c.type->type = std::make_shared<ASTIdentifier>(last_type->get_name());
+        c.type->type = std::make_shared<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
         current_symboltable->put(c.ident->value, last_type);
         current_consts->put(c.ident->value, last_type);
@@ -148,7 +148,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                     [this](auto arg) {
                         arg->accept(this);
                     }, // lambda arg can't be reference here
-                    [this, p](std::shared_ptr<ASTIdentifier> const &tname) {
+                    [this, p](std::shared_ptr<ASTQualident> const &tname) {
                         debug("Inspector::visit_ASTProcedure param type ident");
                         auto type = types.find(tname->value);
                         current_symboltable->put(p.first->value, *type);
@@ -214,7 +214,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                                retType = last_type;
                            },
                            [this, &retType](
-                               std::shared_ptr<ASTIdentifier> const &type) {
+                               std::shared_ptr<ASTQualident> const &type) {
                                if (auto t = types.find(type->value); t) {
                                    retType = *t;
                                };
@@ -586,7 +586,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
     std::visit(
-        overloaded{[this, ast](std::shared_ptr<ASTIdentifier> const &type) {
+        overloaded{[this, ast](std::shared_ptr<ASTQualident> const &type) {
                        debug("Inspector::visit_ASTType {0}", type->value);
                        auto result = types.find(type->value);
                        if (!result) {
