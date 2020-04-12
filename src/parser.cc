@@ -77,7 +77,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols->put(module->name, TypeTable::ModuleType);
+    symbols->put(module->name, std::make_shared<ModuleType>(module->name));
     get_token(TokenType::semicolon);
 
     tok = lexer.peek_token();

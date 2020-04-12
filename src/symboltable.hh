@@ -29,6 +29,14 @@ template <typename T> class SymbolTable {
     bool                           set(const std::string &name, T const &val);
     void                           remove(const std::string &name);
 
+    typename std::map<std::string, T>::const_iterator cbegin() {
+        return table.cbegin();
+    }
+
+    typename std::map<std::string, T>::const_iterator cend() {
+        return table.cend();
+    }
+
     void dump(std::ostream &os) const;
 
   private:
@@ -44,7 +52,7 @@ std::optional<T> SymbolTable<T>::find(const std::string &name) const {
     if (next) {
         return next->find(name);
     }
-    return {};
+    return std::nullopt;
 }
 
 template <typename T>

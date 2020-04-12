@@ -14,7 +14,6 @@ using namespace llvm;
 
 std::shared_ptr<IntegerType> TypeTable::IntType;
 std::shared_ptr<BooleanType> TypeTable::BoolType;
-TypePtr                      TypeTable::ModuleType;
 TypePtr                      TypeTable::VoidType;
 
 void TypeTable::initialise() {
@@ -23,9 +22,6 @@ void TypeTable::initialise() {
 
     BoolType = std::make_shared<BooleanType>();
     table.put(std::string(*BoolType), BoolType);
-
-    ModuleType = std::make_shared<SimpleType>("MODULE");
-    table.put(std::string(*ModuleType), ModuleType);
 
     VoidType = std::make_shared<SimpleType>("void");
     table.put(std::string(*VoidType), VoidType);
@@ -38,7 +34,6 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     BoolType->set_llvm(llvm::Type::getInt1Ty(context));
     BoolType->set_init(BoolType->make_value(false));
 
-    ModuleType->set_llvm(llvm::Type::getVoidTy(context));
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }
 

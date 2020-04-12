@@ -62,6 +62,7 @@ class CodeGenerator : ASTVisitor {
     void get_index(ASTDesignator *ast);
     void visit_ASTDesignator(ASTDesignator *ast) override;
     void visit_ASTDesignatorPtr(ASTDesignator *ast);
+
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
     void visit_ASTIdentifierPtr(ASTIdentifier *ast);
     void visit_ASTInteger(ASTInteger *ast) override;

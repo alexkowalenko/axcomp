@@ -27,7 +27,6 @@ std::shared_ptr<ASTModule> DefParser::parse_module() {
     get_token(TokenType::definition);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols->put(module->name, TypeTable::ModuleType);
     get_token(TokenType::semicolon);
     module->decs = parse_declaration();
 

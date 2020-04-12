@@ -6,10 +6,12 @@
 
 #include "inspector.hh"
 
+#include <iostream>
 #include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "error.hh"
+#include "type.hh"
 
 namespace ax {
 
@@ -23,7 +25,8 @@ template <typename... T> inline void debug(const T &... msg) {
 
 Inspector::Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
                      TypeTable &t, ErrorManager &e)
-    : top_symboltable(s), current_symboltable{s}, types(t), errors(e) {
+    : top_symboltable(s), current_symboltable{s}, types(t), errors(e),
+      importer(e) {
 
     // Make const symbol table
     top_consts = std::make_shared<SymbolTable<TypePtr>>(nullptr);
@@ -32,6 +35,9 @@ Inspector::Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
 
 void Inspector::visit_ASTModule(ASTModule *ast) {
     debug("Inspector::visit_ASTModule");
+    if (ast->import) {
+        ast->import->accept(this);
+    }
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
@@ -40,6 +46,21 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
 
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
+}
+
+void Inspector::visit_ASTImport(ASTImport *ast) {
+    debug("Inspector::visit_ASTImport");
+    std::for_each(
+        begin(ast->imports), end(ast->imports), [this](auto const &i) {
+            auto found =
+                importer.find_module(i.first->value, top_symboltable, types);
+            if (!found) {
+                auto e = TypeError(
+                    llvm::formatv("Module {0} not found", i.first->value),
+                    i.first->get_location());
+                errors.add(e);
+            }
+        });
 }
 
 void Inspector::visit_ASTConst(ASTConst *ast) {
@@ -156,7 +177,9 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                 p.second->type);
             current_symboltable->put(p.first->value, last_type);
         });
-    ast->decs->accept(this);
+    if (ast->decs) {
+        ast->decs->accept(this);
+    }
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this, ast](auto const &x) { x->accept(this); });
     current_symboltable = former_symboltable;
@@ -649,8 +672,14 @@ void Inspector::visit_ASTRecord(ASTRecord *ast) {
 
 void Inspector::visit_ASTQualident(ASTQualident *ast) {
 
-    // For now behave like a identifier
-    visit_ASTIdentifier(ast);
+    if (ast->qual.empty()) {
+        // For now behave like a identifier
+        visit_ASTIdentifier(ast);
+    } else {
+        auto new_ast = std::make_shared<ASTIdentifier>();
+        new_ast->value = ast->make_coded_id();
+        visit_ASTIdentifier(new_ast.get());
+    }
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {

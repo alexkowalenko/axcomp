@@ -97,6 +97,14 @@ class ASTQualident : public ASTIdentifier {
 
     std::string qual;
 
+    static std::string make_coded_id(std::string const &q,
+                                     std::string const &i) {
+        return q + "_" + i;
+    }
+    std::string make_coded_id() {
+        return qual.empty() ? value : make_coded_id(qual, value);
+    }
+
     explicit operator std::string() override {
         return qual.empty() ? value : qual + "." + value;
     };

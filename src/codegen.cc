@@ -219,7 +219,7 @@ void CodeGenerator::visit_ASTVar(ASTVar *ast) {
 }
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
-    debug(" CodeGenerator::visit_ASTProcedure {0}", ast->name);
+    debug("CodeGenerator::visit_ASTProcedure {0}", ast->name->value);
     // Make the function arguments
     std::vector<llvm::Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(),
@@ -873,7 +873,7 @@ void CodeGenerator::visit_ASTBool(ASTBool *ast) {
 }
 
 std::string CodeGenerator::gen_module_id(std::string const &id) const {
-    return module_name + "_" + id;
+    return ASTQualident::make_coded_id(module_name, id);
 }
 
 /**
@@ -943,15 +943,15 @@ void CodeGenerator::setup_builtins() {
     debug("CodeGenerator::setup_builtins");
 
     for (auto const &f : builtins) {
-        debug("function: {} ", f.first);
+        debug("function: {0} ", f.first);
         auto p = f.second;
 
-        debug("size: {} ", p->params.size());
+        debug("size: {0} ", p->params.size());
 
         std::vector<llvm::Type *> proto;
         std::for_each(begin(p->params), end(p->params),
                       [this, &proto](auto const &t) {
-                          debug("param: {} ", t.first->get_name());
+                          debug("param: {0} ", t.first->get_name());
                           proto.push_back(t.first->get_llvm());
                       });
 

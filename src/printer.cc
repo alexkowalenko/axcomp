@@ -44,7 +44,7 @@ void ASTPrinter::visit_ASTImport(ASTImport *ast) {
                       });
         os << ";\n";
     }
-};
+}
 
 void ASTPrinter::visit_ASTConst(ASTConst *ast) {
     if (!ast->consts.empty()) {

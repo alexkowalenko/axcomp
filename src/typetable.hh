@@ -31,7 +31,6 @@ class TypeTable {
     // Standard types
     static std::shared_ptr<IntegerType> IntType;
     static std::shared_ptr<BooleanType> BoolType;
-    static TypePtr                      ModuleType;
     static TypePtr                      VoidType;
 
   private:

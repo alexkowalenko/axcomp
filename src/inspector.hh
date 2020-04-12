@@ -11,6 +11,7 @@
 #include "ast.hh"
 #include "astvisitor.hh"
 #include "error.hh"
+#include "importer.hh"
 #include "symboltable.hh"
 #include "typetable.hh"
 
@@ -23,6 +24,7 @@ class Inspector : public ASTVisitor {
                        TypeTable &t, ErrorManager &e);
 
     void visit_ASTModule(ASTModule *ast) override;
+    void visit_ASTImport(ASTImport *ast) override;
     void visit_ASTConst(ASTConst *ast) override;
     void visit_ASTTypeDec(ASTTypeDec *ast) override;
     void visit_ASTVar(ASTVar *ast) override;
@@ -62,6 +64,7 @@ class Inspector : public ASTVisitor {
 
     TypeTable &   types;
     ErrorManager &errors;
+    Importer      importer;
 
     bool          is_const{false};
     bool          is_lvalue{false};

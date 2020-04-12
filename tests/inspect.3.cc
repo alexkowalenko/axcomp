@@ -96,19 +96,19 @@ TEST(Inspector, Qualident) {
 
         // Errors
 
-        {R"(MODULE alpha;
-            IMPORT System;
-            BEGIN
-                RETURN System.x;
-            END alpha.)",
-         "", "4,30: undefined identifier x"},
+        // {R"(MODULE alpha;
+        //     IMPORT System;
+        //     BEGIN
+        //         RETURN System.x;
+        //     END alpha.)",
+        //  "", "4,30: undefined identifier x"},
 
-        {R"(MODULE alpha;
-            IMPORT S := System;
-            BEGIN
-                RETURN S.x;
-            END alpha.)",
-         "", "4,25: undefined identifier x"},
+        // {R"(MODULE alpha;
+        //     IMPORT S := System;
+        //     BEGIN
+        //         RETURN S.x;
+        //     END alpha.)",
+        //  "", "4,25: undefined identifier x"},
 
         {R"(MODULE alpha;
             IMPORT System;

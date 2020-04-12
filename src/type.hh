@@ -141,7 +141,7 @@ class ModuleType : public Type {
     explicit ModuleType(std::string n) : name{std::move(n)} {};
     ~ModuleType() override = default;
 
-    explicit operator std::string() override { return name; };
+    explicit operator std::string() override { return "MODULE: " + name; };
 
   private:
     std::string name;
