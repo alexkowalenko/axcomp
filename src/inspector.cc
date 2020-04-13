@@ -254,25 +254,23 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
 
 void Inspector::visit_ASTCall(ASTCall *ast) {
     debug("Inspector::visit_ASTCall");
-    auto res = current_symboltable->find(ast->name->value);
+    auto name = ast->name->ident->make_coded_id();
+    auto res = current_symboltable->find(name);
     if (!res) {
-        throw CodeGenException(
-            llvm::formatv("undefined PROCEDURE {0}", ast->name->value),
-            ast->get_location());
+        throw CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name),
+                               ast->get_location());
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(res->first);
     if (!procType) {
-        throw TypeError(
-            llvm::formatv("{0} is not a PROCEDURE", ast->name->value),
-            ast->get_location());
+        throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name),
+                        ast->get_location());
     }
 
     if (ast->args.size() != procType->params.size()) {
         throw TypeError(
             llvm::formatv("calling PROCEDURE {0}, incorrect number of "
                           "arguments: {1} instead of {2}",
-                          ast->name->value, ast->args.size(),
-                          procType->params.size()),
+                          name, ast->args.size(), procType->params.size()),
             ast->get_location());
     }
 
@@ -286,12 +284,11 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
         if (!(*base_last)->equiv(*proc_base)) {
-            auto e =
-                TypeError(llvm::formatv("procedure call {0} has incorrect "
-                                        "type {1} for parameter {2}",
-                                        ast->name->value, last_type->get_name(),
-                                        (*proc_iter).first->get_name()),
-                          ast->get_location());
+            auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "
+                                             "type {1} for parameter {2}",
+                                             name, last_type->get_name(),
+                                             (*proc_iter).first->get_name()),
+                               ast->get_location());
             errors.add(e);
         }
 
@@ -300,7 +297,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
             auto e = TypeError(
                 llvm::formatv("procedure call {0} does not have a variable "
                               "reference for VAR parameter {2}",
-                              ast->name->value, last_type->get_name(),
+                              name, last_type->get_name(),
                               (*proc_iter).first->get_name()),
                 ast->get_location());
             errors.add(e);

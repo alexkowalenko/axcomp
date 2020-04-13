@@ -325,7 +325,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x[1]
                 END alpha.)",
-         "", "4,29: variable x is not an array or record"},
+         "", "4,28: variable x is not an array or record"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
@@ -396,7 +396,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,22: variable x is not an array or record"},
+         "", "4,21: variable x is not an array or record"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
@@ -404,7 +404,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[0] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,22: Can't assign expression of type INTEGER to x[0]"},
+         "", "4,27: Can't assign expression of type INTEGER to x[0]"},
 
         {R"(MODULE alpha;
                 VAR x3 : ARRAY 6 OF INTEGER;
@@ -412,7 +412,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x3[2] := TRUE;
                     RETURN 0
                 END alpha.)",
-         "", "4,23: Can't assign expression of type BOOLEAN to x3[2]"},
+         "", "4,28: Can't assign expression of type BOOLEAN to x3[2]"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
@@ -420,7 +420,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x2[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,23: Can't assign expression of type INTEGER to x2[1]"},
+         "", "4,28: Can't assign expression of type INTEGER to x2[1]"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
@@ -428,7 +428,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x2[1][2] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,23: Can't assign expression of type INTEGER to x2[1][2]"},
+         "", "4,31: Can't assign expression of type INTEGER to x2[1][2]"},
     };
     do_inspect_tests(tests);
 }
@@ -530,7 +530,7 @@ TEST(Inspector, RecordFields) {
                 BEGIN
                     RETURN pt.a + pt.y
                 END alpha.)",
-         "", "7,30: no field <a> in RECORD"},
+         "", "7,29: no field <a> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -541,7 +541,7 @@ TEST(Inspector, RecordFields) {
                     pt.spin := FALSE;
                     RETURN 0
                 END alpha.)",
-         "", "7,23: no field <spin> in RECORD"},
+         "", "7,22: no field <spin> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -555,7 +555,7 @@ TEST(Inspector, RecordFields) {
                     pt.f.x := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,23: no field <f> in RECORD"},
+         "", "10,22: no field <f> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -569,7 +569,7 @@ TEST(Inspector, RecordFields) {
                     pt.z.g := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,23: no field <g> in RECORD"},
+         "", "10,22: no field <g> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -583,7 +583,7 @@ TEST(Inspector, RecordFields) {
                     gt.z.x := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,23: undefined identifier gt"},
+         "", "10,22: undefined identifier gt"},
     };
     do_inspect_tests(tests);
 }

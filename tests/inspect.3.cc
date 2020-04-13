@@ -115,14 +115,14 @@ TEST(Inspector, Qualident) {
             BEGIN
                 RETURN Oberon.x;
             END alpha.)",
-         "", "4,30: undefined identifier Oberon"},
+         "", "4,29: undefined identifier Oberon"},
 
         {R"(MODULE alpha;
             IMPORT S := System;
             BEGIN
                 RETURN System.x;
             END alpha.)",
-         "", "4,30: undefined identifier System"},
+         "", "4,29: undefined identifier System"},
 
         {R"(MODULE alpha;
             IMPORT System;

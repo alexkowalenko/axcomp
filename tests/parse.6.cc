@@ -166,3 +166,30 @@ TEST(Parser, Qualident) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, QualidentFunctionCall) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            IMPORT Out;
+            BEGIN
+                Out.WriteInt(1);
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT Out;\nBEGIN\nOut.WriteInt(1);\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+             IMPORT Math;
+             BEGIN
+                 RETURN Math.Abs(1) + Math.Abs(2);
+             END alpha.)",
+         "MODULE alpha;\nIMPORT Math;\nBEGIN\nRETURN "
+         "Math.Abs(1)+Math.Abs(2)\nEND alpha.",
+         ""},
+
+        // Errors
+    };
+    do_parse_tests(tests);
+}

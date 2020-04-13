@@ -41,10 +41,11 @@ class Parser {
     parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
                           const std::set<TokenType> &end_tokens);
 
-    std::shared_ptr<ASTAssignment> parse_assignment();
+    std::shared_ptr<ASTAssignment>
+                                   parse_assignment(std::shared_ptr<ASTDesignator> d);
     std::shared_ptr<ASTReturn>     parse_return();
     std::shared_ptr<ASTExit>       parse_exit();
-    std::shared_ptr<ASTCall>       parse_call();
+    std::shared_ptr<ASTCall>       parse_call(std::shared_ptr<ASTDesignator> d);
     std::shared_ptr<ASTIf>         parse_if();
     std::shared_ptr<ASTFor>        parse_for();
     std::shared_ptr<ASTWhile>      parse_while();

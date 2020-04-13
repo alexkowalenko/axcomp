@@ -29,7 +29,7 @@ TEST(Inspector, UnknownExpr) {
 
         // Errors
         {"MODULE y; VAR x : INTEGER; BEGIN RETURN z END y.", "",
-         "1,45: undefined identifier z"},
+         "1,41: undefined identifier z"},
     };
     do_inspect_tests(tests);
 }

@@ -458,15 +458,17 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         return parse_block();
     case TokenType::ident: {
         // This can be an assignment or function call
-        auto ident = lexer.get_token();
+
+        auto designator = parse_designator();
+
         tok = lexer.peek_token();
         debug("Parser::parse_statement next {0}", std::string(tok));
-        lexer.push_token(ident);
+
         if (tok.type == TokenType::l_paren ||
             tok.type == TokenType::semicolon || tok.type == TokenType::end) {
-            return parse_call();
+            return parse_call(designator);
         }
-        return parse_assignment();
+        return parse_assignment(designator);
     }
     default:
         throw ParseException(
@@ -500,11 +502,12 @@ void Parser::parse_statement_block(
  *
  * @return std::shared_ptr<ASTAssignment>
  */
-std::shared_ptr<ASTAssignment> Parser::parse_assignment() {
+std::shared_ptr<ASTAssignment>
+Parser::parse_assignment(std::shared_ptr<ASTDesignator> d) {
     debug("Parser::parse_assignment");
     auto assign = makeAST<ASTAssignment>(lexer);
 
-    assign->ident = parse_designator();
+    assign->ident = d;
     get_token(TokenType::assign);
     assign->expr = parse_expr();
     return assign;
@@ -542,10 +545,10 @@ std::shared_ptr<ASTExit> Parser::parse_exit() {
  *
  * @return std::shared_ptr<ASTCall>
  */
-std::shared_ptr<ASTCall> Parser::parse_call() {
+std::shared_ptr<ASTCall> Parser::parse_call(std::shared_ptr<ASTDesignator> d) {
     auto call = makeAST<ASTCall>(lexer);
 
-    call->name = parse_identifier();
+    call->name = d;
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::l_paren) {
         // Parse arguments
@@ -825,17 +828,15 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         ast->factor = parse_factor();
         return ast;
     case TokenType::ident: {
-        // Identifier
-        lexer.get_token(); // get tok
+
+        auto d = parse_designator();
         auto nexttok = lexer.peek_token();
         debug("factor nexttok: {0}", std::string(nexttok));
         if (nexttok.type == TokenType::l_paren) {
-            lexer.push_token(tok);
-            ast->factor = parse_call();
+            ast->factor = parse_call(d);
             return ast;
         }
-        lexer.push_token(tok);
-        ast->factor = parse_designator();
+        ast->factor = d;
         return ast;
     }
     default:

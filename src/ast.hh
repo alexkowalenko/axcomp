@@ -299,7 +299,7 @@ class ASTExit : public ASTStatement {
 };
 
 /**
- * @brief IDENT "(" expr ( "," expr )* ")"
+ * @brief designator "(" expr ( "," expr )* ")"
  *
  */
 class ASTCall : public ASTStatement {
@@ -308,7 +308,7 @@ class ASTCall : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTCall(this); };
 
-    std::shared_ptr<ASTIdentifier>        name;
+    std::shared_ptr<ASTDesignator>        name;
     std::vector<std::shared_ptr<ASTExpr>> args;
 };
 

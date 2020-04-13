@@ -406,27 +406,25 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
     debug("CodeGenerator::visit_ASTCall");
     // Look up the name in the global module table.
     Function *callee = nullptr;
+    auto      name = ast->name->ident->make_coded_id();
     try {
-        auto res = current_symboltable->find(ast->name->value);
+        auto res = current_symboltable->find(name);
         if (!res) {
-            throw CodeGenException(
-                formatv("function: {0} not found 1", ast->name->value),
-                ast->get_location());
+            throw CodeGenException(formatv("function: {0} not found 1", name),
+                                   ast->get_location());
         }
         callee = llvm::dyn_cast<Function>(res->first);
         assert(callee != nullptr);
     } catch (...) {
         debug("CodeGenerator::visit_ASTCall exception");
-        throw CodeGenException(
-            formatv("function: {0} not found 2", ast->name->value),
-            ast->get_location());
+        throw CodeGenException(formatv("function: {0} not found 2", name),
+                               ast->get_location());
     }
 
-    auto res = types.find(ast->name->value);
+    auto res = types.find(name);
     if (!res) {
-        throw CodeGenException(
-            formatv("function: {0} not found 3", ast->name->value),
-            ast->get_location());
+        throw CodeGenException(formatv("function: {0} not found 3", name),
+                               ast->get_location());
     }
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(*res);
     assert(typeFunction);
