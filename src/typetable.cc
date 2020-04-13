@@ -23,7 +23,7 @@ void TypeTable::initialise() {
     BoolType = std::make_shared<BooleanType>();
     table.put(std::string(*BoolType), BoolType);
 
-    VoidType = std::make_shared<SimpleType>("void");
+    VoidType = std::make_shared<SimpleType>("void", TypeId::null);
     table.put(std::string(*VoidType), VoidType);
 }
 

@@ -23,7 +23,4 @@ class DefParser : public Parser {
     std::shared_ptr<ASTProcedure> parse_procedure();
 };
 
-extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>>
-    builtins;
-
 } // namespace ax

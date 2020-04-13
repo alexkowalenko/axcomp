@@ -14,6 +14,7 @@
 #include <llvm/IR/Module.h>
 
 #include "astvisitor.hh"
+#include "importer.hh"
 #include "options.hh"
 #include "symboltable.hh"
 #include "typetable.hh"
@@ -24,7 +25,7 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    explicit CodeGenerator(Options &o, TypeTable &t);
+    explicit CodeGenerator(Options &o, TypeTable &t, Importer &i);
 
     void generate(std::shared_ptr<ASTModule> const &ast) {
         visit_ASTModule(ast.get());
@@ -33,7 +34,7 @@ class CodeGenerator : ASTVisitor {
     void setup_builtins();
 
     void visit_ASTModule(ASTModule *ast) override;
-
+    void visit_ASTImport(ASTImport *ast) override;
     void doTopDecs(ASTDeclaration *ast);
     void doTopVars(ASTVar *ast);
     void doTopConsts(ASTConst *ast);
@@ -62,7 +63,7 @@ class CodeGenerator : ASTVisitor {
     void get_index(ASTDesignator *ast);
     void visit_ASTDesignator(ASTDesignator *ast) override;
     void visit_ASTDesignatorPtr(ASTDesignator *ast);
-
+    void visit_ASTQualident(ASTQualident *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
     void visit_ASTIdentifierPtr(ASTIdentifier *ast);
     void visit_ASTInteger(ASTInteger *ast) override;
@@ -92,6 +93,7 @@ class CodeGenerator : ASTVisitor {
 
     Options &  options;
     TypeTable &types;
+    Importer & importer;
 
     using ValueSymbolTable =
         std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;

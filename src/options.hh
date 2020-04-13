@@ -14,6 +14,7 @@ struct Options {
     bool debug_parse{false};
 
     bool output_funct{false};
+    bool output_main{false};
     bool only_ll{false};
     bool output_defs{false};
     bool print_symbols{false};

@@ -21,7 +21,7 @@ class Inspector : public ASTVisitor {
 
   public:
     explicit Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
-                       TypeTable &t, ErrorManager &e);
+                       TypeTable &t, ErrorManager &e, Importer &i);
 
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTImport(ASTImport *ast) override;
@@ -64,7 +64,7 @@ class Inspector : public ASTVisitor {
 
     TypeTable &   types;
     ErrorManager &errors;
-    Importer      importer;
+    Importer &    importer;
 
     bool          is_const{false};
     bool          is_lvalue{false};

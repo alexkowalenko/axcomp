@@ -21,12 +21,30 @@ namespace ax {
 class Type;
 using TypePtr = std::shared_ptr<Type>;
 
+enum class TypeId {
+    null, // void
+    integer,
+    boolean,
+    procedure,
+    array,
+    record,
+    alias,
+    module
+};
+
+inline bool is_referencable(TypeId &id) {
+    return !(id == TypeId::procedure || id == TypeId::alias ||
+             id == TypeId::module);
+}
+
 class Type {
   public:
-    Type() = default;
+    explicit Type(TypeId i) : id(i){};
     virtual ~Type() = default;
 
-    bool equiv(TypePtr const &t);
+    TypeId id = TypeId::null;
+
+    bool equiv(TypePtr const &t) const;
 
     virtual explicit operator std::string() = 0;
 
@@ -47,7 +65,8 @@ class Type {
 
 class SimpleType : public Type {
   public:
-    explicit SimpleType(std::string n) : name(std::move(n)){};
+    explicit SimpleType(std::string n, TypeId id)
+        : Type(id), name(std::move(n)){};
     ~SimpleType() override = default;
 
     explicit operator std::string() override;
@@ -57,7 +76,7 @@ class SimpleType : public Type {
 
 class IntegerType : public SimpleType {
   public:
-    explicit IntegerType() : SimpleType("INTEGER"){};
+    explicit IntegerType() : SimpleType("INTEGER", TypeId::integer){};
     ~IntegerType() override = default;
 
     bool is_numeric() override { return true; };
@@ -67,7 +86,7 @@ class IntegerType : public SimpleType {
 
 class BooleanType : public SimpleType {
   public:
-    explicit BooleanType() : SimpleType("BOOLEAN"){};
+    explicit BooleanType() : SimpleType("BOOLEAN", TypeId::boolean){};
     ~BooleanType() override = default;
 
     llvm::Constant *make_value(bool b);
@@ -75,9 +94,10 @@ class BooleanType : public SimpleType {
 
 class ProcedureType : public Type {
   public:
-    explicit ProcedureType() = default;
+    explicit ProcedureType() : Type(TypeId::procedure){};
     ProcedureType(TypePtr returns, std::vector<std::pair<TypePtr, Attr>> params)
-        : ret(std::move(returns)), params(std::move(params)){};
+        : Type(TypeId::procedure), ret(std::move(returns)),
+          params(std::move(params)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
@@ -89,7 +109,8 @@ class ProcedureType : public Type {
 
 class ArrayType : public Type {
   public:
-    ArrayType(TypePtr b, long s) : base_type(std::move(b)), size(s){};
+    ArrayType(TypePtr b, long s)
+        : Type(TypeId::array), base_type(std::move(b)), size(s){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
@@ -103,7 +124,7 @@ class ArrayType : public Type {
 
 class RecordType : public Type {
   public:
-    RecordType() = default;
+    RecordType() : Type(TypeId::record){};
     ~RecordType() override = default;
 
     explicit operator std::string() override;
@@ -124,7 +145,7 @@ class RecordType : public Type {
 class TypeAlias : public Type {
   public:
     TypeAlias(std::string n, TypePtr t)
-        : name{std::move(n)}, alias{std::move(t)} {};
+        : Type(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
     explicit operator std::string() override { return name; };
@@ -138,7 +159,8 @@ class TypeAlias : public Type {
 
 class ModuleType : public Type {
   public:
-    explicit ModuleType(std::string n) : name{std::move(n)} {};
+    explicit ModuleType(std::string n)
+        : Type(TypeId::module), name{std::move(n)} {};
     ~ModuleType() override = default;
 
     explicit operator std::string() override { return "MODULE: " + name; };

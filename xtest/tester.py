@@ -35,7 +35,7 @@ def do_clang(stem):
         print(red + "run " + restore, end="")
         fail = stem + ".fail"
         os.system(f"mv result.txt {fail}")
-    os.system(f"rm -f a.out {obj} result.diff.txt result.txt")
+    os.system(f"rm -f a.out {obj} {stem}.def result.diff.txt result.txt")
     return (ret == 0)
 
 
@@ -56,7 +56,7 @@ def do_test(t):
     ret = os.system(cmd)
     if(ret != 0):
         os.system(f"mv {asm} {fail}")
-        os.system(f"rm {stem}.o")
+        os.system(f"rm -f {stem}.o {stem}.def")
     else:
         os.system(f"rm -f {fail} {asm}")
     os.system("rm -f result.diff.txt")

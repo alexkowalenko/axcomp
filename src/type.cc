@@ -12,8 +12,8 @@ namespace ax {
 
 using namespace llvm;
 
-bool Type::equiv(TypePtr const &t) {
-    return std::string(*this) == std::string(*t);
+bool Type::equiv(TypePtr const &t) const {
+    return id == t->id;
 }
 
 SimpleType::operator std::string() {

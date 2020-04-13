@@ -15,13 +15,21 @@ namespace ax {
 
 class Importer {
   public:
-    Importer(ErrorManager &e) : errors{e} {};
+    explicit Importer(ErrorManager &e) : errors{e} {};
 
     bool find_module(std::string const &                    name,
                      std::shared_ptr<SymbolTable<TypePtr>> &symbols,
                      TypeTable &                            types);
 
   private:
-    ErrorManager &errors;
+    std::shared_ptr<SymbolTable<TypePtr>> read_module(std::string const &name,
+                                                      TypeTable &        types);
+
+    void transfer_symbols(std::shared_ptr<SymbolTable<TypePtr>> const &from,
+                          std::shared_ptr<SymbolTable<TypePtr>> &      to,
+                          std::string const &module_name);
+
+    ErrorManager &                                               errors;
+    std::map<std::string, std::shared_ptr<SymbolTable<TypePtr>>> cache;
 };
 } // namespace ax

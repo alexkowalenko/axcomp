@@ -908,8 +908,10 @@ ident = letter {letter | digit}.
 
 Program \lstinline"ax" options are: 
 \begin{itemize}
-    \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
-    \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function output(). Used in unit tests for the compiler.
+    \item \lstinline"-d" \lstinline"--defs" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
+    \item \lstinline"-l" \lstinline"--ll" generate only the \lstinline".def" file.
+    \item \lstinline"-m" \lstinline"--main" generate function \lstinline"main()" (the entry point) for the \BEGIN\ section of the module.
+    \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function \lstinline"output()". Used in unit tests for the compiler.
     \item \lstinline"-D"x - Debugging options `x' is composed of the following characters.
     \begin{itemize}
         \item \lstinline"p" - print out parsed tree.

@@ -24,9 +24,9 @@ template <typename... T> inline void debug(const T &... msg) {
 }
 
 Inspector::Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
-                     TypeTable &t, ErrorManager &e)
+                     TypeTable &t, ErrorManager &e, Importer &i)
     : top_symboltable(s), current_symboltable{s}, types(t), errors(e),
-      importer(e) {
+      importer(i) {
 
     // Make const symbol table
     top_consts = std::make_shared<SymbolTable<TypePtr>>(nullptr);

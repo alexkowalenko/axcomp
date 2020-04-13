@@ -6,6 +6,7 @@
 
 #include "importer.hh"
 
+#include <cstddef>
 #include <fstream>
 
 #include <dirent.h>
@@ -29,10 +30,11 @@ bool ends_with(std::string const &s) {
     return s.substr(s.length() - suffix.length(), s.length()) == suffix;
 }
 
-bool Importer::find_module(std::string const &                    name,
-                           std::shared_ptr<SymbolTable<TypePtr>> &symbols,
-                           TypeTable &                            types) {
-    std::string path = ".";
+std::shared_ptr<SymbolTable<TypePtr>>
+Importer::read_module(std::string const &name, TypeTable &types) {
+
+    std::shared_ptr<SymbolTable<TypePtr>> module_symbols = nullptr;
+    std::string                           path = ".";
 
     auto *dir = opendir(path.c_str());
     if (dir == nullptr) {
@@ -54,29 +56,47 @@ bool Importer::find_module(std::string const &                    name,
                 std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
 
             if (fname == name) {
-                std::cout << "module: " << fname << '\n';
-                auto module_symbols =
+                module_symbols =
                     std::make_shared<SymbolTable<TypePtr>>(nullptr);
                 std::ifstream is(in_file->d_name);
                 Lexer         lex(is, errors);
                 DefParser     parser(lex, module_symbols, types, errors);
                 auto          ast = parser.parse();
-                Inspector     inpect(module_symbols, types, errors);
+                Inspector     inpect(module_symbols, types, errors, *this);
                 inpect.check(ast);
-
-                // Import the symbols into the top level symbol table
-                std::for_each(module_symbols->cbegin(), module_symbols->cend(),
-                              [this, name, symbols](auto const &s) {
-                                  auto n = ASTQualident::make_coded_id(
-                                      name, s.first); // name + "_" + s.first;
-                                  symbols->put(n, s.second);
-                              });
-
-                return true;
+                return module_symbols;
             }
         }
     }
-    return false;
+    return module_symbols;
+}
+
+void Importer::transfer_symbols(
+    std::shared_ptr<SymbolTable<TypePtr>> const &from,
+    std::shared_ptr<SymbolTable<TypePtr>> &to, std::string const &module_name) {
+    std::for_each(from->cbegin(), from->cend(),
+                  [this, module_name, to](auto const &s) {
+                      auto n = ASTQualident::make_coded_id(
+                          module_name, s.first); // name + "_" + s.first;
+                      to->put(n, s.second);
+                  });
+}
+
+bool Importer::find_module(std::string const &                    name,
+                           std::shared_ptr<SymbolTable<TypePtr>> &symbols,
+                           TypeTable &                            types) {
+    // Look at cache
+    if (auto res = cache.find(name); res != cache.end()) {
+        transfer_symbols(res->second, symbols, name);
+        return true;
+    } else {
+        auto mod_symbols = read_module(name, types);
+        if (mod_symbols) {
+            transfer_symbols(mod_symbols, symbols, name);
+            return true;
+        }
+        return false;
+    }
 }
 
 } // namespace ax

@@ -76,7 +76,8 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
             auto ast = parser.parse();
             parser.setup_builtins();
 
-            Inspector inpect(symbols, types, errors);
+            Importer  importer(errors);
+            Inspector inpect(symbols, types, errors, importer);
             inpect.check(ast);
             if (errors.has_errors()) {
                 EXPECT_EQ(errors.first()->error_msg(), t.error);
@@ -118,7 +119,8 @@ void do_def_tests(std::vector<ParseTests> &tests) {
             auto ast = parser.parse();
             parser.setup_builtins();
 
-            Inspector inpect(symbols, types, errors);
+            Importer  importer(errors);
+            Inspector inpect(symbols, types, errors, importer);
             inpect.check(ast);
             if (errors.has_errors()) {
                 EXPECT_EQ(errors.first()->error_msg(), t.error);
@@ -160,7 +162,8 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
             auto ast = parser.parse();
             parser.setup_builtins();
 
-            Inspector inpect(symbols, types, errors);
+            Importer  importer(errors);
+            Inspector inpect(symbols, types, errors, importer);
             inpect.check(ast);
             if (errors.has_errors()) {
                 EXPECT_EQ(errors.first()->error_msg(), t.error);

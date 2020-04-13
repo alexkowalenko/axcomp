@@ -21,6 +21,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
+#include <memory>
 
 #include "ast.hh"
 #include "error.hh"
@@ -41,8 +42,8 @@ using namespace llvm::sys;
 inline const std::string file_ext_llvmri{".ll"};
 inline const std::string file_ext_obj{".o"};
 
-CodeGenerator::CodeGenerator(Options &o, TypeTable &t)
-    : options(o), types(t), filename("main"), builder(context),
+CodeGenerator::CodeGenerator(Options &o, TypeTable &t, Importer &i)
+    : options(o), types(t), importer(i), filename("main"), builder(context),
       last_value(nullptr) {
     top_symboltable =
         std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(nullptr);
@@ -57,6 +58,10 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
     // Set up builtins
     setup_builtins();
+
+    if (ast->import) {
+        ast->import->accept(this);
+    }
 
     // Top level consts
     top_level = true;
@@ -76,6 +81,10 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
     auto function_name = filename;
     if (options.output_funct) {
         function_name = "output";
+    } else if (options.output_main) {
+        function_name = filename;
+    } else {
+        function_name = ASTQualident::make_coded_id(ast->name, "main");
     }
     Function *f = Function::Create(ft, Function::ExternalLinkage, function_name,
                                    module.get());
@@ -101,6 +110,38 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 
     // change the filename to generate module.obj
     filename = ast->name;
+}
+
+void CodeGenerator::visit_ASTImport(ASTImport *ast) {
+    debug("CodeGenerator::visit_ASTImport");
+
+    auto symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+    std::for_each(
+        begin(ast->imports), end(ast->imports),
+        [this, &symbols](auto const &i) {
+            auto found = importer.find_module(i.first->value, symbols, types);
+            assert(found);
+
+            // convert table to ValueSymboltable
+            std::for_each(
+                symbols->cbegin(), symbols->cend(), [this, i](auto const &s) {
+                    auto name = s.first;
+                    debug("CodeGenerator::visit_ASTImport get {0} : {1}", name,
+                          s.second->get_name());
+
+                    if (is_referencable(s.second->id)) {
+
+                        module->getOrInsertGlobal(name, s.second->get_llvm());
+                        GlobalVariable *gVar = module->getNamedGlobal(name);
+
+                        debug("CodeGenerator::visit_ASTImport put {0}", name);
+
+                        top_symboltable->put(name, {gVar, Attr::global});
+                    } else {
+                        // ignore functions for the moment
+                    }
+                });
+        });
 }
 
 void CodeGenerator::doTopDecs(ASTDeclaration *ast) {
@@ -184,8 +225,8 @@ void CodeGenerator::visit_ASTConst(ASTConst *ast) {
         c.value->accept(this);
         auto *val = last_value;
 
-        auto name =
-            c.ident->value; // consts within procedures don't need to be renamed
+        auto name = c.ident->value; // consts within procedures don't need
+                                    // to be renamed
         debug("create const: {}", name);
 
         // Create const
@@ -315,8 +356,8 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment *ast) {
     debug(" CodeGenerator::visit_ASTAssignment VAR {0}", var);
     if (var) {
         // Handle VAR assignment
-        is_var = true; // Set change in visit_ASTIdentifierPtr to notify this is
-                       // a write of a VAR variable
+        is_var = true; // Set change in visit_ASTIdentifierPtr to notify
+                       // this is a write of a VAR variable
         visit_ASTDesignator(ast->ident.get());
     } else {
         visit_ASTDesignatorPtr(ast->ident.get());
@@ -799,7 +840,7 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
  */
 void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
     debug("CodeGenerator::visit_ASTDesignator {0}", std::string(*ast));
-    visit_ASTIdentifier(ast->ident.get());
+    visit_ASTQualident(ast->ident.get());
 
     // Check if has selectors
     if (ast->selectors.empty()) {
@@ -830,6 +871,17 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
     get_index(ast);
 }
 
+void CodeGenerator::visit_ASTQualident(ASTQualident *ast) {
+    debug("CodeGenerator::visit_ASTQualident");
+    if (ast->qual.empty()) {
+        visit_ASTIdentifier(ast);
+    } else {
+        auto new_ast = std::make_shared<ASTIdentifier>();
+        new_ast->value = ast->make_coded_id();
+        visit_ASTIdentifier(new_ast.get());
+    }
+}
+
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
     debug("CodeGenerator::visit_ASTIdentifier {0}", ast->value);
     visit_ASTIdentifierPtr(ast);
@@ -837,12 +889,12 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifier *ast) {
 }
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
-    debug("CodeGenerator::getPtr {0}", ast->value);
+    debug("CodeGenerator::visit_ASTIdentifierPtr {0}", ast->value);
 
     if (auto res = current_symboltable->find(ast->value); res) {
         last_value = res->first;
         if (res->second == Attr::var) {
-            debug("CodeGenerator::getPtr VAR {0}", ast->value);
+            debug("CodeGenerator::visit_ASTIdentifierPtr VAR {0}", ast->value);
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         if (is_var) {

@@ -12,6 +12,7 @@
 #include "codegen.hh"
 #include "defprinter.hh"
 #include "error.hh"
+#include "importer.hh"
 #include "inspector.hh"
 #include "lexer.hh"
 #include "options.hh"
@@ -41,9 +42,11 @@ int main(int argc, char **argv) {
 
     std::string debug_options;
     app.add_option("-D", debug_options, "Debug options : p=parse");
-    app.add_flag("--defs, -d", options.output_defs, "output .def file");
+    app.add_flag("--defs, -d", options.output_defs,
+                 "generate only the .def file");
+    app.add_flag("--main, -m", options.output_main, "generate function main()");
     app.add_flag("--output_funct,-o", options.output_funct,
-                 "compile as test function output");
+                 "generate compiler test function output()");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
     app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
 
@@ -83,19 +86,22 @@ int main(int argc, char **argv) {
             printer.print(ast);
         }
 
-        Inspector inspect(symbols, types, errors);
+        // Run the semantic inspector
+        Importer  importer(errors);
+        Inspector inspect(symbols, types, errors, importer);
         inspect.check(ast);
         if (errors.has_errors()) {
             errors.print_errors(std::cout);
             return -1;
         }
 
+        // Always generate .def files
+        output_defs(ast, options);
         if (options.output_defs) {
-            output_defs(ast, options);
             return 0;
         }
 
-        ax::CodeGenerator code(options, types);
+        ax::CodeGenerator code(options, types, importer);
         code.generate(ast);
 
         code.generate_llcode();
