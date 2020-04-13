@@ -42,7 +42,7 @@ def do_clang(stem):
 def do_test(t):
     stem = Path(t).stem
     fail = stem + ".fail"
-    cmd = f"{compiler} --file {t} > result.txt"
+    cmd = f"{compiler} {t} > result.txt"
     # print(cmd)
     ret = os.system(cmd)
     if ret:

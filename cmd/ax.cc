@@ -8,6 +8,7 @@
 
 #include <CLI/CLI.hpp>
 
+#include "CLI/Error.hpp"
 #include "codegen.hh"
 #include "defprinter.hh"
 #include "error.hh"
@@ -41,14 +42,20 @@ int main(int argc, char **argv) {
     std::string debug_options;
     app.add_option("-D", debug_options, "Debug options : p=parse");
     app.add_flag("--defs, -d", options.output_defs, "output .def file");
-    app.add_option("--file,-f", options.file_name, "file to compile")
-        ->check(CLI::ExistingFile);
     app.add_flag("--output_funct,-o", options.output_funct,
                  "compile as test function output");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
     app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
 
-    CLI11_PARSE(app, argc, argv);
+    // Positional argument
+    app.add_option("file", options.file_name, "file to compile")
+        ->check(CLI::ExistingFile);
+
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        return app.exit(e);
+    }
     if (debug_options.find('p') != std::string::npos) {
         options.debug_parse = true;
         std::cout << "Print parsed program.\n";

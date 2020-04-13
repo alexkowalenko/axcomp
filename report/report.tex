@@ -908,20 +908,19 @@ ident = letter {letter | digit}.
 
 Program \lstinline"ax" options are: 
 \begin{itemize}
-    \item \lstinline"-f", \lstinline"--file filename" - compile named file.
     \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
     \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function output(). Used in unit tests for the compiler.
     \item \lstinline"-D"x - Debugging options `x' is composed of the following characters.
     \begin{itemize}
         \item \lstinline"p" - print out parsed tree.
     \end{itemize}
+    \item \lstinline"-s" \lstinline"--symbols" print the symbol table.
 \end{itemize}
 
 \subsection{Implementation details}
 \begin{itemize}
     \item \PROCEDURE s don't have nested procedures.
     \item \ARRAY\ sizes must be integers.
-    \item procedure calls to procedures without arguments still need parenthesis.
 \end{itemize}
 
 
