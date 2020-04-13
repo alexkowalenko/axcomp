@@ -102,6 +102,8 @@ class ProcedureType : public Type {
 
     explicit operator std::string() override;
 
+    llvm::Type *get_llvm() override;
+
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
     ParamsList params{};

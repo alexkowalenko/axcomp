@@ -44,6 +44,15 @@ ProcedureType::operator std::string() {
     return res;
 }
 
+llvm::Type *ProcedureType::get_llvm() {
+    std::vector<llvm::Type *> proto;
+    std::for_each(begin(params), end(params), [this, &proto](auto const &t) {
+        proto.push_back(t.first->get_llvm());
+    });
+
+    return FunctionType::get(ret->get_llvm(), proto, false);
+}
+
 ArrayType::operator std::string() {
     return llvm::formatv("{0}[{1}]", std::string(*base_type), size);
 }

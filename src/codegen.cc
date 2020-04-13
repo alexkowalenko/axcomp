@@ -134,9 +134,18 @@ void CodeGenerator::visit_ASTImport(ASTImport *ast) {
                         module->getOrInsertGlobal(name, s.second->get_llvm());
                         GlobalVariable *gVar = module->getNamedGlobal(name);
 
-                        debug("CodeGenerator::visit_ASTImport put {0}", name);
+                        debug("CodeGenerator::visit_ASTImport var {0}", name);
 
                         top_symboltable->put(name, {gVar, Attr::global});
+                    } else if (s.second->id == TypeId::procedure) {
+                        debug("CodeGenerator::visit_ASTImport proc {0}", name);
+                        auto *funcType = (FunctionType *)s.second->get_llvm();
+
+                        auto *func = Function::Create(
+                            funcType, Function::LinkageTypes::ExternalLinkage,
+                            name, module.get());
+                        verifyFunction(*func);
+                        current_symboltable->put(name, {func, Attr::null});
                     } else {
                         // ignore functions for the moment
                     }
@@ -860,7 +869,7 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignator *ast) {
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
     debug("CodeGenerator::visit_ASTDesignatorPtr {0}", std::string(*ast));
 
-    visit_ASTIdentifierPtr(ast->ident.get());
+    visit_ASTQualidentPtr(ast->ident.get());
 
     // Check if has selectors
     if (ast->selectors.empty()) {
@@ -879,6 +888,17 @@ void CodeGenerator::visit_ASTQualident(ASTQualident *ast) {
         auto new_ast = std::make_shared<ASTIdentifier>();
         new_ast->value = ast->make_coded_id();
         visit_ASTIdentifier(new_ast.get());
+    }
+}
+
+void CodeGenerator::visit_ASTQualidentPtr(ASTQualident *ast) {
+    debug("CodeGenerator::visit_ASTQualidentPtr");
+    if (ast->qual.empty()) {
+        visit_ASTIdentifierPtr(ast);
+    } else {
+        auto new_ast = std::make_shared<ASTIdentifier>();
+        new_ast->value = ast->make_coded_id();
+        visit_ASTIdentifierPtr(new_ast.get());
     }
 }
 
@@ -996,18 +1016,7 @@ void CodeGenerator::setup_builtins() {
 
     for (auto const &f : builtins) {
         debug("function: {0} ", f.first);
-        auto p = f.second;
-
-        debug("size: {0} ", p->params.size());
-
-        std::vector<llvm::Type *> proto;
-        std::for_each(begin(p->params), end(p->params),
-                      [this, &proto](auto const &t) {
-                          debug("param: {0} ", t.first->get_name());
-                          proto.push_back(t.first->get_llvm());
-                      });
-
-        auto *funcType = FunctionType::get(p->ret->get_llvm(), proto, false);
+        auto *funcType = (FunctionType *)f.second->get_llvm();
 
         auto *func =
             Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
