@@ -23,15 +23,10 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-Inspector::Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
-                     TypeTable &t, ErrorManager &e, Importer &i)
+Inspector::Inspector(Symbols const &s, TypeTable &t, ErrorManager &e,
+                     Importer &i)
     : top_symboltable(s), current_symboltable{s}, types(t), errors(e),
-      importer(i) {
-
-    // Make const symbol table
-    top_consts = std::make_shared<SymbolTable<TypePtr>>(nullptr);
-    current_consts = top_consts;
-};
+      importer(i){};
 
 void Inspector::visit_ASTModule(ASTModule *ast) {
     debug("Inspector::visit_ASTModule");
@@ -84,8 +79,7 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
         c.type->type_info = last_type;
         c.type->type = std::make_shared<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
-        current_symboltable->put(c.ident->value, last_type);
-        current_consts->put(c.ident->value, last_type);
+        current_symboltable->put(c.ident->value, {last_type, Attr::cnst});
     });
 }
 
@@ -114,7 +108,7 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
         // defined.
         v.second->accept(this);
         // Update VAR declaration symbols with type
-        current_symboltable->put(v.first->value, last_type);
+        current_symboltable->put(v.first->value, {last_type, Attr::null});
     });
 }
 
@@ -149,7 +143,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                   });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
-    current_symboltable->put(ast->name->value, proc_type);
+    current_symboltable->put(ast->name->value, {proc_type, Attr::null});
     types.put(ast->name->value, proc_type);
 
     last_proc = ast;
@@ -157,11 +151,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     debug("Inspector::visit_ASTProcedure new symbol table");
     // new symbol table
     auto former_symboltable = current_symboltable;
-    current_symboltable =
-        std::shared_ptr<SymbolTable<TypePtr>>(former_symboltable);
-    auto former_consts = current_consts;
-    current_consts = std::make_shared<SymbolTable<TypePtr>>(former_consts);
-    current_consts = top_consts;
+    current_symboltable = make_Symbols(former_symboltable);
     std::for_each(
         ast->params.begin(), ast->params.end(), [this](auto const &p) {
             std::visit(
@@ -172,10 +162,15 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                     [this, p](std::shared_ptr<ASTQualident> const &tname) {
                         debug("Inspector::visit_ASTProcedure param type ident");
                         auto type = types.find(tname->value);
-                        current_symboltable->put(p.first->value, *type);
+                        current_symboltable->put(p.first->value,
+                                                 {*type, p.first->is(Attr::var)
+                                                             ? Attr::var
+                                                             : Attr::null});
                     }},
                 p.second->type);
-            current_symboltable->put(p.first->value, last_type);
+            current_symboltable->put(
+                p.first->value,
+                {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
         });
     if (ast->decs) {
         ast->decs->accept(this);
@@ -183,7 +178,6 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this, ast](auto const &x) { x->accept(this); });
     current_symboltable = former_symboltable;
-    current_consts = former_consts;
 }
 
 void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
@@ -191,7 +185,8 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     ast->expr->accept(this);
     auto expr_type = last_type;
 
-    if (current_consts->find(ast->ident->ident->value)) {
+    if (auto res = current_symboltable->find(ast->ident->ident->value);
+        res->second == Attr::cnst) {
         auto e = TypeError(llvm::formatv("Can't assign to CONST variable {0}",
                                          std::string(*ast->ident)),
                            ast->get_location());
@@ -265,7 +260,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
             llvm::formatv("undefined PROCEDURE {0}", ast->name->value),
             ast->get_location());
     }
-    auto procType = std::dynamic_pointer_cast<ProcedureType>(*res);
+    auto procType = std::dynamic_pointer_cast<ProcedureType>(res->first);
     if (!procType) {
         throw TypeError(
             llvm::formatv("{0} is not a PROCEDURE", ast->name->value),
@@ -369,9 +364,9 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
 
     // new symbol table
     auto former_symboltable = current_symboltable;
-    current_symboltable =
-        std::shared_ptr<SymbolTable<TypePtr>>(former_symboltable);
-    current_symboltable->put(ast->ident->value, TypeTable::IntType);
+    current_symboltable = make_Symbols(former_symboltable);
+    current_symboltable->put(ast->ident->value,
+                             {TypeTable::IntType, Attr::null});
 
     std::for_each(begin(ast->stats), end(ast->stats),
                   [this](auto const &s) { s->accept(this); });
@@ -691,15 +686,15 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
             ast->get_location());
     }
     // debug("find type: {} for {}", res, res->name);
-    auto resType = types.resolve((*res)->get_name());
+    auto resType = types.resolve(res->first->get_name());
     if (!resType) {
         auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
-                                         (*res)->get_name(), ast->value),
+                                         res->first->get_name(), ast->value),
                            ast->get_location());
         errors.add(e);
     }
     last_type = *resType;
-    is_const = static_cast<bool>(current_consts->find(ast->value));
+    is_const = res->second == Attr::cnst;
     is_lvalue = true;
 }
 

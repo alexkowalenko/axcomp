@@ -20,8 +20,8 @@ namespace ax {
 class Inspector : public ASTVisitor {
 
   public:
-    explicit Inspector(std::shared_ptr<SymbolTable<TypePtr>> const &s,
-                       TypeTable &t, ErrorManager &e, Importer &i);
+    explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e,
+                       Importer &i);
 
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTImport(ASTImport *ast) override;
@@ -56,11 +56,8 @@ class Inspector : public ASTVisitor {
     };
 
   private:
-    std::shared_ptr<SymbolTable<TypePtr>> top_symboltable;
-    std::shared_ptr<SymbolTable<TypePtr>> current_symboltable;
-
-    std::shared_ptr<SymbolTable<TypePtr>> top_consts;
-    std::shared_ptr<SymbolTable<TypePtr>> current_consts;
+    Symbols top_symboltable;
+    Symbols current_symboltable;
 
     TypeTable &   types;
     ErrorManager &errors;

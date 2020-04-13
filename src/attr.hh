@@ -16,6 +16,7 @@ enum class Attr {
     var,       // VAR parameters
     global,    // * symbol on global objects in modules
     read_only, // - symbol on read_only objects
+    cnst,      // CONST variables
 };
 
 const inline std::string attr_star{"*"};

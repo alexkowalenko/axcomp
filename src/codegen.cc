@@ -26,6 +26,7 @@
 #include "ast.hh"
 #include "error.hh"
 #include "parser.hh"
+#include "type.hh"
 
 namespace ax {
 
@@ -115,7 +116,7 @@ void CodeGenerator::visit_ASTModule(ASTModule *ast) {
 void CodeGenerator::visit_ASTImport(ASTImport *ast) {
     debug("CodeGenerator::visit_ASTImport");
 
-    auto symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+    auto symbols = make_Symbols(nullptr);
     std::for_each(
         begin(ast->imports), end(ast->imports),
         [this, &symbols](auto const &i) {
@@ -126,20 +127,21 @@ void CodeGenerator::visit_ASTImport(ASTImport *ast) {
             std::for_each(
                 symbols->cbegin(), symbols->cend(), [this, i](auto const &s) {
                     auto name = s.first;
+                    auto type = s.second.first;
                     debug("CodeGenerator::visit_ASTImport get {0} : {1}", name,
-                          s.second->get_name());
+                          type->get_name());
 
-                    if (is_referencable(s.second->id)) {
+                    if (is_referencable(type->id)) {
 
-                        module->getOrInsertGlobal(name, s.second->get_llvm());
+                        module->getOrInsertGlobal(name, type->get_llvm());
                         GlobalVariable *gVar = module->getNamedGlobal(name);
 
                         debug("CodeGenerator::visit_ASTImport var {0}", name);
 
                         top_symboltable->put(name, {gVar, Attr::global});
-                    } else if (s.second->id == TypeId::procedure) {
+                    } else if (type->id == TypeId::procedure) {
                         debug("CodeGenerator::visit_ASTImport proc {0}", name);
-                        auto *funcType = (FunctionType *)s.second->get_llvm();
+                        auto *funcType = (FunctionType *)type->get_llvm();
 
                         auto *func = Function::Create(
                             funcType, Function::LinkageTypes::ExternalLinkage,

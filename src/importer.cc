@@ -18,6 +18,7 @@
 #include "defparser.hh"
 #include "inspector.hh"
 #include "lexer.hh"
+#include "type.hh"
 
 namespace ax {
 
@@ -30,11 +31,10 @@ bool ends_with(std::string const &s) {
     return s.substr(s.length() - suffix.length(), s.length()) == suffix;
 }
 
-std::shared_ptr<SymbolTable<TypePtr>>
-Importer::read_module(std::string const &name, TypeTable &types) {
+Symbols Importer::read_module(std::string const &name, TypeTable &types) {
 
-    std::shared_ptr<SymbolTable<TypePtr>> module_symbols = nullptr;
-    std::string                           path = ".";
+    Symbols     module_symbols = nullptr;
+    std::string path = ".";
 
     auto *dir = opendir(path.c_str());
     if (dir == nullptr) {
@@ -56,8 +56,7 @@ Importer::read_module(std::string const &name, TypeTable &types) {
                 std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
 
             if (fname == name) {
-                module_symbols =
-                    std::make_shared<SymbolTable<TypePtr>>(nullptr);
+                module_symbols = make_Symbols(nullptr);
                 std::ifstream is(in_file->d_name);
                 Lexer         lex(is, errors);
                 DefParser     parser(lex, module_symbols, types, errors);
@@ -71,9 +70,8 @@ Importer::read_module(std::string const &name, TypeTable &types) {
     return module_symbols;
 }
 
-void Importer::transfer_symbols(
-    std::shared_ptr<SymbolTable<TypePtr>> const &from,
-    std::shared_ptr<SymbolTable<TypePtr>> &to, std::string const &module_name) {
+void Importer::transfer_symbols(Symbols const &from, Symbols &to,
+                                std::string const &module_name) {
     std::for_each(from->cbegin(), from->cend(),
                   [this, module_name, to](auto const &s) {
                       auto n = ASTQualident::make_coded_id(
@@ -82,21 +80,20 @@ void Importer::transfer_symbols(
                   });
 }
 
-bool Importer::find_module(std::string const &                    name,
-                           std::shared_ptr<SymbolTable<TypePtr>> &symbols,
-                           TypeTable &                            types) {
+bool Importer::find_module(std::string const &name, Symbols &symbols,
+                           TypeTable &types) {
     // Look at cache
     if (auto res = cache.find(name); res != cache.end()) {
         transfer_symbols(res->second, symbols, name);
         return true;
-    } else {
-        auto mod_symbols = read_module(name, types);
-        if (mod_symbols) {
-            transfer_symbols(mod_symbols, symbols, name);
-            return true;
-        }
-        return false;
     }
+
+    auto mod_symbols = read_module(name, types);
+    if (mod_symbols) {
+        transfer_symbols(mod_symbols, symbols, name);
+        return true;
+    }
+    return false;
 }
 
 } // namespace ax

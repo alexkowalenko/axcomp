@@ -18,6 +18,7 @@
 #include "options.hh"
 #include "parser.hh"
 #include "printer.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 using namespace ax;
@@ -74,7 +75,7 @@ int main(int argc, char **argv) {
     TypeTable types;
     types.initialise();
 
-    auto       symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+    auto       symbols = make_Symbols(nullptr);
     ax::Parser parser(lexer, symbols, types, errors);
     parser.setup_builtins();
 
@@ -110,7 +111,7 @@ int main(int argc, char **argv) {
         }
 
         if (options.print_symbols) {
-            symbols->dump(std::cout);
+            dump(symbols, std::cout);
         }
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;

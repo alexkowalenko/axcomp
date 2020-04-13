@@ -12,8 +12,7 @@ namespace ax {
 
 class DefParser : public Parser {
   public:
-    explicit DefParser(Lexer &l, std::shared_ptr<SymbolTable<TypePtr>> s,
-                       TypeTable &t, ErrorManager const &e)
+    DefParser(Lexer &l, Symbols &s, TypeTable &t, ErrorManager const &e)
         : Parser(l, s, t, e){};
 
     std::shared_ptr<ASTModule> parse();

@@ -17,19 +17,16 @@ class Importer {
   public:
     explicit Importer(ErrorManager &e) : errors{e} {};
 
-    bool find_module(std::string const &                    name,
-                     std::shared_ptr<SymbolTable<TypePtr>> &symbols,
-                     TypeTable &                            types);
+    bool find_module(std::string const &name, Symbols &symbols,
+                     TypeTable &types);
 
   private:
-    std::shared_ptr<SymbolTable<TypePtr>> read_module(std::string const &name,
-                                                      TypeTable &        types);
+    Symbols read_module(std::string const &name, TypeTable &types);
 
-    void transfer_symbols(std::shared_ptr<SymbolTable<TypePtr>> const &from,
-                          std::shared_ptr<SymbolTable<TypePtr>> &      to,
+    void transfer_symbols(Symbols const &from, Symbols &to,
                           std::string const &module_name);
 
-    ErrorManager &                                               errors;
-    std::map<std::string, std::shared_ptr<SymbolTable<TypePtr>>> cache;
+    ErrorManager &                 errors;
+    std::map<std::string, Symbols> cache;
 };
 } // namespace ax

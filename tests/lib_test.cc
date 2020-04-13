@@ -17,6 +17,7 @@
 #include "parser.hh"
 #include "printer.hh"
 #include "symboltable.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 #include "parse_test.hh"
@@ -33,7 +34,7 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+        auto   symbols = make_Symbols(nullptr);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -67,7 +68,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+        auto   symbols = make_Symbols(nullptr);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -110,7 +111,7 @@ void do_def_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+        auto   symbols = make_Symbols(nullptr);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -153,7 +154,7 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = std::make_shared<SymbolTable<TypePtr>>(nullptr);
+        auto   symbols = make_Symbols(nullptr);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
