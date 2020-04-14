@@ -47,9 +47,10 @@ void Inspector::visit_ASTImport(ASTImport *ast) {
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
         auto found = importer.find_module(i.first->value, top_symboltable, types);
         if (!found) {
-            auto e = TypeError(llvm::formatv("Module {0} not found", i.first->value),
+            auto e = TypeError(llvm::formatv("MODULE {0} not found", i.first->value),
                                i.first->get_location());
             errors.add(e);
+            throw e;
         }
     });
 }
@@ -633,7 +634,15 @@ void Inspector::visit_ASTQualident(ASTQualident *ast) {
 
         auto new_ast = std::make_shared<ASTIdentifier>();
         new_ast->value = get_Qualident(ast);
+        is_qualid = true;
+        qualid_error = false;
         visit_ASTIdentifier(new_ast.get());
+        if (qualid_error) {
+            auto e = CodeGenException(
+                llvm::formatv("undefined identifier {0} in MODULE {1}", ast->value, ast->qual),
+                ast->get_location());
+            errors.add(e);
+        }
     }
 }
 
@@ -641,8 +650,13 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     debug("Inspector::visit_ASTIdentifier");
     auto res = current_symboltable->find(ast->value);
     if (!res) {
-        throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
-                               ast->get_location());
+        if (!is_qualid) {
+            throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
+                                   ast->get_location());
+        } else {
+            qualid_error = true;
+            return;
+        }
     }
     // debug("find type: {} for {}", res, res->name);
     auto resType = types.resolve(res->first->get_name());
@@ -651,6 +665,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
                                          res->first->get_name(), ast->value),
                            ast->get_location());
         errors.add(e);
+        return;
     }
     last_type = *resType;
     is_const = res->second == Attr::cnst;

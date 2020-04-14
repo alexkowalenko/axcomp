@@ -97,17 +97,12 @@ class ASTQualident : public ASTIdentifier {
 
     std::string qual;
 
-    static std::string make_coded_id(std::string const &q,
-                                     std::string const &i) {
+    static std::string make_coded_id(std::string const &q, std::string const &i) {
         return q + "_" + i;
     }
-    std::string make_coded_id() {
-        return qual.empty() ? value : make_coded_id(qual, value);
-    }
+    std::string make_coded_id() { return qual.empty() ? value : make_coded_id(qual, value); }
 
-    explicit operator std::string() override {
-        return qual.empty() ? value : qual + "." + value;
-    };
+    explicit operator std::string() override { return qual.empty() ? value : qual + "." + value; };
 };
 
 /**
@@ -147,8 +142,7 @@ class ASTArray : public ASTBase {
  *
  */
 
-using VarDec =
-    std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
+using VarDec = std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
 
 class ASTRecord : public ASTBase {
   public:
@@ -197,8 +191,8 @@ class ASTFactor : public ASTBase {
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
     std::variant<std::shared_ptr<ASTDesignator>, std::shared_ptr<ASTInteger>,
-                 std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>,
-                 std::shared_ptr<ASTBool>, std::shared_ptr<ASTFactor>>
+                 std::shared_ptr<ASTExpr>, std::shared_ptr<ASTCall>, std::shared_ptr<ASTBool>,
+                 std::shared_ptr<ASTFactor>>
          factor;
     bool is_not = false;
 };

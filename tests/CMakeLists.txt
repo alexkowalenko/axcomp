@@ -49,7 +49,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
 include_directories(${PROJECT_SOURCE_DIR}/extern/fmt/include)
 
-add_library(axtest STATIC lib_test.cc)
+add_library(axtest STATIC lib_test.cc fake_importer.cc) 
 
 package_add_test(lex.1 lex.1.cc)
 package_add_test(lex.2 lex.2.cc)
@@ -65,4 +65,4 @@ package_add_test(inspect.1 inspect.1.cc)
 package_add_test(inspect.2 inspect.2.cc)
 package_add_test(inspect.3 inspect.3.cc)
 
-package_add_test(definition definition.cc)
+package_add_test(definition.1 definition.cc)

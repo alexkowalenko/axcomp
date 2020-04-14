@@ -12,6 +12,7 @@
 #include "defparser.hh"
 #include "defprinter.hh"
 #include "error.hh"
+#include "fake_importer.hh"
 #include "inspector.hh"
 #include "lexer.hh"
 #include "parser.hh"
@@ -81,6 +82,51 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
             Inspector inpect(symbols, types, errors, importer);
             inpect.check(ast);
             if (errors.has_errors()) {
+                errors.print_errors(std::cerr);
+                EXPECT_EQ(errors.first()->error_msg(), t.error);
+                continue;
+            }
+
+            std::ostringstream outstr;
+            ASTPrinter         prt(outstr);
+            prt.print(ast);
+            result = outstr.str();
+            rtrim(result);
+
+            EXPECT_EQ(result, t.output);
+        } catch (AXException &e) {
+            EXPECT_EQ(e.error_msg(), t.error);
+        } catch (std::exception &e) {
+            std::cerr << "Exception: " << e.what() << std::endl;
+            FAIL();
+        }
+    }
+}
+
+void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
+
+    for (auto const &t : tests) {
+
+        std::istringstream is(t.input);
+        ErrorManager       errors;
+        Lexer              lex(is, errors);
+        TypeTable          types;
+        types.initialise();
+
+        auto   symbols = make_Symbols(nullptr);
+        Parser parser(lex, symbols, types, errors);
+
+        std::string result;
+        try {
+            std::cout << t.input << std::endl;
+            auto ast = parser.parse();
+            parser.setup_builtins();
+
+            FakeImporter importer(errors);
+            Inspector    inpect(symbols, types, errors, importer);
+            inpect.check(ast);
+            if (errors.has_errors()) {
+                errors.print_errors(std::cerr);
                 EXPECT_EQ(errors.first()->error_msg(), t.error);
                 continue;
             }

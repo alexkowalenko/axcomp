@@ -64,6 +64,8 @@ class Inspector : public ASTVisitor {
 
     bool          is_const{false};
     bool          is_lvalue{false};
+    bool          is_qualid{false};
+    bool          qualid_error{false};
     TypePtr       last_type{nullptr};
     ASTProcedure *last_proc{nullptr};
 };

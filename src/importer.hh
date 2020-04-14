@@ -16,8 +16,9 @@ namespace ax {
 class Importer {
   public:
     explicit Importer(ErrorManager &e) : errors{e} {};
+    virtual ~Importer() = default;
 
-    bool find_module(std::string const &name, Symbols &symbols, TypeTable &types);
+    virtual bool find_module(std::string const &name, Symbols &symbols, TypeTable &types);
 
   private:
     Symbols read_module(std::string const &name, TypeTable &types);

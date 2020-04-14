@@ -91,47 +91,105 @@ TEST(Inspector, ReadOnly) {
     do_inspect_tests(tests);
 }
 
-TEST(Inspector, Qualident) {
+TEST(Inspector, Import) {
     std::vector<ParseTests> tests = {
 
         // Errors
 
-        // {R"(MODULE alpha;
-        //     IMPORT System;
-        //     BEGIN
-        //         RETURN System.x;
-        //     END alpha.)",
-        //  "", "4,30: undefined identifier x"},
-
-        // {R"(MODULE alpha;
-        //     IMPORT S := System;
-        //     BEGIN
-        //         RETURN S.x;
-        //     END alpha.)",
-        //  "", "4,25: undefined identifier x"},
+        {R"(MODULE alpha;
+             IMPORT System;
+             BEGIN
+                 RETURN System.x;
+             END alpha.)",
+         "", "2,19: MODULE System not found"},
 
         {R"(MODULE alpha;
-            IMPORT System;
-            BEGIN
-                RETURN Oberon.x;
-            END alpha.)",
-         "", "4,29: undefined identifier Oberon"},
-
-        {R"(MODULE alpha;
-            IMPORT S := System;
-            BEGIN
-                RETURN System.x;
-            END alpha.)",
-         "", "4,29: undefined identifier System"},
-
-        {R"(MODULE alpha;
-            IMPORT System;
-            TYPE tt = System.t;
-            BEGIN
-                RETURN System.x;
-            END alpha.)",
-         "", "3,21: Unknown type: t"},
+             IMPORT S := System;
+             BEGIN
+                 RETURN System.x;
+             END alpha.)",
+         "", "2,24: MODULE System not found"},
 
     };
     do_inspect_tests(tests);
+}
+
+TEST(Inspector, Import2) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                 RETURN 0;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                 RETURN beta.a;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nRETURN beta.a\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.c := 30;
+                RETURN beta.c;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nbeta.c := 30;\nRETURN beta.c\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.d := TRUE;
+                RETURN beta.c;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nbeta.d := TRUE;\nRETURN beta.c\nEND alpha.", ""},
+
+        // Errors
+        {R"(MODULE alpha;
+             IMPORT gamma;
+             BEGIN
+                 RETURN System.x;
+             END alpha.)",
+         "", "2,19: MODULE gamma not found"},
+
+        // No object aa in beta
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                 RETURN beta.aa;
+             END alpha.)",
+         "", "4,28: undefined identifier aa in MODULE beta"},
+
+        // CONST
+        // {R"(MODULE alpha;
+        //      IMPORT beta;
+        //      BEGIN
+        //         beta.a := 10;
+        //         RETURN beta.a;
+        //      END alpha.)",
+        //  "", "error"},
+
+        // // Read only
+        // {R"(MODULE alpha;
+        //      IMPORT beta;
+        //      BEGIN
+        //         beta.b := 0;
+        //          RETURN beta.a;
+        //      END alpha.)",
+        //  "", ""},
+
+        // Wrong type
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.d := 0;
+                RETURN beta.c;
+             END alpha.)",
+         "", "4,25: Can't assign expression of type INTEGER to beta.d"},
+
+    };
+    do_inspect_fimport_tests(tests);
 }
