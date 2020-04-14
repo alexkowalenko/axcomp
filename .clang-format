@@ -10,3 +10,5 @@ AllowShortFunctionsOnASingleLine: Inline
 AlignTrailingComments: true
 AlignConsecutiveMacros: true
 AlignConsecutiveDeclarations: true
+
+ColumnLimit: 99

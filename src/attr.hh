@@ -27,10 +27,12 @@ class Attrs : std::unordered_set<Attr> {
     Attrs() = default;
     ~Attrs() = default;
 
-    void set(Attr const &t) { insert(t); };
-    bool contains(Attr const &t) const { return (this->find(t) != end()); }
+    void               set(Attr const &t) { insert(t); };
+    [[nodiscard]] bool contains(Attr const &t) const {
+        return (this->find(t) != end());
+    }
 
-    operator std::string() const {
+    explicit operator std::string() const {
         if (contains(Attr::global)) {
             return attr_star;
         }
