@@ -20,8 +20,7 @@ namespace ax {
 class Inspector : public ASTVisitor {
 
   public:
-    explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e,
-                       Importer &i);
+    explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i);
 
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTImport(ASTImport *ast) override;
@@ -51,11 +50,11 @@ class Inspector : public ASTVisitor {
     void visit_ASTInteger(ASTInteger *ast) override;
     void visit_ASTBool(ASTBool *ast) override;
 
-    void check(std::shared_ptr<ASTModule> const &ast) {
-        visit_ASTModule(ast.get());
-    };
+    void check(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
 
   private:
+    std::string get_Qualident(ASTQualident *ast);
+
     Symbols top_symboltable;
     Symbols current_symboltable;
 

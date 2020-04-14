@@ -34,8 +34,7 @@ enum class TypeId {
 };
 
 inline bool is_referencable(TypeId &id) {
-    return !(id == TypeId::procedure || id == TypeId::alias ||
-             id == TypeId::module);
+    return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
 }
 
 class Type {
@@ -66,8 +65,7 @@ class Type {
 
 class SimpleType : public Type {
   public:
-    explicit SimpleType(std::string n, TypeId id)
-        : Type(id), name(std::move(n)){};
+    explicit SimpleType(std::string n, TypeId id) : Type(id), name(std::move(n)){};
     ~SimpleType() override = default;
 
     explicit operator std::string() override;
@@ -97,8 +95,7 @@ class ProcedureType : public Type {
   public:
     explicit ProcedureType() : Type(TypeId::procedure){};
     ProcedureType(TypePtr returns, std::vector<std::pair<TypePtr, Attr>> params)
-        : Type(TypeId::procedure), ret(std::move(returns)),
-          params(std::move(params)){};
+        : Type(TypeId::procedure), ret(std::move(returns)), params(std::move(params)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
@@ -112,8 +109,7 @@ class ProcedureType : public Type {
 
 class ArrayType : public Type {
   public:
-    ArrayType(TypePtr b, long s)
-        : Type(TypeId::array), base_type(std::move(b)), size(s){};
+    ArrayType(TypePtr b, long s) : Type(TypeId::array), base_type(std::move(b)), size(s){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
@@ -162,11 +158,12 @@ class TypeAlias : public Type {
 
 class ModuleType : public Type {
   public:
-    explicit ModuleType(std::string n)
-        : Type(TypeId::module), name{std::move(n)} {};
+    explicit ModuleType(std::string n) : Type(TypeId::module), name{std::move(n)} {};
     ~ModuleType() override = default;
 
     explicit operator std::string() override { return "MODULE: " + name; };
+
+    std::string &module_name() { return name; };
 
   private:
     std::string name;

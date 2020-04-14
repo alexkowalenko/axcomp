@@ -52,8 +52,7 @@ Symbols Importer::read_module(std::string const &name, TypeTable &types) {
         if (ends_with(in_file->d_name)) {
             std::string fname(in_file->d_name);
 
-            fname =
-                std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
+            fname = std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
 
             if (fname == name) {
                 module_symbols = make_Symbols(nullptr);
@@ -70,19 +69,16 @@ Symbols Importer::read_module(std::string const &name, TypeTable &types) {
     return module_symbols;
 }
 
-void Importer::transfer_symbols(Symbols const &from, Symbols &to,
-                                std::string const &module_name) {
-    std::for_each(from->cbegin(), from->cend(),
-                  [this, module_name, to](auto const &s) {
-                      auto n = ASTQualident::make_coded_id(
-                          module_name, s.first); // name + "_" + s.first;
-                      to->put(n, s.second);
-                  });
+void Importer::transfer_symbols(Symbols const &from, Symbols &to, std::string const &module_name) {
+    std::for_each(from->cbegin(), from->cend(), [this, module_name, to](auto const &s) {
+        auto n = ASTQualident::make_coded_id(module_name, s.first);
+        to->put(n, s.second);
+    });
 }
 
-bool Importer::find_module(std::string const &name, Symbols &symbols,
-                           TypeTable &types) {
+bool Importer::find_module(std::string const &name, Symbols &symbols, TypeTable &types) {
     // Look at cache
+
     if (auto res = cache.find(name); res != cache.end()) {
         transfer_symbols(res->second, symbols, name);
         return true;

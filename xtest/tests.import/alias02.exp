@@ -1,0 +1,21 @@
+; ModuleID = 'alias02'
+source_filename = "alias02"
+
+@beta_a = external global i64
+@beta_b = external global i64
+@beta_d = external global i1
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+declare void @beta_c(i64)
+
+define i64 @output() {
+entry:
+  store i64 30, i64* @beta_b
+  %beta_b = load i64, i64* @beta_b
+  ret i64 %beta_b
+}

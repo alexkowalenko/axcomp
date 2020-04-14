@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <llvm/Support/FormatVariadic.h>
+#include <memory>
 
 #include "ast.hh"
 #include "error.hh"
@@ -23,10 +24,8 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-Inspector::Inspector(Symbols const &s, TypeTable &t, ErrorManager &e,
-                     Importer &i)
-    : top_symboltable(s), current_symboltable{s}, types(t), errors(e),
-      importer(i){};
+Inspector::Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i)
+    : top_symboltable(s), current_symboltable{s}, types(t), errors(e), importer(i){};
 
 void Inspector::visit_ASTModule(ASTModule *ast) {
     debug("Inspector::visit_ASTModule");
@@ -45,17 +44,14 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
 
 void Inspector::visit_ASTImport(ASTImport *ast) {
     debug("Inspector::visit_ASTImport");
-    std::for_each(
-        begin(ast->imports), end(ast->imports), [this](auto const &i) {
-            auto found =
-                importer.find_module(i.first->value, top_symboltable, types);
-            if (!found) {
-                auto e = TypeError(
-                    llvm::formatv("Module {0} not found", i.first->value),
-                    i.first->get_location());
-                errors.add(e);
-            }
-        });
+    std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
+        auto found = importer.find_module(i.first->value, top_symboltable, types);
+        if (!found) {
+            auto e = TypeError(llvm::formatv("Module {0} not found", i.first->value),
+                               i.first->get_location());
+            errors.add(e);
+        }
+    });
 }
 
 void Inspector::visit_ASTConst(ASTConst *ast) {
@@ -63,16 +59,14 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
     std::for_each(begin(ast->consts), end(ast->consts), [this, ast](auto &c) {
         c.value->accept(this);
         if (!is_const) {
-            auto e = TypeError(
-                llvm::formatv("CONST {0} is not a constant expression",
-                              c.ident->value),
-                ast->get_location());
+            auto e =
+                TypeError(llvm::formatv("CONST {0} is not a constant expression", c.ident->value),
+                          ast->get_location());
             errors.add(e);
         }
         if (c.ident->is(Attr::read_only)) {
-            auto e = TypeError(
-                llvm::formatv("CONST {0} is always read only", c.ident->value),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("CONST {0} is always read only", c.ident->value),
+                               ast->get_location());
             errors.add(e);
         }
         c.type = std::make_shared<ASTType>();
@@ -85,19 +79,17 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
 
 void Inspector::visit_ASTTypeDec(ASTTypeDec *ast) {
     debug("Inspector::visit_ASTTypeDec");
-    std::for_each(
-        begin(ast->types), end(ast->types), [this, ast](auto const &t) {
-            if (t.first->is(Attr::read_only)) {
-                auto e = TypeError(llvm::formatv("TYPE {0} is always read only",
-                                                 t.first->value),
-                                   ast->get_location());
-                errors.add(e);
-            }
-            t.second->accept(this);
-            auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
-            debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
-            types.put(t.first->value, type);
-        });
+    std::for_each(begin(ast->types), end(ast->types), [this, ast](auto const &t) {
+        if (t.first->is(Attr::read_only)) {
+            auto e = TypeError(llvm::formatv("TYPE {0} is always read only", t.first->value),
+                               ast->get_location());
+            errors.add(e);
+        }
+        t.second->accept(this);
+        auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
+        debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
+        types.put(t.first->value, type);
+    });
 }
 
 void Inspector::visit_ASTVar(ASTVar *ast) {
@@ -123,8 +115,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
 
     // Check global modifiers
     if (ast->name->is(Attr::read_only)) {
-        auto e = TypeError(llvm::formatv("PROCEDURE {0} is always read only",
-                                         ast->name->value),
+        auto e = TypeError(llvm::formatv("PROCEDURE {0} is always read only", ast->name->value),
                            ast->get_location());
         errors.add(e);
     }
@@ -132,15 +123,14 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     // Check parameter types
     debug("Inspector::visit_ASTProcedure check parameter types");
     ProcedureType::ParamsList argTypes;
-    std::for_each(ast->params.begin(), ast->params.end(),
-                  [this, &argTypes](auto const &p) {
-                      p.second->accept(this);
-                      auto attr = Attr::null;
-                      if (p.first->is(Attr::var)) {
-                          attr = Attr::var;
-                      }
-                      argTypes.push_back({last_type, attr});
-                  });
+    std::for_each(ast->params.begin(), ast->params.end(), [this, &argTypes](auto const &p) {
+        p.second->accept(this);
+        auto attr = Attr::null;
+        if (p.first->is(Attr::var)) {
+            attr = Attr::var;
+        }
+        argTypes.push_back({last_type, attr});
+    });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
     current_symboltable->put(ast->name->value, {proc_type, Attr::null});
@@ -152,26 +142,21 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable = make_Symbols(former_symboltable);
-    std::for_each(
-        ast->params.begin(), ast->params.end(), [this](auto const &p) {
-            std::visit(
-                overloaded{
-                    [this](auto arg) {
-                        arg->accept(this);
-                    }, // lambda arg can't be reference here
-                    [this, p](std::shared_ptr<ASTQualident> const &tname) {
-                        debug("Inspector::visit_ASTProcedure param type ident");
-                        auto type = types.find(tname->value);
-                        current_symboltable->put(p.first->value,
-                                                 {*type, p.first->is(Attr::var)
-                                                             ? Attr::var
-                                                             : Attr::null});
-                    }},
-                p.second->type);
-            current_symboltable->put(
-                p.first->value,
-                {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
-        });
+    std::for_each(ast->params.begin(), ast->params.end(), [this](auto const &p) {
+        std::visit(overloaded{[this](auto arg) {
+                                  arg->accept(this);
+                              }, // lambda arg can't be reference here
+                              [this, p](std::shared_ptr<ASTQualident> const &tname) {
+                                  debug("Inspector::visit_ASTProcedure param type ident");
+                                  auto type = types.find(tname->value);
+                                  current_symboltable->put(
+                                      p.first->value,
+                                      {*type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+                              }},
+                   p.second->type);
+        current_symboltable->put(p.first->value,
+                                 {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+    });
     if (ast->decs) {
         ast->decs->accept(this);
     }
@@ -187,9 +172,9 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
 
     if (auto res = current_symboltable->find(ast->ident->ident->value);
         res->second == Attr::cnst) {
-        auto e = TypeError(llvm::formatv("Can't assign to CONST variable {0}",
-                                         std::string(*ast->ident)),
-                           ast->get_location());
+        auto e = TypeError(
+            llvm::formatv("Can't assign to CONST variable {0}", std::string(*ast->ident)),
+            ast->get_location());
         errors.add(e);
     }
 
@@ -197,18 +182,16 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
     if (!alias) {
-        auto e = TypeError(
-            llvm::formatv("Can't assign expression of type {0} to {1}",
-                          std::string(*expr_type), std::string(*ast->ident)),
-            ast->get_location());
+        auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
+                                         std::string(*expr_type), std::string(*ast->ident)),
+                           ast->get_location());
         errors.add(e);
     }
     last_type = *alias;
     if (!last_type->equiv(expr_type)) {
-        auto e = TypeError(
-            llvm::formatv("Can't assign expression of type {0} to {1}",
-                          std::string(*expr_type), std::string(*ast->ident)),
-            ast->get_location());
+        auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
+                                         std::string(*expr_type), std::string(*ast->ident)),
+                           ast->get_location());
         errors.add(e);
     }
 }
@@ -231,8 +214,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                                arg->accept(this);
                                retType = last_type;
                            },
-                           [this, &retType](
-                               std::shared_ptr<ASTQualident> const &type) {
+                           [this, &retType](std::shared_ptr<ASTQualident> const &type) {
                                if (auto t = types.find(type->value); t) {
                                    retType = *t;
                                };
@@ -242,11 +224,9 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
         }
 
         if (!expr_type->equiv(retType)) {
-            auto e = TypeError(
-                llvm::formatv(
-                    "RETURN does not match return type for function {0}",
-                    last_proc->name->value),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("RETURN does not match return type for function {0}",
+                                             last_proc->name->value),
+                               ast->get_location());
             errors.add(e);
         }
     } // namespace ax
@@ -254,7 +234,9 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
 
 void Inspector::visit_ASTCall(ASTCall *ast) {
     debug("Inspector::visit_ASTCall");
-    auto name = ast->name->ident->make_coded_id();
+    // auto name = ast->name->ident->make_coded_id();
+    auto name = get_Qualident(ast->name->ident.get());
+    debug("Inspector::visit_ASTCall - {0} {1}", name, name);
     auto res = current_symboltable->find(name);
     if (!res) {
         throw CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name),
@@ -262,16 +244,14 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(res->first);
     if (!procType) {
-        throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name),
-                        ast->get_location());
+        throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
     }
 
     if (ast->args.size() != procType->params.size()) {
-        throw TypeError(
-            llvm::formatv("calling PROCEDURE {0}, incorrect number of "
-                          "arguments: {1} instead of {2}",
-                          name, ast->args.size(), procType->params.size()),
-            ast->get_location());
+        throw TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
+                                      "arguments: {1} instead of {2}",
+                                      name, ast->args.size(), procType->params.size()),
+                        ast->get_location());
     }
 
     // Check argument types
@@ -294,12 +274,11 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 
         if ((*proc_iter).second == Attr::var && !is_lvalue) {
             debug("Inspector::visit_ASTCall is_lvalue");
-            auto e = TypeError(
-                llvm::formatv("procedure call {0} does not have a variable "
-                              "reference for VAR parameter {2}",
-                              name, last_type->get_name(),
-                              (*proc_iter).first->get_name()),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
+                                             "reference for VAR parameter {2}",
+                                             name, last_type->get_name(),
+                                             (*proc_iter).first->get_name()),
+                               ast->get_location());
             errors.add(e);
         }
     }
@@ -310,51 +289,42 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 void Inspector::visit_ASTIf(ASTIf *ast) {
     ast->if_clause.expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        auto e = TypeError("IF expression must be type BOOLEAN",
-                           ast->get_location());
+        auto e = TypeError("IF expression must be type BOOLEAN", ast->get_location());
         errors.add(e);
     }
 
     std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
                   [this](auto const &x) { x->accept(this); });
 
-    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(),
-                  [this, ast](auto const &x) {
-                      x.expr->accept(this);
-                      if (last_type != TypeTable::BoolType) {
-                          auto e =
-                              TypeError("ELSIF expression must be type BOOLEAN",
-                                        ast->get_location());
-                          errors.add(e);
-                      }
-                      std::for_each(x.stats.begin(), x.stats.end(),
-                                    [this](auto const &s) { s->accept(this); });
-                  });
+    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(), [this, ast](auto const &x) {
+        x.expr->accept(this);
+        if (last_type != TypeTable::BoolType) {
+            auto e = TypeError("ELSIF expression must be type BOOLEAN", ast->get_location());
+            errors.add(e);
+        }
+        std::for_each(x.stats.begin(), x.stats.end(), [this](auto const &s) { s->accept(this); });
+    });
     if (ast->else_clause) {
         auto elses = *ast->else_clause;
-        std::for_each(begin(elses), end(elses),
-                      [this](auto const &s) { s->accept(this); });
+        std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
     }
 }
 
 void Inspector::visit_ASTFor(ASTFor *ast) {
     ast->start->accept(this);
     if (!last_type->is_numeric()) {
-        auto e = TypeError("FOR start expression must be numeric type",
-                           ast->get_location());
+        auto e = TypeError("FOR start expression must be numeric type", ast->get_location());
         errors.add(e);
     }
     ast->end->accept(this);
     if (!last_type->is_numeric()) {
-        auto e = TypeError("FOR end expression must be numeric type",
-                           ast->get_location());
+        auto e = TypeError("FOR end expression must be numeric type", ast->get_location());
         errors.add(e);
     }
     if (ast->by) {
         (*ast->by)->accept(this);
         if (!last_type->is_numeric()) {
-            auto e = TypeError("FOR BY expression must be numeric type",
-                               ast->get_location());
+            auto e = TypeError("FOR BY expression must be numeric type", ast->get_location());
             errors.add(e);
         }
     }
@@ -362,45 +332,37 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
     // new symbol table
     auto former_symboltable = current_symboltable;
     current_symboltable = make_Symbols(former_symboltable);
-    current_symboltable->put(ast->ident->value,
-                             {TypeTable::IntType, Attr::null});
+    current_symboltable->put(ast->ident->value, {TypeTable::IntType, Attr::null});
 
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &s) { s->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
     current_symboltable = former_symboltable;
 }
 
 void Inspector::visit_ASTWhile(ASTWhile *ast) {
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        auto e = TypeError("WHILE expression must be type BOOLEAN",
-                           ast->get_location());
+        auto e = TypeError("WHILE expression must be type BOOLEAN", ast->get_location());
         errors.add(e);
     }
 
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
-        auto e = TypeError("REPEAT expression must be type BOOLEAN",
-                           ast->get_location());
+        auto e = TypeError("REPEAT expression must be type BOOLEAN", ast->get_location());
         errors.add(e);
     }
 }
 
 void Inspector::visit_ASTLoop(ASTLoop *ast) {
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void Inspector::visit_ASTBlock(ASTBlock *ast) {
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void Inspector::visit_ASTExpr(ASTExpr *ast) {
@@ -412,10 +374,9 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
         (*ast->relation_expr)->accept(this);
         // Types have to be the same BOOLEANs or INTEGERs
         if (!last_type->equiv(t1)) {
-            auto e = TypeError(
-                llvm::formatv("types in expression don't match {0} and {1}",
-                              std::string(*t1), std::string(*last_type)),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
+                                             std::string(*t1), std::string(*last_type)),
+                               ast->get_location());
             errors.add(e);
         }
         // Comparison operators return BOOLEAN
@@ -433,23 +394,20 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
         is_lvalue = false;
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            auto e = TypeError(
-                llvm::formatv("types in expression don't match {0} and {1}",
-                              std::string(*t1), std::string(*last_type)),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
+                                             std::string(*t1), std::string(*last_type)),
+                               ast->get_location());
             errors.add(e);
         }
         if (t.first == TokenType::or_k) {
             if (last_type != TypeTable::BoolType) {
-                auto e = TypeError("types in OR expression must be BOOLEAN",
-                                   ast->get_location());
+                auto e = TypeError("types in OR expression must be BOOLEAN", ast->get_location());
                 errors.add(e);
             }
         } else {
             if (last_type != TypeTable::IntType) {
                 auto e = TypeError(
-                    llvm::formatv("types in {0} expression must be numeric",
-                                  string(t.first)),
+                    llvm::formatv("types in {0} expression must be numeric", string(t.first)),
                     ast->get_location());
                 errors.add(e);
             }
@@ -468,23 +426,20 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
         is_lvalue = false;
         t.second->accept(this);
         if (!last_type->equiv(t1)) {
-            auto e = TypeError(
-                llvm::formatv("types in expression don't match {0} and {1}",
-                              std::string(*t1), std::string(*last_type)),
-                ast->get_location());
+            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
+                                             std::string(*t1), std::string(*last_type)),
+                               ast->get_location());
             errors.add(e);
         }
         if (t.first == TokenType::ampersand) {
             if (last_type != TypeTable::BoolType) {
-                auto e = TypeError("types in & expression must be BOOLEAN",
-                                   ast->get_location());
+                auto e = TypeError("types in & expression must be BOOLEAN", ast->get_location());
                 errors.add(e);
             }
         } else {
             if (last_type != TypeTable::IntType) {
                 auto e = TypeError(
-                    llvm::formatv("types in {0} expression must be numeric",
-                                  string(t.first)),
+                    llvm::formatv("types in {0} expression must be numeric", string(t.first)),
                     ast->get_location());
                 errors.add(e);
             }
@@ -508,9 +463,8 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                        if (ast->is_not) {
                            arg->accept(this);
                            if (last_type != TypeTable::BoolType) {
-                               auto e = TypeError(
-                                   "type in ~ expression must be BOOLEAN",
-                                   ast->get_location());
+                               auto e = TypeError("type in ~ expression must be BOOLEAN",
+                                                  ast->get_location());
                                errors.add(e);
                            }
                            is_lvalue = false;
@@ -530,8 +484,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     auto record_type = std::dynamic_pointer_cast<RecordType>(last_type);
     if (!(array_type || record_type) && !ast->selectors.empty()) {
         auto e =
-            TypeError(llvm::formatv("variable {0} is not an array or record",
-                                    ast->ident->value),
+            TypeError(llvm::formatv("variable {0} is not an array or record", ast->ident->value),
                       ast->get_location());
         errors.add(e);
     }
@@ -559,8 +512,8 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
             s->accept(this);
             if (!last_type->is_numeric()) {
-                auto e = TypeError("expression in array index must be numeric",
-                                   ast->get_location());
+                auto e =
+                    TypeError("expression in array index must be numeric", ast->get_location());
                 errors.add(e);
             }
             last_type = array_type->base_type;
@@ -577,9 +530,8 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
             auto field = record_type->get_type(s.first->value);
             if (!field) {
-                auto e = TypeError(
-                    llvm::formatv("no field <{0}> in RECORD", s.first->value),
-                    ast->get_location());
+                auto e = TypeError(llvm::formatv("no field <{0}> in RECORD", s.first->value),
+                                   ast->get_location());
                 errors.add(e);
                 return;
             }
@@ -588,8 +540,8 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
             // generator.
 
             s.second = record_type->get_index(s.first->value);
-            debug("Inspector::visit_ASTDesignator record index {0} for {1}",
-                  s.second, s.first->value);
+            debug("Inspector::visit_ASTDesignator record index {0} for {1}", s.second,
+                  s.first->value);
 
             last_type = *field;
         }
@@ -600,28 +552,26 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
 void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
-    std::visit(
-        overloaded{[this, ast](std::shared_ptr<ASTQualident> const &type) {
-                       debug("Inspector::visit_ASTType {0}", type->value);
-                       auto result = types.find(type->value);
-                       if (!result) {
-                           throw TypeError(
-                               llvm::formatv("Unknown type: {0}", type->value),
-                               ast->get_location());
-                       }
-                       debug("Inspector::visit_ASTType 2 {0}", type->value);
-                       ast->type_info = *result;
-                       last_type = *result;
-                   },
-                   [this, ast](std::shared_ptr<ASTArray> const &arg) {
-                       arg->accept(this);
-                       ast->type_info = last_type;
-                   },
-                   [this, ast](std::shared_ptr<ASTRecord> const &arg) {
-                       arg->accept(this);
-                       ast->type_info = last_type;
-                   }},
-        ast->type);
+    std::visit(overloaded{[this, ast](std::shared_ptr<ASTQualident> const &type) {
+                              debug("Inspector::visit_ASTType {0}", type->value);
+                              auto result = types.find(type->value);
+                              if (!result) {
+                                  throw TypeError(llvm::formatv("Unknown type: {0}", type->value),
+                                                  ast->get_location());
+                              }
+                              debug("Inspector::visit_ASTType 2 {0}", type->value);
+                              ast->type_info = *result;
+                              last_type = *result;
+                          },
+                          [this, ast](std::shared_ptr<ASTArray> const &arg) {
+                              arg->accept(this);
+                              ast->type_info = last_type;
+                          },
+                          [this, ast](std::shared_ptr<ASTRecord> const &arg) {
+                              arg->accept(this);
+                              ast->type_info = last_type;
+                          }},
+               ast->type);
 }
 
 void Inspector::visit_ASTArray(ASTArray *ast) {
@@ -631,8 +581,7 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
         errors.add(e);
     }
     if (!is_const) {
-        auto e = TypeError("ARRAY expecting constant expression",
-                           ast->get_location());
+        auto e = TypeError("ARRAY expecting constant expression", ast->get_location());
         errors.add(e);
     }
     ast->type->accept(this);
@@ -643,33 +592,47 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
 void Inspector::visit_ASTRecord(ASTRecord *ast) {
     debug("Inspector::visit_ASTRecord");
     auto rec_type = std::make_shared<ax::RecordType>();
-    std::for_each(begin(ast->fields), end(ast->fields),
-                  [this, rec_type, ast](auto const &v) {
-                      // check types
-                      v.second->accept(this);
+    std::for_each(begin(ast->fields), end(ast->fields), [this, rec_type, ast](auto const &v) {
+        // check types
+        v.second->accept(this);
 
-                      // check if not already defined
-                      if (rec_type->has_field(v.first->value)) {
-                          auto e = TypeError(
-                              llvm::formatv("RECORD already has field {0}",
-                                            v.first->value),
-                              v.first->get_location());
-                          errors.add(e);
-                      }
-                      rec_type->insert(v.first->value, last_type);
-                  });
+        // check if not already defined
+        if (rec_type->has_field(v.first->value)) {
+            auto e = TypeError(llvm::formatv("RECORD already has field {0}", v.first->value),
+                               v.first->get_location());
+            errors.add(e);
+        }
+        rec_type->insert(v.first->value, last_type);
+    });
     last_type = rec_type;
     types.put(last_type->get_name(), last_type);
 }
 
-void Inspector::visit_ASTQualident(ASTQualident *ast) {
+std::string Inspector::get_Qualident(ASTQualident *ast) {
+    std::string result;
+    auto        res = current_symboltable->find(ast->qual);
 
     if (ast->qual.empty()) {
-        // For now behave like a identifier
+        return ast->value;
+    }
+    if (res && res->first->id == TypeId::module) {
+        auto module_name = std::dynamic_pointer_cast<ModuleType>(res->first)->module_name();
+        result = ASTQualident::make_coded_id(module_name, ast->value);
+        // Rewrite AST with real module name
+        ast->qual = module_name;
+    }
+    return result;
+}
+
+void Inspector::visit_ASTQualident(ASTQualident *ast) {
+    debug("Inspector::visit_ASTQualident");
+    if (ast->qual.empty()) {
         visit_ASTIdentifier(ast);
     } else {
+        debug("Inspector::visit_ASTQualident {0}", ast->qual);
+
         auto new_ast = std::make_shared<ASTIdentifier>();
-        new_ast->value = ast->make_coded_id();
+        new_ast->value = get_Qualident(ast);
         visit_ASTIdentifier(new_ast.get());
     }
 }
@@ -678,9 +641,8 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     debug("Inspector::visit_ASTIdentifier");
     auto res = current_symboltable->find(ast->value);
     if (!res) {
-        throw CodeGenException(
-            llvm::formatv("undefined identifier {0}", ast->value),
-            ast->get_location());
+        throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
+                               ast->get_location());
     }
     // debug("find type: {} for {}", res, res->name);
     auto resType = types.resolve(res->first->get_name());
