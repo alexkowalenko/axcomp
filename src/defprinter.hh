@@ -18,7 +18,7 @@ class DefPrinter : ASTPrinter {
   public:
     explicit DefPrinter(std::ostream &ostream) : ASTPrinter(ostream){};
 
-    void print(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
+    void print(ASTModulePtr const &ast) { visit_ASTModule(ast.get()); };
 
   private:
     void visit_ASTModule(ASTModule *ast) override;

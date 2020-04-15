@@ -146,7 +146,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
         std::visit(overloaded{[this](auto arg) {
                                   arg->accept(this);
                               }, // lambda arg can't be reference here
-                              [this, p](std::shared_ptr<ASTQualident> const &tname) {
+                              [this, p](ASTQualidentPtr const &tname) {
                                   debug("Inspector::visit_ASTProcedure param type ident");
                                   auto type = types.find(tname->id->value);
                                   current_symboltable->put(
@@ -222,7 +222,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                                arg->accept(this);
                                retType = last_type;
                            },
-                           [this, &retType](std::shared_ptr<ASTQualident> const &type) {
+                           [this, &retType](ASTQualidentPtr const &type) {
                                if (auto t = types.find(type->id->value); t) {
                                    retType = *t;
                                };
@@ -468,12 +468,12 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
 void Inspector::visit_ASTFactor(ASTFactor *ast) {
     std::visit(overloaded{
                    [this](auto factor) { factor->accept(this); },
-                   [this](std::shared_ptr<ASTCall> const &factor) {
+                   [this](ASTCallPtr  const &factor) {
                        // need to pass on return type */
                        factor->accept(this);
                        is_lvalue = false;
                    },
-                   [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                   [this, ast](ASTFactorPtr const &arg) {
                        if (ast->is_not) {
                            arg->accept(this);
                            if (last_type != TypeTable::BoolType) {
@@ -513,11 +513,11 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop
-        if (std::holds_alternative<std::shared_ptr<ASTExpr>>(ss)) {
+        if (std::holds_alternative<ASTExprPtr>(ss)) {
 
             // do ARRAY type
             debug("Inspector::visit_ASTDesignator array index");
-            auto s = std::get<std::shared_ptr<ASTExpr>>(ss);
+            auto s = std::get<ASTExprPtr>(ss);
             if (!array_type) {
                 auto e = TypeError("value not ARRAY", s->get_location());
                 errors.add(e);
@@ -566,7 +566,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 
 void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
-    std::visit(overloaded{[this, ast](std::shared_ptr<ASTQualident> const &type) {
+    std::visit(overloaded{[this, ast](ASTQualidentPtr const &type) {
                               debug("Inspector::visit_ASTType {0}", type->id->value);
                               auto result = types.find(type->id->value);
                               if (!result) {
@@ -578,11 +578,11 @@ void Inspector::visit_ASTType(ASTType *ast) {
                               ast->type_info = *result;
                               last_type = *result;
                           },
-                          [this, ast](std::shared_ptr<ASTArray> const &arg) {
+                          [this, ast](ASTArrayPtr const &arg) {
                               arg->accept(this);
                               ast->type_info = last_type;
                           },
-                          [this, ast](std::shared_ptr<ASTRecord> const &arg) {
+                          [this, ast](ASTRecordPtr const &arg) {
                               arg->accept(this);
                               ast->type_info = last_type;
                           }},

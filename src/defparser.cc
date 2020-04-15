@@ -18,9 +18,9 @@ namespace ax {
 /**
  * @brief module -> "DEFINITION" IDENT ";"  declarations "END" IDENT "."
  *
- * @return std::shared_ptr<ASTModule>
+ * @return ASTModulePtr
  */
-std::shared_ptr<ASTModule> DefParser::parse_module() {
+ASTModulePtr DefParser::parse_module() {
     auto module = makeAST<ASTModule>(lexer);
 
     // MODULE ident BEGIN (expr)+ END ident.
@@ -42,9 +42,8 @@ std::shared_ptr<ASTModule> DefParser::parse_module() {
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
         throw ParseException(
-            llvm::formatv(
-                "END identifier name: {0} doesn't match module name: {1}",
-                tok.val, module->name),
+            llvm::formatv("END identifier name: {0} doesn't match module name: {1}", tok.val,
+                          module->name),
             lexer.get_location());
     }
     get_token(TokenType::period);
@@ -54,9 +53,9 @@ std::shared_ptr<ASTModule> DefParser::parse_module() {
 /**
  * @brief "PROCEDURE" IdentDef [formalParameters] [ ":" type ] ";"
  *
- * @return std::shared_ptr<ASTProcedure>
+ * @return ASTProcedurePtr
  */
-std::shared_ptr<ASTProcedure> DefParser::parse_procedure() {
+ASTProcedurePtr DefParser::parse_procedure() {
     auto proc = makeAST<ASTProcedure>(lexer);
 
     lexer.get_token(); // PROCEDURE
@@ -80,7 +79,7 @@ std::shared_ptr<ASTProcedure> DefParser::parse_procedure() {
     return proc;
 }
 
-std::shared_ptr<ASTModule> DefParser::parse() {
+ASTModulePtr DefParser::parse() {
     return parse_module();
 }
 

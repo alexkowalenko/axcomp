@@ -34,7 +34,7 @@ std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 // module identifier markers
 inline const std::set<TokenType> module_markers{TokenType::asterisk, TokenType::dash};
 
-void Parser::set_attrs(std::shared_ptr<ASTIdentifier> const &ident) {
+void Parser::set_attrs(ASTIdentifierPtr const &ident) {
     auto tok = lexer.peek_token();
     if (module_markers.find(tok.type) != module_markers.end()) {
         lexer.get_token();
@@ -67,9 +67,9 @@ inline const std::set<TokenType> module_ends{TokenType::end};
  * @brief module -> "MODULE" IDENT ";"  declarations "BEGIN" statement_seq "END"
  * IDENT "."
  *
- * @return std::shared_ptr<ASTModule>
+ * @return ASTModulePtr
  */
-std::shared_ptr<ASTModule> Parser::parse_module() {
+ASTModulePtr Parser::parse_module() {
     auto module = makeAST<ASTModule>(lexer);
 
     // MODULE ident BEGIN (expr)+ END ident.
@@ -117,9 +117,9 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
  *
  * Import = = [ident ":="] ident.
  *
- * @return std::shared_ptr<ASTImport>
+ * @return ASTImportPtr
  */
-std::shared_ptr<ASTImport> Parser::parse_import() {
+ASTImportPtr Parser::parse_import() {
     debug("Parser::parse_import");
     auto ast = makeAST<ASTImport>(lexer);
 
@@ -156,9 +156,9 @@ std::shared_ptr<ASTImport> Parser::parse_import() {
                 ["VAR" (IDENT ":" type ";")* ]
                 ( procedureDeclaration ";")*
  *
- * @return std::shared_ptr<ASTDeclaration>
+ * @return ASTDeclarationPtr
  */
-std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
+ASTDeclarationPtr Parser::parse_declaration() {
     debug("Parser::parse_declaration");
     auto decs = makeAST<ASTDeclaration>(lexer);
 
@@ -209,9 +209,9 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
 /**
  * @brief "CONST" (IdentDef "=" INTEGER ";")*
  *
- * @return std::shared_ptr<ASTConst>
+ * @return ASTConstPtr
  */
-std::shared_ptr<ASTConst> Parser::parse_const() {
+ASTConstPtr Parser::parse_const() {
     debug("Parser::parse_const");
     auto cnst = makeAST<ASTConst>(lexer);
 
@@ -238,7 +238,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
  *
  * @param list
  */
-void Parser::parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list) {
+void Parser::parse_identList(std::vector<ASTIdentifierPtr> &list) {
 
     auto id = parse_identifier();
     set_attrs(id);
@@ -256,9 +256,9 @@ void Parser::parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list) 
 /**
  * @brief TypeDeclaration = IdentDef "=" type.
  *
- * @return std::shared_ptr<ASTTypeDec>
+ * @return ASTTypeDecPtr
  */
-std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
+ASTTypeDecPtr Parser::parse_typedec() {
     debug("Parser::parse_typedec");
     auto type = makeAST<ASTTypeDec>(lexer);
 
@@ -281,16 +281,16 @@ std::shared_ptr<ASTTypeDec> Parser::parse_typedec() {
 /**
  * @brief  "VAR" (identList ":" type ";")*
  *
- * @return std::shared_ptr<ASTVar>
+ * @return ASTVarPtr
  */
-std::shared_ptr<ASTVar> Parser::parse_var() {
+ASTVarPtr Parser::parse_var() {
     debug("Parser::parse_var");
     auto var = makeAST<ASTVar>(lexer);
 
     lexer.get_token(); // VAR
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
-        std::vector<std::shared_ptr<ASTIdentifier>> list;
+        std::vector<ASTIdentifierPtr> list;
         parse_identList(list);
         get_token(TokenType::colon);
         auto type = parse_type();
@@ -313,9 +313,9 @@ std::shared_ptr<ASTVar> Parser::parse_var() {
  * @brief "PROCEDURE" IdentDef [formalParameters] [ ":" type ]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
  *
- * @return std::shared_ptr<ASTProcedure>
+ * @return ASTProcedurePtr
  */
-std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
+ASTProcedurePtr Parser::parse_procedure() {
     debug("Parser::parse_procedure");
     auto proc = makeAST<ASTProcedure>(lexer);
 
@@ -378,8 +378,8 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
             lexer.get_token();
             attr = Attr::var;
         }
-        std::vector<std::shared_ptr<ASTIdentifier>> ids;
-        auto                                        id = parse_identifier();
+        std::vector<ASTIdentifierPtr> ids;
+        auto                          id = parse_identifier();
         if (attr == Attr::var) {
             id->set(attr);
         }
@@ -426,9 +426,9 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
     | blockStatement
     | "RETURN" [expr]
  *
- * @return std::shared_ptr<ASTStatement>
+ * @return ASTStatementPtr
  */
-std::shared_ptr<ASTStatement> Parser::parse_statement() {
+ASTStatementPtr Parser::parse_statement() {
     auto tok = lexer.peek_token();
     debug("Parser::parse_statement {}", std::string(tok));
     switch (tok.type) {
@@ -468,8 +468,8 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
     }
 }
 
-void Parser::parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
-                                   const std::set<TokenType> &                 end_tokens) {
+void Parser::parse_statement_block(std::vector<ASTStatementPtr> &stats,
+                                   const std::set<TokenType> &   end_tokens) {
 
     auto s = parse_statement();
     stats.push_back(s);
@@ -490,9 +490,9 @@ void Parser::parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &s
 /**
  * @brief ident ":=" expr
  *
- * @return std::shared_ptr<ASTAssignment>
+ * @return ASTAssignmentPtr 
  */
-std::shared_ptr<ASTAssignment> Parser::parse_assignment(std::shared_ptr<ASTDesignator> d) {
+ASTAssignmentPtr  Parser::parse_assignment(ASTDesignatorPtr d) {
     debug("Parser::parse_assignment");
     auto assign = makeAST<ASTAssignment>(lexer);
 
@@ -505,9 +505,9 @@ std::shared_ptr<ASTAssignment> Parser::parse_assignment(std::shared_ptr<ASTDesig
 /**
  * @brief RETURN [expr]
  *
- * @return std::shared_ptr<ASTReturn>
+ * @return ASTReturnPtr 
  */
-std::shared_ptr<ASTReturn> Parser::parse_return() {
+ASTReturnPtr  Parser::parse_return() {
     debug("Parser::parse_return");
     auto ret = makeAST<ASTReturn>(lexer);
     get_token(TokenType::ret);
@@ -521,9 +521,9 @@ std::shared_ptr<ASTReturn> Parser::parse_return() {
 /**
  * @brief EXIT
  *
- * @return std::shared_ptr<ASTExit>
+ * @return ASTExitPtr 
  */
-std::shared_ptr<ASTExit> Parser::parse_exit() {
+ASTExitPtr  Parser::parse_exit() {
     get_token(TokenType::exit);
     auto ex = makeAST<ASTExit>(lexer);
     return ex;
@@ -532,9 +532,9 @@ std::shared_ptr<ASTExit> Parser::parse_exit() {
 /**
  * @brief  IDENT "(" expr ( "," expr )* ")"
  *
- * @return std::shared_ptr<ASTCall>
+ * @return ASTCallPtr 
  */
-std::shared_ptr<ASTCall> Parser::parse_call(std::shared_ptr<ASTDesignator> d) {
+ASTCallPtr  Parser::parse_call(ASTDesignatorPtr d) {
     auto call = makeAST<ASTCall>(lexer);
 
     call->name = d;
@@ -569,9 +569,9 @@ inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif, Token
     ( "ELSIF" expression "THEN" statement_seq )*
     [ "ELSE" statement_seq "END" ]
  *
- * @return std::shared_ptr<ASTIf>
+ * @return ASTIfPtr 
  */
-std::shared_ptr<ASTIf> Parser::parse_if() {
+ASTIfPtr  Parser::parse_if() {
     debug("Parser::parse_if");
     auto stat = makeAST<ASTIf>(lexer);
 
@@ -599,7 +599,7 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
     if (tok.type == TokenType::else_k) {
         debug("Parser::parse_if else\n");
         lexer.get_token();
-        stat->else_clause = std::make_optional<std::vector<std::shared_ptr<ASTStatement>>>();
+        stat->else_clause = std::make_optional<std::vector<ASTStatementPtr>>();
         parse_statement_block(*stat->else_clause, module_ends);
     }
     // END
@@ -611,9 +611,9 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
  * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
     statement_seq "END"
  *
- * @return std::shared_ptr<ASTFor>
+ * @return ASTForPtr 
  */
-std::shared_ptr<ASTFor> Parser::parse_for() {
+ASTForPtr  Parser::parse_for() {
     debug("Parser::parse_for");
     auto ast = makeAST<ASTFor>(lexer);
 
@@ -642,7 +642,7 @@ std::shared_ptr<ASTFor> Parser::parse_for() {
     return ast;
 }
 
-std::shared_ptr<ASTWhile> Parser::parse_while() {
+ASTWhilePtr  Parser::parse_while() {
     auto ast = makeAST<ASTWhile>(lexer);
 
     // WHILE
@@ -659,7 +659,7 @@ std::shared_ptr<ASTWhile> Parser::parse_while() {
 
 inline const std::set<TokenType> repeat_ends{TokenType::until};
 
-std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
+ASTRepeatPtr  Parser::parse_repeat() {
     auto ast = makeAST<ASTRepeat>(lexer);
 
     // REPEAT
@@ -674,7 +674,7 @@ std::shared_ptr<ASTRepeat> Parser::parse_repeat() {
     return ast;
 }
 
-std::shared_ptr<ASTLoop> Parser::parse_loop() {
+ASTLoopPtr  Parser::parse_loop() {
     auto ast = makeAST<ASTLoop>(lexer);
 
     // LOOP
@@ -687,7 +687,7 @@ std::shared_ptr<ASTLoop> Parser::parse_loop() {
     return ast;
 }
 
-std::shared_ptr<ASTBlock> Parser::parse_block() {
+ASTBlockPtr  Parser::parse_block() {
     auto ast = makeAST<ASTBlock>(lexer);
     // BEGIN
     get_token(TokenType::begin);
@@ -704,14 +704,14 @@ std::shared_ptr<ASTBlock> Parser::parse_block() {
  *
  * relation = "=" | "#" | "<" | "<=" | ">" | ">="
  *
- * @return std::shared_ptr<ASTExpr>
+ * @return ASTExprPtr
  */
 
 inline const std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
                                                 TokenType::less,    TokenType::leq,
                                                 TokenType::greater, TokenType::gteq};
 
-std::shared_ptr<ASTExpr> Parser::parse_expr() {
+ASTExprPtr Parser::parse_expr() {
     debug("Parser::parse_expr");
     auto ast = makeAST<ASTExpr>(lexer);
 
@@ -720,7 +720,7 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
     if (relationOps.find(tok.type) != relationOps.end()) {
         lexer.get_token(); // get token;
         ast->relation = std::optional<TokenType>(tok.type);
-        ast->relation_expr = std::optional<std::shared_ptr<ASTSimpleExpr>>(parse_simpleexpr());
+        ast->relation_expr = std::optional<ASTSimpleExprPtr>(parse_simpleexpr());
     }
     return ast;
 }
@@ -728,9 +728,9 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' | "OR" ) term)*
  *
- * @return std::shared_ptr<ASTSimpleExpr>
+ * @return ASTSimpleExprPtr
  */
-std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
+ASTSimpleExprPtr Parser::parse_simpleexpr() {
     debug("Parser::parse_simpleexpr");
     auto expr = makeAST<ASTSimpleExpr>(lexer);
 
@@ -754,13 +754,13 @@ std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
 /**
  * @brief term -> INTEGER ( ( '*' | 'DIV' | 'MOD' | "&") INTEGER)*
  *
- * @return std::shared_ptr<ASTTerm>
+ * @return ASTTermPtr
  */
 
 inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div, TokenType::mod,
                                             TokenType::ampersand};
 
-std::shared_ptr<ASTTerm> Parser::parse_term() {
+ASTTermPtr Parser::parse_term() {
     debug("Parser::parse_term");
     auto term = makeAST<ASTTerm>(lexer);
 
@@ -784,9 +784,9 @@ std::shared_ptr<ASTTerm> Parser::parse_term() {
  *                  | "TRUE" | "FALSE"
  *                  | '('expr ')'
  *
- * @return std::shared_ptr<ASTFactor>
+ * @return ASTFactorPtr
  */
-std::shared_ptr<ASTFactor> Parser::parse_factor() {
+ASTFactorPtr Parser::parse_factor() {
     debug("Parser::parse_factor");
     auto ast = makeAST<ASTFactor>(lexer);
 
@@ -836,12 +836,12 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
  *
  * selector = ( '[' expr ']' )*
  *
- * @return std::shared_ptr<ASTDesignator>
+ * @return ASTDesignatorPtr
  */
 
 inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenType::period};
 
-std::shared_ptr<ASTDesignator> Parser::parse_designator() {
+ASTDesignatorPtr Parser::parse_designator() {
     debug("Parser::parse_designator");
     auto ast = makeAST<ASTDesignator>(lexer);
 
@@ -872,9 +872,9 @@ std::shared_ptr<ASTDesignator> Parser::parse_designator() {
 /**
  * @brief  INDENT | arraytype
  *
- * @return std::shared_ptr<ASTType>
+ * @return ASTTypePtr
  */
-std::shared_ptr<ASTType> Parser::parse_type() {
+ASTTypePtr Parser::parse_type() {
     auto ast = makeAST<ASTType>(lexer);
 
     auto tok = lexer.peek_token();
@@ -894,9 +894,9 @@ std::shared_ptr<ASTType> Parser::parse_type() {
 /**
  * @brief "ARRAY" "[" expr "]" "OF" type
  *
- * @return std::shared_ptr<ASTArray>
+ * @return ASTArrayPtr
  */
-std::shared_ptr<ASTArray> Parser::parse_array() {
+ASTArrayPtr Parser::parse_array() {
     auto ast = makeAST<ASTArray>(lexer);
 
     get_token(TokenType::array);
@@ -909,16 +909,16 @@ std::shared_ptr<ASTArray> Parser::parse_array() {
 /**
  * @brief "RECORD" fieldList ( ";" fieldList )* "END"
  *
- * @return std::shared_ptr<ASTRecord>
+ * @return ASTRecordPtr
  */
-std::shared_ptr<ASTRecord> Parser::parse_record() {
+ASTRecordPtr Parser::parse_record() {
     debug("Parser::parse_record");
     auto ast = makeAST<ASTRecord>(lexer);
 
     get_token(TokenType::record);
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::ident) {
-        std::vector<std::shared_ptr<ASTIdentifier>> ids;
+        std::vector<ASTIdentifierPtr> ids;
         parse_identList(ids);
 
         get_token(TokenType::colon);
@@ -943,7 +943,7 @@ std::shared_ptr<ASTRecord> Parser::parse_record() {
  *
  * @return ASTIdentifierPtr
  */
-std::shared_ptr<ASTQualident> Parser::parse_qualident() {
+ASTQualidentPtr Parser::parse_qualident() {
     debug("Parser::parse_qualident");
     auto ast = makeAST<ASTQualident>(lexer);
 
@@ -985,7 +985,7 @@ std::shared_ptr<ASTQualident> Parser::parse_qualident() {
  *
  * @return ASTIdentifierPtr
  */
-std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
+ASTIdentifierPtr Parser::parse_identifier() {
     debug("Parser::parse_identifier");
     auto ast = makeAST<ASTIdentifier>(lexer);
 
@@ -1021,7 +1021,7 @@ ASTBoolPtr Parser::parse_boolean() {
     return ast;
 }
 
-std::shared_ptr<ASTModule> Parser::parse() {
+ASTModulePtr Parser::parse() {
     return parse_module();
 }
 

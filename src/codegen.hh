@@ -27,7 +27,7 @@ class CodeGenerator : ASTVisitor {
   public:
     explicit CodeGenerator(Options &o, TypeTable &t, Importer &i);
 
-    void generate(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
+    void generate(ASTModulePtr const &ast) { visit_ASTModule(ast.get()); };
 
     void setup_builtins();
 
@@ -45,7 +45,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTConst(ASTConst *ast) override;
     void visit_ASTVar(ASTVar *ast) override;
 
-    void doProcedures(std::vector<std::shared_ptr<ASTProcedure>> const &procs);
+    void doProcedures(std::vector<ASTProcedurePtr> const &procs);
 
     void visit_ASTProcedure(ASTProcedure *ast) override;
     void visit_ASTAssignment(ASTAssignment *ast) override;
@@ -75,14 +75,14 @@ class CodeGenerator : ASTVisitor {
     void init();
 
     AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,
-                                       std::shared_ptr<ASTType> type, bool var = false);
+                                       ASTTypePtr type, bool var = false);
 
     AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
                                        llvm::Type *type);
 
-    TypePtr     resolve_type(std::shared_ptr<ASTType> const &t);
-    llvm::Type *getType(std::shared_ptr<ASTType> const &type);
-    Constant *  getType_init(std::shared_ptr<ASTType> const &type);
+    TypePtr     resolve_type(ASTTypePtr const &t);
+    llvm::Type *getType(ASTTypePtr const &type);
+    Constant *  getType_init(ASTTypePtr const &type);
 
     bool                      find_var_Identifier(ASTDesignator *ast);
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;

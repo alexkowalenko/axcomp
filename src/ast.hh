@@ -88,6 +88,7 @@ class ASTIdentifier : public ASTBase {
     std::string value;
     Attrs       attrs;
 };
+using ASTIdentifierPtr = std::shared_ptr<ASTIdentifier>;
 
 /**
  * @brief Qualident = [ident "."] ident.
@@ -118,6 +119,7 @@ class ASTQualident : public ASTBase {
         return qual.empty() ? id->value : qual + "." + id->value;
     };
 };
+using ASTQualidentPtr = std::shared_ptr<ASTQualident>;
 
 /**
  * @brief INDENT | arrayType
@@ -130,11 +132,10 @@ class ASTType : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(this); };
 
-    std::variant<std::shared_ptr<ASTQualident>, std::shared_ptr<ASTArray>,
-                 std::shared_ptr<ASTRecord>>
-            type;
+    std::variant<ASTQualidentPtr, ASTArrayPtr, ASTRecordPtr> type;
     TypePtr type_info = nullptr; // store information about the type
 };
+using ASTTypePtr = std::shared_ptr<ASTType>;
 
 /**
  * @brief  "ARRAY" "[" expr "]" "OF" type
@@ -147,16 +148,17 @@ class ASTArray : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTArray(this); };
 
-    ASTIntegerPtr            size;
-    std::shared_ptr<ASTType> type;
+    ASTIntegerPtr size;
+    ASTTypePtr    type;
 };
+using ASTArrayPtr = std::shared_ptr<ASTArray>;
 
 /**
  * @brief "RECORD" fieldList ( ";" fieldList )* "END"
  *
  */
 
-using VarDec = std::pair<std::shared_ptr<ASTIdentifier>, std::shared_ptr<ASTType>>;
+using VarDec = std::pair<ASTIdentifierPtr, ASTTypePtr>;
 
 class ASTRecord : public ASTBase {
   public:
@@ -166,6 +168,7 @@ class ASTRecord : public ASTBase {
 
     std::vector<VarDec> fields;
 };
+using ASTRecordPtr = std::shared_ptr<ASTRecord>;
 
 /////////////////////
 // Expression Objects
@@ -177,7 +180,7 @@ class ASTRecord : public ASTBase {
  *
  */
 
-using FieldRef = std::pair<std::shared_ptr<ASTIdentifier>, int>;
+using FieldRef = std::pair<ASTIdentifierPtr, int>;
 
 class ASTDesignator : public ASTBase {
   public:
@@ -185,9 +188,10 @@ class ASTDesignator : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(this); };
 
-    std::shared_ptr<ASTQualident>                                 ident;
-    std::vector<std::variant<std::shared_ptr<ASTExpr>, FieldRef>> selectors;
+    ASTQualidentPtr                                 ident;
+    std::vector<std::variant<ASTExprPtr, FieldRef>> selectors;
 };
+using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
 
 /**
  * @brief factor -> designator
@@ -204,11 +208,11 @@ class ASTFactor : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(this); };
 
-    std::variant<std::shared_ptr<ASTDesignator>, ASTIntegerPtr, std::shared_ptr<ASTExpr>,
-                 std::shared_ptr<ASTCall>, ASTBoolPtr, std::shared_ptr<ASTFactor>>
+    std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr, ASTFactorPtr>
          factor;
     bool is_not = false;
 };
+using ASTFactorPtr = std::shared_ptr<ASTFactor>;
 
 /**
  * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
@@ -220,11 +224,12 @@ class ASTTerm : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTTerm(this); };
 
-    using Term_mult = std::pair<TokenType, std::shared_ptr<ASTFactor>>;
+    using Term_mult = std::pair<TokenType, ASTFactorPtr>;
 
-    std::shared_ptr<ASTFactor> factor;
-    std::vector<Term_mult>     rest;
+    ASTFactorPtr           factor;
+    std::vector<Term_mult> rest;
 };
+using ASTTermPtr = std::shared_ptr<ASTTerm>;
 
 /**
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' | "OR") term)*
@@ -236,12 +241,13 @@ class ASTSimpleExpr : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTSimpleExpr(this); };
 
-    using Expr_add = std::pair<TokenType, std::shared_ptr<ASTTerm>>;
+    using Expr_add = std::pair<TokenType, ASTTermPtr>;
 
     std::optional<TokenType> first_sign;
-    std::shared_ptr<ASTTerm> term;
+    ASTTermPtr               term;
     std::vector<Expr_add>    rest;
 };
+using ASTSimpleExprPtr = std::shared_ptr<ASTSimpleExpr>;
 
 /**
  * @brief expr = simpleExpr [ relation simpleExpr]
@@ -255,15 +261,17 @@ class ASTExpr : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTExpr(this); };
 
-    std::shared_ptr<ASTSimpleExpr>                expr;
-    std::optional<TokenType>                      relation;
-    std::optional<std::shared_ptr<ASTSimpleExpr>> relation_expr;
+    ASTSimpleExprPtr                expr;
+    std::optional<TokenType>        relation;
+    std::optional<ASTSimpleExprPtr> relation_expr;
 };
+using ASTExprPtr = std::shared_ptr<ASTExpr>;
 
 ////////////////////
 // Statement objects
 
 class ASTStatement : public ASTBase {};
+using ASTStatementPtr = std::shared_ptr<ASTStatement>;
 
 /**
  * @brief designator ":=" expr
@@ -275,9 +283,10 @@ class ASTAssignment : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTAssignment(this); };
 
-    std::shared_ptr<ASTDesignator> ident;
-    std::shared_ptr<ASTExpr>       expr;
+    ASTDesignatorPtr ident;
+    ASTExprPtr       expr;
 };
+using ASTAssignmentPtr = std::shared_ptr<ASTAssignment>;
 
 /**
  * @brief RETURN [expr]
@@ -289,8 +298,9 @@ class ASTReturn : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTReturn(this); };
 
-    std::shared_ptr<ASTExpr> expr;
+    ASTExprPtr expr;
 };
+using ASTReturnPtr = std::shared_ptr<ASTReturn>;
 
 /**
  * @brief EXIT
@@ -302,8 +312,9 @@ class ASTExit : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTExit(this); };
 
-    std::shared_ptr<ASTExpr> expr;
+    ASTExprPtr expr;
 };
+using ASTExitPtr = std::shared_ptr<ASTExit>;
 
 /**
  * @brief designator "(" expr ( "," expr )* ")"
@@ -315,9 +326,10 @@ class ASTCall : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTCall(this); };
 
-    std::shared_ptr<ASTDesignator>        name;
-    std::vector<std::shared_ptr<ASTExpr>> args;
+    ASTDesignatorPtr        name;
+    std::vector<ASTExprPtr> args;
 };
+using ASTCallPtr = std::shared_ptr<ASTCall>;
 
 /**
  * @brief "IF" expression "THEN" statement_seq
@@ -334,14 +346,15 @@ class ASTIf : public ASTStatement {
     void accept(ASTVisitor *v) override { v->visit_ASTIf(this); };
 
     struct IFClause {
-        std::shared_ptr<ASTExpr>                   expr;
-        std::vector<std::shared_ptr<ASTStatement>> stats;
+        ASTExprPtr                   expr;
+        std::vector<ASTStatementPtr> stats;
     };
 
-    IFClause                                                  if_clause;
-    std::vector<IFClause>                                     elsif_clause;
-    std::optional<std::vector<std::shared_ptr<ASTStatement>>> else_clause;
+    IFClause                                    if_clause;
+    std::vector<IFClause>                       elsif_clause;
+    std::optional<std::vector<ASTStatementPtr>> else_clause;
 };
+using ASTIfPtr = std::shared_ptr<ASTIf>;
 
 /**
  * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
@@ -354,12 +367,13 @@ class ASTFor : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTFor(this); };
 
-    std::shared_ptr<ASTIdentifier>             ident;
-    std::shared_ptr<ASTExpr>                   start;
-    std::shared_ptr<ASTExpr>                   end;
-    std::optional<std::shared_ptr<ASTExpr>>    by{std::nullopt};
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    ASTIdentifierPtr             ident;
+    ASTExprPtr                   start;
+    ASTExprPtr                   end;
+    std::optional<ASTExprPtr>    by{std::nullopt};
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTForPtr = std::shared_ptr<ASTFor>;
 
 /**
  * @brief "WHILE" expr "DO" statement_seq "END"
@@ -371,9 +385,10 @@ class ASTWhile : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTWhile(this); };
 
-    std::shared_ptr<ASTExpr>                   expr;
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    ASTExprPtr                   expr;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTWhilePtr = std::shared_ptr<ASTWhile>;
 
 /**
  * @brief "REPEAT" statement_seq "UNTIL" expr
@@ -385,9 +400,10 @@ class ASTRepeat : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTRepeat(this); };
 
-    std::shared_ptr<ASTExpr>                   expr;
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    ASTExprPtr                   expr;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTRepeatPtr = std::shared_ptr<ASTRepeat>;
 
 /**
  * @brief "LOOP" statement_seq "END"
@@ -399,8 +415,9 @@ class ASTLoop : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTLoop(this); };
 
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTLoopPtr = std::shared_ptr<ASTLoop>;
 
 /**
  * @brief "BEGIN" statement_seq "END"
@@ -412,12 +429,9 @@ class ASTBlock : public ASTStatement {
 
     void accept(ASTVisitor *v) override { v->visit_ASTBlock(this); };
 
-    std::shared_ptr<ASTIdentifier>             ident;
-    std::shared_ptr<ASTExpr>                   start;
-    std::shared_ptr<ASTExpr>                   end;
-    std::optional<std::shared_ptr<ASTExpr>>    by{std::nullopt};
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTBlockPtr = std::shared_ptr<ASTBlock>;
 
 //////////////////////
 // Declaration objects
@@ -428,12 +442,13 @@ class ASTProcedure : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTProcedure(this); };
 
-    std::shared_ptr<ASTIdentifier>             name;
-    std::shared_ptr<ASTType>                   return_type{nullptr};
-    std::vector<VarDec>                        params;
-    std::shared_ptr<ASTDeclaration>            decs;
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    ASTIdentifierPtr             name;
+    ASTTypePtr                   return_type{nullptr};
+    std::vector<VarDec>          params;
+    ASTDeclarationPtr            decs;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTProcedurePtr = std::shared_ptr<ASTProcedure>;
 
 /**
  * @brief "VAR" (IDENT ":" type ";")*
@@ -447,6 +462,7 @@ class ASTVar : public ASTBase {
 
     std::vector<VarDec> vars;
 };
+using ASTVarPtr = std::shared_ptr<ASTVar>;
 
 /**
  * @brief "TYPE" (IDENT "=" type ";")*
@@ -460,11 +476,12 @@ class ASTTypeDec : public ASTBase {
 
     std::vector<VarDec> types;
 };
+using ASTTypeDecPtr = std::shared_ptr<ASTTypeDec>;
 
 struct ConstDec {
-    std::shared_ptr<ASTIdentifier> ident;
-    std::shared_ptr<ASTExpr>       value;
-    std::shared_ptr<ASTType>       type;
+    ASTIdentifierPtr ident;
+    ASTExprPtr       value;
+    ASTTypePtr       type;
 };
 
 /**
@@ -479,6 +496,7 @@ class ASTConst : public ASTBase {
 
     std::vector<ConstDec> consts;
 };
+using ASTConstPtr = std::shared_ptr<ASTConst>;
 
 class ASTDeclaration : public ASTBase {
   public:
@@ -486,10 +504,11 @@ class ASTDeclaration : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTDeclaration(this); };
 
-    std::shared_ptr<ASTTypeDec> type;
-    std::shared_ptr<ASTConst>   cnst;
-    std::shared_ptr<ASTVar>     var;
+    ASTTypeDecPtr type;
+    ASTConstPtr   cnst;
+    ASTVarPtr     var;
 };
+using ASTDeclarationPtr = std::shared_ptr<ASTDeclaration>;
 
 /**
  * @brief "IMPORT" Import {"," Import} ";".
@@ -503,23 +522,25 @@ class ASTImport : public ASTBase {
 
     void accept(ASTVisitor *v) override { v->visit_ASTImport(this); };
 
-    using Pair = std::pair<std::shared_ptr<ASTIdentifier>,  // Module
-                           std::shared_ptr<ASTIdentifier>>; // Alias
+    using Pair = std::pair<ASTIdentifierPtr,  // Module
+                           ASTIdentifierPtr>; // Alias
 
     std::vector<Pair> imports;
 };
+using ASTImportPtr = std::shared_ptr<ASTImport>;
 
 class ASTModule : public ASTBase {
   public:
     ~ASTModule() override = default;
     void accept(ASTVisitor *v) override { v->visit_ASTModule(this); };
 
-    std::string                                name;
-    std::shared_ptr<ASTImport>                 import;
-    std::shared_ptr<ASTDeclaration>            decs;
-    std::vector<std::shared_ptr<ASTProcedure>> procedures;
-    std::vector<std::shared_ptr<ASTStatement>> stats;
+    std::string                  name;
+    ASTImportPtr                 import;
+    ASTDeclarationPtr            decs;
+    std::vector<ASTProcedurePtr> procedures;
+    std::vector<ASTStatementPtr> stats;
 };
+using ASTModulePtr = std::shared_ptr<ASTModule>;
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;

@@ -142,7 +142,7 @@ void ASTPrinter::visit_ASTCall(ASTCall *ast) {
     os << ")";
 }
 
-void ASTPrinter::print_stats(std::vector<std::shared_ptr<ASTStatement>> stats) {
+void ASTPrinter::print_stats(std::vector<ASTStatementPtr> stats) {
     std::for_each(begin(stats), end(stats), [stats, this](auto const &x) {
         x->accept(this);
         if (x != *(stats.end() - 1)) {
@@ -251,12 +251,12 @@ void ASTPrinter::visit_ASTTerm(ASTTerm *ast) {
 
 void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
-                          [this](std::shared_ptr<ASTExpr> const &arg) {
+                          [this](ASTExprPtr const &arg) {
                               this->os << " (";
                               arg->accept(this);
                               this->os << ") ";
                           },
-                          [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                          [this, ast](ASTFactorPtr const &arg) {
                               if (ast->is_not) {
                                   os << "~ ";
                               }
@@ -268,7 +268,7 @@ void ASTPrinter::visit_ASTFactor(ASTFactor *ast) {
 void ASTPrinter::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
-        std::visit(overloaded{[this](std::shared_ptr<ASTExpr> const &s) {
+        std::visit(overloaded{[this](ASTExprPtr const &s) {
                                   os << '[';
                                   s->accept(this);
                                   os << ']';

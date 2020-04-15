@@ -201,7 +201,7 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
     }
 }
 
-void CodeGenerator::doProcedures(std::vector<std::shared_ptr<ASTProcedure>> const &procs) {
+void CodeGenerator::doProcedures(std::vector<ASTProcedurePtr> const &procs) {
     std::for_each(procs.begin(), procs.end(), [this](auto const &x) { x->accept(this); });
 }
 
@@ -414,7 +414,7 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
             // This works, since the Inspector checks that VAR arguments are
             // only identifiers
             auto ptr = a->expr->term->factor->factor;
-            auto p2 = std::get<std::shared_ptr<ASTDesignator>>(ptr)->ident;
+            auto p2 = std::get<ASTDesignatorPtr>(ptr)->ident;
 
             debug("CodeGenerator::visit_ASTCall identifier {0}", p2->id->value);
             visit_ASTIdentifierPtr(p2->id.get());
@@ -757,7 +757,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
     debug("CodeGenerator::visit_ASTFactor");
     // Visit the appropriate variant
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
-                          [this, ast](std::shared_ptr<ASTFactor> const &arg) {
+                          [this, ast](ASTFactorPtr const &arg) {
                               debug("visit_ASTFactor: not ");
                               if (ast->is_not) {
                                   debug("visit_ASTFactor: not do");
@@ -777,7 +777,7 @@ void CodeGenerator::get_index(ASTDesignator *ast) {
     for (auto const &s : ast->selectors) {
 
         std::visit(
-            overloaded{[this, &index](std::shared_ptr<ASTExpr> const &s) {
+            overloaded{[this, &index](ASTExprPtr const &s) {
                            // calculate index;
                            s->expr->accept(this);
                            debug("GEP index is Int: {0}", last_value->getType()->isIntegerTy());
@@ -915,7 +915,7 @@ std::string CodeGenerator::gen_module_id(std::string const &id) const {
  * @return AllocaInst*
  */
 AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::string const &name,
-                                                  std::shared_ptr<ASTType> type, bool var) {
+                                                  ASTTypePtr type, bool var) {
     AllocaInst *res = nullptr;
     IRBuilder<> TmpB(&function->getEntryBlock(), function->getEntryBlock().begin());
 
@@ -937,10 +937,10 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
+TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
     debug("CodeGenerator::resolve_type");
     TypePtr result;
-    std::visit(overloaded{[this, &result](std::shared_ptr<ASTQualident> const &type) {
+    std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
                               auto res = types.resolve(type->id->value);
                               if (!res) {
                                   // should be a resloved type this far down
@@ -953,12 +953,12 @@ TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
     return result;
 }
 
-llvm::Type *CodeGenerator::getType(std::shared_ptr<ASTType> const &t) {
+llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
     debug("CodeGenerator::getType");
     return resolve_type(t)->get_llvm();
 }
 
-Constant *CodeGenerator::getType_init(std::shared_ptr<ASTType> const &t) {
+Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
     debug("CodeGenerator::getType_init");
     return resolve_type(t)->get_init();
 };

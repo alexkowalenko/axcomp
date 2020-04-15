@@ -22,51 +22,51 @@ class Parser {
     explicit Parser(Lexer &l, Symbols s, TypeTable &t, ErrorManager const &e)
         : lexer(l), symbols(std::move(s)), types(t), errors(e){};
 
-    std::shared_ptr<ASTModule> parse();
+    ASTModulePtr parse();
 
     void setup_builtins();
 
   protected:
-    std::shared_ptr<ASTModule>      parse_module();
-    std::shared_ptr<ASTImport>      parse_import();
-    std::shared_ptr<ASTDeclaration> parse_declaration();
-    std::shared_ptr<ASTConst>       parse_const();
-    std::shared_ptr<ASTTypeDec>     parse_typedec();
-    void                    parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list);
-    std::shared_ptr<ASTVar> parse_var();
-    std::shared_ptr<ASTProcedure> parse_procedure();
-    void                          parse_parameters(std::vector<VarDec> &params);
+    ASTModulePtr      parse_module();
+    ASTImportPtr      parse_import();
+    ASTDeclarationPtr parse_declaration();
+    ASTConstPtr       parse_const();
+    ASTTypeDecPtr     parse_typedec();
+    void              parse_identList(std::vector<ASTIdentifierPtr> &list);
+    ASTVarPtr         parse_var();
+    ASTProcedurePtr   parse_procedure();
+    void              parse_parameters(std::vector<VarDec> &params);
 
-    std::shared_ptr<ASTStatement> parse_statement();
-    void parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
-                               const std::set<TokenType> &                 end_tokens);
+    ASTStatementPtr parse_statement();
+    void            parse_statement_block(std::vector<ASTStatementPtr> &stats,
+                                          const std::set<TokenType> &   end_tokens);
 
-    std::shared_ptr<ASTAssignment> parse_assignment(std::shared_ptr<ASTDesignator> d);
-    std::shared_ptr<ASTReturn>     parse_return();
-    std::shared_ptr<ASTExit>       parse_exit();
-    std::shared_ptr<ASTCall>       parse_call(std::shared_ptr<ASTDesignator> d);
-    std::shared_ptr<ASTIf>         parse_if();
-    std::shared_ptr<ASTFor>        parse_for();
-    std::shared_ptr<ASTWhile>      parse_while();
-    std::shared_ptr<ASTRepeat>     parse_repeat();
-    std::shared_ptr<ASTLoop>       parse_loop();
-    std::shared_ptr<ASTBlock>      parse_block();
-    std::shared_ptr<ASTExpr>       parse_expr();
-    std::shared_ptr<ASTSimpleExpr> parse_simpleexpr();
-    std::shared_ptr<ASTTerm>       parse_term();
-    std::shared_ptr<ASTFactor>     parse_factor();
-    std::shared_ptr<ASTDesignator> parse_designator();
-    std::shared_ptr<ASTType>       parse_type();
-    std::shared_ptr<ASTArray>      parse_array();
-    std::shared_ptr<ASTRecord>     parse_record();
-    std::shared_ptr<ASTQualident>  parse_qualident();
-    std::shared_ptr<ASTIdentifier> parse_identifier();
-    ASTIntegerPtr                  parse_integer();
-    ASTBoolPtr                     parse_boolean();
+    ASTAssignmentPtr parse_assignment(ASTDesignatorPtr d);
+    ASTReturnPtr     parse_return();
+    ASTExitPtr       parse_exit();
+    ASTCallPtr       parse_call(ASTDesignatorPtr d);
+    ASTIfPtr         parse_if();
+    ASTForPtr        parse_for();
+    ASTWhilePtr      parse_while();
+    ASTRepeatPtr     parse_repeat();
+    ASTLoopPtr       parse_loop();
+    ASTBlockPtr      parse_block();
+    ASTExprPtr       parse_expr();
+    ASTSimpleExprPtr parse_simpleexpr();
+    ASTTermPtr       parse_term();
+    ASTFactorPtr     parse_factor();
+    ASTDesignatorPtr parse_designator();
+    ASTTypePtr       parse_type();
+    ASTArrayPtr      parse_array();
+    ASTRecordPtr     parse_record();
+    ASTQualidentPtr  parse_qualident();
+    ASTIdentifierPtr parse_identifier();
+    ASTIntegerPtr    parse_integer();
+    ASTBoolPtr       parse_boolean();
 
     Token get_token(TokenType const &t);
 
-    void set_attrs(std::shared_ptr<ASTIdentifier> const &ident);
+    void set_attrs(ASTIdentifierPtr const &ident);
 
     Lexer &             lexer;
     Symbols             symbols;

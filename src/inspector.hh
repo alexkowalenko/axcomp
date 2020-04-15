@@ -22,7 +22,7 @@ class Inspector : ASTVisitor {
   public:
     explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i);
 
-    void check(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
+    void check(ASTModulePtr const &ast) { visit_ASTModule(ast.get()); };
 
   private:
     void visit_ASTModule(ASTModule *ast) override;
