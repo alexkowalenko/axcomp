@@ -185,7 +185,7 @@ TEST(Inspector, ImportAccess) {
              BEGIN
                  RETURN beta.a;
              END alpha.)",
-         "", "4,28: undefined identifier beta"},
+         "", "4,30: undefined identifier beta"},
 
         // CONST
         {R"(MODULE alpha;

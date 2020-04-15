@@ -27,12 +27,14 @@ class CodeGenerator : ASTVisitor {
   public:
     explicit CodeGenerator(Options &o, TypeTable &t, Importer &i);
 
-    void generate(std::shared_ptr<ASTModule> const &ast) {
-        visit_ASTModule(ast.get());
-    };
+    void generate(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
 
     void setup_builtins();
 
+    void generate_objectcode();
+    void generate_llcode();
+
+  private:
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTImport(ASTImport *ast) override;
     void doTopDecs(ASTDeclaration *ast);
@@ -67,37 +69,29 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTQualidentPtr(ASTQualident *ast);
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
     void visit_ASTIdentifierPtr(ASTIdentifier *ast);
-    void visit_ASTInteger(ASTInteger *ast) override;
-    void visit_ASTBool(ASTBool *ast) override;
+    void visit_ASTInteger(ASTIntegerPtr ast) override;
+    void visit_ASTBool(ASTBoolPtr ast) override;
 
-    void generate_objectcode();
-    void generate_llcode();
-
-  private:
     void init();
 
-    AllocaInst *createEntryBlockAlloca(Function *               TheFunction,
-                                       std::string const &      name,
-                                       std::shared_ptr<ASTType> type,
-                                       bool                     var = false);
+    AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,
+                                       std::shared_ptr<ASTType> type, bool var = false);
 
-    AllocaInst *createEntryBlockAlloca(Function *         function,
-                                       std::string const &name,
-                                       llvm::Type *       type);
+    AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
+                                       llvm::Type *type);
 
     TypePtr     resolve_type(std::shared_ptr<ASTType> const &t);
     llvm::Type *getType(std::shared_ptr<ASTType> const &type);
     Constant *  getType_init(std::shared_ptr<ASTType> const &type);
 
-    bool        find_var_Identifier(ASTDesignator *ast);
-    std::string gen_module_id(std::string const &id) const;
+    bool                      find_var_Identifier(ASTDesignator *ast);
+    [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
     Options &  options;
     TypeTable &types;
     Importer & importer;
 
-    using ValueSymbolTable =
-        std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;
+    using ValueSymbolTable = std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;
 
     ValueSymbolTable top_symboltable;
     ValueSymbolTable current_symboltable;

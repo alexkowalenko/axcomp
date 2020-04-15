@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <optional>
+#include <utility>
 
 #include <llvm/Support/FormatVariadic.h>
 
@@ -31,8 +32,7 @@ template <typename... T> inline void debug(const T &... msg) {
 std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 
 // module identifier markers
-inline const std::set<TokenType> module_markers{TokenType::asterisk,
-                                                TokenType::dash};
+inline const std::set<TokenType> module_markers{TokenType::asterisk, TokenType::dash};
 
 void Parser::set_attrs(std::shared_ptr<ASTIdentifier> const &ident) {
     auto tok = lexer.peek_token();
@@ -55,8 +55,7 @@ Token Parser::get_token(TokenType const &t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
         throw ParseException(
-            llvm::formatv("Unexpected token: {0} - expecting {1}",
-                          std::string(tok), string(t)),
+            llvm::formatv("Unexpected token: {0} - expecting {1}", std::string(tok), string(t)),
             lexer.get_location());
     }
     return tok;
@@ -77,8 +76,7 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols->put(module->name,
-                 {std::make_shared<ModuleType>(module->name), Attr::null});
+    symbols->put(module->name, {std::make_shared<ModuleType>(module->name), Attr::null});
     get_token(TokenType::semicolon);
 
     tok = lexer.peek_token();
@@ -106,9 +104,8 @@ std::shared_ptr<ASTModule> Parser::parse_module() {
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
         throw ParseException(
-            llvm::formatv(
-                "END identifier name: {0} doesn't match module name: {1}",
-                tok.val, module->name),
+            llvm::formatv("END identifier name: {0} doesn't match module name: {1}", tok.val,
+                          module->name),
             lexer.get_location());
     }
     get_token(TokenType::period);
@@ -175,8 +172,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             if (!decs->cnst) {
                 decs->cnst = cnsts;
             } else {
-                decs->cnst->consts.insert(decs->cnst->consts.end(),
-                                          cnsts->consts.begin(),
+                decs->cnst->consts.insert(decs->cnst->consts.end(), cnsts->consts.begin(),
                                           cnsts->consts.end());
             }
             break;
@@ -186,8 +182,7 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             if (!decs->type) {
                 decs->type = types;
             } else {
-                decs->type->types.insert(decs->var->vars.end(),
-                                         begin(types->types),
+                decs->type->types.insert(decs->var->vars.end(), begin(types->types),
                                          end(types->types));
             }
             break;
@@ -197,8 +192,8 @@ std::shared_ptr<ASTDeclaration> Parser::parse_declaration() {
             if (!decs->var) {
                 decs->var = vars;
             } else {
-                decs->var->vars.insert(decs->var->vars.end(),
-                                       vars->vars.begin(), vars->vars.end());
+                decs->var->vars.insert(decs->var->vars.end(), vars->vars.begin(),
+                                       vars->vars.end());
             }
             break;
         }
@@ -243,8 +238,7 @@ std::shared_ptr<ASTConst> Parser::parse_const() {
  *
  * @param list
  */
-void Parser::parse_identList(
-    std::vector<std::shared_ptr<ASTIdentifier>> &list) {
+void Parser::parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list) {
 
     auto id = parse_identifier();
     set_attrs(id);
@@ -356,10 +350,9 @@ std::shared_ptr<ASTProcedure> Parser::parse_procedure() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name->value) {
-        throw ParseException(
-            llvm::formatv("END name: {0} doesn't match procedure name: {1}",
-                          tok.val, proc->name->value),
-            lexer.get_location());
+        throw ParseException(llvm::formatv("END name: {0} doesn't match procedure name: {1}",
+                                           tok.val, proc->name->value),
+                             lexer.get_location());
     }
     get_token(TokenType::semicolon);
     return proc;
@@ -415,8 +408,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
         if (tok.type == TokenType::r_paren) {
             break;
         }
-        throw ParseException("expecting ; or ) in parameter list",
-                             lexer.get_location());
+        throw ParseException("expecting ; or ) in parameter list", lexer.get_location());
     }
     lexer.get_token(); // get )
 }
@@ -464,22 +456,20 @@ std::shared_ptr<ASTStatement> Parser::parse_statement() {
         tok = lexer.peek_token();
         debug("Parser::parse_statement next {0}", std::string(tok));
 
-        if (tok.type == TokenType::l_paren ||
-            tok.type == TokenType::semicolon || tok.type == TokenType::end) {
+        if (tok.type == TokenType::l_paren || tok.type == TokenType::semicolon ||
+            tok.type == TokenType::end) {
             return parse_call(designator);
         }
         return parse_assignment(designator);
     }
     default:
-        throw ParseException(
-            llvm::formatv("Unexpected token: {0}", std::string(tok)),
-            lexer.get_location());
+        throw ParseException(llvm::formatv("Unexpected token: {0}", std::string(tok)),
+                             lexer.get_location());
     }
 }
 
-void Parser::parse_statement_block(
-    std::vector<std::shared_ptr<ASTStatement>> &stats,
-    const std::set<TokenType> &                 end_tokens) {
+void Parser::parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
+                                   const std::set<TokenType> &                 end_tokens) {
 
     auto s = parse_statement();
     stats.push_back(s);
@@ -502,12 +492,11 @@ void Parser::parse_statement_block(
  *
  * @return std::shared_ptr<ASTAssignment>
  */
-std::shared_ptr<ASTAssignment>
-Parser::parse_assignment(std::shared_ptr<ASTDesignator> d) {
+std::shared_ptr<ASTAssignment> Parser::parse_assignment(std::shared_ptr<ASTDesignator> d) {
     debug("Parser::parse_assignment");
     auto assign = makeAST<ASTAssignment>(lexer);
 
-    assign->ident = d;
+    assign->ident = std::move(d);
     get_token(TokenType::assign);
     assign->expr = parse_expr();
     return assign;
@@ -565,17 +554,15 @@ std::shared_ptr<ASTCall> Parser::parse_call(std::shared_ptr<ASTDesignator> d) {
                 lexer.get_token(); // get ,
                 continue;
             }
-            throw ParseException(
-                llvm::formatv("Unexpected {0} expecting , or )", tok.val),
-                lexer.get_location());
+            throw ParseException(llvm::formatv("Unexpected {0} expecting , or )", tok.val),
+                                 lexer.get_location());
         }
         get_token(TokenType::r_paren);
     }
     return call;
 }
 
-inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif,
-                                         TokenType::else_k};
+inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif, TokenType::else_k};
 
 /**
  * @brief "IF" expression "THEN" statement_seq
@@ -612,8 +599,7 @@ std::shared_ptr<ASTIf> Parser::parse_if() {
     if (tok.type == TokenType::else_k) {
         debug("Parser::parse_if else\n");
         lexer.get_token();
-        stat->else_clause =
-            std::make_optional<std::vector<std::shared_ptr<ASTStatement>>>();
+        stat->else_clause = std::make_optional<std::vector<std::shared_ptr<ASTStatement>>>();
         parse_statement_block(*stat->else_clause, module_ends);
     }
     // END
@@ -721,9 +707,9 @@ std::shared_ptr<ASTBlock> Parser::parse_block() {
  * @return std::shared_ptr<ASTExpr>
  */
 
-inline const std::set<TokenType> relationOps = {
-    TokenType::equals, TokenType::hash,    TokenType::less,
-    TokenType::leq,    TokenType::greater, TokenType::gteq};
+inline const std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
+                                                TokenType::less,    TokenType::leq,
+                                                TokenType::greater, TokenType::gteq};
 
 std::shared_ptr<ASTExpr> Parser::parse_expr() {
     debug("Parser::parse_expr");
@@ -734,8 +720,7 @@ std::shared_ptr<ASTExpr> Parser::parse_expr() {
     if (relationOps.find(tok.type) != relationOps.end()) {
         lexer.get_token(); // get token;
         ast->relation = std::optional<TokenType>(tok.type);
-        ast->relation_expr =
-            std::optional<std::shared_ptr<ASTSimpleExpr>>(parse_simpleexpr());
+        ast->relation_expr = std::optional<std::shared_ptr<ASTSimpleExpr>>(parse_simpleexpr());
     }
     return ast;
 }
@@ -772,8 +757,8 @@ std::shared_ptr<ASTSimpleExpr> Parser::parse_simpleexpr() {
  * @return std::shared_ptr<ASTTerm>
  */
 
-inline const std::set<TokenType> termOps = {
-    TokenType::asterisk, TokenType::div, TokenType::mod, TokenType::ampersand};
+inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div, TokenType::mod,
+                                            TokenType::ampersand};
 
 std::shared_ptr<ASTTerm> Parser::parse_term() {
     debug("Parser::parse_term");
@@ -840,9 +825,8 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
         return ast;
     }
     default:
-        throw ParseException(
-            llvm::formatv("Unexpected token: {0}", std::string(tok)),
-            lexer.get_location());
+        throw ParseException(llvm::formatv("Unexpected token: {0}", std::string(tok)),
+                             lexer.get_location());
     }
     return nullptr; // Not factor
 }
@@ -855,8 +839,7 @@ std::shared_ptr<ASTFactor> Parser::parse_factor() {
  * @return std::shared_ptr<ASTDesignator>
  */
 
-inline const std::set<TokenType> designatorOps = {TokenType::l_bracket,
-                                                  TokenType::period};
+inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenType::period};
 
 std::shared_ptr<ASTDesignator> Parser::parse_designator() {
     debug("Parser::parse_designator");
@@ -958,7 +941,7 @@ std::shared_ptr<ASTRecord> Parser::parse_record() {
 /**
  * @brief Qualident = [ident "."] ident.
  *
- * @return std::shared_ptr<ASTIdentifier>
+ * @return ASTIdentifierPtr
  */
 std::shared_ptr<ASTQualident> Parser::parse_qualident() {
     debug("Parser::parse_qualident");
@@ -979,16 +962,19 @@ std::shared_ptr<ASTQualident> Parser::parse_qualident() {
         if (res && std::dynamic_pointer_cast<ModuleType>(res->first)) {
             debug("Parser::parse_qualident found module {0}", first.val);
             ast->qual = first.val;
-            ast->value = ident.val;
+            ast->id = makeAST<ASTIdentifier>(lexer);
+            ast->id->value = ident.val;
         } else {
             debug("Parser::parse_qualident not found module {0}", first.val);
             // push back tokens
             lexer.push_token(ident);
             lexer.push_token(tok);
-            ast->value = first.val;
+            ast->id = makeAST<ASTIdentifier>(lexer);
+            ast->id->value = first.val;
         }
     } else {
-        ast->value = first.val;
+        ast->id = makeAST<ASTIdentifier>(lexer);
+        ast->id->value = first.val;
     }
     debug("Parser::parse_qualident: {0}", std::string(*ast));
     return ast;
@@ -997,7 +983,7 @@ std::shared_ptr<ASTQualident> Parser::parse_qualident() {
 /**
  * @brief IDENT
  *
- * @return std::shared_ptr<ASTIdentifier>
+ * @return ASTIdentifierPtr
  */
 std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
     debug("Parser::parse_identifier");
@@ -1011,9 +997,9 @@ std::shared_ptr<ASTIdentifier> Parser::parse_identifier() {
 /**
  * @brief INTEGER
  *
- * @return std::shared_ptr<ASTInteger>
+ * @return ASTIntegerPtr
  */
-std::shared_ptr<ASTInteger> Parser::parse_integer() {
+ASTIntegerPtr Parser::parse_integer() {
     debug("Parser::parse_integer");
     auto ast = makeAST<ASTInteger>(lexer);
 
@@ -1026,9 +1012,9 @@ std::shared_ptr<ASTInteger> Parser::parse_integer() {
 /**
  * @brief TRUE | FALSE
  *
- * @return std::shared_ptr<ASTBool>
+ * @return ASTBoolPtr
  */
-std::shared_ptr<ASTBool> Parser::parse_boolean() {
+ASTBoolPtr Parser::parse_boolean() {
     auto ast = makeAST<ASTBool>(lexer);
     auto tok = lexer.get_token();
     ast->value = (tok.type == TokenType::true_k);
@@ -1045,16 +1031,14 @@ void Parser::setup_builtins() {
     builtins = {
         {"WriteInt",
          std::make_shared<ProcedureType>(
-             TypeTable::VoidType,
-             ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
+             TypeTable::VoidType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
 
         {"WriteBoolean",
          std::make_shared<ProcedureType>(
-             TypeTable::VoidType,
-             ProcedureType::ParamsList{{TypeTable::BoolType, Attr::null}})},
+             TypeTable::VoidType, ProcedureType::ParamsList{{TypeTable::BoolType, Attr::null}})},
 
-        {"WriteLn", std::make_shared<ProcedureType>(
-                        TypeTable::VoidType, ProcedureType::ParamsList{})}};
+        {"WriteLn",
+         std::make_shared<ProcedureType>(TypeTable::VoidType, ProcedureType::ParamsList{})}};
 
     std::for_each(begin(builtins), end(builtins), [this](auto &f) {
         symbols->put(f.first, {f.second, Attr::null});

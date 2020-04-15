@@ -48,10 +48,8 @@ void Inspector::visit_ASTImport(ASTImport *ast) {
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
         auto found = importer.find_module(i.first->value, top_symboltable, types);
         if (!found) {
-            auto e = TypeError(llvm::formatv("MODULE {0} not found", i.first->value),
-                               i.first->get_location());
-            errors.add(e);
-            throw e;
+            throw TypeError(llvm::formatv("MODULE {0} not found", i.first->value),
+                            i.first->get_location());
         }
     });
 }
@@ -73,7 +71,7 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
         }
         c.type = std::make_shared<ASTType>();
         c.type->type_info = last_type;
-        c.type->type = std::make_shared<ASTQualident>(last_type->get_name());
+        c.type->type = make<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
         current_symboltable->put(c.ident->value, {last_type, Attr::cnst});
     });
@@ -150,7 +148,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
                               }, // lambda arg can't be reference here
                               [this, p](std::shared_ptr<ASTQualident> const &tname) {
                                   debug("Inspector::visit_ASTProcedure param type ident");
-                                  auto type = types.find(tname->value);
+                                  auto type = types.find(tname->id->value);
                                   current_symboltable->put(
                                       p.first->value,
                                       {*type, p.first->is(Attr::var) ? Attr::var : Attr::null});
@@ -225,7 +223,7 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
                                retType = last_type;
                            },
                            [this, &retType](std::shared_ptr<ASTQualident> const &type) {
-                               if (auto t = types.find(type->value); t) {
+                               if (auto t = types.find(type->id->value); t) {
                                    retType = *t;
                                };
                            },
@@ -499,9 +497,9 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     auto array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
     auto record_type = std::dynamic_pointer_cast<RecordType>(last_type);
     if (!(array_type || record_type) && !ast->selectors.empty()) {
-        auto e =
-            TypeError(llvm::formatv("variable {0} is not an array or record", ast->ident->value),
-                      ast->get_location());
+        auto e = TypeError(
+            llvm::formatv("variable {0} is not an array or record", ast->ident->id->value),
+            ast->get_location());
         errors.add(e);
     }
 
@@ -569,13 +567,14 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
 void Inspector::visit_ASTType(ASTType *ast) {
     debug("Inspector::visit_ASTType");
     std::visit(overloaded{[this, ast](std::shared_ptr<ASTQualident> const &type) {
-                              debug("Inspector::visit_ASTType {0}", type->value);
-                              auto result = types.find(type->value);
+                              debug("Inspector::visit_ASTType {0}", type->id->value);
+                              auto result = types.find(type->id->value);
                               if (!result) {
-                                  throw TypeError(llvm::formatv("Unknown type: {0}", type->value),
-                                                  ast->get_location());
+                                  throw TypeError(
+                                      llvm::formatv("Unknown type: {0}", type->id->value),
+                                      ast->get_location());
                               }
-                              debug("Inspector::visit_ASTType 2 {0}", type->value);
+                              debug("Inspector::visit_ASTType 2 {0}", type->id->value);
                               ast->type_info = *result;
                               last_type = *result;
                           },
@@ -629,11 +628,11 @@ std::string Inspector::get_Qualident(ASTQualident *ast) {
     auto        res = current_symboltable->find(ast->qual);
 
     if (ast->qual.empty()) {
-        return ast->value;
+        return ast->id->value;
     }
     if (res && res->first->id == TypeId::module) {
         auto module_name = std::dynamic_pointer_cast<ModuleType>(res->first)->module_name();
-        result = ASTQualident::make_coded_id(module_name, ast->value);
+        result = ASTQualident::make_coded_id(module_name, ast->id->value);
         // Rewrite AST with real module name
         ast->qual = module_name;
     }
@@ -643,18 +642,18 @@ std::string Inspector::get_Qualident(ASTQualident *ast) {
 void Inspector::visit_ASTQualident(ASTQualident *ast) {
     debug("Inspector::visit_ASTQualident");
     if (ast->qual.empty()) {
-        visit_ASTIdentifier(ast);
+        visit_ASTIdentifier(ast->id.get());
     } else {
         debug("Inspector::visit_ASTQualident {0}", ast->qual);
 
-        auto new_ast = std::make_shared<ASTIdentifier>();
+        auto new_ast = make<ASTIdentifier>();
         new_ast->value = get_Qualident(ast);
         is_qualid = true;
         qualid_error = false;
         visit_ASTIdentifier(new_ast.get());
         if (qualid_error) {
             auto e = CodeGenException(
-                llvm::formatv("undefined identifier {0} in MODULE {1}", ast->value, ast->qual),
+                llvm::formatv("undefined identifier {0} in MODULE {1}", ast->id->value, ast->qual),
                 ast->get_location());
             errors.add(e);
         }
@@ -687,13 +686,13 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
     is_lvalue = true;
 }
 
-void Inspector::visit_ASTInteger(ASTInteger * /* not used */) {
+void Inspector::visit_ASTInteger(ASTIntegerPtr /* not used */) {
     last_type = TypeTable::IntType;
     is_const = true;
     is_lvalue = false;
 }
 
-void Inspector::visit_ASTBool(ASTBool * /* not used */) {
+void Inspector::visit_ASTBool(ASTBoolPtr /* not used */) {
     last_type = TypeTable::BoolType;
     is_const = true;
     is_lvalue = false;

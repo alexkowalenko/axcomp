@@ -13,21 +13,20 @@
 
 namespace ax {
 
-class DefPrinter : public ASTPrinter {
+class DefPrinter : ASTPrinter {
 
   public:
     explicit DefPrinter(std::ostream &ostream) : ASTPrinter(ostream){};
 
-    void print(std::shared_ptr<ASTModule> const &ast) {
-        visit_ASTModule(ast.get());
-    };
+    void print(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
 
-    void visit_ASTModule(ASTModule *ast);
+  private:
+    void visit_ASTModule(ASTModule *ast) override;
 
-    void visit_ASTConst(ASTConst *ast);
-    void visit_ASTTypeDec(ASTTypeDec *ast);
-    void visit_ASTVar(ASTVar *ast);
-    void visit_ASTProcedure(ASTProcedure *ast);
+    void visit_ASTConst(ASTConst *ast) override;
+    void visit_ASTTypeDec(ASTTypeDec *ast) override;
+    void visit_ASTVar(ASTVar *ast) override;
+    void visit_ASTProcedure(ASTProcedure *ast) override;
 };
 
 } // namespace ax

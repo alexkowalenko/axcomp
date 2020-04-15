@@ -16,8 +16,7 @@ TEST(Inspector, VarType) {
          "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nRETURN \nEND x.", ""},
 
         // Errors
-        {"MODULE x; VAR z: complex; BEGIN x := 10 END x.", "",
-         "1,16: Unknown type: complex"},
+        {"MODULE x; VAR z: complex; BEGIN x := 10 END x.", "", "1,16: Unknown type: complex"},
     };
     do_inspect_tests(tests);
 }
@@ -28,8 +27,7 @@ TEST(Inspector, UnknownExpr) {
          "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nRETURN x\nEND y.", ""},
 
         // Errors
-        {"MODULE y; VAR x : INTEGER; BEGIN RETURN z END y.", "",
-         "1,41: undefined identifier z"},
+        {"MODULE y; VAR x : INTEGER; BEGIN RETURN z END y.", "", "1,45: undefined identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -370,8 +368,7 @@ TEST(Inspector, Assignment) {
             z := 33;
             RETURN z
             END xxx.)",
-         "MODULE xxx;\nVAR\nz: INTEGER;\nBEGIN\nz := 33;\nRETURN z\nEND xxx.",
-         ""},
+         "MODULE xxx;\nVAR\nz: INTEGER;\nBEGIN\nz := 33;\nRETURN z\nEND xxx.", ""},
 
         {R"(MODULE xxx;
             VAR z : BOOLEAN;
@@ -607,8 +604,7 @@ TEST(Inspector, Const) {
                 BEGIN
                     RETURN time
                 END alpha.)",
-         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.",
-         ""},
+         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.", ""},
 
         {R"(MODULE alpha;
                 CONST seconds = 60;
@@ -647,8 +643,7 @@ TEST(Inspector, ConstAssign) {
                 BEGIN
                     RETURN time
                 END alpha.)",
-         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.",
-         ""},
+         "MODULE alpha;\nCONST\ntime = 60*60;\nBEGIN\nRETURN time\nEND alpha.", ""},
 
         // Errors
         {R"(MODULE alpha;

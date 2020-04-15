@@ -583,7 +583,7 @@ TEST(Inspector, RecordFields) {
                     gt.z.x := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,22: undefined identifier gt"},
+         "", "10,24: undefined identifier gt"},
     };
     do_inspect_tests(tests);
 }

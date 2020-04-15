@@ -5,6 +5,8 @@
 //
 
 #pragma once
+
+#include <memory>
 namespace ax {
 
 class ASTModule;
@@ -30,13 +32,15 @@ class ASTSimpleExpr;
 class ASTTerm;
 class ASTFactor;
 class ASTDesignator;
-class ASTInteger;
-class ASTBool;
 class ASTType;
 class ASTArray;
 class ASTRecord;
 class ASTQualident;
 class ASTIdentifier;
+class ASTInteger;
+using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
+class ASTBool;
+using ASTBoolPtr = std::shared_ptr<ASTBool>;
 
 class ASTVisitor {
 
@@ -47,7 +51,7 @@ class ASTVisitor {
     virtual void visit_ASTImport(ASTImport *ast);
     virtual void visit_ASTDeclaration(ASTDeclaration *ast);
     virtual void visit_ASTConst(ASTConst *ast);
-    virtual void visit_ASTTypeDec(ASTTypeDec *);
+    virtual void visit_ASTTypeDec(ASTTypeDec *ast);
     virtual void visit_ASTVar(ASTVar *ast);
     virtual void visit_ASTProcedure(ASTProcedure *ast);
     virtual void visit_ASTAssignment(ASTAssignment *ast);
@@ -65,13 +69,14 @@ class ASTVisitor {
     virtual void visit_ASTTerm(ASTTerm *ast);
     virtual void visit_ASTFactor(ASTFactor *ast);
     virtual void visit_ASTDesignator(ASTDesignator *ast);
-    virtual void visit_ASTInteger(ASTInteger *ast);
+
     virtual void visit_ASTType(ASTType *ast);
     virtual void visit_ASTArray(ASTArray *ast);
     virtual void visit_ASTRecord(ASTRecord *ast);
     virtual void visit_ASTQualident(ASTQualident *ast);
     virtual void visit_ASTIdentifier(ASTIdentifier *ast);
-    virtual void visit_ASTBool(ASTBool *ast);
+    virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};
+    virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};
 };
 
 } // namespace ax

@@ -44,7 +44,7 @@ class Type {
 
     TypeId id = TypeId::null;
 
-    bool equiv(TypePtr const &t) const;
+    [[nodiscard]] bool equiv(TypePtr const &t) const;
 
     virtual explicit operator std::string() = 0;
 
@@ -176,7 +176,7 @@ inline Symbols make_Symbols(Symbols parent) {
     return std::make_shared<SymbolTable<std::pair<TypePtr, Attr>>>(parent);
 }
 
-inline void dump(Symbols table, std::ostream &os) {
+inline void dump(const Symbols &table, std::ostream &os) {
     os << "Dump symbol table: \n";
     std::for_each(table->cbegin(), table->cend(), [&os](auto const &x) {
         os << x.first << " -> " << x.second.first->get_name() << std::endl;

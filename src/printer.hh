@@ -18,9 +18,7 @@ class ASTPrinter : public ASTVisitor {
   public:
     explicit ASTPrinter(std::ostream &ostream) : os(ostream){};
 
-    void print(std::shared_ptr<ASTModule> const &ast) {
-        visit_ASTModule(ast.get());
-    };
+    void print(std::shared_ptr<ASTModule> const &ast) { visit_ASTModule(ast.get()); };
 
     void visit_ASTModule(ASTModule *ast) override;
     void visit_ASTImport(ASTImport *ast) override;
@@ -49,8 +47,8 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTRecord(ASTRecord *ast) override;
     void visit_ASTIdentifier(ASTIdentifier *ast) override;
     void visit_ASTQualident(ASTQualident *ast) override;
-    void visit_ASTInteger(ASTInteger *ast) override;
-    void visit_ASTBool(ASTBool *ast) override;
+    void visit_ASTInteger(ASTIntegerPtr ast) override;
+    void visit_ASTBool(ASTBoolPtr ast) override;
 
   protected:
     std::ostream &os;

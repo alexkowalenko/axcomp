@@ -19,8 +19,8 @@ enum class Attr {
     cnst,      // CONST variables
 };
 
-const inline std::string attr_star{"*"};
-const inline std::string attr_dash{"-"};
+constexpr auto attr_star{"*"};
+constexpr auto attr_dash{"-"};
 
 class Attrs : std::unordered_set<Attr> {
   public:
@@ -28,9 +28,7 @@ class Attrs : std::unordered_set<Attr> {
     ~Attrs() = default;
 
     void               set(Attr const &t) { insert(t); };
-    [[nodiscard]] bool contains(Attr const &t) const {
-        return (this->find(t) != end());
-    }
+    [[nodiscard]] bool contains(Attr const &t) const { return (this->find(t) != end()); }
 
     explicit operator std::string() const {
         if (contains(Attr::global)) {

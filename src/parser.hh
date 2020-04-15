@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ast.hh"
+#include "astvisitor.hh"
 #include "lexer.hh"
 #include "symboltable.hh"
 #include "typetable.hh"
@@ -31,18 +32,16 @@ class Parser {
     std::shared_ptr<ASTDeclaration> parse_declaration();
     std::shared_ptr<ASTConst>       parse_const();
     std::shared_ptr<ASTTypeDec>     parse_typedec();
-    void parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list);
-    std::shared_ptr<ASTVar>       parse_var();
+    void                    parse_identList(std::vector<std::shared_ptr<ASTIdentifier>> &list);
+    std::shared_ptr<ASTVar> parse_var();
     std::shared_ptr<ASTProcedure> parse_procedure();
     void                          parse_parameters(std::vector<VarDec> &params);
 
     std::shared_ptr<ASTStatement> parse_statement();
-    void
-    parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
-                          const std::set<TokenType> &end_tokens);
+    void parse_statement_block(std::vector<std::shared_ptr<ASTStatement>> &stats,
+                               const std::set<TokenType> &                 end_tokens);
 
-    std::shared_ptr<ASTAssignment>
-                                   parse_assignment(std::shared_ptr<ASTDesignator> d);
+    std::shared_ptr<ASTAssignment> parse_assignment(std::shared_ptr<ASTDesignator> d);
     std::shared_ptr<ASTReturn>     parse_return();
     std::shared_ptr<ASTExit>       parse_exit();
     std::shared_ptr<ASTCall>       parse_call(std::shared_ptr<ASTDesignator> d);
@@ -62,8 +61,8 @@ class Parser {
     std::shared_ptr<ASTRecord>     parse_record();
     std::shared_ptr<ASTQualident>  parse_qualident();
     std::shared_ptr<ASTIdentifier> parse_identifier();
-    std::shared_ptr<ASTInteger>    parse_integer();
-    std::shared_ptr<ASTBool>       parse_boolean();
+    ASTIntegerPtr                  parse_integer();
+    ASTBoolPtr                     parse_boolean();
 
     Token get_token(TokenType const &t);
 
@@ -75,11 +74,10 @@ class Parser {
     ErrorManager const &errors;
 };
 
-extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>>
-    builtins;
+extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 
 template <class T> inline std::shared_ptr<T> makeAST(Lexer &lexer) {
-    auto ast = std::make_shared<T>();
+    auto ast = make<T>();
     ast->set_location(lexer.get_location());
     return ast;
 }

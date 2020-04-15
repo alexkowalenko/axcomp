@@ -22,13 +22,13 @@
 
 namespace ax {
 
-const std::string suffix{".def"};
+constexpr auto suffix{".def"};
 
 bool ends_with(std::string const &s) {
-    if (s.length() < suffix.length()) {
+    if (s.length() < std::strlen(suffix)) {
         return false;
     }
-    return s.substr(s.length() - suffix.length(), s.length()) == suffix;
+    return s.substr(s.length() - std::strlen(suffix), s.length()) == suffix;
 }
 
 Symbols Importer::read_module(std::string const &name, TypeTable &types) {

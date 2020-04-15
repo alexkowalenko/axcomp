@@ -40,8 +40,8 @@ template <typename... T> inline void debug(const T &... msg) {
 
 using namespace llvm::sys;
 
-inline const std::string file_ext_llvmri{".ll"};
-inline const std::string file_ext_obj{".o"};
+constexpr auto file_ext_llvmri{".ll"};
+constexpr auto file_ext_obj{".o"};
 
 CodeGenerator::CodeGenerator(Options &o, TypeTable &t, Importer &i)
     : options(o), types(t), importer(i), filename("main"), builder(context), last_value(nullptr) {
@@ -164,11 +164,9 @@ void CodeGenerator::doTopVars(ASTVar *ast) {
         module->getOrInsertGlobal(var_name, type);
         GlobalVariable *gVar = module->getNamedGlobal(var_name);
 
-        GlobalValue::LinkageTypes linkage;
+        GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.first->is(Attr::global)) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
-        } else {
-            linkage = GlobalValue::LinkageTypes::InternalLinkage;
         }
         gVar->setLinkage(linkage);
         auto *init = getType_init(c.second);
@@ -187,11 +185,9 @@ void CodeGenerator::doTopConsts(ASTConst *ast) {
         GlobalVariable *gVar = module->getNamedGlobal(const_name);
 
         c.value->accept(this);
-        GlobalValue::LinkageTypes linkage;
+        GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.ident->is(Attr::global)) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
-        } else {
-            linkage = GlobalValue::LinkageTypes::InternalLinkage;
         }
         gVar->setLinkage(linkage);
         if (isa<ConstantInt>(last_value)) {
@@ -280,11 +276,9 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure *ast) {
 
     auto                      proc_name = gen_module_id(ast->name->value);
     FunctionType *            ft = FunctionType::get(returnType, proto, false);
-    GlobalValue::LinkageTypes linkage;
+    GlobalValue::LinkageTypes linkage = Function::InternalLinkage;
     if (ast->name->is(Attr::global)) {
         linkage = Function::ExternalLinkage;
-    } else {
-        linkage = Function::InternalLinkage;
     }
     Function *f = Function::Create(ft, linkage, proc_name, module.get());
 
@@ -422,8 +416,8 @@ void CodeGenerator::visit_ASTCall(ASTCall *ast) {
             auto ptr = a->expr->term->factor->factor;
             auto p2 = std::get<std::shared_ptr<ASTDesignator>>(ptr)->ident;
 
-            debug("CodeGenerator::visit_ASTCall identifier {0}", p2->value);
-            visit_ASTIdentifierPtr(p2.get());
+            debug("CodeGenerator::visit_ASTCall identifier {0}", p2->id->value);
+            visit_ASTIdentifierPtr(p2->id.get());
         } else {
             // Reference Parameter
             a->accept(this);
@@ -776,7 +770,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactor *ast) {
 
 void CodeGenerator::get_index(ASTDesignator *ast) {
     debug("CodeGenerator::get_index");
-    visit_ASTIdentifierPtr(ast->ident.get());
+    visit_ASTIdentifierPtr(ast->ident->id.get());
     auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
@@ -848,7 +842,7 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator *ast) {
 void CodeGenerator::visit_ASTQualident(ASTQualident *ast) {
     debug("CodeGenerator::visit_ASTQualident");
     if (ast->qual.empty()) {
-        visit_ASTIdentifier(ast);
+        visit_ASTIdentifier(ast->id.get());
     } else {
         auto new_ast = std::make_shared<ASTIdentifier>();
         new_ast->value = ast->make_coded_id();
@@ -859,7 +853,7 @@ void CodeGenerator::visit_ASTQualident(ASTQualident *ast) {
 void CodeGenerator::visit_ASTQualidentPtr(ASTQualident *ast) {
     debug("CodeGenerator::visit_ASTQualidentPtr");
     if (ast->qual.empty()) {
-        visit_ASTIdentifierPtr(ast);
+        visit_ASTIdentifierPtr(ast->id.get());
     } else {
         auto new_ast = std::make_shared<ASTIdentifier>();
         new_ast->value = ast->make_coded_id();
@@ -892,7 +886,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier *ast) {
 }
 
 bool CodeGenerator::find_var_Identifier(ASTDesignator *ast) {
-    if (auto res = current_symboltable->find(ast->ident->value); res) {
+    if (auto res = current_symboltable->find(ast->ident->id->value); res) {
         if (res->second == Attr::var) {
             return true;
         }
@@ -900,11 +894,11 @@ bool CodeGenerator::find_var_Identifier(ASTDesignator *ast) {
     return false;
 }
 
-void CodeGenerator::visit_ASTInteger(ASTInteger *ast) {
+void CodeGenerator::visit_ASTInteger(ASTIntegerPtr ast) {
     last_value = TypeTable::IntType->make_value(ast->value);
 }
 
-void CodeGenerator::visit_ASTBool(ASTBool *ast) {
+void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }
 
@@ -947,7 +941,7 @@ TypePtr CodeGenerator::resolve_type(std::shared_ptr<ASTType> const &t) {
     debug("CodeGenerator::resolve_type");
     TypePtr result;
     std::visit(overloaded{[this, &result](std::shared_ptr<ASTQualident> const &type) {
-                              auto res = types.resolve(type->value);
+                              auto res = types.resolve(type->id->value);
                               if (!res) {
                                   // should be a resloved type this far down
                                   assert(!res);

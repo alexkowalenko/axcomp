@@ -16,18 +16,16 @@ void ASTVisitor::visit_ASTModule(ASTModule *ast) {
     ast->decs->accept(this);
     std::for_each(begin(ast->procedures), end(ast->procedures),
                   [this](auto const &proc) { proc->accept(this); });
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTImport(ASTImport *ast) {
-    std::for_each(begin(ast->imports), end(ast->imports),
-                  [this](auto const &i) {
-                      i.first->accept(this);
-                      if (i.second) {
-                          i.second->accept(this);
-                      }
-                  });
+    std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
+        i.first->accept(this);
+        if (i.second) {
+            i.second->accept(this);
+        }
+    });
 };
 
 void ASTVisitor::visit_ASTDeclaration(ASTDeclaration *ast) {
@@ -60,8 +58,7 @@ void ASTVisitor::visit_ASTVar(ASTVar *ast) {
 void ASTVisitor::visit_ASTProcedure(ASTProcedure *ast) {
     ast->return_type->accept(this);
     ast->decs->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTAssignment(ASTAssignment *ast) {
@@ -86,16 +83,13 @@ void ASTVisitor::visit_ASTIf(ASTIf *ast) {
     std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
                   [this](auto const &x) { x->accept(this); });
 
-    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(),
-                  [this](auto const &x) {
-                      x.expr->accept(this);
-                      std::for_each(x.stats.begin(), x.stats.end(),
-                                    [this](auto const &s) { s->accept(this); });
-                  });
+    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(), [this](auto const &x) {
+        x.expr->accept(this);
+        std::for_each(x.stats.begin(), x.stats.end(), [this](auto const &s) { s->accept(this); });
+    });
     if (ast->else_clause) {
         auto elses = *ast->else_clause;
-        std::for_each(begin(elses), end(elses),
-                      [this](auto const &s) { s->accept(this); });
+        std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
     }
 }
 
@@ -106,30 +100,25 @@ void ASTVisitor::visit_ASTFor(ASTFor *ast) {
     if (ast->by) {
         (*ast->by)->accept(this);
     }
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTWhile(ASTWhile *ast) {
     ast->expr->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTRepeat(ASTRepeat *ast) {
     ast->expr->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTLoop(ASTLoop *ast) {
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTBlock(ASTBlock *ast) {
-    std::for_each(begin(ast->stats), end(ast->stats),
-                  [this](auto const &x) { x->accept(this); });
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
 void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
@@ -141,14 +130,12 @@ void ASTVisitor::visit_ASTExpr(ASTExpr *ast) {
 
 void ASTVisitor::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     ast->term->accept(this);
-    std::for_each(ast->rest.begin(), ast->rest.end(),
-                  [this](auto t) { t.second->accept(this); });
+    std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) { t.second->accept(this); });
 }
 
 void ASTVisitor::visit_ASTTerm(ASTTerm *ast) {
     ast->factor->accept(this);
-    std::for_each(ast->rest.begin(), ast->rest.end(),
-                  [this](auto t) { t.second->accept(this); });
+    std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) { t.second->accept(this); });
 }
 
 void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
@@ -158,16 +145,11 @@ void ASTVisitor::visit_ASTFactor(ASTFactor *ast) {
 
 void ASTVisitor::visit_ASTDesignator(ASTDesignator *ast) {
     ast->ident->accept(this);
-    std::for_each(
-        begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
-            std::visit(overloaded{[this](std::shared_ptr<ASTExpr> const &s) {
-                                      s->accept(this);
-                                  },
-                                  [this](FieldRef const &s) {
-                                      s.first->accept(this);
-                                  }},
-                       arg);
-        });
+    std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
+        std::visit(overloaded{[this](std::shared_ptr<ASTExpr> const &s) { s->accept(this); },
+                              [this](FieldRef const &s) { s.first->accept(this); }},
+                   arg);
+    });
 }
 
 void ASTVisitor::visit_ASTQualident(ASTQualident *ast) {}
@@ -190,9 +172,5 @@ void ASTVisitor::visit_ASTRecord(ASTRecord *ast) {
         s.second->accept(this);
     });
 }
-
-void ASTVisitor::visit_ASTInteger(ASTInteger *ast) {}
-
-void ASTVisitor::visit_ASTBool(ASTBool *ast){};
 
 } // namespace ax
