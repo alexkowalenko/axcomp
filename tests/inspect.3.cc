@@ -91,8 +91,22 @@ TEST(Inspector, ReadOnly) {
     do_inspect_tests(tests);
 }
 
-TEST(Inspector, Import) {
+TEST(Inspector, IMPORT) {
     std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                 RETURN 0;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+             IMPORT B := beta;
+             BEGIN
+                 RETURN 0;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT B := beta;\nBEGIN\nRETURN 0\nEND alpha.", ""},
 
         // Errors
 
@@ -111,18 +125,11 @@ TEST(Inspector, Import) {
          "", "2,24: MODULE System not found"},
 
     };
-    do_inspect_tests(tests);
+    do_inspect_fimport_tests(tests);
 }
 
-TEST(Inspector, Import2) {
+TEST(Inspector, ImportAccess) {
     std::vector<ParseTests> tests = {
-
-        {R"(MODULE alpha;
-             IMPORT beta;
-             BEGIN
-                 RETURN 0;
-             END alpha.)",
-         "MODULE alpha;\nIMPORT beta;\nBEGIN\nRETURN 0\nEND alpha.", ""},
 
         {R"(MODULE alpha;
              IMPORT beta;
@@ -130,6 +137,13 @@ TEST(Inspector, Import2) {
                  RETURN beta.a;
              END alpha.)",
          "MODULE alpha;\nIMPORT beta;\nBEGIN\nRETURN beta.a\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+             IMPORT B := beta;
+             BEGIN
+                 RETURN B.a;
+             END alpha.)",
+         "MODULE alpha;\nIMPORT B := beta;\nBEGIN\nRETURN beta.a\nEND alpha.", ""},
 
         {R"(MODULE alpha;
              IMPORT beta;
@@ -147,13 +161,15 @@ TEST(Inspector, Import2) {
              END alpha.)",
          "MODULE alpha;\nIMPORT beta;\nBEGIN\nbeta.d := TRUE;\nRETURN beta.c\nEND alpha.", ""},
 
-        // Errors
         {R"(MODULE alpha;
-             IMPORT gamma;
+             IMPORT beta;
              BEGIN
-                 RETURN System.x;
+                beta.f(1);
+                RETURN beta.f(100);
              END alpha.)",
-         "", "2,19: MODULE gamma not found"},
+         "MODULE alpha;\nIMPORT beta;\nBEGIN\nbeta.f(1);\nRETURN beta.f(100)\nEND alpha.", ""},
+
+        // Errors
 
         // No object aa in beta
         {R"(MODULE alpha;
@@ -163,23 +179,31 @@ TEST(Inspector, Import2) {
              END alpha.)",
          "", "4,28: undefined identifier aa in MODULE beta"},
 
-        // CONST
-        // {R"(MODULE alpha;
-        //      IMPORT beta;
-        //      BEGIN
-        //         beta.a := 10;
-        //         RETURN beta.a;
-        //      END alpha.)",
-        //  "", "error"},
+        // Try to access module without alias
+        {R"(MODULE alpha;
+             IMPORT B := beta;
+             BEGIN
+                 RETURN beta.a;
+             END alpha.)",
+         "", "4,28: undefined identifier beta"},
 
-        // // Read only
-        // {R"(MODULE alpha;
-        //      IMPORT beta;
-        //      BEGIN
-        //         beta.b := 0;
-        //          RETURN beta.a;
-        //      END alpha.)",
-        //  "", ""},
+        // CONST
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.a := 10;
+                RETURN beta.a;
+             END alpha.)",
+         "", "4,25: Can't assign to CONST variable beta.a"},
+
+        // Read only
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.b := 0;
+                 RETURN beta.a;
+             END alpha.)",
+         "", "4,25: Can't assign to read only (-) variable beta.b"},
 
         // Wrong type
         {R"(MODULE alpha;
@@ -189,6 +213,24 @@ TEST(Inspector, Import2) {
                 RETURN beta.c;
              END alpha.)",
          "", "4,25: Can't assign expression of type INTEGER to beta.d"},
+
+        // function does not exist
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.g(1, 2);
+                RETURN beta.g(100, 200);
+             END alpha.)",
+         "", "4,23: undefined PROCEDURE beta.g"},
+
+        // Wrong parameters for function
+        {R"(MODULE alpha;
+             IMPORT beta;
+             BEGIN
+                beta.f(1, 1);
+                RETURN beta.f(100);
+             END alpha.)",
+         "", "4,23: calling PROCEDURE beta.f, incorrect number of arguments: 2 instead of 1"},
 
     };
     do_inspect_fimport_tests(tests);

@@ -6,6 +6,7 @@
 
 #include "inspector.hh"
 
+#include <algorithm>
 #include <iostream>
 #include <llvm/Support/FormatVariadic.h>
 #include <memory>
@@ -171,12 +172,20 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     ast->expr->accept(this);
     auto expr_type = last_type;
 
-    if (auto res = current_symboltable->find(ast->ident->ident->value);
-        res->second == Attr::cnst) {
+    auto res = current_symboltable->find(ast->ident->ident->make_coded_id());
+    if (res->second == Attr::cnst) {
         auto e = TypeError(
             llvm::formatv("Can't assign to CONST variable {0}", std::string(*ast->ident)),
             ast->get_location());
         errors.add(e);
+        return;
+    }
+    if (res->second == Attr::read_only) {
+        auto e = TypeError(
+            llvm::formatv("Can't assign to read only (-) variable {0}", std::string(*ast->ident)),
+            ast->get_location());
+        errors.add(e);
+        return;
     }
 
     ast->ident->accept(this);
@@ -237,18 +246,22 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     debug("Inspector::visit_ASTCall");
     // auto name = ast->name->ident->make_coded_id();
     auto name = get_Qualident(ast->name->ident.get());
+
     debug("Inspector::visit_ASTCall - {0} {1}", name, name);
     auto res = current_symboltable->find(name);
     if (!res) {
+        std::replace(begin(name), end(name), '_', '.');
         throw CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name),
                                ast->get_location());
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(res->first);
     if (!procType) {
+        std::replace(begin(name), end(name), '_', '.');
         throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
     }
 
     if (ast->args.size() != procType->params.size()) {
+        std::replace(begin(name), end(name), '_', '.');
         throw TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
                                       "arguments: {1} instead of {2}",
                                       name, ast->args.size(), procType->params.size()),
@@ -265,6 +278,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
         if (!(*base_last)->equiv(*proc_base)) {
+            std::replace(begin(name), end(name), '_', '.');
             auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "
                                              "type {1} for parameter {2}",
                                              name, last_type->get_name(),
@@ -275,6 +289,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
 
         if ((*proc_iter).second == Attr::var && !is_lvalue) {
             debug("Inspector::visit_ASTCall is_lvalue");
+            std::replace(begin(name), end(name), '_', '.');
             auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
                                              "reference for VAR parameter {2}",
                                              name, last_type->get_name(),
