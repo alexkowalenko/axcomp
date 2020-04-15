@@ -22,38 +22,38 @@ class Inspector : ASTVisitor {
   public:
     explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i);
 
-    void check(ASTModulePtr const &ast) { visit_ASTModule(ast.get()); };
+    void check(ASTModulePtr const &ast) { ast->accept(this); };
 
   private:
-    void visit_ASTModule(ASTModule *ast) override;
-    void visit_ASTImport(ASTImport *ast) override;
-    void visit_ASTConst(ASTConst *ast) override;
-    void visit_ASTTypeDec(ASTTypeDec *ast) override;
-    void visit_ASTVar(ASTVar *ast) override;
-    void visit_ASTProcedure(ASTProcedure *ast) override;
-    void visit_ASTAssignment(ASTAssignment *ast) override;
-    void visit_ASTReturn(ASTReturn *ast) override;
-    void visit_ASTCall(ASTCall *ast) override;
-    void visit_ASTIf(ASTIf *ast) override;
-    void visit_ASTFor(ASTFor *ast) override;
-    void visit_ASTWhile(ASTWhile *ast) override;
-    void visit_ASTRepeat(ASTRepeat *ast) override;
-    void visit_ASTLoop(ASTLoop *ast) override;
-    void visit_ASTBlock(ASTBlock *ast) override;
-    void visit_ASTSimpleExpr(ASTSimpleExpr *ast) override;
-    void visit_ASTExpr(ASTExpr *ast) override;
-    void visit_ASTTerm(ASTTerm *ast) override;
-    void visit_ASTFactor(ASTFactor *ast) override;
-    void visit_ASTDesignator(ASTDesignator *ast) override;
-    void visit_ASTType(ASTType *ast) override;
-    void visit_ASTArray(ASTArray *ast) override;
-    void visit_ASTRecord(ASTRecord *ast) override;
-    void visit_ASTQualident(ASTQualident *ast) override;
-    void visit_ASTIdentifier(ASTIdentifier *ast) override;
+    void visit_ASTModule(ASTModulePtr ast) override;
+    void visit_ASTImport(ASTImportPtr ast) override;
+    void visit_ASTConst(ASTConstPtr ast) override;
+    void visit_ASTTypeDec(ASTTypeDecPtr ast) override;
+    void visit_ASTVar(ASTVarPtr ast) override;
+    void visit_ASTProcedure(ASTProcedurePtr ast) override;
+    void visit_ASTAssignment(ASTAssignmentPtr ast) override;
+    void visit_ASTReturn(ASTReturnPtr ast) override;
+    void visit_ASTCall(ASTCallPtr ast) override;
+    void visit_ASTIf(ASTIfPtr ast) override;
+    void visit_ASTFor(ASTForPtr ast) override;
+    void visit_ASTWhile(ASTWhilePtr ast) override;
+    void visit_ASTRepeat(ASTRepeatPtr ast) override;
+    void visit_ASTLoop(ASTLoopPtr ast) override;
+    void visit_ASTBlock(ASTBlockPtr ast) override;
+    void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
+    void visit_ASTExpr(ASTExprPtr ast) override;
+    void visit_ASTTerm(ASTTermPtr ast) override;
+    void visit_ASTFactor(ASTFactorPtr ast) override;
+    void visit_ASTDesignator(ASTDesignatorPtr ast) override;
+    void visit_ASTType(ASTTypePtr ast) override;
+    void visit_ASTArray(ASTArrayPtr ast) override;
+    void visit_ASTRecord(ASTRecordPtr ast) override;
+    void visit_ASTQualident(ASTQualidentPtr ast) override;
+    void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
-    std::string get_Qualident(ASTQualident *ast);
+    std::string get_Qualident(ASTQualidentPtr ast);
 
     Symbols top_symboltable;
     Symbols current_symboltable;
@@ -62,12 +62,12 @@ class Inspector : ASTVisitor {
     ErrorManager &errors;
     Importer &    importer;
 
-    bool          is_const{false};
-    bool          is_lvalue{false};
-    bool          is_qualid{false};
-    bool          qualid_error{false};
-    TypePtr       last_type{nullptr};
-    ASTProcedure *last_proc{nullptr};
+    bool            is_const{false};
+    bool            is_lvalue{false};
+    bool            is_qualid{false};
+    bool            qualid_error{false};
+    TypePtr         last_type{nullptr};
+    ASTProcedurePtr last_proc{nullptr};
 };
 
 } // namespace ax

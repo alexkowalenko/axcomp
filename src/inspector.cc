@@ -28,7 +28,7 @@ template <typename... T> inline void debug(const T &... msg) {
 Inspector::Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i)
     : top_symboltable(s), current_symboltable{s}, types(t), errors(e), importer(i){};
 
-void Inspector::visit_ASTModule(ASTModule *ast) {
+void Inspector::visit_ASTModule(ASTModulePtr ast) {
     debug("Inspector::visit_ASTModule");
     if (ast->import) {
         ast->import->accept(this);
@@ -43,7 +43,7 @@ void Inspector::visit_ASTModule(ASTModule *ast) {
                   [this](auto const &x) { x->accept(this); });
 }
 
-void Inspector::visit_ASTImport(ASTImport *ast) {
+void Inspector::visit_ASTImport(ASTImportPtr ast) {
     debug("Inspector::visit_ASTImport");
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
         auto found = importer.find_module(i.first->value, top_symboltable, types);
@@ -54,7 +54,7 @@ void Inspector::visit_ASTImport(ASTImport *ast) {
     });
 }
 
-void Inspector::visit_ASTConst(ASTConst *ast) {
+void Inspector::visit_ASTConst(ASTConstPtr ast) {
     debug("Inspector::visit_ASTConst");
     std::for_each(begin(ast->consts), end(ast->consts), [this, ast](auto &c) {
         c.value->accept(this);
@@ -77,7 +77,7 @@ void Inspector::visit_ASTConst(ASTConst *ast) {
     });
 }
 
-void Inspector::visit_ASTTypeDec(ASTTypeDec *ast) {
+void Inspector::visit_ASTTypeDec(ASTTypeDecPtr ast) {
     debug("Inspector::visit_ASTTypeDec");
     std::for_each(begin(ast->types), end(ast->types), [this, ast](auto const &t) {
         if (t.first->is(Attr::read_only)) {
@@ -92,7 +92,7 @@ void Inspector::visit_ASTTypeDec(ASTTypeDec *ast) {
     });
 }
 
-void Inspector::visit_ASTVar(ASTVar *ast) {
+void Inspector::visit_ASTVar(ASTVarPtr ast) {
     debug("Inspector::visit_ASTVar");
 
     std::for_each(ast->vars.begin(), ast->vars.end(), [this](auto const &v) {
@@ -104,7 +104,7 @@ void Inspector::visit_ASTVar(ASTVar *ast) {
     });
 }
 
-void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
+void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     debug("Inspector::visit_ASTProcedure");
     // Check return type
     auto retType = TypeTable::VoidType;
@@ -165,7 +165,7 @@ void Inspector::visit_ASTProcedure(ASTProcedure *ast) {
     current_symboltable = former_symboltable;
 }
 
-void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
+void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     debug("Inspector::visit_ASTAssignment");
     ast->expr->accept(this);
     auto expr_type = last_type;
@@ -204,7 +204,7 @@ void Inspector::visit_ASTAssignment(ASTAssignment *ast) {
     }
 }
 
-void Inspector::visit_ASTReturn(ASTReturn *ast) {
+void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
     debug("Inspector::visit_ASTReturn");
     TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
@@ -240,10 +240,10 @@ void Inspector::visit_ASTReturn(ASTReturn *ast) {
     } // namespace ax
 }
 
-void Inspector::visit_ASTCall(ASTCall *ast) {
+void Inspector::visit_ASTCall(ASTCallPtr ast) {
     debug("Inspector::visit_ASTCall");
     // auto name = ast->name->ident->make_coded_id();
-    auto name = get_Qualident(ast->name->ident.get());
+    auto name = get_Qualident(ast->name->ident);
 
     debug("Inspector::visit_ASTCall - {0} {1}", name, name);
     auto res = current_symboltable->find(name);
@@ -300,7 +300,7 @@ void Inspector::visit_ASTCall(ASTCall *ast) {
     last_type = procType->ret;
 }
 
-void Inspector::visit_ASTIf(ASTIf *ast) {
+void Inspector::visit_ASTIf(ASTIfPtr ast) {
     ast->if_clause.expr->accept(this);
     if (last_type != TypeTable::BoolType) {
         auto e = TypeError("IF expression must be type BOOLEAN", ast->get_location());
@@ -324,7 +324,7 @@ void Inspector::visit_ASTIf(ASTIf *ast) {
     }
 }
 
-void Inspector::visit_ASTFor(ASTFor *ast) {
+void Inspector::visit_ASTFor(ASTForPtr ast) {
     ast->start->accept(this);
     if (!last_type->is_numeric()) {
         auto e = TypeError("FOR start expression must be numeric type", ast->get_location());
@@ -352,7 +352,7 @@ void Inspector::visit_ASTFor(ASTFor *ast) {
     current_symboltable = former_symboltable;
 }
 
-void Inspector::visit_ASTWhile(ASTWhile *ast) {
+void Inspector::visit_ASTWhile(ASTWhilePtr ast) {
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
         auto e = TypeError("WHILE expression must be type BOOLEAN", ast->get_location());
@@ -362,7 +362,7 @@ void Inspector::visit_ASTWhile(ASTWhile *ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
-void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
+void Inspector::visit_ASTRepeat(ASTRepeatPtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
     ast->expr->accept(this);
     if (last_type != TypeTable::BoolType) {
@@ -371,15 +371,15 @@ void Inspector::visit_ASTRepeat(ASTRepeat *ast) {
     }
 }
 
-void Inspector::visit_ASTLoop(ASTLoop *ast) {
+void Inspector::visit_ASTLoop(ASTLoopPtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
-void Inspector::visit_ASTBlock(ASTBlock *ast) {
+void Inspector::visit_ASTBlock(ASTBlockPtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
-void Inspector::visit_ASTExpr(ASTExpr *ast) {
+void Inspector::visit_ASTExpr(ASTExprPtr ast) {
     ast->expr->accept(this);
     auto c1 = is_const;
     if (ast->relation) {
@@ -400,8 +400,8 @@ void Inspector::visit_ASTExpr(ASTExpr *ast) {
     }
 }
 
-void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
-    visit_ASTTerm(ast->term.get());
+void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
+    ast->term->accept(this);
     auto t1 = last_type;
     auto c1 = is_const;
     for (auto const &t : ast->rest) {
@@ -432,8 +432,8 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr *ast) {
     };
 }
 
-void Inspector::visit_ASTTerm(ASTTerm *ast) {
-    visit_ASTFactor(ast->factor.get());
+void Inspector::visit_ASTTerm(ASTTermPtr ast) {
+    ast->factor->accept(this);
     auto t1 = last_type;
     auto c1 = is_const;
     for (auto const &t : ast->rest) {
@@ -465,10 +465,10 @@ void Inspector::visit_ASTTerm(ASTTerm *ast) {
     };
 }
 
-void Inspector::visit_ASTFactor(ASTFactor *ast) {
+void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
     std::visit(overloaded{
                    [this](auto factor) { factor->accept(this); },
-                   [this](ASTCallPtr  const &factor) {
+                   [this](ASTCallPtr const &factor) {
                        // need to pass on return type */
                        factor->accept(this);
                        is_lvalue = false;
@@ -489,7 +489,7 @@ void Inspector::visit_ASTFactor(ASTFactor *ast) {
                ast->factor);
 }
 
-void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
+void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
     debug("Inspector::visit_ASTDesignator");
     ast->ident->accept(this);
 
@@ -564,7 +564,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator *ast) {
     }
 }
 
-void Inspector::visit_ASTType(ASTType *ast) {
+void Inspector::visit_ASTType(ASTTypePtr ast) {
     debug("Inspector::visit_ASTType");
     std::visit(overloaded{[this, ast](ASTQualidentPtr const &type) {
                               debug("Inspector::visit_ASTType {0}", type->id->value);
@@ -589,7 +589,7 @@ void Inspector::visit_ASTType(ASTType *ast) {
                ast->type);
 }
 
-void Inspector::visit_ASTArray(ASTArray *ast) {
+void Inspector::visit_ASTArray(ASTArrayPtr ast) {
     ast->size->accept(this);
     if (!last_type->is_numeric()) {
         auto e = TypeError("ARRAY expecting numeric size", ast->get_location());
@@ -604,7 +604,7 @@ void Inspector::visit_ASTArray(ASTArray *ast) {
     types.put(last_type->get_name(), last_type);
 }
 
-void Inspector::visit_ASTRecord(ASTRecord *ast) {
+void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
     debug("Inspector::visit_ASTRecord");
     auto rec_type = std::make_shared<ax::RecordType>();
     std::for_each(begin(ast->fields), end(ast->fields), [this, rec_type, ast](auto const &v) {
@@ -623,7 +623,7 @@ void Inspector::visit_ASTRecord(ASTRecord *ast) {
     types.put(last_type->get_name(), last_type);
 }
 
-std::string Inspector::get_Qualident(ASTQualident *ast) {
+std::string Inspector::get_Qualident(ASTQualidentPtr ast) {
     std::string result;
     auto        res = current_symboltable->find(ast->qual);
 
@@ -639,10 +639,10 @@ std::string Inspector::get_Qualident(ASTQualident *ast) {
     return result;
 }
 
-void Inspector::visit_ASTQualident(ASTQualident *ast) {
+void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
     debug("Inspector::visit_ASTQualident");
     if (ast->qual.empty()) {
-        visit_ASTIdentifier(ast->id.get());
+        visit_ASTIdentifier(ast->id);
     } else {
         debug("Inspector::visit_ASTQualident {0}", ast->qual);
 
@@ -650,7 +650,7 @@ void Inspector::visit_ASTQualident(ASTQualident *ast) {
         new_ast->value = get_Qualident(ast);
         is_qualid = true;
         qualid_error = false;
-        visit_ASTIdentifier(new_ast.get());
+        visit_ASTIdentifier(new_ast);
         if (qualid_error) {
             auto e = CodeGenException(
                 llvm::formatv("undefined identifier {0} in MODULE {1}", ast->id->value, ast->qual),
@@ -660,7 +660,7 @@ void Inspector::visit_ASTQualident(ASTQualident *ast) {
     }
 }
 
-void Inspector::visit_ASTIdentifier(ASTIdentifier *ast) {
+void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     debug("Inspector::visit_ASTIdentifier");
     auto res = current_symboltable->find(ast->value);
     if (!res) {

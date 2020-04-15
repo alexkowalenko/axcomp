@@ -490,9 +490,9 @@ void Parser::parse_statement_block(std::vector<ASTStatementPtr> &stats,
 /**
  * @brief ident ":=" expr
  *
- * @return ASTAssignmentPtr 
+ * @return ASTAssignmentPtr
  */
-ASTAssignmentPtr  Parser::parse_assignment(ASTDesignatorPtr d) {
+ASTAssignmentPtr Parser::parse_assignment(ASTDesignatorPtr d) {
     debug("Parser::parse_assignment");
     auto assign = makeAST<ASTAssignment>(lexer);
 
@@ -505,9 +505,9 @@ ASTAssignmentPtr  Parser::parse_assignment(ASTDesignatorPtr d) {
 /**
  * @brief RETURN [expr]
  *
- * @return ASTReturnPtr 
+ * @return ASTReturnPtr
  */
-ASTReturnPtr  Parser::parse_return() {
+ASTReturnPtr Parser::parse_return() {
     debug("Parser::parse_return");
     auto ret = makeAST<ASTReturn>(lexer);
     get_token(TokenType::ret);
@@ -521,9 +521,9 @@ ASTReturnPtr  Parser::parse_return() {
 /**
  * @brief EXIT
  *
- * @return ASTExitPtr 
+ * @return ASTExitPtr
  */
-ASTExitPtr  Parser::parse_exit() {
+ASTExitPtr Parser::parse_exit() {
     get_token(TokenType::exit);
     auto ex = makeAST<ASTExit>(lexer);
     return ex;
@@ -532,12 +532,12 @@ ASTExitPtr  Parser::parse_exit() {
 /**
  * @brief  IDENT "(" expr ( "," expr )* ")"
  *
- * @return ASTCallPtr 
+ * @return ASTCallPtr
  */
-ASTCallPtr  Parser::parse_call(ASTDesignatorPtr d) {
+ASTCallPtr Parser::parse_call(ASTDesignatorPtr d) {
     auto call = makeAST<ASTCall>(lexer);
 
-    call->name = d;
+    call->name = std::move(d);
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::l_paren) {
         // Parse arguments
@@ -569,9 +569,9 @@ inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif, Token
     ( "ELSIF" expression "THEN" statement_seq )*
     [ "ELSE" statement_seq "END" ]
  *
- * @return ASTIfPtr 
+ * @return ASTIfPtr
  */
-ASTIfPtr  Parser::parse_if() {
+ASTIfPtr Parser::parse_if() {
     debug("Parser::parse_if");
     auto stat = makeAST<ASTIf>(lexer);
 
@@ -611,9 +611,9 @@ ASTIfPtr  Parser::parse_if() {
  * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"
     statement_seq "END"
  *
- * @return ASTForPtr 
+ * @return ASTForPtr
  */
-ASTForPtr  Parser::parse_for() {
+ASTForPtr Parser::parse_for() {
     debug("Parser::parse_for");
     auto ast = makeAST<ASTFor>(lexer);
 
@@ -642,7 +642,7 @@ ASTForPtr  Parser::parse_for() {
     return ast;
 }
 
-ASTWhilePtr  Parser::parse_while() {
+ASTWhilePtr Parser::parse_while() {
     auto ast = makeAST<ASTWhile>(lexer);
 
     // WHILE
@@ -659,7 +659,7 @@ ASTWhilePtr  Parser::parse_while() {
 
 inline const std::set<TokenType> repeat_ends{TokenType::until};
 
-ASTRepeatPtr  Parser::parse_repeat() {
+ASTRepeatPtr Parser::parse_repeat() {
     auto ast = makeAST<ASTRepeat>(lexer);
 
     // REPEAT
@@ -674,7 +674,7 @@ ASTRepeatPtr  Parser::parse_repeat() {
     return ast;
 }
 
-ASTLoopPtr  Parser::parse_loop() {
+ASTLoopPtr Parser::parse_loop() {
     auto ast = makeAST<ASTLoop>(lexer);
 
     // LOOP
@@ -687,7 +687,7 @@ ASTLoopPtr  Parser::parse_loop() {
     return ast;
 }
 
-ASTBlockPtr  Parser::parse_block() {
+ASTBlockPtr Parser::parse_block() {
     auto ast = makeAST<ASTBlock>(lexer);
     // BEGIN
     get_token(TokenType::begin);

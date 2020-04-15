@@ -27,7 +27,7 @@ class CodeGenerator : ASTVisitor {
   public:
     explicit CodeGenerator(Options &o, TypeTable &t, Importer &i);
 
-    void generate(ASTModulePtr const &ast) { visit_ASTModule(ast.get()); };
+    void generate(ASTModulePtr const &ast) { ast->accept(this); };
 
     void setup_builtins();
 
@@ -35,40 +35,40 @@ class CodeGenerator : ASTVisitor {
     void generate_llcode();
 
   private:
-    void visit_ASTModule(ASTModule *ast) override;
-    void visit_ASTImport(ASTImport *ast) override;
-    void doTopDecs(ASTDeclaration *ast);
-    void doTopVars(ASTVar *ast);
-    void doTopConsts(ASTConst *ast);
+    void visit_ASTModule(ASTModulePtr ast) override;
+    void visit_ASTImport(ASTImportPtr ast) override;
+    void doTopDecs(ASTDeclarationPtr ast);
+    void doTopVars(ASTVarPtr ast);
+    void doTopConsts(ASTConstPtr ast);
 
-    void visit_ASTDeclaration(ASTDeclaration *ast) override;
-    void visit_ASTConst(ASTConst *ast) override;
-    void visit_ASTVar(ASTVar *ast) override;
+    void visit_ASTDeclaration(ASTDeclarationPtr ast) override;
+    void visit_ASTConst(ASTConstPtr ast) override;
+    void visit_ASTVar(ASTVarPtr ast) override;
 
     void doProcedures(std::vector<ASTProcedurePtr> const &procs);
 
-    void visit_ASTProcedure(ASTProcedure *ast) override;
-    void visit_ASTAssignment(ASTAssignment *ast) override;
-    void visit_ASTReturn(ASTReturn *ast) override;
-    void visit_ASTExit(ASTExit *ast) override;
-    void visit_ASTCall(ASTCall *ast) override;
-    void visit_ASTIf(ASTIf *ast) override;
-    void visit_ASTFor(ASTFor *ast) override;
-    void visit_ASTWhile(ASTWhile *ast) override;
-    void visit_ASTRepeat(ASTRepeat *ast) override;
-    void visit_ASTLoop(ASTLoop *ast) override;
-    void visit_ASTBlock(ASTBlock *ast) override;
-    void visit_ASTExpr(ASTExpr *ast) override;
-    void visit_ASTSimpleExpr(ASTSimpleExpr *ast) override;
-    void visit_ASTTerm(ASTTerm *ast) override;
-    void visit_ASTFactor(ASTFactor *ast) override;
-    void get_index(ASTDesignator *ast);
-    void visit_ASTDesignator(ASTDesignator *ast) override;
-    void visit_ASTDesignatorPtr(ASTDesignator *ast);
-    void visit_ASTQualident(ASTQualident *ast) override;
-    void visit_ASTQualidentPtr(ASTQualident *ast);
-    void visit_ASTIdentifier(ASTIdentifier *ast) override;
-    void visit_ASTIdentifierPtr(ASTIdentifier *ast);
+    void visit_ASTProcedure(ASTProcedurePtr ast) override;
+    void visit_ASTAssignment(ASTAssignmentPtr ast) override;
+    void visit_ASTReturn(ASTReturnPtr ast) override;
+    void visit_ASTExit(ASTExitPtr ast) override;
+    void visit_ASTCall(ASTCallPtr ast) override;
+    void visit_ASTIf(ASTIfPtr ast) override;
+    void visit_ASTFor(ASTForPtr ast) override;
+    void visit_ASTWhile(ASTWhilePtr ast) override;
+    void visit_ASTRepeat(ASTRepeatPtr ast) override;
+    void visit_ASTLoop(ASTLoopPtr ast) override;
+    void visit_ASTBlock(ASTBlockPtr ast) override;
+    void visit_ASTExpr(ASTExprPtr ast) override;
+    void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
+    void visit_ASTTerm(ASTTermPtr ast) override;
+    void visit_ASTFactor(ASTFactorPtr ast) override;
+    void get_index(ASTDesignatorPtr ast);
+    void visit_ASTDesignator(ASTDesignatorPtr ast) override;
+    void visit_ASTDesignatorPtr(ASTDesignatorPtr ast);
+    void visit_ASTQualident(ASTQualidentPtr ast) override;
+    void visit_ASTQualidentPtr(ASTQualidentPtr ast);
+    void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
+    void visit_ASTIdentifierPtr(ASTIdentifierPtr ast);
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
@@ -84,7 +84,7 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(ASTTypePtr const &type);
     Constant *  getType_init(ASTTypePtr const &type);
 
-    bool                      find_var_Identifier(ASTDesignator *ast);
+    bool                      find_var_Identifier(ASTDesignatorPtr ast);
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
     Options &  options;
