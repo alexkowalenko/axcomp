@@ -18,14 +18,12 @@ class Importer {
     explicit Importer(ErrorManager &e) : errors{e} {};
     virtual ~Importer() = default;
 
-    virtual bool find_module(std::string const &name, Symbols &symbols, TypeTable &types);
+    virtual bool find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &types);
 
   private:
-    Symbols read_module(std::string const &name, TypeTable &types);
+    std::optional<SymbolFrameTable> read_module(std::string const &name, TypeTable &types);
 
-    void transfer_symbols(Symbols const &from, Symbols &to, std::string const &module_name);
-
-    ErrorManager &                 errors;
-    std::map<std::string, Symbols> cache;
+    ErrorManager &                          errors;
+    std::map<std::string, SymbolFrameTable> cache;
 };
 } // namespace ax

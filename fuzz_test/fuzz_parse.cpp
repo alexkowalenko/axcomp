@@ -20,8 +20,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     ErrorManager       errors;
     Lexer              lex(is, errors);
 
-    auto      symbols = make_Symbols(nullptr);
-    TypeTable types;
+    SymbolFrameTable symbols;
+    TypeTable        types;
     types.initialise();
     Parser parser(lex, symbols, types, errors);
 

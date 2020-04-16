@@ -25,8 +25,8 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-Inspector::Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i)
-    : top_symboltable(s), current_symboltable{s}, types(t), errors(e), importer(i){};
+Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)
+    : symboltable(s), types(t), errors(e), importer(i){};
 
 void Inspector::visit_ASTModule(ASTModulePtr ast) {
     debug("Inspector::visit_ASTModule");
@@ -46,7 +46,7 @@ void Inspector::visit_ASTModule(ASTModulePtr ast) {
 void Inspector::visit_ASTImport(ASTImportPtr ast) {
     debug("Inspector::visit_ASTImport");
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
-        auto found = importer.find_module(i.first->value, top_symboltable, types);
+        auto found = importer.find_module(i.first->value, symboltable, types);
         if (!found) {
             throw TypeError(llvm::formatv("MODULE {0} not found", i.first->value),
                             i.first->get_location());
@@ -73,7 +73,7 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
         c.type->type_info = last_type;
         c.type->type = make<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
-        current_symboltable->put(c.ident->value, {last_type, Attr::cnst});
+        symboltable.put(c.ident->value, {last_type, Attr::cnst});
     });
 }
 
@@ -100,7 +100,7 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
         // defined.
         v.second->accept(this);
         // Update VAR declaration symbols with type
-        current_symboltable->put(v.first->value, {last_type, Attr::null});
+        symboltable.put(v.first->value, {last_type, Attr::null});
     });
 }
 
@@ -133,36 +133,34 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
-    current_symboltable->put(ast->name->value, {proc_type, Attr::null});
+    symboltable.put(ast->name->value, {proc_type, Attr::null});
     types.put(ast->name->value, proc_type);
 
     last_proc = ast;
 
     debug("Inspector::visit_ASTProcedure new symbol table");
     // new symbol table
-    auto former_symboltable = current_symboltable;
-    current_symboltable = make_Symbols(former_symboltable);
+    symboltable.push_frame(ast->name->value);
     std::for_each(ast->params.begin(), ast->params.end(), [this](auto const &p) {
-        std::visit(overloaded{[this](auto arg) {
-                                  arg->accept(this);
-                              }, // lambda arg can't be reference here
-                              [this, p](ASTQualidentPtr const &tname) {
-                                  debug("Inspector::visit_ASTProcedure param type ident");
-                                  auto type = types.find(tname->id->value);
-                                  current_symboltable->put(
-                                      p.first->value,
-                                      {*type, p.first->is(Attr::var) ? Attr::var : Attr::null});
-                              }},
-                   p.second->type);
-        current_symboltable->put(p.first->value,
-                                 {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+        std::visit(
+            overloaded{
+                [this](auto arg) { arg->accept(this); }, // lambda arg can't be reference here
+                [this, p](ASTQualidentPtr const &tname) {
+                    debug("Inspector::visit_ASTProcedure param type ident");
+                    auto type = types.find(tname->id->value);
+                    symboltable.put(p.first->value,
+                                    {*type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+                }},
+            p.second->type);
+        symboltable.put(p.first->value,
+                        {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
     });
     if (ast->decs) {
         ast->decs->accept(this);
     }
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this, ast](auto const &x) { x->accept(this); });
-    current_symboltable = former_symboltable;
+    symboltable.pop_frame();
 }
 
 void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
@@ -170,15 +168,15 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     ast->expr->accept(this);
     auto expr_type = last_type;
 
-    auto res = current_symboltable->find(ast->ident->ident->make_coded_id());
-    if (res->second == Attr::cnst) {
+    auto res = symboltable.find(ast->ident->ident->make_coded_id());
+    if (res->is(Attr::cnst)) {
         auto e = TypeError(
             llvm::formatv("Can't assign to CONST variable {0}", std::string(*ast->ident)),
             ast->get_location());
         errors.add(e);
         return;
     }
-    if (res->second == Attr::read_only) {
+    if (res->is(Attr::read_only)) {
         auto e = TypeError(
             llvm::formatv("Can't assign to read only (-) variable {0}", std::string(*ast->ident)),
             ast->get_location());
@@ -246,13 +244,13 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
     auto name = get_Qualident(ast->name->ident);
 
     debug("Inspector::visit_ASTCall - {0} {1}", name, name);
-    auto res = current_symboltable->find(name);
+    auto res = symboltable.find(name);
     if (!res) {
         std::replace(begin(name), end(name), '_', '.');
         throw CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name),
                                ast->get_location());
     }
-    auto procType = std::dynamic_pointer_cast<ProcedureType>(res->first);
+    auto procType = std::dynamic_pointer_cast<ProcedureType>(res->type);
     if (!procType) {
         std::replace(begin(name), end(name), '_', '.');
         throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
@@ -343,13 +341,12 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
         }
     }
 
-    // new symbol table
-    auto former_symboltable = current_symboltable;
-    current_symboltable = make_Symbols(former_symboltable);
-    current_symboltable->put(ast->ident->value, {TypeTable::IntType, Attr::null});
+    // new frame
+    symboltable.push_frame("for");
+    symboltable.put(ast->ident->value, {TypeTable::IntType, Attr::null});
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
-    current_symboltable = former_symboltable;
+    symboltable.pop_frame();
 }
 
 void Inspector::visit_ASTWhile(ASTWhilePtr ast) {
@@ -625,13 +622,13 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
 
 std::string Inspector::get_Qualident(ASTQualidentPtr ast) {
     std::string result;
-    auto        res = current_symboltable->find(ast->qual);
+    auto        res = symboltable.find(ast->qual);
 
     if (ast->qual.empty()) {
         return ast->id->value;
     }
-    if (res && res->first->id == TypeId::module) {
-        auto module_name = std::dynamic_pointer_cast<ModuleType>(res->first)->module_name();
+    if (res && res->type->id == TypeId::module) {
+        auto module_name = std::dynamic_pointer_cast<ModuleType>(res->type)->module_name();
         result = ASTQualident::make_coded_id(module_name, ast->id->value);
         // Rewrite AST with real module name
         ast->qual = module_name;
@@ -662,7 +659,7 @@ void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
 
 void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     debug("Inspector::visit_ASTIdentifier");
-    auto res = current_symboltable->find(ast->value);
+    auto res = symboltable.find(ast->value);
     if (!res) {
         if (!is_qualid) {
             throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
@@ -673,16 +670,16 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
         }
     }
     // debug("find type: {} for {}", res, res->name);
-    auto resType = types.resolve(res->first->get_name());
+    auto resType = types.resolve(res->type->get_name());
     if (!resType) {
         auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
-                                         res->first->get_name(), ast->value),
+                                         res->type->get_name(), ast->value),
                            ast->get_location());
         errors.add(e);
         return;
     }
     last_type = *resType;
-    is_const = res->second == Attr::cnst;
+    is_const = res->is(Attr::cnst);
     is_lvalue = true;
 }
 

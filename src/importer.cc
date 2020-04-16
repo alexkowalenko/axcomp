@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include <dirent.h>
+#include <optional>
 #include <sys/types.h>
 
 #include "llvm/Support/FormatVariadic.h"
@@ -31,9 +32,8 @@ bool ends_with(std::string const &s) {
     return s.substr(s.length() - std::strlen(suffix), s.length()) == suffix;
 }
 
-Symbols Importer::read_module(std::string const &name, TypeTable &types) {
+std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
 
-    Symbols     module_symbols = nullptr;
     std::string path = ".";
 
     auto *dir = opendir(path.c_str());
@@ -55,28 +55,30 @@ Symbols Importer::read_module(std::string const &name, TypeTable &types) {
             fname = std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
 
             if (fname == name) {
-                module_symbols = make_Symbols(nullptr);
-                std::ifstream is(in_file->d_name);
-                Lexer         lex(is, errors);
-                DefParser     parser(lex, module_symbols, types, errors);
-                auto          ast = parser.parse();
-                Inspector     inpect(module_symbols, types, errors, *this);
+                SymbolFrameTable module_symbols;
+                std::ifstream    is(in_file->d_name);
+                Lexer            lex(is, errors);
+                DefParser        parser(lex, module_symbols, types, errors);
+                auto             ast = parser.parse();
+                Inspector        inpect(module_symbols, types, errors, *this);
                 inpect.check(ast);
                 return module_symbols;
             }
         }
     }
-    return module_symbols;
+    return std::nullopt;
 }
 
-void Importer::transfer_symbols(Symbols const &from, Symbols &to, std::string const &module_name) {
-    std::for_each(from->cbegin(), from->cend(), [this, module_name, to](auto const &s) {
-        auto n = ASTQualident::make_coded_id(module_name, s.first);
-        to->put(n, s.second);
-    });
+void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
+                      std::string const &module_name) {
+
+    for (auto iter = from.begin(); iter != from.end(); iter++) {
+        std::string n = ASTQualident::make_coded_id(module_name, iter->first);
+        to.put(n, iter->second);
+    }
 }
 
-bool Importer::find_module(std::string const &name, Symbols &symbols, TypeTable &types) {
+bool Importer::find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &types) {
     // Look at cache
 
     if (auto res = cache.find(name); res != cache.end()) {
@@ -84,9 +86,8 @@ bool Importer::find_module(std::string const &name, Symbols &symbols, TypeTable 
         return true;
     }
 
-    auto mod_symbols = read_module(name, types);
-    if (mod_symbols) {
-        transfer_symbols(mod_symbols, symbols, name);
+    if (auto mod_symbols = read_module(name, types); mod_symbols) {
+        transfer_symbols(*mod_symbols, symbols, name);
         return true;
     }
     return false;

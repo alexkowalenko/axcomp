@@ -23,8 +23,7 @@
 
 using namespace ax;
 
-void output_defs(std::shared_ptr<ASTModule> const &ast,
-                 Options const &                   options) {
+void output_defs(std::shared_ptr<ASTModule> const &ast, Options const &options) {
     std::string def_file{"out.def"};
     if (!options.file_name.empty()) {
         auto filename = options.file_name;
@@ -43,8 +42,7 @@ int main(int argc, char **argv) {
 
     std::string debug_options;
     app.add_option("-D", debug_options, "Debug options : p=parse");
-    app.add_flag("--defs, -d", options.output_defs,
-                 "generate only the .def file");
+    app.add_flag("--defs, -d", options.output_defs, "generate only the .def file");
     app.add_flag("--main, -m", options.output_main, "generate function main()");
     app.add_flag("--output_funct,-o", options.output_funct,
                  "generate compiler test function output()");
@@ -52,8 +50,7 @@ int main(int argc, char **argv) {
     app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
 
     // Positional argument
-    app.add_option("file", options.file_name, "file to compile")
-        ->check(CLI::ExistingFile);
+    app.add_option("file", options.file_name, "file to compile")->check(CLI::ExistingFile);
 
     try {
         app.parse(argc, argv);
@@ -75,8 +72,8 @@ int main(int argc, char **argv) {
     TypeTable types;
     types.initialise();
 
-    auto       symbols = make_Symbols(nullptr);
-    ax::Parser parser(lexer, symbols, types, errors);
+    SymbolFrameTable symbols;
+    ax::Parser       parser(lexer, symbols, types, errors);
     parser.setup_builtins();
 
     try {
@@ -111,12 +108,12 @@ int main(int argc, char **argv) {
         }
 
         if (options.print_symbols) {
-            dump(symbols, std::cout);
+            symbols.dump(std::cout);
         }
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;
         if (options.print_symbols) {
-            symbols->dump(std::cout);
+            symbols.dump(std::cout);
         }
         return -1;
     } catch (std::exception &e) {

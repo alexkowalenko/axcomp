@@ -12,7 +12,7 @@ namespace ax {
 
 class DefParser : public Parser {
   public:
-    DefParser(Lexer &l, Symbols &s, TypeTable &t, ErrorManager const &e) : Parser(l, s, t, e){};
+    DefParser(Lexer &l, SymbolFrameTable &s, TypeTable &t, ErrorManager &e) : Parser(l, s, t, e){};
 
     ASTModulePtr parse();
 

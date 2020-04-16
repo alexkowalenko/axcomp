@@ -20,7 +20,7 @@ namespace ax {
 class Inspector : ASTVisitor {
 
   public:
-    explicit Inspector(Symbols const &s, TypeTable &t, ErrorManager &e, Importer &i);
+    explicit Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i);
 
     void check(ASTModulePtr const &ast) { ast->accept(this); };
 
@@ -55,12 +55,10 @@ class Inspector : ASTVisitor {
 
     std::string get_Qualident(ASTQualidentPtr ast);
 
-    Symbols top_symboltable;
-    Symbols current_symboltable;
-
-    TypeTable &   types;
-    ErrorManager &errors;
-    Importer &    importer;
+    SymbolFrameTable &symboltable;
+    TypeTable &       types;
+    ErrorManager &    errors;
+    Importer &        importer;
 
     bool            is_const{false};
     bool            is_lvalue{false};

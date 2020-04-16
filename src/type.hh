@@ -15,7 +15,6 @@
 #include <llvm/IR/DerivedTypes.h>
 
 #include "attr.hh"
-#include "symboltable.hh"
 
 namespace ax {
 
@@ -173,19 +172,5 @@ class ModuleType : public Type {
   private:
     std::string name;
 };
-
-// Define symbol table used
-using Symbols = std::shared_ptr<SymbolTable<std::pair<TypePtr, Attr>>>;
-
-inline Symbols make_Symbols(Symbols parent) {
-    return std::make_shared<SymbolTable<std::pair<TypePtr, Attr>>>(parent);
-}
-
-inline void dump(const Symbols &table, std::ostream &os) {
-    os << "Dump symbol table: \n";
-    std::for_each(table->cbegin(), table->cend(), [&os](auto const &x) {
-        os << x.first << " -> " << x.second.first->get_name() << std::endl;
-    });
-}
 
 } // namespace ax

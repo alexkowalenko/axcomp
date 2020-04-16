@@ -26,6 +26,7 @@
 #include "ast.hh"
 #include "error.hh"
 #include "parser.hh"
+#include "symboltable.hh"
 #include "type.hh"
 
 namespace ax {
@@ -112,15 +113,15 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
 void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
     debug("CodeGenerator::visit_ASTImport");
 
-    auto symbols = make_Symbols(nullptr);
+    SymbolFrameTable symbols;
     std::for_each(begin(ast->imports), end(ast->imports), [this, &symbols](auto const &i) {
         auto found = importer.find_module(i.first->value, symbols, types);
         assert(found);
 
         // convert table to ValueSymboltable
-        std::for_each(symbols->cbegin(), symbols->cend(), [this, i](auto const &s) {
+        std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto const &s) {
             auto name = s.first;
-            auto type = s.second.first;
+            auto type = s.second.type;
             debug("CodeGenerator::visit_ASTImport get {0} : {1}", name, type->get_name());
 
             if (is_referencable(type->id)) {

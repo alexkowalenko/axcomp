@@ -14,7 +14,8 @@ class FakeImporter : public Importer {
   public:
     explicit FakeImporter(ErrorManager &e) : Importer{e} {};
 
-    bool find_module(std::string const &name, Symbols &symbols, TypeTable &types) override;
+    bool find_module(std::string const &name, SymbolFrameTable &symbols,
+                     TypeTable &types) override;
 
   private:
 };

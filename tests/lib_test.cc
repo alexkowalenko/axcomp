@@ -35,8 +35,8 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = make_Symbols(nullptr);
-        Parser parser(lex, symbols, types, errors);
+        SymbolFrameTable symbols;
+        Parser           parser(lex, symbols, types, errors);
 
         std::string result;
         try {
@@ -69,8 +69,8 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = make_Symbols(nullptr);
-        Parser parser(lex, symbols, types, errors);
+        SymbolFrameTable symbols;
+        Parser           parser(lex, symbols, types, errors);
 
         std::string result;
         try {
@@ -113,8 +113,8 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = make_Symbols(nullptr);
-        Parser parser(lex, symbols, types, errors);
+        SymbolFrameTable symbols;
+        Parser           parser(lex, symbols, types, errors);
 
         std::string result;
         try {
@@ -157,8 +157,8 @@ void do_def_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = make_Symbols(nullptr);
-        Parser parser(lex, symbols, types, errors);
+        SymbolFrameTable symbols;
+        Parser           parser(lex, symbols, types, errors);
 
         std::string result;
         try {
@@ -200,8 +200,8 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
         TypeTable          types;
         types.initialise();
 
-        auto   symbols = make_Symbols(nullptr);
-        Parser parser(lex, symbols, types, errors);
+        SymbolFrameTable symbols;
+        Parser           parser(lex, symbols, types, errors);
 
         std::string result;
         try {
