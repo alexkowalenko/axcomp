@@ -33,6 +33,11 @@ enum class TypeId {
     module
 };
 
+// Types used in implementation
+
+using Int = long;
+using Bool = bool;
+
 inline bool is_referencable(TypeId &id) {
     return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
 }
@@ -80,7 +85,7 @@ class IntegerType : public SimpleType {
 
     bool is_numeric() override { return true; };
 
-    llvm::Constant *make_value(long i);
+    llvm::Constant *make_value(Int i);
 };
 
 class BooleanType : public SimpleType {
@@ -88,7 +93,7 @@ class BooleanType : public SimpleType {
     explicit BooleanType() : SimpleType("BOOLEAN", TypeId::boolean){};
     ~BooleanType() override = default;
 
-    llvm::Constant *make_value(bool b);
+    llvm::Constant *make_value(Bool b);
 };
 
 class ProcedureType : public Type {

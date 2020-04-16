@@ -75,8 +75,7 @@ static const std::unordered_map<char, Token> token_map = {
     {']', Token(TokenType::r_bracket, "]")},
 };
 
-Lexer::Lexer(std::istream &stream, ErrorManager const &e)
-    : is{stream}, errors{e} {}
+Lexer::Lexer(std::istream &stream, ErrorManager const &e) : is{stream}, errors{e} {}
 
 void Lexer::get_comment() {
     get(); // get asterisk
@@ -119,7 +118,7 @@ char Lexer::get_char() {
 Token Lexer::scan_digit(char c) {
     std::string digit(1, c);
     c = is.peek();
-    while (std::isdigit(c)) {
+    while (std::isxdigit(c)) {
         get();
         digit += c;
         c = is.peek();
@@ -187,8 +186,7 @@ Token Lexer::get_token() {
     if (std::isalpha(c)) {
         return scan_ident(c);
     }
-    throw LexicalException(std::string("Unknown character ") + c,
-                           get_location());
+    throw LexicalException(std::string("Unknown character ") + c, get_location());
 }
 
 void Lexer::push_token(Token const &t) {

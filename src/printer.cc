@@ -319,7 +319,13 @@ void ASTPrinter::visit_ASTIdentifier(ASTIdentifierPtr ast) {
 }
 
 void ASTPrinter::visit_ASTInteger(ASTIntegerPtr ast) {
+    if (ast->hex) {
+        os << std::hex << '0';
+    };
     os << ast->value;
+    if (ast->hex) {
+        os << 'H' << std::dec;
+    };
 }
 
 void ASTPrinter::visit_ASTBool(ASTBoolPtr ast) {

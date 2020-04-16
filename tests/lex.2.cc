@@ -30,6 +30,9 @@ std::vector<LexTests> tests = {
     {"\n1", TokenType::integer, "1"},
     {"\n12", TokenType::integer, "12"},
     {"\n 1234567890", TokenType::integer, "1234567890"},
+    // hex numbers
+    {"0d", TokenType::integer, "0d"},
+    {"0cafebabe", TokenType::integer, "0cafebabe"},
 
     {"\n;", TokenType::semicolon, ";"},
     {";", TokenType::semicolon, ";"},
@@ -111,8 +114,7 @@ TEST(Lexer, Lexer1) {
 
         try {
             auto token = lex.get_token();
-            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input,
-                                                   token.val))
+            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
                       << std::endl;
             EXPECT_EQ(token.type, t.token);
             EXPECT_EQ(token.val, t.val);

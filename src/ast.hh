@@ -21,8 +21,6 @@
 
 namespace ax {
 
-class ASTVisitor;
-
 class ASTBase {
   public:
     ASTBase() = default;
@@ -58,7 +56,8 @@ class ASTInteger : public ASTBase, public std::enable_shared_from_this<ASTIntege
 
     void accept(ASTVisitor *v) override { v->visit_ASTInteger(shared_from_this()); };
 
-    long value{0};
+    Int  value{0};
+    bool hex{false};
 };
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
 
@@ -68,7 +67,7 @@ class ASTBool : public ASTBase, public std::enable_shared_from_this<ASTBool> {
 
     void accept(ASTVisitor *v) override { v->visit_ASTBool(shared_from_this()); };
 
-    bool value{false};
+    Bool value{false};
 };
 using ASTBoolPtr = std::shared_ptr<ASTBool>;
 

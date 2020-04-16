@@ -47,7 +47,9 @@ Examples:
 \item Numbers are (unsigned) integers. Integers are sequences of digits.
 
 \begin{lstlisting}[style=ebnf]
-    integer = digit {digit}.
+    integer = digit {digit} | digit {hexDigit} "H".
+
+    hexDigit = digit | "A" | "B" | "C" | "D" | "E" | "F".
 
     digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 \end{lstlisting}

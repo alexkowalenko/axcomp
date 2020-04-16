@@ -20,7 +20,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{false};
+inline constexpr bool debug_parser{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -1003,9 +1003,19 @@ ASTIntegerPtr Parser::parse_integer() {
     debug("Parser::parse_integer");
     auto ast = makeAST<ASTInteger>(lexer);
 
-    auto  tok = get_token(TokenType::integer);
+    auto tok = get_token(TokenType::integer);
+    debug("Parser::parse_integer: {0}", std::string(tok));
+
+    auto next = lexer.peek_token();
+    debug("Parser::parse_integer: {0}", std::string(next));
+    int radix = 10;
+    if (next.type == TokenType::ident && next.val == "H") {
+        lexer.get_token();
+        radix = 16;
+        ast->hex = true;
+    }
     char *end = nullptr;
-    ast->value = std::strtol(tok.val.c_str(), &end, 10);
+    ast->value = std::strtol(tok.val.c_str(), &end, radix);
     return ast;
 }
 
