@@ -26,6 +26,7 @@
 #include "ast.hh"
 #include "error.hh"
 #include "parser.hh"
+#include "symbol.hh"
 #include "symboltable.hh"
 #include "type.hh"
 
@@ -44,10 +45,8 @@ using namespace llvm::sys;
 constexpr auto file_ext_llvmri{".ll"};
 constexpr auto file_ext_obj{".o"};
 
-CodeGenerator::CodeGenerator(Options &o, TypeTable &t, Importer &i)
-    : options(o), types(t), importer(i), filename("main"), builder(context), last_value(nullptr) {
-    top_symboltable = std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(nullptr);
-    current_symboltable = top_symboltable;
+CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i)
+    : options{o}, symboltable{s}, types{t}, importer{i}, filename("main"), builder(context) {
     TypeTable::setTypes(context);
 }
 
@@ -121,7 +120,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
         // convert table to ValueSymboltable
         std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto const &s) {
             auto name = s.first;
-            auto type = s.second.type;
+            auto type = s.second->type;
             debug("CodeGenerator::visit_ASTImport get {0} : {1}", name, type->get_name());
 
             if (is_referencable(type->id)) {
@@ -131,7 +130,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
 
                 debug("CodeGenerator::visit_ASTImport var {0}", name);
 
-                top_symboltable->put(name, {gVar, Attr::global});
+                symboltable.set_value(name, gVar, Attr::global);
             } else if (type->id == TypeId::procedure) {
                 debug("CodeGenerator::visit_ASTImport proc {0}", name);
                 auto *funcType = (FunctionType *)type->get_llvm();
@@ -139,7 +138,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                 auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
                                               name, module.get());
                 verifyFunction(*func);
-                current_symboltable->put(name, {func, Attr::null});
+                symboltable.set_value(name, func);
                 types.put(name, type); // we should stop putting functions into the type table
             } else {
                 // ignore functions for the moment
@@ -172,7 +171,7 @@ void CodeGenerator::doTopVars(ASTVarPtr ast) {
         gVar->setLinkage(linkage);
         auto *init = getType_init(c.second);
         gVar->setInitializer(init);
-        current_symboltable->put(c.first->value, {gVar, Attr::null});
+        symboltable.set_value(c.first->value, gVar);
     }
 }
 
@@ -197,8 +196,7 @@ void CodeGenerator::doTopConsts(ASTConstPtr ast) {
             throw CodeGenException("Expression based CONSTs not supported.", ast->get_location());
         }
         gVar->setConstant(true);
-
-        current_symboltable->put(c.ident->value, {gVar, Attr::null});
+        symboltable.set_value(c.ident->value, gVar);
     }
 }
 
@@ -229,8 +227,7 @@ void CodeGenerator::visit_ASTConst(ASTConstPtr ast) {
         auto *function = builder.GetInsertBlock()->getParent();
         auto *alloc = createEntryBlockAlloca(function, name, c.type);
         builder.CreateStore(val, alloc);
-
-        current_symboltable->put(name, {alloc, Attr::null});
+        symboltable.set_value(name, alloc);
     }
 }
 
@@ -249,8 +246,8 @@ void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
         builder.CreateStore(init, alloc);
 
         alloc->setName(name);
-        debug("set name: {}", name);
-        current_symboltable->put(name, {alloc, Attr::null});
+        debug("set name: {0}", name);
+        symboltable.set_value(name, alloc);
     }
     debug("finish var");
 }
@@ -287,9 +284,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
     builder.SetInsertPoint(block);
 
-    auto former_symboltable = current_symboltable;
-    current_symboltable =
-        std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(former_symboltable);
+    // Push new frame
+    symboltable.push_frame(ast->name->value);
 
     // Set paramater names
     unsigned i = 0;
@@ -309,7 +305,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
         builder.CreateStore(&arg, alloca);
 
         // put also into symbol table
-        current_symboltable->put(param_name, {alloca, attr});
+        symboltable.set_value(param_name, alloca, attr);
         debug("put {} into symboltable", param_name);
         i++;
     };
@@ -318,7 +314,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     ast->decs->accept(this);
 
     // for recursion
-    top_symboltable->put(ast->name->value, {f, Attr::null});
+    symboltable.set_value(ast->name->value, f);
 
     // Go through the statements
     has_return = false;
@@ -331,7 +327,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
             builder.CreateRet(last_value);
         }
     }
-    current_symboltable = former_symboltable;
+    symboltable.pop_frame();
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
 }
@@ -384,12 +380,12 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     Function *callee = nullptr;
     auto      name = ast->name->ident->make_coded_id();
     try {
-        auto res = current_symboltable->find(name);
+        auto res = symboltable.find(name);
         if (!res) {
             throw CodeGenException(formatv("function: {0} not found 1", name),
                                    ast->get_location());
         }
-        callee = llvm::dyn_cast<Function>(res->first);
+        callee = llvm::dyn_cast<Function>(res->value);
         assert(callee != nullptr);
     } catch (...) {
         debug("CodeGenerator::visit_ASTCall exception");
@@ -400,7 +396,7 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     if (!res) {
         throw CodeGenException(formatv("function: {0} not found 3", name), ast->get_location());
     }
-    auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(*res);
+    auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res);
     assert(typeFunction);
 
     std::vector<Value *> args;
@@ -523,12 +519,11 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
 
-    auto former_symboltable = current_symboltable;
-    current_symboltable =
-        std::make_shared<SymbolTable<std::pair<Value *, Attr>>>(former_symboltable);
+    symboltable.push_frame("for");
     auto *index = createEntryBlockAlloca(funct, ast->ident->value, TypeTable::IntType->get_llvm());
     builder.CreateStore(last_value, index);
-    current_symboltable->put(ast->ident->value, {index, Attr::null});
+    symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
+    symboltable.set_value(ast->ident->value, index);
 
     // Insert an explicit fall through from the current block to the Loop.
     // Start insertion in LoopBB.
@@ -566,7 +561,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
 
-    current_symboltable = former_symboltable;
+    symboltable.pop_frame();
 }
 
 void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
@@ -871,15 +866,15 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifierPtr ast) {
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast) {
     debug("CodeGenerator::visit_ASTIdentifierPtr {0}", ast->value);
 
-    if (auto res = current_symboltable->find(ast->value); res) {
-        last_value = res->first;
-        if (res->second == Attr::var) {
+    if (auto res = symboltable.find(ast->value); res) {
+        last_value = res->value;
+        if (res->is(Attr::var)) {
             debug("CodeGenerator::visit_ASTIdentifierPtr VAR {0}", ast->value);
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         if (is_var) {
             // This is a write of a VAR variable, preseve this value
-            last_value = res->first;
+            last_value = res->value;
         }
         return;
     }
@@ -887,8 +882,8 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast) {
 }
 
 bool CodeGenerator::find_var_Identifier(ASTDesignatorPtr ast) {
-    if (auto res = current_symboltable->find(ast->ident->id->value); res) {
-        if (res->second == Attr::var) {
+    if (auto res = symboltable.find(ast->ident->id->value); res) {
+        if (res->is(Attr::var)) {
             return true;
         }
     }
@@ -974,7 +969,7 @@ void CodeGenerator::setup_builtins() {
         auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage, f.first,
                                       module.get());
         verifyFunction(*func);
-        current_symboltable->put(f.first, {func, Attr::null});
+        symboltable.set_value(f.first, func);
     }
 }
 

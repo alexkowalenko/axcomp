@@ -25,7 +25,7 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    explicit CodeGenerator(Options &o, TypeTable &t, Importer &i);
+    explicit CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i);
 
     void generate(ASTModulePtr const &ast) { ast->accept(this); };
 
@@ -87,14 +87,12 @@ class CodeGenerator : ASTVisitor {
     bool                      find_var_Identifier(ASTDesignatorPtr ast);
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
-    Options &  options;
-    TypeTable &types;
-    Importer & importer;
+    Options &         options;
+    SymbolFrameTable &symboltable;
+    TypeTable &       types;
+    Importer &        importer;
 
     using ValueSymbolTable = std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;
-
-    ValueSymbolTable top_symboltable;
-    ValueSymbolTable current_symboltable;
 
     std::string             module_name;
     std::string             filename;
@@ -102,9 +100,9 @@ class CodeGenerator : ASTVisitor {
     IRBuilder<>             builder;
     std::unique_ptr<Module> module;
 
-    bool        top_level{true};   // am I in the top level of the module?
-    Value *     last_value;        // holds last value of compilation
-    BasicBlock *last_end{nullptr}; // last end block in loop, used for EXIT
+    bool        top_level{true};     // am I in the top level of the module?
+    Value *     last_value{nullptr}; // holds last value of compilation
+    BasicBlock *last_end{nullptr};   // last end block in loop, used for EXIT
     bool        has_return{false};
 
     bool is_var{false}; // Do VAR change in IndentifierPtr

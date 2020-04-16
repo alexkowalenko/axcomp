@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
             return 0;
         }
 
-        ax::CodeGenerator code(options, types, importer);
+        ax::CodeGenerator code(options, symbols, types, importer);
         code.generate(ast);
 
         code.generate_llcode();

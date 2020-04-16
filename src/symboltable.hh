@@ -20,10 +20,10 @@ template <typename T> class TableInterface {
   public:
     virtual ~TableInterface() = default;
 
-    virtual void             put(const std::string &name, T const &val) = 0;
-    virtual std::optional<T> find(const std::string &name) const = 0;
-    virtual bool             set(const std::string &name, T const &val) = 0;
-    virtual void             remove(const std::string &name) = 0;
+    virtual void put(const std::string &name, T const &val) = 0;
+    virtual T    find(const std::string &name) const = 0;
+    virtual bool set(const std::string &name, T const &val) = 0;
+    virtual void remove(const std::string &name) = 0;
 
     virtual typename std::map<std::string, T>::const_iterator begin() const = 0;
     virtual typename std::map<std::string, T>::const_iterator end() const = 0;
@@ -38,9 +38,9 @@ template <typename T> class SymbolTable : public TableInterface<T> {
 
     void put(const std::string &name, T const &val) { table[name] = val; };
 
-    [[nodiscard]] std::optional<T> find(const std::string &name) const;
-    bool                           set(const std::string &name, T const &val);
-    void                           remove(const std::string &name);
+    [[nodiscard]] T find(const std::string &name) const;
+    bool            set(const std::string &name, T const &val);
+    void            remove(const std::string &name);
 
     typename std::map<std::string, T>::const_iterator begin() const { return table.begin(); }
     typename std::map<std::string, T>::const_iterator end() const { return table.end(); }
@@ -52,14 +52,14 @@ template <typename T> class SymbolTable : public TableInterface<T> {
     std::shared_ptr<SymbolTable> next = nullptr;
 };
 
-template <typename T> std::optional<T> SymbolTable<T>::find(const std::string &name) const {
+template <typename T> T SymbolTable<T>::find(const std::string &name) const {
     if (auto const &x = table.find(name); x != table.end()) {
         return x->second;
     }
     if (next) {
         return next->find(name);
     }
-    return std::nullopt;
+    return nullptr;
 }
 
 template <typename T> bool SymbolTable<T>::set(const std::string &name, T const &val) {
@@ -98,8 +98,8 @@ template <typename T> class FrameTable : public TableInterface<T> {
   public:
     FrameTable() { push_frame("."); };
 
-    void             put(const std::string &name, T const &val) { current_table->put(name, val); };
-    std::optional<T> find(const std::string &name) const { return current_table->find(name); };
+    void put(const std::string &name, T const &val) { current_table->put(name, val); };
+    T    find(const std::string &name) const { return current_table->find(name); };
     bool set(const std::string &name, T const &val) { return current_table->set(name, val); };
     void remove(const std::string &name) { current_table->remove(name); };
 
@@ -143,7 +143,7 @@ template <typename T> void FrameTable<T>::dump(std::ostream &os) {
     std::for_each(std::begin(frame_map), std::end(frame_map), [&os](auto &f) {
         os << f.first << "  ------------------------------\n";
         std::for_each(f.second->begin(), f.second->end(), [&os](auto &s) {
-            os << s.first << " : " << s.second.type->get_name() << '\n';
+            os << s.first << " : " << s.second->type->get_name() << '\n';
         });
     });
 }
@@ -151,8 +151,22 @@ template <typename T> void FrameTable<T>::dump(std::ostream &os) {
 } // namespace ax
 
 #include "symbol.hh"
+#include "llvm/Support/FormatVariadic.h"
 namespace ax {
 
-using SymbolFrameTable = FrameTable<Symbol>;
+class SymbolFrameTable : public FrameTable<SymbolPtr> {
+
+  public:
+    void set_value(std::string const &name, llvm::Value *v) {
+        auto s = find(name);
+        s->value = v;
+    };
+
+    void set_value(std::string const &name, llvm::Value *v, Attr a) {
+        auto s = find(name);
+        s->value = v;
+        s->set(a);
+    };
+};
 
 } // namespace ax

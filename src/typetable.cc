@@ -45,7 +45,7 @@ std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
             // not found
             return res;
         }
-        auto alias = std::dynamic_pointer_cast<TypeAlias>(*res);
+        auto alias = std::dynamic_pointer_cast<TypeAlias>(res);
         if (!alias) {
             // normal type
             return res;

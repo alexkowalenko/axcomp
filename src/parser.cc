@@ -76,7 +76,7 @@ ASTModulePtr Parser::parse_module() {
     get_token(TokenType::module);
     auto tok = get_token(TokenType::ident);
     module->name = tok.val;
-    symbols.put(module->name, {std::make_shared<ModuleType>(module->name), Attr::null});
+    symbols.put(module->name, mkSym(std::make_shared<ModuleType>(module->name)));
     get_token(TokenType::semicolon);
 
     tok = lexer.peek_token();
@@ -134,11 +134,11 @@ ASTImportPtr Parser::parse_import() {
             auto second = parse_identifier();
             ast->imports.emplace_back(ASTImport::Pair{second, ident});
             auto module = std::make_shared<ModuleType>(second->value);
-            symbols.put(ident->value, {module, Attr::null});
+            symbols.put(ident->value, mkSym(module));
         } else {
             ast->imports.emplace_back(ASTImport::Pair{ident, nullptr});
             auto module = std::make_shared<ModuleType>(ident->value);
-            symbols.put(ident->value, {module, Attr::null});
+            symbols.put(ident->value, mkSym(module));
         }
         tok = lexer.peek_token();
         if (tok.type != TokenType::comma) {
@@ -226,7 +226,7 @@ ASTConstPtr Parser::parse_const() {
         get_token(TokenType::semicolon);
 
         // Not sure what type this const is yet.
-        symbols.put(dec.ident->value, {TypeTable::VoidType, Attr::cnst});
+        symbols.put(dec.ident->value, mkSym(TypeTable::VoidType, Attr::cnst));
         cnst->consts.push_back(dec);
         tok = lexer.peek_token();
     }
@@ -301,7 +301,7 @@ ASTVarPtr Parser::parse_var() {
             dec.first = i;
             dec.second = type;
             // delay type assignment to inspector
-            symbols.put(dec.first->value, {TypeTable::VoidType, Attr::null});
+            symbols.put(dec.first->value, mkSym(TypeTable::VoidType));
             var->vars.push_back(dec);
         });
         tok = lexer.peek_token();
@@ -1051,7 +1051,7 @@ void Parser::setup_builtins() {
          std::make_shared<ProcedureType>(TypeTable::VoidType, ProcedureType::ParamsList{})}};
 
     std::for_each(begin(builtins), end(builtins), [this](auto &f) {
-        symbols.put(f.first, {f.second, Attr::null});
+        symbols.put(f.first, mkSym(f.second));
         types.put(f.first, f.second);
     });
 }

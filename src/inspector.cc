@@ -13,6 +13,7 @@
 
 #include "ast.hh"
 #include "error.hh"
+#include "symbol.hh"
 #include "type.hh"
 
 namespace ax {
@@ -73,7 +74,7 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
         c.type->type_info = last_type;
         c.type->type = make<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
-        symboltable.put(c.ident->value, {last_type, Attr::cnst});
+        symboltable.put(c.ident->value, mkSym(last_type, Attr::cnst));
     });
 }
 
@@ -100,7 +101,7 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
         // defined.
         v.second->accept(this);
         // Update VAR declaration symbols with type
-        symboltable.put(v.first->value, {last_type, Attr::null});
+        symboltable.put(v.first->value, mkSym(last_type));
     });
 }
 
@@ -133,7 +134,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     });
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
-    symboltable.put(ast->name->value, {proc_type, Attr::null});
+    symboltable.put(ast->name->value, mkSym(proc_type));
     types.put(ast->name->value, proc_type);
 
     last_proc = ast;
@@ -149,11 +150,11 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
                     debug("Inspector::visit_ASTProcedure param type ident");
                     auto type = types.find(tname->id->value);
                     symboltable.put(p.first->value,
-                                    {*type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+                                    mkSym(type, p.first->is(Attr::var) ? Attr::var : Attr::null));
                 }},
             p.second->type);
         symboltable.put(p.first->value,
-                        {last_type, p.first->is(Attr::var) ? Attr::var : Attr::null});
+                        mkSym(last_type, p.first->is(Attr::var) ? Attr::var : Attr::null));
     });
     if (ast->decs) {
         ast->decs->accept(this);
@@ -169,20 +170,22 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     auto expr_type = last_type;
 
     auto res = symboltable.find(ast->ident->ident->make_coded_id());
-    if (res->is(Attr::cnst)) {
-        auto e = TypeError(
-            llvm::formatv("Can't assign to CONST variable {0}", std::string(*ast->ident)),
-            ast->get_location());
-        errors.add(e);
-        return;
-    }
-    if (res->is(Attr::read_only)) {
-        auto e = TypeError(
-            llvm::formatv("Can't assign to read only (-) variable {0}", std::string(*ast->ident)),
-            ast->get_location());
-        errors.add(e);
-        return;
-    }
+    if (res) {
+        if (res->is(Attr::cnst)) {
+            auto e = TypeError(
+                llvm::formatv("Can't assign to CONST variable {0}", std::string(*ast->ident)),
+                ast->get_location());
+            errors.add(e);
+            return;
+        }
+        if (res->is(Attr::read_only)) {
+            auto e = TypeError(llvm::formatv("Can't assign to read only (-) variable {0}",
+                                             std::string(*ast->ident)),
+                               ast->get_location());
+            errors.add(e);
+            return;
+        }
+    };
 
     ast->ident->accept(this);
     debug("type of ident: {} ", last_type->get_name());
@@ -222,7 +225,7 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
                            },
                            [this, &retType](ASTQualidentPtr const &type) {
                                if (auto t = types.find(type->id->value); t) {
-                                   retType = *t;
+                                   retType = t;
                                };
                            },
                        },
@@ -343,7 +346,7 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
 
     // new frame
     symboltable.push_frame("for");
-    symboltable.put(ast->ident->value, {TypeTable::IntType, Attr::null});
+    symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
     symboltable.pop_frame();
@@ -572,8 +575,8 @@ void Inspector::visit_ASTType(ASTTypePtr ast) {
                                       ast->get_location());
                               }
                               debug("Inspector::visit_ASTType 2 {0}", type->id->value);
-                              ast->type_info = *result;
-                              last_type = *result;
+                              ast->type_info = result;
+                              last_type = result;
                           },
                           [this, ast](ASTArrayPtr const &arg) {
                               arg->accept(this);

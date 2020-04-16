@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_set>
 #include <utility>
 
@@ -34,6 +35,12 @@ class Symbol {
     TypePtr                  type = nullptr;
     std::unordered_set<Attr> attrs;
     llvm::Value *            value = nullptr;
+};
+
+using SymbolPtr = std::shared_ptr<Symbol>;
+
+template <typename... Ts> inline SymbolPtr mkSym(Ts... t) {
+    return std::make_shared<Symbol>(t...);
 };
 
 } // namespace ax
