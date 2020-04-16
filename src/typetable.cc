@@ -18,13 +18,13 @@ TypePtr                      TypeTable::VoidType;
 
 void TypeTable::initialise() {
     IntType = std::make_shared<IntegerType>();
-    table.put(std::string(*IntType), IntType);
+    put(std::string(*IntType), IntType);
 
     BoolType = std::make_shared<BooleanType>();
-    table.put(std::string(*BoolType), BoolType);
+    put(std::string(*BoolType), BoolType);
 
     VoidType = std::make_shared<SimpleType>("void", TypeId::null);
-    table.put(std::string(*VoidType), VoidType);
+    put(std::string(*VoidType), VoidType);
 }
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
@@ -37,14 +37,10 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }
 
-std::optional<TypePtr> TypeTable::find(std::string const &name) {
-    return table.find(name);
-}
-
 std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
     auto name = n;
     while (true) {
-        auto res = table.find(name);
+        auto res = find(name);
         if (!res) {
             // not found
             return res;
@@ -56,10 +52,6 @@ std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
         }
         name = alias->get_alias()->get_name();
     }
-}
-
-void TypeTable::put(std::string const &name, TypePtr const &t) {
-    table.put(name, t);
 }
 
 } // namespace ax

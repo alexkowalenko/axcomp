@@ -17,24 +17,19 @@
 
 namespace ax {
 
-class TypeTable {
+class TypeTable : public SymbolTable<TypePtr> {
   public:
-    TypeTable() : table(nullptr){};
+    TypeTable() : SymbolTable(nullptr){};
 
     void        initialise();
     static void setTypes(llvm::LLVMContext &context);
 
-    std::optional<TypePtr> find(std::string const &name);
     std::optional<TypePtr> resolve(std::string const &name);
-    void                   put(std::string const &name, TypePtr const &t);
 
     // Standard types
     static std::shared_ptr<IntegerType> IntType;
     static std::shared_ptr<BooleanType> BoolType;
     static TypePtr                      VoidType;
-
-  private:
-    SymbolTable<TypePtr> table;
 };
 
 } // namespace ax
