@@ -139,7 +139,6 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                                               name, module.get());
                 verifyFunction(*func);
                 symboltable.set_value(name, func);
-                types.put(name, type); // we should stop putting functions into the type table
             } else {
                 // ignore functions for the moment
             }
@@ -392,11 +391,11 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         throw CodeGenException(formatv("function: {0} not found 2", name), ast->get_location());
     }
 
-    auto res = types.find(name);
+    auto res = symboltable.find(name);
     if (!res) {
         throw CodeGenException(formatv("function: {0} not found 3", name), ast->get_location());
     }
-    auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res);
+    auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
     assert(typeFunction);
 
     std::vector<Value *> args;

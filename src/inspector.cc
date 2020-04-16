@@ -135,7 +135,6 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
     symboltable.put(ast->name->value, mkSym(proc_type));
-    types.put(ast->name->value, proc_type);
 
     last_proc = ast;
 

@@ -1050,10 +1050,8 @@ void Parser::setup_builtins() {
         {"WriteLn",
          std::make_shared<ProcedureType>(TypeTable::VoidType, ProcedureType::ParamsList{})}};
 
-    std::for_each(begin(builtins), end(builtins), [this](auto &f) {
-        symbols.put(f.first, mkSym(f.second));
-        types.put(f.first, f.second);
-    });
+    std::for_each(begin(builtins), end(builtins),
+                  [this](auto &f) { symbols.put(f.first, mkSym(f.second)); });
 }
 
 }; // namespace ax
