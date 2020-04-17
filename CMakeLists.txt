@@ -130,7 +130,7 @@ add_executable(ax cmd/ax.cc)
 target_link_libraries(ax PRIVATE project_options project_warnings libax ${llvm_libs})
 
 # ax runtime library
-add_subdirectory(lib)
+add_subdirectory(runtime)
 
 # install
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})

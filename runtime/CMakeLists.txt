@@ -6,4 +6,5 @@
 
 add_library(Ax io.cc)
 
-install(TARGETS Ax DESTINATION bin)
+install(FILES Out.def DESTINATION lib)
+install(TARGETS Ax DESTINATION lib)

@@ -15,6 +15,8 @@ from colored import fg, bg, attr
 import argparse
 
 install_dir = "../../bin"
+lib_dir = os.environ['AXLIB_PATH']
+axlib_dir = lib_dir + ":."
 
 # Config paramaters
 test_cfg = "test.ini"
@@ -25,7 +27,7 @@ link_objs = ""
 exclude = ""
 
 compiler = f"{install_dir}/ax"
-linker = f"clang++ ../main.cc -L {install_dir} -lAx "
+linker = f"clang++ ../main.cc -L {lib_dir} -lAx "
 
 red = fg('red_1')
 restore = attr('reset')
@@ -58,7 +60,7 @@ def do_test(t):
     fail = stem + ".fail"
 
     # Compile file
-    cmd = f"{compiler} --output_funct {t} > result.txt"
+    cmd = f"{compiler} -L {axlib_dir} --output_funct {t} > result.txt"
     # print(cmd)
     ret = os.system(cmd)
     if ret:

@@ -18,6 +18,8 @@ class Importer {
     explicit Importer(ErrorManager &e) : errors{e} {};
     virtual ~Importer() = default;
 
+    void set_search_path(std::string const &path);
+
     virtual bool find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &types);
 
   private:
@@ -25,5 +27,6 @@ class Importer {
 
     ErrorManager &                          errors;
     std::map<std::string, SymbolFrameTable> cache;
+    std::vector<std::string>                paths;
 };
 } // namespace ax

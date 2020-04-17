@@ -19,6 +19,7 @@ struct Options {
     bool output_defs{false};
     bool print_symbols{false};
 
+    std::string axlib_path;
     std::string file_name;
 };
 

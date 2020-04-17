@@ -23,6 +23,8 @@
 
 using namespace ax;
 
+constexpr auto std_path = ".";
+
 void output_defs(std::shared_ptr<ASTModule> const &ast, Options const &options) {
     std::string def_file{"out.def"};
     if (!options.file_name.empty()) {
@@ -37,7 +39,8 @@ void output_defs(std::shared_ptr<ASTModule> const &ast, Options const &options) 
 
 int main(int argc, char **argv) {
 
-    Options  options;
+    Options options;
+    options.axlib_path = std_path;
     CLI::App app{"AX Oberon compiler"};
 
     std::string debug_options;
@@ -48,6 +51,8 @@ int main(int argc, char **argv) {
                  "generate compiler test function output()");
     app.add_flag("--ll,-l", options.only_ll, "generate only the .ll file");
     app.add_flag("--symbols,-s", options.print_symbols, "print symbol table");
+    app.add_option("--axlib_path,-L", options.axlib_path, "path searched for runtime files")
+        ->envname("AXLIB_PATH");
 
     // Positional argument
     app.add_option("file", options.file_name, "file to compile")->check(CLI::ExistingFile);
@@ -85,7 +90,8 @@ int main(int argc, char **argv) {
         }
 
         // Run the semantic inspector
-        Importer  importer(errors);
+        Importer importer(errors);
+        importer.set_search_path(options.axlib_path);
         Inspector inspect(symbols, types, errors, importer);
         inspect.check(ast);
         if (errors.has_errors()) {

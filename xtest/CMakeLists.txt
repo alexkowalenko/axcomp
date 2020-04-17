@@ -7,6 +7,8 @@
 set(PYTHON_EXECUTABLE python3)
 find_package(PythonInterp 3.7 REQUIRED)
 
+set(ENV{AXLIB_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+
 add_test(NAME xtests 
          COMMAND ${PYTHON_EXECUTABLE} ./tester.py
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})

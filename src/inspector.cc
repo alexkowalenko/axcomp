@@ -622,7 +622,7 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
     types.put(last_type->get_name(), last_type);
 }
 
-std::string Inspector::get_Qualident(ASTQualidentPtr ast) {
+std::string Inspector::get_Qualident(ASTQualidentPtr const &ast) {
     std::string result;
     auto        res = symboltable.find(ast->qual);
 

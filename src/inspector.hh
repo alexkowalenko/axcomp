@@ -53,7 +53,7 @@ class Inspector : ASTVisitor {
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
-    std::string get_Qualident(ASTQualidentPtr ast);
+    std::string get_Qualident(ASTQualidentPtr const &ast);
 
     SymbolFrameTable &symboltable;
     TypeTable &       types;

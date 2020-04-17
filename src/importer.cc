@@ -8,15 +8,17 @@
 
 #include <cstddef>
 #include <fstream>
+#include <optional>
+#include <sstream>
 
 #include <dirent.h>
-#include <optional>
 #include <sys/types.h>
 
 #include "llvm/Support/FormatVariadic.h"
 
 #include "ast.hh"
 #include "defparser.hh"
+#include "error.hh"
 #include "inspector.hh"
 #include "lexer.hh"
 #include "type.hh"
@@ -24,6 +26,16 @@
 namespace ax {
 
 constexpr auto suffix{".def"};
+
+void Importer::set_search_path(std::string const &path) {
+    std::stringstream ss(path);
+    std::string       item;
+    while (getline(ss, item, ':')) {
+        if (!item.empty()) {
+            paths.push_back(item);
+        }
+    }
+}
 
 bool ends_with(std::string const &s) {
     if (s.length() < std::strlen(suffix)) {
@@ -34,35 +46,38 @@ bool ends_with(std::string const &s) {
 
 std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
 
-    std::string path = ".";
+    for (auto path : paths) {
 
-    auto *dir = opendir(path.c_str());
-    if (dir == nullptr) {
-        throw CodeGenException(llvm::formatv("Can't open {0}", path));
-    }
+        auto *dir = opendir(path.c_str());
+        if (dir == nullptr) {
+            throw CodeGenException(llvm::formatv("Can't open {0}", path));
+        }
 
-    struct dirent *in_file = nullptr;
-    while ((in_file = readdir(dir))) {
-        if (!strcmp(in_file->d_name, ".")) {
-            continue;
-        }
-        if (!strcmp(in_file->d_name, "..")) {
-            continue;
-        }
-        if (ends_with(in_file->d_name)) {
+        struct dirent *in_file = nullptr;
+        while ((in_file = readdir(dir))) {
             std::string fname(in_file->d_name);
-
-            fname = std::string(in_file->d_name).substr(0, fname.find_last_of('.'));
-
-            if (fname == name) {
-                SymbolFrameTable module_symbols;
-                std::ifstream    is(in_file->d_name);
-                Lexer            lex(is, errors);
-                DefParser        parser(lex, module_symbols, types, errors);
-                auto             ast = parser.parse();
-                Inspector        inpect(module_symbols, types, errors, *this);
-                inpect.check(ast);
-                return module_symbols;
+            if (fname == "." || fname == "..") {
+                continue;
+            }
+            if (ends_with(fname)) {
+                auto dname = fname.substr(0, fname.find_last_of('.'));
+                if (dname == name) {
+                    auto             full_path = path + '/' + fname;
+                    SymbolFrameTable module_symbols;
+                    std::ifstream    is(full_path);
+                    try {
+                        Lexer     lex(is, errors);
+                        DefParser parser(lex, module_symbols, types, errors);
+                        auto      ast = parser.parse();
+                        Inspector inpect(module_symbols, types, errors, *this);
+                        inpect.check(ast);
+                    } catch (AXException const &e) {
+                        throw CodeGenException(
+                            llvm::formatv("Importer MODULE {0} error: {1} at: {2}", name,
+                                          e.error_msg(), full_path));
+                    }
+                    return module_symbols;
+                }
             }
         }
     }
@@ -72,9 +87,9 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
 
-    for (auto iter = from.begin(); iter != from.end(); iter++) {
-        std::string n = ASTQualident::make_coded_id(module_name, iter->first);
-        to.put(n, iter->second);
+    for (const auto &iter : from) {
+        std::string n = ASTQualident::make_coded_id(module_name, iter.first);
+        to.put(n, iter.second);
     }
 }
 

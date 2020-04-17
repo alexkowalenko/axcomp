@@ -37,9 +37,9 @@ class CodeGenerator : ASTVisitor {
   private:
     void visit_ASTModule(ASTModulePtr ast) override;
     void visit_ASTImport(ASTImportPtr ast) override;
-    void doTopDecs(ASTDeclarationPtr ast);
-    void doTopVars(ASTVarPtr ast);
-    void doTopConsts(ASTConstPtr ast);
+    void doTopDecs(ASTDeclarationPtr const &ast);
+    void doTopVars(ASTVarPtr const &ast);
+    void doTopConsts(ASTConstPtr const &ast);
 
     void visit_ASTDeclaration(ASTDeclarationPtr ast) override;
     void visit_ASTConst(ASTConstPtr ast) override;
@@ -62,13 +62,13 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
     void visit_ASTTerm(ASTTermPtr ast) override;
     void visit_ASTFactor(ASTFactorPtr ast) override;
-    void get_index(ASTDesignatorPtr ast);
+    void get_index(ASTDesignatorPtr const &ast);
     void visit_ASTDesignator(ASTDesignatorPtr ast) override;
-    void visit_ASTDesignatorPtr(ASTDesignatorPtr ast);
+    void visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast);
     void visit_ASTQualident(ASTQualidentPtr ast) override;
-    void visit_ASTQualidentPtr(ASTQualidentPtr ast);
+    void visit_ASTQualidentPtr(ASTQualidentPtr const &ast);
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
-    void visit_ASTIdentifierPtr(ASTIdentifierPtr ast);
+    void visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast);
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
@@ -77,14 +77,14 @@ class CodeGenerator : ASTVisitor {
     AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,
                                        ASTTypePtr type, bool var = false);
 
-    AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
-                                       llvm::Type *type);
+    static AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
+                                              llvm::Type *type);
 
     TypePtr     resolve_type(ASTTypePtr const &t);
     llvm::Type *getType(ASTTypePtr const &type);
     Constant *  getType_init(ASTTypePtr const &type);
 
-    bool                      find_var_Identifier(ASTDesignatorPtr ast);
+    bool                      find_var_Identifier(ASTDesignatorPtr const &ast);
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
     Options &         options;

@@ -132,6 +132,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
 
                 symboltable.set_value(name, gVar, Attr::global);
             } else if (type->id == TypeId::procedure) {
+
                 debug("CodeGenerator::visit_ASTImport proc {0}", name);
                 auto *funcType = (FunctionType *)type->get_llvm();
 
@@ -140,13 +141,13 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                 verifyFunction(*func);
                 symboltable.set_value(name, func);
             } else {
-                // ignore functions for the moment
+                assert(false);
             }
         });
     });
 }
 
-void CodeGenerator::doTopDecs(ASTDeclarationPtr ast) {
+void CodeGenerator::doTopDecs(ASTDeclarationPtr const &ast) {
     if (ast->cnst) {
         doTopConsts(ast->cnst);
     }
@@ -155,7 +156,7 @@ void CodeGenerator::doTopDecs(ASTDeclarationPtr ast) {
     }
 }
 
-void CodeGenerator::doTopVars(ASTVarPtr ast) {
+void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
         llvm::Type *type = getType(c.second);
@@ -174,7 +175,7 @@ void CodeGenerator::doTopVars(ASTVarPtr ast) {
     }
 }
 
-void CodeGenerator::doTopConsts(ASTConstPtr ast) {
+void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
         debug("CodeGenerator::doTopConsts type: {0}", c.type->type_info->get_name());
@@ -763,7 +764,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
                ast->factor);
 }
 
-void CodeGenerator::get_index(ASTDesignatorPtr ast) {
+void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     debug("CodeGenerator::get_index");
     visit_ASTIdentifierPtr(ast->ident->id);
     auto *               arg_ptr = last_value;
@@ -820,7 +821,7 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
  *
  * @param ast
  */
-void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr ast) {
+void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast) {
     debug("CodeGenerator::visit_ASTDesignatorPtr {0}", std::string(*ast));
 
     visit_ASTQualidentPtr(ast->ident);
@@ -845,7 +846,7 @@ void CodeGenerator::visit_ASTQualident(ASTQualidentPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr ast) {
+void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast) {
     debug("CodeGenerator::visit_ASTQualidentPtr");
     if (ast->qual.empty()) {
         visit_ASTIdentifierPtr(ast->id);
@@ -862,7 +863,7 @@ void CodeGenerator::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     last_value = builder.CreateLoad(last_value, ast->value);
 }
 
-void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast) {
+void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
     debug("CodeGenerator::visit_ASTIdentifierPtr {0}", ast->value);
 
     if (auto res = symboltable.find(ast->value); res) {
@@ -880,7 +881,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast) {
     throw CodeGenException(formatv("identifier {0} unknown", ast->value), ast->get_location());
 }
 
-bool CodeGenerator::find_var_Identifier(ASTDesignatorPtr ast) {
+bool CodeGenerator::find_var_Identifier(ASTDesignatorPtr const &ast) {
     if (auto res = symboltable.find(ast->ident->id->value); res) {
         if (res->is(Attr::var)) {
             return true;
@@ -915,7 +916,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
     IRBuilder<> TmpB(&function->getEntryBlock(), function->getEntryBlock().begin());
 
     std::visit(
-        [&](auto) {
+        [&](auto /*unused*/) {
             llvm::Type *t = getType(type);
             if (var) {
                 t = t->getPointerTo();
@@ -963,7 +964,7 @@ void CodeGenerator::setup_builtins() {
 
     for (auto const &f : builtins) {
         debug("function: {0} ", f.first);
-        auto *funcType = (FunctionType *)f.second->get_llvm();
+        auto *funcType = dyn_cast<FunctionType>(f.second->get_llvm());
 
         auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage, f.first,
                                       module.get());

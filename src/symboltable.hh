@@ -20,30 +20,34 @@ template <typename T> class TableInterface {
   public:
     virtual ~TableInterface() = default;
 
-    virtual void put(const std::string &name, T const &val) = 0;
-    virtual T    find(const std::string &name) const = 0;
-    virtual bool set(const std::string &name, T const &val) = 0;
-    virtual void remove(const std::string &name) = 0;
+    virtual void            put(const std::string &name, T const &val) = 0;
+    [[nodiscard]] virtual T find(const std::string &name) const = 0;
+    virtual bool            set(const std::string &name, T const &val) = 0;
+    virtual void            remove(const std::string &name) = 0;
 
-    virtual typename std::map<std::string, T>::const_iterator begin() const = 0;
-    virtual typename std::map<std::string, T>::const_iterator end() const = 0;
+    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator begin() const = 0;
+    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator end() const = 0;
 };
 
 template <typename T> class SymbolTable : public TableInterface<T> {
   public:
     explicit SymbolTable(std::shared_ptr<SymbolTable> s) : next(std::move(s)){};
-    ~SymbolTable() = default;
+    ~SymbolTable() override = default;
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
 
-    void put(const std::string &name, T const &val) { table[name] = val; };
+    void put(const std::string &name, T const &val) override { table[name] = val; };
 
-    [[nodiscard]] T find(const std::string &name) const;
-    bool            set(const std::string &name, T const &val);
-    void            remove(const std::string &name);
+    [[nodiscard]] T find(const std::string &name) const override;
+    bool            set(const std::string &name, T const &val) override;
+    void            remove(const std::string &name) override;
 
-    typename std::map<std::string, T>::const_iterator begin() const { return table.begin(); }
-    typename std::map<std::string, T>::const_iterator end() const { return table.end(); }
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
+        return table.begin();
+    }
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
+        return table.end();
+    }
 
     void dump(std::ostream &os) const;
 
@@ -98,15 +102,21 @@ template <typename T> class FrameTable : public TableInterface<T> {
   public:
     FrameTable() { push_frame("."); };
 
-    void put(const std::string &name, T const &val) { current_table->put(name, val); };
-    T    find(const std::string &name) const { return current_table->find(name); };
-    bool set(const std::string &name, T const &val) { return current_table->set(name, val); };
-    void remove(const std::string &name) { current_table->remove(name); };
+    void put(const std::string &name, T const &val) override { current_table->put(name, val); };
+    [[nodiscard]] T find(const std::string &name) const override {
+        return current_table->find(name);
+    };
+    bool set(const std::string &name, T const &val) override {
+        return current_table->set(name, val);
+    };
+    void remove(const std::string &name) override { current_table->remove(name); };
 
-    typename std::map<std::string, T>::const_iterator begin() const {
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
         return current_table->begin();
     };
-    typename std::map<std::string, T>::const_iterator end() const { return current_table->end(); };
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
+        return current_table->end();
+    };
 
     void push_frame(std::string const &frame_name);
     void pop_frame();

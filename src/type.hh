@@ -15,6 +15,7 @@
 #include <llvm/IR/DerivedTypes.h>
 
 #include "attr.hh"
+#include "ax.hh"
 
 namespace ax {
 
@@ -31,12 +32,6 @@ enum class TypeId {
     alias,
     module
 };
-
-// Types used in implementation
-
-using Int = long;
-using Bool = bool;
-
 inline bool is_referencable(TypeId &id) {
     return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
 }
