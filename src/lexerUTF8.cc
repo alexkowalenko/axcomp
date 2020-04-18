@@ -24,7 +24,9 @@ Char LexerUTF8::get() {
         ptr++;
     } catch (EOFException &) {
         c = -1;
+        return c;
     }
+    charpos++;
     return c;
 }
 Char LexerUTF8::peek() {

@@ -15,6 +15,7 @@
 #include "importer.hh"
 #include "inspector.hh"
 #include "lexer.hh"
+#include "lexerUTF8.hh"
 #include "options.hh"
 #include "parser.hh"
 #include "printer.hh"
@@ -72,7 +73,7 @@ int main(int argc, char **argv) {
         input = new std::ifstream(options.file_name);
     }
     ErrorManager errors;
-    Lexer        lexer(*input, errors);
+    LexerUTF8    lexer(*input, errors);
 
     TypeTable types;
     types.initialise();

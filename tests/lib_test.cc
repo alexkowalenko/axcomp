@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "gtest/gtest.h"
+#include <string_view>
 
 #include "defparser.hh"
 #include "defprinter.hh"
@@ -74,13 +75,21 @@ void do_lexUTF8_tests(std::vector<LexTests> &tests) {
     }
 }
 
+// Different lexers return slightly different positions
+// check the message.
+bool check_errors(std::string const &e1, std::string const &e2) {
+    auto s1 = e1.substr(e1.find(':'));
+    auto s2 = e2.substr(e2.find(':'));
+    return s1 == s2;
+}
+
 void do_parse_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        LexerUTF8          lex(is, errors);
         TypeTable          types;
         types.initialise();
 
@@ -100,7 +109,7 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
             EXPECT_EQ(result, t.output);
         } catch (AXException &e) {
-            EXPECT_EQ(e.error_msg(), t.error);
+            EXPECT_TRUE(check_errors(e.error_msg(), t.error));
         } catch (std::exception &e) {
             std::cerr << "Exception: " << e.what() << std::endl;
             FAIL();
@@ -114,7 +123,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        LexerUTF8          lex(is, errors);
         TypeTable          types;
         types.initialise();
 
@@ -158,7 +167,7 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        LexerUTF8          lex(is, errors);
         TypeTable          types;
         types.initialise();
 
@@ -202,7 +211,7 @@ void do_def_tests(std::vector<ParseTests> &tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        LexerUTF8          lex(is, errors);
         TypeTable          types;
         types.initialise();
 
@@ -245,7 +254,7 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        LexerUTF8          lex(is, errors);
         TypeTable          types;
         types.initialise();
 

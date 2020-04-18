@@ -32,16 +32,27 @@ template <typename C> class CharacterClass {
     static std::string to_string(C);
 };
 
-template <typename C, class CharClass> class LexerInterface {
+class LexerInterface {
   public:
-    LexerInterface(std::istream &stream, ErrorManager const &e) : is{stream}, errors{e} {};
     virtual ~LexerInterface() = default;
 
-    virtual Token get_token();
-    virtual void  push_token(Token const &t) { next_token.push(t); }
-    virtual Token peek_token();
+    virtual Token get_token() = 0;
+    virtual void  push_token(Token const &t) = 0;
+    virtual Token peek_token() = 0;
 
-    [[nodiscard]] Location get_location() const { return Location{lineno, charpos}; }
+    [[nodiscard]] virtual Location get_location() const = 0;
+};
+
+template <typename C, class CharClass> class LexerImplementation : public LexerInterface {
+  public:
+    LexerImplementation(std::istream &stream, ErrorManager const &e) : is{stream}, errors{e} {};
+    ~LexerImplementation() override = default;
+
+    Token get_token() override;
+    void  push_token(Token const &t) override { next_token.push(t); }
+    Token peek_token() override;
+
+    [[nodiscard]] Location get_location() const override { return Location{lineno, charpos}; }
 
   protected:
     void set_newline() {
@@ -80,10 +91,10 @@ class Character8 : CharacterClass<char> {
     static std::string to_string(char c) { return std::string(1, c); }
 };
 
-class Lexer : public LexerInterface<char, Character8> {
+class Lexer : public LexerImplementation<char, Character8> {
   public:
-    Lexer(std::istream &stream, ErrorManager const &e) : LexerInterface{stream, e} {};
-    ~Lexer() override = default;
+    Lexer(std::istream &stream, ErrorManager const &e) : LexerImplementation{stream, e} {};
+    ~Lexer() = default;
 
   private:
     char get() override {
@@ -106,7 +117,7 @@ template <typename... T> inline void debugl(const T &... msg) {
     }
 }
 
-template <typename C, class CharClass> Token LexerInterface<C, CharClass>::peek_token() {
+template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::peek_token() {
     if (next_token.empty()) {
         Token t{get_token()};
         next_token.push(t);
@@ -115,7 +126,7 @@ template <typename C, class CharClass> Token LexerInterface<C, CharClass>::peek_
     return next_token.top();
 }
 
-template <typename C, class CharClass> Token LexerInterface<C, CharClass>::get_token() {
+template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::get_token() {
     // Check if there is already a token
     if (!next_token.empty()) {
         debugl("size: {}", next_token.size());
@@ -164,7 +175,7 @@ template <typename C, class CharClass> Token LexerInterface<C, CharClass>::get_t
     throw LexicalException("Unknown character " + CharClass::to_string(c), get_location());
 }
 
-template <typename C, class CharClass> void LexerInterface<C, CharClass>::get_comment() {
+template <typename C, class CharClass> void LexerImplementation<C, CharClass>::get_comment() {
     get(); // get asterisk
     do {
         auto c = get();
@@ -183,7 +194,7 @@ template <typename C, class CharClass> void LexerInterface<C, CharClass>::get_co
     } while (is);
 }
 
-template <typename C, class CharClass> Token LexerInterface<C, CharClass>::scan_digit(C c) {
+template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_digit(C c) {
     std::string digit(1, c);
     c = peek();
     while (CharClass::isxdigit(c)) {
@@ -194,7 +205,7 @@ template <typename C, class CharClass> Token LexerInterface<C, CharClass>::scan_
     return Token(TokenType::integer, digit);
 }
 
-template <typename C, class CharClass> Token LexerInterface<C, CharClass>::scan_ident(C c) {
+template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_ident(C c) {
     std::string ident(1, c);
     c = peek();
     while (CharClass::isalnum(c) || c == '_') {
@@ -214,7 +225,7 @@ template <typename C, class CharClass> Token LexerInterface<C, CharClass>::scan_
  *
  * @return char
  */
-template <typename C, class CharClass> C LexerInterface<C, CharClass>::get_char() {
+template <typename C, class CharClass> C LexerImplementation<C, CharClass>::get_char() {
     while (is) {
         auto c = get();
         if (c == '\n') {

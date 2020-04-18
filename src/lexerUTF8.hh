@@ -21,9 +21,9 @@ class Character32 : CharacterClass<Char> {
     static std::string to_string(Char c) { return std::string(1, c); }
 };
 
-class LexerUTF8 : public LexerInterface<Char, Character32> {
+class LexerUTF8 : public LexerImplementation<Char, Character32> {
   public:
-    LexerUTF8(std::istream &stream, ErrorManager const &e) : LexerInterface{stream, e} {
+    LexerUTF8(std::istream &stream, ErrorManager const &e) : LexerImplementation{stream, e} {
         ptr = buf.end();
     };
     ~LexerUTF8() override = default;
