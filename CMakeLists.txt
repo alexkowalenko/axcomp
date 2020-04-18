@@ -79,6 +79,9 @@ endif()
 message("Using CLI11")
 add_subdirectory(extern/CLI11)
 
+message("Using utfcpp")
+include_directories("${PROJECT_SOURCE_DIR}/extern/utfcpp/source")
+
 # LLVM
 set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
 find_package(LLVM REQUIRED CONFIG)

@@ -35,8 +35,11 @@ add_definitions(${LLVM_DEFINITIONS})
 package_add_test(fuzz_lex fuzz_lex.cpp)
 add_test(NAME fuzz_lex COMMAND fuzz_lex -max_total_time=${FUZZ_RUNTIME} corpus)
 
+package_add_test(fuzz_lexUTF8 fuzz_lexUTF8.cpp)
+add_test(NAME fuzz_lexUTF8 COMMAND fuzz_lexUTF8 -max_total_time=${FUZZ_RUNTIME} corpus)
+
 package_add_test(fuzz_parse fuzz_parse.cpp)
-add_test(NAME fuzz_parse COMMAND fuzz_parse -max_total_time=${FUZZ_RUNTIME} -only_ascii=1 corpus.parse)
+add_test(NAME fuzz_parse COMMAND fuzz_parse -max_total_time=${FUZZ_RUNTIME} corpus.parse)
 
 execute_process(COMMAND "mkdir" -pv corpus corpus.parse
                 WORKING_DIRECTORY fuzz_test)

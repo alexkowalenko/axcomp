@@ -96,3 +96,17 @@ TEST(Lexer, Lexer) {
 TEST(LexerUTF8, Lexer) {
     do_lexUTF8_tests(tests);
 }
+
+TEST(LexerUTF8, UTF8) {
+
+    std::vector<LexTests> tests = {
+
+        // comments
+        {"(* χαῖρε *)1", TokenType::integer, "1"},
+        {"(* Olá *) 1", TokenType::integer, "1"},
+        {"(* привет *) 1", TokenType::integer, "1"},
+        {"(* こんにちは *) 1", TokenType::integer, "1"},
+    };
+
+    do_lexUTF8_tests(tests);
+}
