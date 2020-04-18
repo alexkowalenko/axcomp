@@ -3,26 +3,11 @@
 //
 // Copyright © 2020 Alex Kowalenko
 //
-
-#include <sstream>
-#include <vector>
-
-#include <llvm/Support/FormatVariadic.h>
-
 #include <gtest/gtest.h>
 
-#include "error.hh"
-#include "lexer.hh"
-#include "token.hh"
+#include "parse_test.hh"
 
 using namespace ax;
-
-struct LexTests {
-    std::string input;
-    TokenType   token;
-    std::string val;
-};
-
 std::vector<LexTests> tests = {
     {"\n", TokenType::eof, ""},
 
@@ -104,26 +89,10 @@ std::vector<LexTests> tests = {
     {"is_digit", TokenType::ident, "is_digit"},
 };
 
-TEST(Lexer, Lexer1) {
+TEST(Lexer, Lexer) {
+    do_lex_tests(tests);
+}
 
-    for (auto const &t : tests) {
-
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        Lexer              lex(is, errors);
-
-        try {
-            auto token = lex.get_token();
-            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
-                      << std::endl;
-            EXPECT_EQ(token.type, t.token);
-            EXPECT_EQ(token.val, t.val);
-        } catch (LexicalException &l) {
-            std::cerr << "Exception: " << l.error_msg() << std::endl;
-            FAIL();
-        } catch (...) {
-            std::cerr << "Unknown Exception" << std::endl;
-            FAIL();
-        }
-    }
+TEST(LexerUTF8, Lexer) {
+    do_lexUTF8_tests(tests);
 }

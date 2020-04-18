@@ -4,10 +4,18 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
+#pragma once
+
 #include <string>
 #include <vector>
 
-#pragma once
+#include "token.hh"
+
+struct LexTests {
+    std::string   input;
+    ax::TokenType token;
+    std::string   val;
+};
 
 struct ParseTests {
     std::string input;
@@ -15,8 +23,17 @@ struct ParseTests {
     std::string error;
 };
 
+// Lexer tester
+void do_lex_tests(std::vector<LexTests> &tests);
+void do_lexUTF8_tests(std::vector<LexTests> &tests);
+
+// Parser tester
 void do_parse_tests(std::vector<ParseTests> &tests);
+
+// Inspector tester
 void do_inspect_tests(std::vector<ParseTests> &tests);
+
+// Importer tests
 void do_def_tests(std::vector<ParseTests> &tests);
 void do_inspect_fimport_tests(std::vector<ParseTests> &tests);
 void do_defparse_tests(std::vector<ParseTests> &tests);

@@ -15,6 +15,7 @@
 #include "fake_importer.hh"
 #include "inspector.hh"
 #include "lexer.hh"
+#include "lexerUTF8.hh"
 #include "parser.hh"
 #include "printer.hh"
 #include "symboltable.hh"
@@ -24,6 +25,54 @@
 #include "parse_test.hh"
 
 using namespace ax;
+
+void do_lex_tests(std::vector<LexTests> &tests) {
+
+    for (auto const &t : tests) {
+
+        std::istringstream is(t.input);
+        ErrorManager       errors;
+        Lexer              lex(is, errors);
+
+        try {
+            auto token = lex.get_token();
+            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
+                      << std::endl;
+            EXPECT_EQ(token.type, t.token);
+            EXPECT_EQ(token.val, t.val);
+        } catch (LexicalException &l) {
+            std::cerr << "Exception: " << l.error_msg() << std::endl;
+            FAIL();
+        } catch (...) {
+            std::cerr << "Unknown Exception" << std::endl;
+            FAIL();
+        }
+    }
+}
+
+void do_lexUTF8_tests(std::vector<LexTests> &tests) {
+
+    for (auto const &t : tests) {
+
+        std::istringstream is(t.input);
+        ErrorManager       errors;
+        LexerUTF8          lex(is, errors);
+
+        try {
+            auto token = lex.get_token();
+            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
+                      << std::endl;
+            EXPECT_EQ(token.type, t.token);
+            EXPECT_EQ(token.val, t.val);
+        } catch (LexicalException &l) {
+            std::cerr << "Exception: " << l.error_msg() << std::endl;
+            FAIL();
+        } catch (...) {
+            std::cerr << "Unknown Exception" << std::endl;
+            FAIL();
+        }
+    }
+}
 
 void do_parse_tests(std::vector<ParseTests> &tests) {
 

@@ -14,5 +14,6 @@ namespace ax {
 
 using Int = long;
 using Bool = bool;
+using Char = wchar_t;
 
 } // namespace ax

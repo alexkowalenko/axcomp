@@ -29,6 +29,7 @@
 #include "symbol.hh"
 #include "symboltable.hh"
 #include "type.hh"
+#include "typetable.hh"
 
 namespace ax {
 
@@ -366,8 +367,8 @@ void CodeGenerator::visit_ASTReturn(ASTReturnPtr ast) {
 }
 
 void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
+    debug("CodeGenerator::visit_ASTExit");
     if (last_end) {
-        builder.GetInsertBlock();
         builder.CreateBr(last_end);
     } else {
         throw CodeGenException("EXIT: no enclosing loop.", ast->get_location());

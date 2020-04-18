@@ -107,7 +107,8 @@ add_library(libax STATIC
   src/ast.cc
   src/error.cc 
   src/inspector.cc 
-  src/lexer.cc 
+  src/lexer.cc
+  src/lexerUTF8.cc 
   src/location.cc
   src/parser.cc
   src/token.cc

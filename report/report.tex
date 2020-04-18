@@ -153,8 +153,8 @@ Node =  RECORD key: INTEGER; left, right: Tree END
 The following basic types are denoted by predeclared identifiers. The associated operators are defined in \ref{operators}, and the predeclared function procedures in \ref{predefined}. The values of a given basic type are the following:
 
 \begin{enumerate}
-    \item \BOOLEAN -- the truth values \TRUE\ and \FALSE.
-    \item \INTEGER -- the integers of a 64-bit signed integer.
+    \item \BOOLEAN\ -- the truth values \TRUE\ and \FALSE.
+    \item \INTEGER\ -- the integers of a 64-bit signed integer.
 \end{enumerate}
 
 \subsection{Array types}
@@ -607,6 +607,22 @@ BEGIN
     RETURN pt[1].x + pt[1].y
 END g10.    
 \end{lstlisting} 
+
+\section{Standard Library}
+
+\subsection{Out.mod}
+
+\begin{lstlisting}[style=oberon]
+DEFINITION Out;
+    PROCEDURE Open*;
+    PROCEDURE Flush*;
+    PROCEDURE Int*(x : INTEGER);
+    PROCEDURE Hex*(x : INTEGER);
+    PROCEDURE Bool*(x : BOOLEAN);
+    PROCEDURE Ln*;
+END Out.
+\end{lstlisting} 
+
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
