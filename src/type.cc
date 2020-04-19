@@ -28,6 +28,10 @@ llvm::Constant *BooleanType::make_value(bool b) {
     return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
 };
 
+llvm::Constant *CharacterType::make_value(Char b) {
+    return ConstantInt::get(get_llvm(), static_cast<Char>(b));
+};
+
 ProcedureType::operator std::string() {
     std::string res{"("};
     for (auto &t : params) {
@@ -46,9 +50,8 @@ ProcedureType::operator std::string() {
 
 llvm::Type *ProcedureType::get_llvm() {
     std::vector<llvm::Type *> proto;
-    std::for_each(begin(params), end(params), [this, &proto](auto const &t) {
-        proto.push_back(t.first->get_llvm());
-    });
+    std::for_each(begin(params), end(params),
+                  [this, &proto](auto const &t) { proto.push_back(t.first->get_llvm()); });
 
     return FunctionType::get(ret->get_llvm(), proto, false);
 }
@@ -63,8 +66,7 @@ llvm::Type *ArrayType::get_llvm() {
 
 llvm::Constant *ArrayType::get_init() {
     auto const_array = std::vector<Constant *>(size, base_type->get_init());
-    return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()),
-                              const_array);
+    return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
 };
 
 RecordType::operator std::string() {
@@ -79,17 +81,15 @@ RecordType::operator std::string() {
 
 llvm::Type *RecordType::get_llvm() {
     std::vector<llvm::Type *> fs;
-    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
-        fs.push_back(fields[name]->get_llvm());
-    });
+    std::for_each(begin(index), end(index),
+                  [&fs, this](auto const &name) { fs.push_back(fields[name]->get_llvm()); });
     return StructType::create(fs);
 };
 
 llvm::Constant *RecordType::get_init() {
     std::vector<llvm::Constant *> fs;
-    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
-        fs.push_back(fields[name]->get_init());
-    });
+    std::for_each(begin(index), end(index),
+                  [&fs, this](auto const &name) { fs.push_back(fields[name]->get_init()); });
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 };
 

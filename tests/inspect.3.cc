@@ -8,8 +8,6 @@
 
 #include "parse_test.hh"
 
-void do_inspect_tests(std::vector<ParseTests> &tests);
-
 TEST(Inspector, ReadOnly) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha;

@@ -8,8 +8,6 @@
 
 #include "parse_test.hh"
 
-void do_inspect_tests(std::vector<ParseTests> &tests);
-
 TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
         {"MODULE x; VAR z: INTEGER; BEGIN RETURN END x.",

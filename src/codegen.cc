@@ -895,6 +895,10 @@ void CodeGenerator::visit_ASTInteger(ASTIntegerPtr ast) {
     last_value = TypeTable::IntType->make_value(ast->value);
 }
 
+void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
+    last_value = TypeTable::CharType->make_value(ast->value);
+}
+
 void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }

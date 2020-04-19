@@ -12,9 +12,10 @@ namespace ax {
 
 using namespace llvm;
 
-std::shared_ptr<IntegerType> TypeTable::IntType;
-std::shared_ptr<BooleanType> TypeTable::BoolType;
-TypePtr                      TypeTable::VoidType;
+std::shared_ptr<IntegerType>   TypeTable::IntType;
+std::shared_ptr<BooleanType>   TypeTable::BoolType;
+std::shared_ptr<CharacterType> TypeTable::CharType;
+TypePtr                        TypeTable::VoidType;
 
 void TypeTable::initialise() {
     IntType = std::make_shared<IntegerType>();
@@ -22,6 +23,9 @@ void TypeTable::initialise() {
 
     BoolType = std::make_shared<BooleanType>();
     put(std::string(*BoolType), BoolType);
+
+    CharType = std::make_shared<CharacterType>();
+    put(std::string(*CharType), CharType);
 
     VoidType = std::make_shared<SimpleType>("void", TypeId::null);
     put(std::string(*VoidType), VoidType);
@@ -33,6 +37,9 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
 
     BoolType->set_llvm(llvm::Type::getInt1Ty(context));
     BoolType->set_init(BoolType->make_value(false));
+
+    CharType->set_llvm(llvm::Type::getInt32Ty(context));
+    CharType->set_init(CharType->make_value(0));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }

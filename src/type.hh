@@ -26,6 +26,7 @@ enum class TypeId {
     null, // void
     integer,
     boolean,
+    chr,
     procedure,
     array,
     record,
@@ -88,6 +89,14 @@ class BooleanType : public SimpleType {
     ~BooleanType() override = default;
 
     llvm::Constant *make_value(Bool b);
+};
+
+class CharacterType : public SimpleType {
+  public:
+    explicit CharacterType() : SimpleType("CHAR", TypeId::chr){};
+    ~CharacterType() override = default;
+
+    llvm::Constant *make_value(Char c);
 };
 
 class ProcedureType : public Type {
