@@ -61,7 +61,8 @@ class Parser {
     ASTRecordPtr     parse_record();
     ASTQualidentPtr  parse_qualident();
     ASTIdentifierPtr parse_identifier();
-    ASTIntegerPtr    parse_integer();
+    ASTBasePtr       parse_integer();
+    ASTCharPtr       parse_char();
     ASTBoolPtr       parse_boolean();
 
     Token get_token(TokenType const &t);

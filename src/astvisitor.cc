@@ -169,9 +169,4 @@ void ASTVisitor::visit_ASTRecord(ASTRecordPtr ast) {
     });
 }
 
-void ASTVisitor::visit_ASTQualident(ASTQualidentPtr /*not used*/){};
-void ASTVisitor::visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
-void ASTVisitor::visit_ASTInteger(ASTIntegerPtr /*not used*/){};
-void ASTVisitor::visit_ASTBool(ASTBoolPtr /*not used*/){};
-
 } // namespace ax

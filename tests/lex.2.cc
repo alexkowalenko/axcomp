@@ -40,6 +40,7 @@ std::vector<LexTests> tests = {
     {"&", TokenType::ampersand, "&"},
     {"[", TokenType::l_bracket, "["},
     {"]", TokenType::r_bracket, "]"},
+    {"'", TokenType::apostrophe, "'"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},

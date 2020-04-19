@@ -328,6 +328,14 @@ void ASTPrinter::visit_ASTInteger(ASTIntegerPtr ast) {
     };
 }
 
+void ASTPrinter::visit_ASTChar(ASTCharPtr ast) {
+    if (ast->hex) {
+        os << std::hex << '0' << int(ast->value) << 'X' << std::dec;
+    } else {
+        os << '\'' << ast->str() << '\'';
+    }
+}
+
 void ASTPrinter::visit_ASTBool(ASTBoolPtr ast) {
     if (ast->value) {
         os << string(TokenType::true_k);

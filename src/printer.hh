@@ -48,6 +48,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
     void visit_ASTQualident(ASTQualidentPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
+    void visit_ASTChar(ASTCharPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
   protected:

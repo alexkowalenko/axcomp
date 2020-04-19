@@ -38,6 +38,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::ampersand, "&"},
     {TokenType::l_bracket, "["},
     {TokenType::r_bracket, "]"},
+    {TokenType::apostrophe, "'"},
 
     // Keywords
     {TokenType::module, "MODULE"},

@@ -65,6 +65,8 @@ class ASTIdentifier;
 using ASTIdentifierPtr = std::shared_ptr<ASTIdentifier>;
 class ASTInteger;
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
+class ASTChar;
+using ASTCharPtr = std::shared_ptr<ASTChar>;
 class ASTBool;
 using ASTBoolPtr = std::shared_ptr<ASTBool>;
 
@@ -101,10 +103,11 @@ class ASTVisitor {
     virtual void visit_ASTType(ASTTypePtr ast);
     virtual void visit_ASTArray(ASTArrayPtr ast);
     virtual void visit_ASTRecord(ASTRecordPtr ast);
-    virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/);
-    virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/);
-    virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/);
-    virtual void visit_ASTBool(ASTBoolPtr /*not used*/);
+    virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/){};
+    virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
+    virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};
+    virtual void visit_ASTChar(ASTCharPtr /*not used*/){};
+    virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};
 };
 
 } // namespace ax

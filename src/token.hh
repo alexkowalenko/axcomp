@@ -36,6 +36,7 @@ enum class TokenType {
     ampersand,
     l_bracket,
     r_bracket,
+    apostrophe,
 
     // Keywords
     module,

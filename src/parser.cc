@@ -7,6 +7,7 @@
 #include "parser.hh"
 
 #include <cstddef>
+#include <memory>
 #include <optional>
 #include <utility>
 
@@ -20,7 +21,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{false};
+inline constexpr bool debug_parser{true};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -782,7 +783,9 @@ ASTTermPtr Parser::parse_term() {
  *                  | procedureCall
  *                  | INTEGER
  *                  | "TRUE" | "FALSE"
- *                  | '('expr ')'
+ *                  | CHAR
+ *                  | ~ factor
+ *                  | '(' expr ')'
  *
  * @return ASTFactorPtr
  */
@@ -799,10 +802,16 @@ ASTFactorPtr Parser::parse_factor() {
         ast->factor = parse_expr();
         get_token(TokenType::r_paren);
         return ast;
-    case TokenType::integer:
-        // Integer
-        ast->factor = parse_integer();
+    case TokenType::integer: {
+        // Could be integer or character in hex format
+        auto a = parse_integer();
+        if (auto res = std::dynamic_pointer_cast<ASTChar>(a); res) {
+            ast->factor = res;
+        } else {
+            ast->factor = std::dynamic_pointer_cast<ASTInteger>(a);
+        }
         return ast;
+    }
     case TokenType::true_k:
     case TokenType::false_k:
         ast->factor = parse_boolean();
@@ -811,6 +820,9 @@ ASTFactorPtr Parser::parse_factor() {
         lexer.get_token(); // get ~
         ast->is_not = true;
         ast->factor = parse_factor();
+        return ast;
+    case TokenType::apostrophe:
+        ast->factor = parse_char();
         return ast;
     case TokenType::ident: {
 
@@ -900,7 +912,7 @@ ASTArrayPtr Parser::parse_array() {
     auto ast = makeAST<ASTArray>(lexer);
 
     get_token(TokenType::array);
-    ast->size = parse_integer();
+    ast->size = std::dynamic_pointer_cast<ASTInteger>(parse_integer());
     get_token(TokenType::of);
     ast->type = parse_type();
     return ast;
@@ -994,28 +1006,54 @@ ASTIdentifierPtr Parser::parse_identifier() {
     return ast;
 }
 
+constexpr int dec_radix = 10;
+constexpr int hex_radix = 16;
+
 /**
  * @brief INTEGER
  *
  * @return ASTIntegerPtr
  */
-ASTIntegerPtr Parser::parse_integer() {
+ASTBasePtr Parser::parse_integer() {
     debug("Parser::parse_integer");
     auto ast = makeAST<ASTInteger>(lexer);
 
     auto tok = get_token(TokenType::integer);
     debug("Parser::parse_integer: {0}", std::string(tok));
 
-    auto next = lexer.peek_token();
-    debug("Parser::parse_integer: {0}", std::string(next));
-    int radix = 10;
+    auto  next = lexer.peek_token();
+    char *end = nullptr;
+    debug("Parser::parse_integer: {0}", next.val);
+    int radix = dec_radix;
     if (next.type == TokenType::ident && next.val == "H") {
         lexer.get_token();
-        radix = 16;
+        radix = hex_radix;
         ast->hex = true;
+    } else if (next.type == TokenType::ident && next.val == "X") {
+        lexer.get_token();
+        debug("Parser::parse_integer is a character");
+        auto ast = makeAST<ASTChar>(lexer);
+        ast->value = Char(std::strtol(tok.val.c_str(), &end, hex_radix));
+        ast->hex = true;
+        return ast;
     }
-    char *end = nullptr;
     ast->value = std::strtol(tok.val.c_str(), &end, radix);
+    return ast;
+}
+
+/**
+ * @brief digit {hexDigit} "X" | "’" char "’"
+ *
+ * @return ASTCharPtr
+ */
+ASTCharPtr Parser::parse_char() {
+    debug("Parser::parse_char");
+    auto ast = makeAST<ASTChar>(lexer);
+
+    get_token(TokenType::apostrophe);
+    ast->value = lexer.get_nextChar();
+    debug("Parser::parse_char: x {0} {1}", ast->value, ast->str());
+    get_token(TokenType::apostrophe);
     return ast;
 }
 

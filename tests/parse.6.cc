@@ -86,8 +86,7 @@ TEST(Parser, IMPORT) {
             BEGIN
                 RETURN 0
             END alpha.)",
-         "MODULE alpha;\nIMPORT System,\nB := A;\nBEGIN\nRETURN 0\nEND alpha.",
-         ""},
+         "MODULE alpha;\nIMPORT System,\nB := A;\nBEGIN\nRETURN 0\nEND alpha.", ""},
 
         {R"(MODULE alpha;
             IMPORT System, B := A, C := D; 
@@ -189,6 +188,34 @@ TEST(Parser, QualidentFunctionCall) {
          "Math.Abs(1)+Math.Abs(2)\nEND alpha.",
          ""},
 
+        // Errors
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, Char) {
+    std::vector<ParseTests> tests = {
+
+        {
+            R"(MODULE alpha;
+                CONST a= 'a';
+                VAR x : CHAR;
+                    y : CHAR;
+                    z : CHAR;
+                    z1 : CHAR;
+
+                BEGIN
+                    x := 'α';
+                    y := '四';
+                    z := '👾';
+                     z1 := 1F47EX;
+
+                    RETURN a 
+                END alpha.)",
+            "MODULE alpha;\nCONST\na = 'a';\nVAR\nx: CHAR;\ny: CHAR;\nz: CHAR;\nz1: "
+            "CHAR;\nBEGIN\nx := '\xCE\xB1';\ny := '\xE5\x9B\x9B';\nz := '\xF0\x9F\x91\xBE';\nz1 "
+            ":= 01f47eX;\nRETURN a\nEND alpha.",
+            ""},
         // Errors
     };
     do_parse_tests(tests);

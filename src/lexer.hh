@@ -42,6 +42,8 @@ class LexerInterface {
     virtual void  push_token(Token const &t) = 0;
     virtual Token peek_token() = 0;
 
+    virtual Char get_nextChar() = 0;
+
     [[nodiscard]] virtual Location get_location() const = 0;
 };
 
@@ -99,6 +101,8 @@ class Lexer : public LexerImplementation<char, Character8> {
   public:
     Lexer(std::istream &stream, ErrorManager const &e) : LexerImplementation{stream, e} {};
     ~Lexer() = default;
+
+    Char get_nextChar() override { return (Char)get_char(); }
 
   private:
     char get() override {

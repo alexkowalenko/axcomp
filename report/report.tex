@@ -39,7 +39,7 @@ The representation of symbols in terms of characters is defined using UTF-8. Sym
 There is some support for emoji as identifiers, emoji are treated as a non-digit alphabetic characters.
 
 \begin{enumerate}
-    \item  Identifiers are sequences of letters and digits. The first character must be a letter.
+    \item Identifiers are sequences of letters and digits. The first character must be a letter.
     
 \begin{lstlisting}[style=ebnf]
 Identifier = Letter {Letter | Digit | '_' }.
@@ -62,7 +62,13 @@ Examples:
     digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 \end{lstlisting}
 
-\item \BOOLEAN\ constants are \TRUE\ and \FALSE.
+\item \BOOLEAN\ constants are \TRUE\ and \FALSE. \label{bool-consts}
+
+\item Character constants are denoted by the ordinal number of the character in hexadecimal notation followed by the letter X or by the ASCII symbol of the character embraced by single quotes.
+
+\begin{lstlisting}[style=ebnf]
+    character = digit {hexDigit} "X" | "’" char "’".
+\end{lstlisting}
 
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
@@ -114,6 +120,11 @@ IdentDef = ident ["*" | "-"].
 The following identifiers are predefined; their meaning is defined in the indicated sections:
 \begin{tabbing}
     XXXXXXXXXX \= \kill
+    \BOOLEAN \> (\ref{types-basic}) \\
+    \CHAR \> (\ref{types-basic}) \\
+    \FALSE \> (\ref{bool-consts}) \\
+    \INTEGER \> (\ref{types-basic}) \\
+    \TRUE \>  (\ref{bool-consts}) \\
     \WriteInt \> (\ref{predefined}) \\
     \WriteBoolean \> (\ref{predefined}) \\
     \WriteLn \> (\ref{predefined}) \\
@@ -157,12 +168,13 @@ Node =  RECORD key: INTEGER; left, right: Tree END
 \end{lstlisting}
 
 \subsection{Basic types}
-
+\label{types-basic}
 The following basic types are denoted by predeclared identifiers. The associated operators are defined in \ref{operators}, and the predeclared function procedures in \ref{predefined}. The values of a given basic type are the following:
 
 \begin{enumerate}
     \item \BOOLEAN\ -- the truth values \TRUE\ and \FALSE.
     \item \INTEGER\ -- the integers of a 64-bit signed integer.
+    \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode).
 \end{enumerate}
 
 \subsection{Array types}

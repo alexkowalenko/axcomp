@@ -15,6 +15,7 @@
 
 #include "astvisitor.hh"
 #include "attr.hh"
+#include "lexerUTF8.hh"
 #include "location.hh"
 #include "token.hh"
 #include "type.hh"
@@ -42,6 +43,7 @@ class ASTBase {
   private:
     Location location;
 };
+using ASTBasePtr = std::shared_ptr<ASTBase>;
 
 template <class T, typename... Rest> auto make(Rest... rest) {
     return std::make_shared<T>(rest...);
@@ -70,6 +72,27 @@ class ASTBool : public ASTBase, public std::enable_shared_from_this<ASTBool> {
     Bool value{false};
 };
 using ASTBoolPtr = std::shared_ptr<ASTBool>;
+
+/**
+ * @brief digit {hexDigit} "X" | "’" char "’"
+ *
+ */
+class ASTChar : public ASTBase, public std::enable_shared_from_this<ASTChar> {
+  public:
+    ~ASTChar() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTChar(shared_from_this()); };
+
+    std::string str() const {
+        std::string s{};
+        Character32::add_string(s, value);
+        return s;
+    }
+
+    Char value;
+    bool hex{false};
+};
+using ASTBCharPtr = std::shared_ptr<ASTChar>;
 
 class ASTIdentifier : public ASTBase, public std::enable_shared_from_this<ASTIdentifier> {
   public:
@@ -207,7 +230,8 @@ class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor>
 
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
 
-    std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr, ASTFactorPtr>
+    std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr, ASTCharPtr,
+                 ASTFactorPtr>
          factor;
     bool is_not = false;
 };

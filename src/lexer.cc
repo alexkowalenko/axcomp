@@ -58,6 +58,7 @@ const std::unordered_map<char, Token> token_map = {
     {'&', Token(TokenType::ampersand, "&")},
     {'[', Token(TokenType::l_bracket, "[")},
     {']', Token(TokenType::r_bracket, "]")},
+    {'\'', Token(TokenType::apostrophe, "'")},
 };
 
 } // namespace ax
