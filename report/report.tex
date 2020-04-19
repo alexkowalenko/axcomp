@@ -21,6 +21,11 @@ This report is in the tradition of other Oberon language reports, defining the l
 
 Oberon-07 seems to be a refinement of Oberon-2 with some features taken out. We will support a common maximum variant of the language.
 
+Also we extend the definition of Oberon to include the following updates:
+\begin{itemize}
+    \item Source files can be UTF-8 files. Identifiers, characters and strings can be valid UTF-8 characters.
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Syntax}
 
@@ -29,7 +34,9 @@ To describe the syntax, an extended Backus-Naur Formalism called EBNF is used. B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Vocabulary and representation}
 
-The representation of symbols in terms of characters is defined using the ASCII set. Symbols are identifiers, numbers, operators, delimiters, and comments. The following lexical rules must be observed. Blanks and line breaks must not occur within symbols (except in comments). They are ignored unless they are essential to separate two consecutive symbols. Capital and lower-case letters are considered as being distinct.
+The representation of symbols in terms of characters is defined using UTF-8. Symbols are identifiers, numbers, operators, delimiters, and comments. The following lexical rules must be observed. Blanks and line breaks must not occur within symbols (except in comments). They are ignored unless they are essential to separate two consecutive symbols. Capital and lower-case letters are considered as being distinct. 
+
+There is some support for emoji as identifiers, emoji are treated as a non-digit alphabetic characters.
 
 \begin{enumerate}
     \item  Identifiers are sequences of letters and digits. The first character must be a letter.
@@ -42,6 +49,7 @@ Examples:
 
 \begin{lstlisting}[style=example]
     x scan Oberon GetSymbol firstLetter
+    olá привет こんにちは χαῖρε
 \end{lstlisting}
 
 \item Numbers are (unsigned) integers. Integers are sequences of digits.
@@ -49,14 +57,14 @@ Examples:
 \begin{lstlisting}[style=ebnf]
     integer = digit {digit} | digit {hexDigit} "H".
 
-    hexDigit = digit | "A" | "B" | "C" | "D" | "E" | "F".
+    hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
 
     digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 \end{lstlisting}
 
 \item \BOOLEAN\ constants are \TRUE\ and \FALSE.
 
-\item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words consist exclusively of capital letters and cannot be used in the role of identifiers.
+\item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}
     + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ;       

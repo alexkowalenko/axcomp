@@ -41,3 +41,36 @@ file(TO_CMAKE_PATH "${PROJECT_BINARY_DIR}/CMakeLists.txt" LOC_PATH)
 if(EXISTS "${LOC_PATH}")
     message(FATAL_ERROR "You cannot build in a source directory (or any directory with a CMakeLists.txt file). Please make a build subdirectory. Feel free to remove CMakeCache.txt and CMakeFiles.")
 endif()
+
+# LLVM
+set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
+find_package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+
+include_directories(${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+
+llvm_map_components_to_libnames(llvm_libs native asmparser
+  # For future cross compiler
+  # AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens
+  # also try 'all'
+)                 
+
+set(LLVM_ENABLE_ASSERTIONS ON)
+set(LLVM_ENABLE_EH ON)
+set(LLVM_ENABLE_RTTI ON)
+
+message(STATUS "Using LLVM libs: ${llvm_libs}")
+
+
+# utfcpp library
+message("Using utfcpp")
+include_directories("${PROJECT_SOURCE_DIR}/extern/utfcpp/source")
+
+# Unicode library
+message("Using icu4c")
+set(ICU_INCLUDE_DIRS /usr/local/opt/icu4c/include)
+set(ICU_LIBRARY_DIRS /usr/local/opt/icu4c/lib)
+set(ICU_LIBRARIES icuuc)
+include_directories(${ICU_INCLUDE_DIRS})
+link_directories(${ICU_LIBRARY_DIRS})

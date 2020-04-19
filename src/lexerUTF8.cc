@@ -31,7 +31,8 @@ Char LexerUTF8::get() {
     return c;
 }
 Char LexerUTF8::peek() {
-    return *ptr;
+    Char c = (Char)utf8::peek_next(ptr, buf.end());
+    return c;
 }
 
 void LexerUTF8::get_line() {
@@ -39,7 +40,6 @@ void LexerUTF8::get_line() {
         throw EOFException{};
     }
     buf.push_back('\n');
-
     // check UTF-8 correctness
     if (!utf8::is_valid(buf.begin(), buf.end())) {
         throw LexicalException("Not valid UTF-8 text", get_location());

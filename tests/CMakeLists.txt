@@ -4,6 +4,8 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
+include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
+
 add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
 
 set(INSTALL_GTEST OFF)
@@ -25,7 +27,7 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} libax axtest gtest gtest_main ${llvm_libs})
+    target_link_libraries(${TESTNAME} libax axtest gtest gtest_main ${llvm_libs} ${ICU_LIBRARIES})
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}
@@ -34,20 +36,11 @@ macro(package_add_test TESTNAME)
         PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_DIR}"
     )
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
-endmacro()
-
-# LLVM
-set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
-find_package(LLVM REQUIRED CONFIG)
-
-include_directories(${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
-
-llvm_map_components_to_libnames(llvm_libs native)                  
+endmacro()              
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
-include_directories(${PROJECT_SOURCE_DIR}/extern/fmt/include)
+
 
 add_library(axtest STATIC lib_test.cc fake_importer.cc) 
 

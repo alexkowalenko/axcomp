@@ -106,6 +106,17 @@ TEST(LexerUTF8, UTF8) {
         {"(* Olá *) 1", TokenType::integer, "1"},
         {"(* привет *) 1", TokenType::integer, "1"},
         {"(* こんにちは *) 1", TokenType::integer, "1"},
+
+        // // Identifiers
+        // {"a", TokenType::ident, "a"},
+        {"liberté", TokenType::ident, "liberté"},
+        {"αβγ", TokenType::ident, "αβγ"},
+        {"привет", TokenType::ident, "привет"},
+        {"こんにちは", TokenType::ident, "こんにちは"},
+
+        {"a👾", TokenType::ident, "a👾"},
+        {"a_👾", TokenType::ident, "a_👾"},
+        {"🍎", TokenType::ident, "🍎"},
     };
 
     do_lexUTF8_tests(tests);

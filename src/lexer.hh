@@ -24,12 +24,14 @@ namespace ax {
 template <typename C> class CharacterClass {
   public:
     virtual ~CharacterClass() = default;
-    static bool        isspace(C);
-    static bool        isxdigit(C);
-    static bool        isdigit(C);
-    static bool        isalnum(C);
-    static bool        isalpha(C);
+    static bool isspace(C);
+    static bool isxdigit(C);
+    static bool isdigit(C);
+    static bool isalnum(C);
+    static bool isalpha(C);
+
     static std::string to_string(C);
+    static void        add_string(std::string const &s, Char c);
 };
 
 class LexerInterface {
@@ -83,12 +85,14 @@ template <typename C, class CharClass> class LexerImplementation : public LexerI
 class Character8 : CharacterClass<char> {
   public:
     ~Character8() override = default;
-    static bool        isspace(char c) { return std::isspace(c); };
-    static bool        isxdigit(char c) { return std::isxdigit(c); };
-    static bool        isdigit(char c) { return std::isdigit(c); };
-    static bool        isalnum(char c) { return std::isalnum(c); };
-    static bool        isalpha(char c) { return std::isalpha(c); };
+    static bool isspace(char c) { return std::isspace(c); };
+    static bool isxdigit(char c) { return std::isxdigit(c); };
+    static bool isdigit(char c) { return std::isdigit(c); };
+    static bool isalnum(char c) { return std::isalnum(c); };
+    static bool isalpha(char c) { return std::isalpha(c); };
+
     static std::string to_string(char c) { return std::string(1, c); }
+    static void        add_string(std::string &s, char c) { s.push_back(c); }
 };
 
 class Lexer : public LexerImplementation<char, Character8> {
@@ -136,7 +140,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     }
 
     // Get next token
-    auto c = get_char();
+    C c = get_char();
 
     // Check single digit character tokens
     if (auto res = token_map.find(c); res != token_map.end()) {
@@ -168,7 +172,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     if (CharClass::isdigit(c)) {
         return scan_digit(c);
     }
-    if (CharClass::isalpha(c)) {
+    if (CharClass::isalnum(c)) {
         return scan_ident(c);
     }
     std::cout << "character: " << int(c) << std::endl;
@@ -206,11 +210,13 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
 }
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_ident(C c) {
-    std::string ident(1, c);
+    std::string ident;
+    CharClass::add_string(ident, c);
+
     c = peek();
     while (CharClass::isalnum(c) || c == '_') {
         get();
-        ident += c;
+        CharClass::add_string(ident, c);
         c = peek();
     }
     // Look for keywords

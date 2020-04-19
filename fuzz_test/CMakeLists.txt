@@ -4,7 +4,8 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include_directories(${PROJECT_SOURCE_DIR}/extern/fmt/include)
+include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
+
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # Allow short runs during automated testing to see if something new breaks
@@ -19,17 +20,9 @@ macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
 
     target_link_libraries(${TESTNAME} PRIVATE project_options project_warnings -fsanitize=fuzzer,undefined,address,leak 
-                                      libax ${llvm_libs})
+                                      libax ${llvm_libs} ${ICU_LIBRARIES})
     target_compile_options(${TESTNAME} PRIVATE -fsanitize=fuzzer,undefined,address,leak)
 endmacro()
-
-# LLVM
-set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
-find_package(LLVM REQUIRED CONFIG)
-llvm_map_components_to_libnames(llvm_libs native)                  
-
-include_directories(${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
 
 # The tests
 package_add_test(fuzz_lex fuzz_lex.cpp)

@@ -5,14 +5,13 @@
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{xcolor}
 
-\setmonofont[Scale=0.85]{Fira Code}
+%\setmonofont[Scale=0.85]{Fira Code}
+\setromanfont{Minion Pro}
+
 
 \newcommand{\changefont}[3]{\fontfamily{#1}\fontseries{#2}\fontshape{#3}\selectfont}
 
 \usepackage{listings}
-%\newcommand{\progfont}{\changefont{pcr}{m}{n}}
-\newcommand{\progfont}{\ttfamily}
-\newcommand{\kwfont}{\changefont{cmr}{b}{n}}
 
 \definecolor{darkgrey}{rgb}{0.4,0.4,0.4}
 
@@ -26,26 +25,26 @@ morestring=[b]",
 }
 
 \lstdefinelanguage{Oberon}[]{Pascal}%
-{morekeywords={range,len,dim,incr,all},%
+{morekeywords={elsif,exit,import,loop,module,return},%
   sensitive=f,%
   comment=[s]{(*}{*)},
 }[keywords]%
 
 
-\newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
-\newcommand{\lispfont}{\fontspec{LispM-Monospace}[Scale=0.9]}
-\newcommand{\lispfontBold}{\fontspec{LispM-Monospace}[Scale=0.9, AutoFakeBold=3.5]}
-\newcommand{\lispfontCommet}{\fontspec{LispM-Monospace}[Scale=0.9, FakeSlant=0.3, Color=darkgrey]}
+\newcommand{\srcfont}{\fontspec{JetBrains Mono}[Scale=0.9]}
+\newcommand{\codefont}{\fontspec{JetBrains Mono}[Scale=0.8]}
+\newcommand{\codefontBold}{\fontspec{JetBrains Mono-Bold}[Scale=0.8]}
+\newcommand{\codefontCommet}{\fontspec{JetBrains Mono-Italic}[Scale=0.8, Color=darkgrey]}
 % font for verbatim envirnoment. Note: must be fixed width!
 \fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
 }
   
 \lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
 tabsize = 2,
-basicstyle=\lispfont,
-keywordstyle=\lispfontBold,
+basicstyle=\codefont,
+keywordstyle=\codefontBold,
 %identifierstyle=\kw,
-commentstyle=\lispfontCommet,
+commentstyle=\codefontCommet,
 stringstyle=, showstringspaces=false,
 %keepspaces=true,
 numbers=none, numberstyle=\tiny, stepnumber=1, numbersep=5pt, captionpos=b,

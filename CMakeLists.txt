@@ -79,29 +79,6 @@ endif()
 message("Using CLI11")
 add_subdirectory(extern/CLI11)
 
-message("Using utfcpp")
-include_directories("${PROJECT_SOURCE_DIR}/extern/utfcpp/source")
-
-# LLVM
-set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
-find_package(LLVM REQUIRED CONFIG)
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-
-include_directories(${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
-
-llvm_map_components_to_libnames(llvm_libs native asmparser
-  # For future cross compiler
-  # AllTargetsInfos AllTargetsAsmParsers AllTargetsAsmPrinters AllTargetsCodeGens
-  # also try 'all'
-)                 
-
-set(LLVM_ENABLE_ASSERTIONS ON)
-set(LLVM_ENABLE_EH ON)
-set(LLVM_ENABLE_RTTI ON)
-
-message(STATUS "Using LLVM libs: ${llvm_libs}")
-
 # Doxygen docs
 add_subdirectory(docs)
 
@@ -131,7 +108,7 @@ include_directories(extern/CLI11/include)
 
 # ax compiler executable
 add_executable(ax cmd/ax.cc)
-target_link_libraries(ax PRIVATE project_options project_warnings libax ${llvm_libs})
+target_link_libraries(ax PRIVATE project_options project_warnings libax ${llvm_libs} ${ICU_LIBRARIES})
 
 # ax runtime library
 add_subdirectory(runtime)

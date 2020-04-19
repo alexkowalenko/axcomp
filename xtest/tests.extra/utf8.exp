@@ -1,0 +1,29 @@
+; ModuleID = 'utf8'
+source_filename = "utf8"
+
+@"utf8_libert\C3\A9" = internal constant i64 14
+@"utf8_a\F0\9F\91\BE" = internal global i64 0
+
+declare void @WriteInt(i64)
+
+declare void @WriteBoolean(i1)
+
+declare void @WriteLn()
+
+define internal i64 @"utf8_\CE\BB\CF\8C\CE\B3\CE\BF\CF\82"(i64 %"\CE\BB") {
+entry:
+  %"\CE\BB1" = alloca i64
+  store i64 %"\CE\BB", i64* %"\CE\BB1"
+  %"\CE\BB2" = load i64, i64* %"\CE\BB1"
+  ret i64 %"\CE\BB2"
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* @"utf8_a\F0\9F\91\BE"
+  %"a\F0\9F\91\BE" = load i64, i64* @"utf8_a\F0\9F\91\BE"
+  %"libert\C3\A9" = load i64, i64* @"utf8_libert\C3\A9"
+  %addtmp = add i64 %"a\F0\9F\91\BE", %"libert\C3\A9"
+  %0 = call i64 @"utf8_\CE\BB\CF\8C\CE\B3\CE\BF\CF\82"(i64 %addtmp)
+  ret i64 %0
+}
