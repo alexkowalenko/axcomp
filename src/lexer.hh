@@ -42,8 +42,6 @@ class LexerInterface {
     virtual void  push_token(Token const &t) = 0;
     virtual Token peek_token() = 0;
 
-    virtual Char get_nextChar() = 0;
-
     [[nodiscard]] virtual Location get_location() const = 0;
 };
 
@@ -77,6 +75,7 @@ template <typename C, class CharClass> class LexerImplementation : public LexerI
   private:
     Token scan_digit(C c);
     Token scan_ident(C c);
+    Token scan_char(C c);
 
     ErrorManager const &errors;
     std::stack<Token>   next_token;
@@ -102,8 +101,6 @@ class Lexer : public LexerImplementation<char, Character8> {
     Lexer(std::istream &stream, ErrorManager const &e) : LexerImplementation{stream, e} {};
     ~Lexer() = default;
 
-    Char get_nextChar() override { return (Char)get_char(); }
-
   private:
     char get() override {
         charpos++;
@@ -115,7 +112,7 @@ class Lexer : public LexerImplementation<char, Character8> {
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 extern const std::unordered_map<std::string, Token> keyword_map;
-extern const std::unordered_map<char, Token>        token_map;
+extern const std::unordered_map<char, Token>        single_tokens;
 
 inline constexpr bool debug_lexer{false};
 
@@ -147,7 +144,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     C c = get_char();
 
     // Check single digit character tokens
-    if (auto res = token_map.find(c); res != token_map.end()) {
+    if (auto res = single_tokens.find(c); res != single_tokens.end()) {
         return res->second;
     }
 
@@ -171,6 +168,8 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
             return Token(TokenType::gteq, ">=");
         }
         return Token(TokenType::greater, ">");
+    case '\'':
+        return scan_char(c);
     default:;
     }
     if (CharClass::isdigit(c)) {
@@ -210,8 +209,18 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         digit += c;
         c = peek();
     }
+    if (c == 'H') {
+        // Numbers in this format 0cafeH
+        get();
+        return Token(TokenType::hexinteger, digit);
+    }
+    if (c == 'X') {
+        // Characters in this format 0d34X
+        get();
+        return Token(TokenType::hexchr, digit);
+    };
     return Token(TokenType::integer, digit);
-}
+} // namespace ax
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_ident(C c) {
     std::string ident;
@@ -228,6 +237,17 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         return res->second;
     }
     return Token(TokenType::ident, ident);
+}
+
+template <typename C, class CharClass>
+Token LexerImplementation<C, CharClass>::scan_char(C /*not used */) {
+    // Already scanned '
+    C c = get();
+    C final = get();
+    if (final != '\'') {
+        throw LexicalException("Expecting ' character to terminate CHAR literal", get_location());
+    }
+    return Token(TokenType::chr, long(c));
 }
 
 /**

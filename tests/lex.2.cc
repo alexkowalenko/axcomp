@@ -15,9 +15,10 @@ std::vector<LexTests> tests = {
     {"\n1", TokenType::integer, "1"},
     {"\n12", TokenType::integer, "12"},
     {"\n 1234567890", TokenType::integer, "1234567890"},
+
     // hex numbers
-    {"0d", TokenType::integer, "0d"},
-    {"0cafebabe", TokenType::integer, "0cafebabe"},
+    {"0dH", TokenType::hexinteger, "0d"},
+    {"0cafebabeH", TokenType::hexinteger, "0cafebabe"},
 
     {"\n;", TokenType::semicolon, ";"},
     {";", TokenType::semicolon, ";"},
@@ -40,7 +41,6 @@ std::vector<LexTests> tests = {
     {"&", TokenType::ampersand, "&"},
     {"[", TokenType::l_bracket, "["},
     {"]", TokenType::r_bracket, "]"},
-    {"'", TokenType::apostrophe, "'"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -49,6 +49,11 @@ std::vector<LexTests> tests = {
     {"(* hello (* there! *) *)1", TokenType::integer, "1"},
     // error in comment
     {"(* hello (* there! *)1", TokenType::eof, ""},
+
+    // chars
+    {"'a'", TokenType::chr, "", 97},
+
+    {"1F47EX", TokenType::hexchr, "1F47E"},
 
     // keyword
     {"MODULE", TokenType::module, "MODULE"},
@@ -118,6 +123,11 @@ TEST(LexerUTF8, UTF8) {
         {"a👾", TokenType::ident, "a👾"},
         {"a_👾", TokenType::ident, "a_👾"},
         {"🍎", TokenType::ident, "🍎"},
+
+        // chars
+        {"'α'", TokenType::chr, "'α'", 945},
+        {"'四''", TokenType::chr, "'四''", 22235},
+        {"'👾'", TokenType::chr, "'👾'", 0x1F47E},
     };
 
     do_lexUTF8_tests(tests);

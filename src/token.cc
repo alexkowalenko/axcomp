@@ -14,11 +14,16 @@ namespace ax {
 
 static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::null, "null"},
-    {TokenType::integer, "integer"},
+
     {TokenType::ident, "indent"},
     {TokenType::semicolon, "semicolon"},
     {TokenType::period, "period"},
     {TokenType::comma, ","},
+
+    {TokenType::integer, "integer"},
+    {TokenType::hexinteger, "hexinteger"},
+    {TokenType::chr, "chr"},
+    {TokenType::hexchr, "hexchr"},
 
     {TokenType::plus, "+"},
     {TokenType::dash, "-"},
@@ -87,6 +92,12 @@ Token::operator std::string() {
     switch (type) {
     case TokenType::integer:
         return llvm::formatv("integer({0})", val);
+    case TokenType::hexinteger:
+        return llvm::formatv("hexinteger({0})", val);
+    case TokenType::chr:
+        return llvm::formatv("'{0}'", val_int);
+    case TokenType::hexchr:
+        return llvm::formatv("hexchar({0})", val);
     case TokenType::ident:
         return val;
 

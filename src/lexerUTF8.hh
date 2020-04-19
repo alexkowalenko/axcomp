@@ -54,8 +54,6 @@ class LexerUTF8 : public LexerImplementation<Char, Character32> {
     };
     ~LexerUTF8() override = default;
 
-    Char get_nextChar() override { return get_char(); }
-
   private:
     Char get() override;
     Char peek() override;

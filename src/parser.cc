@@ -21,7 +21,7 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{true};
+inline constexpr bool debug_parser{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_parser) {
@@ -802,16 +802,15 @@ ASTFactorPtr Parser::parse_factor() {
         ast->factor = parse_expr();
         get_token(TokenType::r_paren);
         return ast;
-    case TokenType::integer: {
-        // Could be integer or character in hex format
-        auto a = parse_integer();
-        if (auto res = std::dynamic_pointer_cast<ASTChar>(a); res) {
-            ast->factor = res;
-        } else {
-            ast->factor = std::dynamic_pointer_cast<ASTInteger>(a);
-        }
+    case TokenType::integer:
+    case TokenType::hexinteger: {
+        ast->factor = parse_integer();
         return ast;
     }
+    case TokenType::hexchr:
+    case TokenType::chr:
+        ast->factor = parse_char();
+        return ast;
     case TokenType::true_k:
     case TokenType::false_k:
         ast->factor = parse_boolean();
@@ -820,9 +819,6 @@ ASTFactorPtr Parser::parse_factor() {
         lexer.get_token(); // get ~
         ast->is_not = true;
         ast->factor = parse_factor();
-        return ast;
-    case TokenType::apostrophe:
-        ast->factor = parse_char();
         return ast;
     case TokenType::ident: {
 
@@ -912,7 +908,7 @@ ASTArrayPtr Parser::parse_array() {
     auto ast = makeAST<ASTArray>(lexer);
 
     get_token(TokenType::array);
-    ast->size = std::dynamic_pointer_cast<ASTInteger>(parse_integer());
+    ast->size = parse_integer();
     get_token(TokenType::of);
     ast->type = parse_type();
     return ast;
@@ -1010,35 +1006,35 @@ constexpr int dec_radix = 10;
 constexpr int hex_radix = 16;
 
 /**
- * @brief INTEGER
+ * @brief digit {digit} | digit {hexDigit} "H".
  *
  * @return ASTIntegerPtr
  */
-ASTBasePtr Parser::parse_integer() {
+ASTIntegerPtr Parser::parse_integer() {
     debug("Parser::parse_integer");
-    auto ast = makeAST<ASTInteger>(lexer);
-
-    auto tok = get_token(TokenType::integer);
-    debug("Parser::parse_integer: {0}", std::string(tok));
-
-    auto  next = lexer.peek_token();
+    auto  ast = makeAST<ASTInteger>(lexer);
     char *end = nullptr;
-    debug("Parser::parse_integer: {0}", next.val);
-    int radix = dec_radix;
-    if (next.type == TokenType::ident && next.val == "H") {
+
+    // Either TokenType::hexinteger or TokenType::integer
+
+    int  radix = dec_radix;
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::hexinteger) {
         lexer.get_token();
         radix = hex_radix;
         ast->hex = true;
-    } else if (next.type == TokenType::ident && next.val == "X") {
-        lexer.get_token();
-        debug("Parser::parse_integer is a character");
-        auto ast = makeAST<ASTChar>(lexer);
-        ast->value = Char(std::strtol(tok.val.c_str(), &end, hex_radix));
-        ast->hex = true;
+        ast->value = std::strtol(tok.val.c_str(), &end, radix);
         return ast;
     }
-    ast->value = std::strtol(tok.val.c_str(), &end, radix);
-    return ast;
+    if (tok.type == TokenType::integer) {
+        lexer.get_token();
+        debug("Parser::parse_integer: {0}", std::string(tok));
+        ast->value = std::strtol(tok.val.c_str(), &end, radix);
+        return ast;
+    }
+    throw ParseException(
+        llvm::formatv("Unexpected token: {0} - expecting integer", std::string(tok)),
+        lexer.get_location());
 }
 
 /**
@@ -1050,10 +1046,19 @@ ASTCharPtr Parser::parse_char() {
     debug("Parser::parse_char");
     auto ast = makeAST<ASTChar>(lexer);
 
-    get_token(TokenType::apostrophe);
-    ast->value = lexer.get_nextChar();
+    // Either TokenType::hexchr or TokenType::chr
+
+    auto tok = lexer.get_token();
+    if (tok.type == TokenType::hexchr) {
+        char *end = nullptr;
+        lexer.get_token();
+        debug("Parser::parse_char hex {0}", tok.val);
+        ast->value = Char(std::strtol(tok.val.c_str(), &end, hex_radix));
+        ast->hex = true;
+        return ast;
+    }
+    ast->value = tok.val_int;
     debug("Parser::parse_char: x {0} {1}", ast->value, ast->str());
-    get_token(TokenType::apostrophe);
     return ast;
 }
 

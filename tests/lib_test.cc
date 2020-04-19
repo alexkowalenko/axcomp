@@ -20,6 +20,7 @@
 #include "parser.hh"
 #include "printer.hh"
 #include "symboltable.hh"
+#include "token.hh"
 #include "type.hh"
 #include "typetable.hh"
 
@@ -27,20 +28,23 @@
 
 using namespace ax;
 
-void do_lex_tests(std::vector<LexTests> &tests) {
-
+template <class L> void do_l_tests(std::vector<LexTests> &tests) {
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        Lexer              lex(is, errors);
+        L                  lex(is, errors);
 
         try {
             auto token = lex.get_token();
             std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
                       << std::endl;
             EXPECT_EQ(token.type, t.token);
-            EXPECT_EQ(token.val, t.val);
+            if (t.token == TokenType::chr) {
+                EXPECT_EQ(token.val_int, t.val_int);
+            } else {
+                EXPECT_EQ(token.val, t.val);
+            }
         } catch (LexicalException &l) {
             std::cerr << "Exception: " << l.error_msg() << std::endl;
             FAIL();
@@ -51,28 +55,12 @@ void do_lex_tests(std::vector<LexTests> &tests) {
     }
 }
 
+void do_lex_tests(std::vector<LexTests> &tests) {
+    do_l_tests<Lexer>(tests);
+};
+
 void do_lexUTF8_tests(std::vector<LexTests> &tests) {
-
-    for (auto const &t : tests) {
-
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-
-        try {
-            auto token = lex.get_token();
-            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
-                      << std::endl;
-            EXPECT_EQ(token.type, t.token);
-            EXPECT_EQ(token.val, t.val);
-        } catch (LexicalException &l) {
-            std::cerr << "Exception: " << l.error_msg() << std::endl;
-            FAIL();
-        } catch (...) {
-            std::cerr << "Unknown Exception" << std::endl;
-            FAIL();
-        }
-    }
+    do_l_tests<LexerUTF8>(tests);
 }
 
 // Different lexers return slightly different positions
@@ -109,7 +97,11 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
             EXPECT_EQ(result, t.output);
         } catch (AXException &e) {
-            EXPECT_TRUE(check_errors(e.error_msg(), t.error));
+            bool x = check_errors(e.error_msg(), t.error);
+            if (!x) {
+                std::cout << "Expect: " << t.error << "\ngot   : " << e.error_msg() << std::endl;
+            }
+            EXPECT_TRUE(x);
         } catch (std::exception &e) {
             std::cerr << "Exception: " << e.what() << std::endl;
             FAIL();

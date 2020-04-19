@@ -14,7 +14,6 @@ namespace ax {
 enum class TokenType {
     null = 0,
     eof,
-    integer,
     ident,
     semicolon,
     period,
@@ -37,6 +36,11 @@ enum class TokenType {
     l_bracket,
     r_bracket,
     apostrophe,
+
+    integer,
+    hexinteger,
+    chr,
+    hexchr,
 
     // Keywords
     module,
@@ -78,6 +82,7 @@ class Token {
   public:
     explicit Token(TokenType t) noexcept : type(t){};
     Token(TokenType t, std::string v) : type(t), val(std::move(v)){};
+    Token(TokenType t, long v) : type(t), val_int(v){};
 
     Token(Token const &) = default;
     Token &operator=(Token const &) = default;
@@ -87,6 +92,7 @@ class Token {
 
     TokenType   type;
     std::string val;
+    long        val_int = 0;
 };
 
 std::ostream &operator<<(std::ostream &os, const Token &t);

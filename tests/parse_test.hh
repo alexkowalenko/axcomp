@@ -15,6 +15,7 @@ struct LexTests {
     std::string   input;
     ax::TokenType token;
     std::string   val;
+    long          val_int;
 };
 
 struct ParseTests {
