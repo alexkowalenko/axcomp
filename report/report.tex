@@ -77,22 +77,12 @@ CONST a = 'A';
 
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
-\begin{lstlisting}
-    + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ;       
-
-    ARRAY   MOD         TO
-    BEGIN   MODULE      THEN
-    CONST   OF          TYPE       
-    DIV     OR          UNTIL
-    DO      PROCEDURE   VAR
-    ELSE    RECORD      WHILE
-    ELSIF   REPEAT
-    END     RETURN
-    EXIT           
-    FOR     
-    IF
-    IMPORT
-    LOOP    
+\begin{lstlisting}[style=example]
+    + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; 
+    
+    ARRAY BEGIN BY CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT LOOP
+    MOD MODULE OF OR PROCEDURE RECORD REPEAT RETURN TO THEN TYPE UNTIL
+    VAR WHILE
 \end{lstlisting}
 
 \item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences opened by the bracket \lstinline"(*" and closed by \lstinline"*)". Comments do not affect the meaning of a program.
@@ -589,18 +579,19 @@ The following table lists the predefined procedures. Some are generic procedures
 Function procedures:
 
 \vspace{2mm}
-\begin{tabular}{llll}
+\begin{tabular}{lllp{7cm}}
     Name & Argument type & Result type &Function \\
     \hline
-    \ABS(x) & numeric type & type of x & absolute value of x \\
-    \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\
-    \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\
-    \CHR(x) & integer type & \CHAR & character with ordinal number x \\
-%   \LEN(v) & v: array & \INTEGER & length of array v \\
-%   \MAX(T) & T = basic type & T & maximum value of type T\\
-%   \MIN(T) & T = basic type & T & minimum value of type T\\
-    \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\
-    \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\
+    \ABS(x) & numeric type & type of x & absolute value of x \\ % Runtime
+    \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\ % Runtime
+    \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\ % Runtime
+    \CHR(x) & integer type & \CHAR & character with ordinal number x \\ % Runtime
+    \LEN(v) & v: \ARRAY & \INTEGER & length of \ARRAY v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
+%   \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
+%   \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
+    \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
+    \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
+%   \SIZE(T) & T & \INTEGER & size of type T \\ % Compiletime
     \hline
 \end{tabular}
 \vspace{5mm}
@@ -611,13 +602,16 @@ Proper procedures:
 \begin{tabular}{lp{4.5cm}p{4.5cm}}
     Name & Argument types & Function \\
     \hline
- %  \COPY(x, v) & x: character array, v: character array & v := x \\
- %  \DEC(v) & integer type & v := v - 1 \\
-    \HALT(x) & integer constant & terminate program execution \\
- %  \INC(v) & integer type & v := v + 1 \\ 
-    \WriteInt(x) & \INTEGER & print x to standard output. \\
-    \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\
-    \WriteLn() &  & print new line character to standard output. \\
+ %  \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
+ %  \DEC(v) & integer type & v := v - 1 \\ % Runtime
+ %  \DEC(v, n) & integer type & v := v - n \\ % Runtime
+    \HALT(x) & integer constant & terminate program execution \\ % Runtime
+ %  \INC(v) & integer type & v := v + 1 \\  % Runtime
+ %  \INC(v, n) & integer type & v := v + n \\  % Runtime
+ %  \NEW(v) & pointer to record or array type & allocate v^ \\  % Runtime
+    \WriteInt(x) & \INTEGER & print x to standard output. \\ % Runtime
+    \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\ % Runtime
+    \WriteLn() &  & print new line character to standard output. \\ % Runtime
     \hline
 \end{tabular}
 \vspace{5mm}
@@ -681,7 +675,108 @@ END Out.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
+\section{Syntax of AX Oberon}
+
+This is what is supported.
+
+{\scriptsize
+\begin{lstlisting}[style=EBNF]
+Module = MODULE ident ";" 
+         [ImportList] 
+         DeclSeq 
+         [BEGIN StatementSeq] END ident ".".
+
+ImportList = IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
+
+DeclSeq = { CONST {ConstDecl ";" } 
+            | TYPE {TypeDecl ";"} 
+            | VAR {VarDecl ";"}} 
+            {ProcDecl ";"}.
+
+ConstDecl = IdentDef "=" ConstExpr.
+
+TypeDecl = IdentDef "=" Type.
+
+VarDecl = IdentList ":" Type.
+
+ProcDecl = PROCEDURE IdentDef [FormalPars] ";" DeclSeq 
+           [BEGIN StatementSeq] END ident.
+
+FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Type].
+
+FPSection = [VAR] ident {"," ident} ":" Type.
+
+Type = Qualident
+    | ARRAY [ConstExpr] OF Type
+    | RECORD FieldList { ";" FieldList } END.
+
+FieldList = [ IdentList ":" Type ].
+    
+StatementSeq = Statement { ";" Statement }.
+
+Statement = [ Designator ":=" Expr
+      | Designator ["(" [ExprList] ")"]
+      | IF Expr THEN StatementSeq 
+        {ELSIF Expr THEN StatementSeq } 
+        [ ELSE StatementSeq ] END
+      | WHILE Expr DO StatementSeq END
+      | REPEAT StatementSeq UNTIL Expr
+      | FOR ident ":=" Expr TO Expr [BY ConstExpr ] DO StatementSeq END
+      | LOOP StatementSeq END
+      | BEGIN StatementSeq END
+      | EXIT
+      | RETURN [Expr] 
+      ].
+
+ConstExpr = Expr.
+
+Expr = SimpleExpr [Relation SimpleExpr].
+
+SimpleExpr = ["+" | "-"] Term {AddOp Term}.
+
+Term = Factor {MulOp Factor}.
+
+Factor = Designator ["(" [ExprList] ")"] 
+         | number 
+         | character
+         | "(" Expr ")" 
+         | "~" Factor.
+
+Relation = "=" | "#" | "<" | "<=" | ">" | ">=".
+
+AddOp = "+" | "-" | OR.
+
+MulOp = "*" | "/" | DIV | MOD | "&".
+
+Designator = Qualident { "." ident | "[" Expr "]" }. 
+
+ExprList = Expr {"," Expr}.
+
+IdentList = IdentDef {"," IdentDef}.
+
+Qualident = [ident "."] ident.
+
+IdentDef = ident [" * " | "-"].
+
+number = integer.
+
+integer = digit {digit} | digit {hexDigit} "H".
+
+hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
+
+digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
+
+character = digit {hexDigit} "X" | "’" char "’".
+
+ident = letter {letter | digit | '_' }.
+
+letter = <Unicode code point that is a letter character>.
+ 
+\end{lstlisting}}
+
 \section{Syntax of Oberon-2/07}
+
+These are the definitions of the various Oberon versions released over the years.
 
 \subsection{Oberon-2}
 

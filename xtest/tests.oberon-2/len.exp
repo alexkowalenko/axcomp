@@ -1,0 +1,57 @@
+; ModuleID = 'len'
+source_filename = "len"
+
+@len_x = internal global i64 0
+@len_y = internal global [7 x i64] zeroinitializer
+
+declare i64 @LEN(void)
+
+declare void @Out_Int(i64)
+
+declare void @Out_Ln()
+
+define i64 @output() {
+entry:
+  %i6 = alloca i64
+  %i = alloca i64
+  %y = load [7 x i64], [7 x i64]* @len_y
+  call void @Out_Int(i64 7)
+  call void @Out_Ln()
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i1 = load i64, i64* %i
+  %i2 = load i64, i64* %i
+  %multmp = mul i64 %i1, %i2
+  %i3 = load i64, i64* %i
+  %idx = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i3
+  store i64 %multmp, i64* %idx
+  %0 = load i64, i64* %i
+  %nextvar = add i64 %0, 1
+  store i64 %nextvar, i64* %i
+  %y4 = load [7 x i64], [7 x i64]* @len_y
+  %loopcond = icmp sle i64 %nextvar, 6
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  store i64 0, i64* %i6
+  br label %loop5
+
+loop5:                                            ; preds = %loop5, %afterloop
+  %y7 = load [7 x i64], [7 x i64]* @len_y
+  %i8 = load i64, i64* %i6
+  %idx9 = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i8
+  %idx10 = load i64, i64* %idx9
+  call void @Out_Int(i64 %idx10)
+  call void @Out_Ln()
+  %1 = load i64, i64* %i6
+  %nextvar11 = add i64 %1, 1
+  store i64 %nextvar11, i64* %i6
+  %y12 = load [7 x i64], [7 x i64]* @len_y
+  %loopcond13 = icmp sle i64 %nextvar11, 6
+  br i1 %loopcond13, label %loop5, label %afterloop14
+
+afterloop14:                                      ; preds = %loop5
+  ret i64 0
+}

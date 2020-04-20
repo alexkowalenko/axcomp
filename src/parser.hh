@@ -24,8 +24,6 @@ class Parser {
 
     ASTModulePtr parse();
 
-    void setup_builtins();
-
   protected:
     ASTModulePtr      parse_module();
     ASTImportPtr      parse_import();
@@ -74,8 +72,6 @@ class Parser {
     TypeTable &       types;
     ErrorManager &    errors;
 };
-
-extern std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
 
 template <class T> inline std::shared_ptr<T> makeAST(LexerInterface &lexer) {
     auto ast = make<T>();

@@ -1,0 +1,96 @@
+//
+// AX compiler
+//
+// Copyright © 2020 Alex Kowalenko
+//
+
+#include "builtin.hh"
+
+#include "typetable.hh"
+
+namespace ax {
+
+// builtin procedures
+std::vector<std::pair<std::string, Symbol>> Builtin::global_functions;
+std::map<std::string, BIFunctor>            Builtin::compile_functions;
+
+BIFunctor len = [](CodeGenerator * /*not used*/, std::vector<Value *> args) -> Value * {
+    auto *arg = args[0];
+    if (arg->getType()->isArrayTy()) {
+        auto *array = dyn_cast<llvm::ArrayType>(arg->getType());
+        return TypeTable::IntType->make_value(array->getArrayNumElements());
+    }
+    return TypeTable::IntType->make_value(1);
+};
+
+void Builtin::initialise(SymbolFrameTable &symbols) {
+
+    global_functions = {
+
+        // Maths
+        {"ABS", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::IntType,
+                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
+                       Attr::global_function}},
+
+        {"ASH", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::IntType,
+                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::null},
+                                                     {TypeTable::IntType, Attr::null}}),
+                       Attr::global_function}},
+        {"ODD", Symbol{std::make_shared<ProcedureType>(TypeTable::BoolType,
+                                                       ProcedureType::ParamsList{
+                                                           {TypeTable::IntType, Attr::null},
+                                                       }),
+                       Attr::global_function}},
+
+        // CHARs
+        {"CAP", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::CharType,
+                           ProcedureType::ParamsList{{TypeTable::CharType, Attr::null}}),
+                       Attr::global_function}},
+        {"CHR", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::CharType,
+                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
+                       Attr::global_function}},
+        {"ORD", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::IntType,
+                           ProcedureType::ParamsList{{TypeTable::CharType, Attr::null}}),
+                       Attr::global_function}},
+
+        // I/O
+        {"WriteInt", Symbol{std::make_shared<ProcedureType>(
+                                TypeTable::VoidType,
+                                ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
+                            Attr::global_function}},
+
+        {"WriteBoolean", Symbol{std::make_shared<ProcedureType>(
+                                    TypeTable::VoidType,
+                                    ProcedureType::ParamsList{{TypeTable::BoolType, Attr::null}}),
+                                Attr::global_function}},
+
+        {"WriteLn",
+         Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType, ProcedureType::ParamsList{}),
+                Attr::global_function}},
+
+        // System
+        {"HALT", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::VoidType,
+                            ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
+                        Attr::global_function}},
+
+        // Compile time Functions
+        {"LEN", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::IntType,
+                           ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                       Attr::compile_function}},
+
+    };
+
+    std::for_each(begin(global_functions), end(global_functions),
+                  [&symbols](auto &f) { symbols.put(f.first, mkSym(f.second)); });
+
+    compile_functions.emplace("LEN", len);
+}
+
+} // namespace ax

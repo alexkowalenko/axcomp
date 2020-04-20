@@ -9,6 +9,7 @@
 #include <CLI/CLI.hpp>
 
 #include "CLI/Error.hpp"
+#include "builtin.hh"
 #include "codegen.hh"
 #include "defprinter.hh"
 #include "error.hh"
@@ -79,8 +80,8 @@ int main(int argc, char **argv) {
     types.initialise();
 
     SymbolFrameTable symbols;
-    ax::Parser       parser(lexer, symbols, types, errors);
-    parser.setup_builtins();
+    Builtin::initialise(symbols);
+    ax::Parser parser(lexer, symbols, types, errors);
 
     try {
         auto ast = parser.parse();

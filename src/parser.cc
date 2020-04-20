@@ -29,9 +29,6 @@ template <typename... T> inline void debug(const T &... msg) {
     }
 }
 
-// builtin procedures
-std::vector<std::pair<std::string, std::shared_ptr<ProcedureType>>> builtins;
-
 // module identifier markers
 inline const std::set<TokenType> module_markers{TokenType::asterisk, TokenType::dash};
 
@@ -1076,56 +1073,6 @@ ASTBoolPtr Parser::parse_boolean() {
 
 ASTModulePtr Parser::parse() {
     return parse_module();
-}
-
-void Parser::setup_builtins() {
-    debug("Parser::setup_builtins");
-
-    builtins = {
-
-        // Maths
-        {"ABS",
-         std::make_shared<ProcedureType>(
-             TypeTable::IntType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
-        {"ASH",
-         std::make_shared<ProcedureType>(
-             TypeTable::IntType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null},
-                                                           {TypeTable::IntType, Attr::null}})},
-        {"ODD", std::make_shared<ProcedureType>(TypeTable::BoolType,
-                                                ProcedureType::ParamsList{
-                                                    {TypeTable::IntType, Attr::null},
-                                                })},
-        // CHARs
-        {"CAP",
-         std::make_shared<ProcedureType>(
-             TypeTable::CharType, ProcedureType::ParamsList{{TypeTable::CharType, Attr::null}})},
-        {"CHR",
-         std::make_shared<ProcedureType>(
-             TypeTable::CharType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
-        {"ORD",
-         std::make_shared<ProcedureType>(
-             TypeTable::IntType, ProcedureType::ParamsList{{TypeTable::CharType, Attr::null}})},
-
-        // I/O
-        {"WriteInt",
-         std::make_shared<ProcedureType>(
-             TypeTable::VoidType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
-
-        {"WriteBoolean",
-         std::make_shared<ProcedureType>(
-             TypeTable::VoidType, ProcedureType::ParamsList{{TypeTable::BoolType, Attr::null}})},
-
-        {"WriteLn",
-         std::make_shared<ProcedureType>(TypeTable::VoidType, ProcedureType::ParamsList{})},
-
-        // System
-        {"HALT",
-         std::make_shared<ProcedureType>(
-             TypeTable::VoidType, ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}})},
-    };
-
-    std::for_each(begin(builtins), end(builtins),
-                  [this](auto &f) { symbols.put(f.first, mkSym(f.second)); });
 }
 
 }; // namespace ax

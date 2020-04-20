@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "ast.hh"
+#include "builtin.hh"
 #include "error.hh"
 #include "parser.hh"
 #include "symbol.hh"
@@ -424,6 +425,11 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         }
         args.push_back(last_value);
         i++;
+    }
+    if (res->is(Attr::compile_function)) {
+        auto &f = Builtin::compile_functions[name];
+        last_value = f(this, args);
+        return;
     }
     last_value = builder.CreateCall(callee, args);
 }
@@ -969,11 +975,11 @@ Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
 void CodeGenerator::setup_builtins() {
     debug("CodeGenerator::setup_builtins");
 
-    for (auto const &f : builtins) {
+    for (auto const &f : Builtin::global_functions) {
         debug("function: {0} ", f.first);
 
         if (auto res = symboltable.find(f.first); res->is(Attr::used)) {
-            auto *funcType = dyn_cast<FunctionType>(f.second->get_llvm());
+            auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
 
             auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
                                           f.first, module.get());

@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include <string_view>
 
+#include "builtin.hh"
 #include "defparser.hh"
 #include "defprinter.hh"
 #include "error.hh"
@@ -120,13 +121,13 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Parser           parser(lex, symbols, types, errors);
+        Builtin::initialise(symbols);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
-            parser.setup_builtins();
 
             Importer  importer(errors);
             Inspector inpect(symbols, types, errors, importer);
@@ -164,13 +165,13 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Parser           parser(lex, symbols, types, errors);
+        Builtin::initialise(symbols);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
-            parser.setup_builtins();
 
             FakeImporter importer(errors);
             Inspector    inpect(symbols, types, errors, importer);
@@ -208,13 +209,13 @@ void do_def_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Parser           parser(lex, symbols, types, errors);
+        Builtin::initialise(symbols);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
-            parser.setup_builtins();
 
             Importer  importer(errors);
             Inspector inpect(symbols, types, errors, importer);
@@ -251,13 +252,13 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Parser           parser(lex, symbols, types, errors);
+        Builtin::initialise(symbols);
+        Parser parser(lex, symbols, types, errors);
 
         std::string result;
         try {
             std::cout << t.input << std::endl;
             auto ast = parser.parse();
-            parser.setup_builtins();
 
             Importer  importer(errors);
             Inspector inpect(symbols, types, errors, importer);

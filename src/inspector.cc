@@ -275,6 +275,11 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
+        if ((*proc_base)->id == TypeId::null) {
+            // Void type - accepts any type, used for builtin compile time functions
+            continue;
+        }
+
         if (!(*base_last)->equiv(*proc_base)) {
             std::replace(begin(name), end(name), '_', '.');
             auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "

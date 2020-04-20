@@ -18,6 +18,9 @@ enum class Attr {
     read_only, // - symbol on read_only objects
     cnst,      // CONST variables
     used,      // function is called in the module
+
+    global_function,  // global function defined in runtime
+    compile_function, // compiler function
 };
 
 constexpr auto attr_star{"*"};

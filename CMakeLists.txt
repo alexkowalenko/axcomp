@@ -94,6 +94,7 @@ add_library(libax STATIC
   src/token.cc
   src/type.cc
   src/typetable.cc
+  src/builtin.cc
   src/astvisitor.cc
   src/printer.cc
   src/parser.cc
