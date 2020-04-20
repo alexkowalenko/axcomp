@@ -381,25 +381,11 @@ void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
 void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     debug("CodeGenerator::visit_ASTCall");
     // Look up the name in the global module table.
-    Function *callee = nullptr;
-    auto      name = ast->name->ident->make_coded_id();
-    try {
-        auto res = symboltable.find(name);
-        if (!res) {
-            throw CodeGenException(formatv("function: {0} not found 1", name),
-                                   ast->get_location());
-        }
-        callee = llvm::dyn_cast<Function>(res->value);
-        assert(callee != nullptr);
-    } catch (...) {
-        debug("CodeGenerator::visit_ASTCall exception");
-        throw CodeGenException(formatv("function: {0} not found 2", name), ast->get_location());
-    }
 
+    auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
-    if (!res) {
-        throw CodeGenException(formatv("function: {0} not found 3", name), ast->get_location());
-    }
+    assert(res);
+
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
     assert(typeFunction);
 
@@ -431,6 +417,7 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         last_value = f(this, args);
         return;
     }
+    auto *callee = llvm::dyn_cast<Function>(res->value);
     last_value = builder.CreateCall(callee, args);
 }
 
@@ -978,7 +965,8 @@ void CodeGenerator::setup_builtins() {
     for (auto const &f : Builtin::global_functions) {
         debug("function: {0} ", f.first);
 
-        if (auto res = symboltable.find(f.first); res->is(Attr::used)) {
+        if (auto res = symboltable.find(f.first);
+            res->is(Attr::used) && res->is(Attr::global_function)) {
             auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
 
             auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,

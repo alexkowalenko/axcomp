@@ -4,8 +4,6 @@ source_filename = "len"
 @len_x = internal global i64 0
 @len_y = internal global [7 x i64] zeroinitializer
 
-declare i64 @LEN(void)
-
 declare void @Out_Int(i64)
 
 declare void @Out_Ln()
