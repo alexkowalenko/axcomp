@@ -1,0 +1,31 @@
+; ModuleID = 'odd'
+source_filename = "odd"
+
+@odd_x = internal global i64 0
+
+declare i1 @ODD(i64)
+
+declare void @Out_Bool(i1)
+
+declare void @Out_Ln()
+
+define i64 @output() {
+entry:
+  %i = alloca i64
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i1 = load i64, i64* %i
+  %0 = call i1 @ODD(i64 %i1)
+  call void @Out_Bool(i1 %0)
+  call void @Out_Ln()
+  %1 = load i64, i64* %i
+  %nextvar = add i64 %1, 1
+  store i64 %nextvar, i64* %i
+  %loopcond = icmp sle i64 %nextvar, 7
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret i64 0
+}

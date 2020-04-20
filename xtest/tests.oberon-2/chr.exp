@@ -1,0 +1,47 @@
+; ModuleID = 'chr'
+source_filename = "chr"
+
+@chr_x = internal global i64 0
+
+declare i32 @CHR(i64)
+
+declare void @Out_Char(i32)
+
+declare void @Out_Ln()
+
+define i64 @output() {
+entry:
+  %i3 = alloca i64
+  %i = alloca i64
+  store i64 65, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i1 = load i64, i64* %i
+  %0 = call i32 @CHR(i64 %i1)
+  call void @Out_Char(i32 %0)
+  %1 = load i64, i64* %i
+  %nextvar = add i64 %1, 1
+  store i64 %nextvar, i64* %i
+  %loopcond = icmp sle i64 %nextvar, 90
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  call void @Out_Ln()
+  store i64 97, i64* %i3
+  br label %loop2
+
+loop2:                                            ; preds = %loop2, %afterloop
+  %i4 = load i64, i64* %i3
+  %2 = call i32 @CHR(i64 %i4)
+  call void @Out_Char(i32 %2)
+  %3 = load i64, i64* %i3
+  %nextvar5 = add i64 %3, 1
+  store i64 %nextvar5, i64* %i3
+  %loopcond6 = icmp sle i64 %nextvar5, 122
+  br i1 %loopcond6, label %loop2, label %afterloop7
+
+afterloop7:                                       ; preds = %loop2
+  call void @Out_Ln()
+  ret i64 0
+}

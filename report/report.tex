@@ -588,6 +588,7 @@ The following table lists the predefined procedures. Some are generic procedures
 
 Function procedures:
 
+\vspace{2mm}
 \begin{tabular}{llll}
     Name & Argument type & Result type &Function \\
     \hline
@@ -595,28 +596,31 @@ Function procedures:
     \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\
     \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\
     \CHR(x) & integer type & \CHAR & character with ordinal number x \\
-    \LEN(v) & v: array & \INTEGER & length of array v \\
-    \MAX(T) & T = basic type & T & maximum value of type T\\
-    \MIN(T) & T = basic type & T & minimum value of type T\\
+%   \LEN(v) & v: array & \INTEGER & length of array v \\
+%   \MAX(T) & T = basic type & T & maximum value of type T\\
+%   \MIN(T) & T = basic type & T & minimum value of type T\\
     \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\
     \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\
     \hline
 \end{tabular}
-
+\vspace{5mm}
 
 Proper procedures:
 
+\vspace{2mm}
 \begin{tabular}{lp{4.5cm}p{4.5cm}}
     Name & Argument types & Function \\
     \hline
-    \COPY(x, v) & x: character array, v: character array & v := x \\
-    \DEC(v) & integer type & v := v - 1 \\
+ %  \COPY(x, v) & x: character array, v: character array & v := x \\
+ %  \DEC(v) & integer type & v := v - 1 \\
     \HALT(x) & integer constant & terminate program execution \\
-    \INC(v) & integer type & v := v + 1 \\ 
+ %  \INC(v) & integer type & v := v + 1 \\ 
     \WriteInt(x) & \INTEGER & print x to standard output. \\
     \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\
     \WriteLn() &  & print new line character to standard output. \\
+    \hline
 \end{tabular}
+\vspace{5mm}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modules}

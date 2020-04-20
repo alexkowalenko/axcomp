@@ -33,6 +33,11 @@ BEGIN
     RETURN
 END Bool;
 
+PROCEDURE Char*(x : CHAR);
+BEGIN
+    RETURN
+END Char;
+
 PROCEDURE Ln*;
 BEGIN
     RETURN

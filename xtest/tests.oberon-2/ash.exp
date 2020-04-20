@@ -1,0 +1,33 @@
+; ModuleID = 'ash'
+source_filename = "ash"
+
+@ash_x = internal global i64 0
+
+declare i64 @ASH(i64, i64)
+
+declare void @Out_Int(i64)
+
+declare void @Out_Ln()
+
+define i64 @output() {
+entry:
+  %i = alloca i64
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i1 = load i64, i64* %i
+  %0 = call i64 @ASH(i64 1, i64 %i1)
+  store i64 %0, i64* @ash_x
+  %x = load i64, i64* @ash_x
+  call void @Out_Int(i64 %x)
+  call void @Out_Ln()
+  %1 = load i64, i64* %i
+  %nextvar = add i64 %1, 1
+  store i64 %nextvar, i64* %i
+  %loopcond = icmp sle i64 %nextvar, 7
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret i64 0
+}

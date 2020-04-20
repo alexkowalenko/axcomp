@@ -9,8 +9,6 @@ declare void @WriteBoolean(i1)
 
 declare void @WriteLn()
 
-declare void @beta_c(i64)
-
 define i64 @output() {
 entry:
   store i1 true, i1* @beta_d

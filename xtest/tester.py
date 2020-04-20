@@ -172,6 +172,10 @@ def main():
     print(f"tests {tests}")
     for d in tests:
         res = res + do_tests_dir(d)
+    if res > 0:
+        print(red)
+    print(f"### Total fails {res}")
+    print(restore)
     return res
 
 

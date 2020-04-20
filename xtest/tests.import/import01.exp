@@ -5,8 +5,6 @@ source_filename = "import01"
 @beta_b = external global i64
 @beta_d = external global i1
 
-declare void @beta_c(i64)
-
 define i64 @output() {
 entry:
   %beta_a = load i64, i64* @beta_a

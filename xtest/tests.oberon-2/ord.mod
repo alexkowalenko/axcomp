@@ -1,0 +1,9 @@
+MODULE ord; (* ORD function*)
+IMPORT Out;
+VAR x : INTEGER;
+
+BEGIN
+       FOR i := 65 TO 90 DO
+              Out.Char(CHR(i)) Out.Char(' '); Out.Int(ORD(CHR(i)));   Out.Ln;
+       END
+END ord.

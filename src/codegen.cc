@@ -135,12 +135,14 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
             } else if (type->id == TypeId::procedure) {
 
                 debug("CodeGenerator::visit_ASTImport proc {0}", name);
-                auto *funcType = (FunctionType *)type->get_llvm();
+                if (auto res = symboltable.find(name); res->is(Attr::used)) {
+                    auto *funcType = (FunctionType *)type->get_llvm();
 
-                auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
-                                              name, module.get());
-                verifyFunction(*func);
-                symboltable.set_value(name, func);
+                    auto *func = Function::Create(
+                        funcType, Function::LinkageTypes::ExternalLinkage, name, module.get());
+                    verifyFunction(*func);
+                    symboltable.set_value(name, func);
+                }
             } else {
                 assert(false);
             }
@@ -970,8 +972,7 @@ void CodeGenerator::setup_builtins() {
     for (auto const &f : builtins) {
         debug("function: {0} ", f.first);
 
-        auto res = symboltable.find(f.first);
-        if (res->is(Attr::used)) {
+        if (auto res = symboltable.find(f.first); res->is(Attr::used)) {
             auto *funcType = dyn_cast<FunctionType>(f.second->get_llvm());
 
             auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
