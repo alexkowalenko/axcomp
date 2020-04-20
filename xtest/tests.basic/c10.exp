@@ -8,12 +8,6 @@ source_filename = "c10"
 
 @c10_z0 = internal global %0 zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal i64 @c10_sum(%2 %a) {
 entry:
   %a1 = alloca %3

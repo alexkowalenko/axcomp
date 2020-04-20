@@ -5,12 +5,6 @@ source_filename = "c07"
 @c07_x = internal global i64 0
 @c07_y = internal global i1 false
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   store i1 false, i1* @c07_y

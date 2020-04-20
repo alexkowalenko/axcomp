@@ -6,12 +6,6 @@ source_filename = "g09"
 
 @g09_pt = internal global %0 zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   store i64 2, i64* getelementptr inbounds (%0, %0* @g09_pt, i64 0, i32 0)

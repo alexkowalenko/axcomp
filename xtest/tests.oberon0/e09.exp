@@ -3,12 +3,6 @@ source_filename = "e09"
 
 @e09_x = internal global i64 0
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   store i64 0, i64* @e09_x

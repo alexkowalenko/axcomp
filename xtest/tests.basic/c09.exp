@@ -4,12 +4,6 @@ source_filename = "c09"
 @c09_seconds = internal global i64 0
 @c09_orientation = internal global i1 false
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   store i64 60, i64* @c09_seconds

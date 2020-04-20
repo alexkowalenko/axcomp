@@ -1,12 +1,6 @@
 ; ModuleID = 'd12'
 source_filename = "d12"
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal i64 @d12_add(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64

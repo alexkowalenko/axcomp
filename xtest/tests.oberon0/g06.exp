@@ -8,12 +8,6 @@ source_filename = "g06"
 
 @g06_x1 = internal global %0 zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal void @g06_f() {
 entry:
   %x1 = alloca %2

@@ -3,12 +3,6 @@ source_filename = "d05"
 
 @d05_y = internal global i64 0
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal i64 @d05_f() {
 entry:
   %yy = alloca i64

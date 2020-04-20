@@ -3,12 +3,6 @@ source_filename = "g11"
 
 @g11_pt = internal global [3 x i64] zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal [3 x i64] @g11_identity([3 x i64] %a) {
 entry:
   %a1 = alloca [3 x i64]

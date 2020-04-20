@@ -969,12 +969,16 @@ void CodeGenerator::setup_builtins() {
 
     for (auto const &f : builtins) {
         debug("function: {0} ", f.first);
-        auto *funcType = dyn_cast<FunctionType>(f.second->get_llvm());
 
-        auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage, f.first,
-                                      module.get());
-        verifyFunction(*func);
-        symboltable.set_value(f.first, func);
+        auto res = symboltable.find(f.first);
+        if (res->is(Attr::used)) {
+            auto *funcType = dyn_cast<FunctionType>(f.second->get_llvm());
+
+            auto *func = Function::Create(funcType, Function::LinkageTypes::ExternalLinkage,
+                                          f.first, module.get());
+            verifyFunction(*func);
+            symboltable.set_value(f.first, func);
+        }
     }
 }
 

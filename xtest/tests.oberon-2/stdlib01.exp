@@ -3,12 +3,6 @@ source_filename = "stdlib01"
 
 @stdlib01_x = internal constant i64 12
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 declare void @Out_Bool(i1)
 
 declare void @Out_Flush()

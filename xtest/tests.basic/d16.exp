@@ -6,8 +6,6 @@ source_filename = "d16"
 
 declare void @WriteInt(i64)
 
-declare void @WriteBoolean(i1)
-
 declare void @WriteLn()
 
 define internal void @d16_h(i64* %x, i64* %y) {

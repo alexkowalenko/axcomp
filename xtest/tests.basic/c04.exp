@@ -4,12 +4,6 @@ source_filename = "c04"
 @c04_x = internal global i64 0
 @c04_y = internal global i64 0
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   %x = load i64, i64* @c04_x

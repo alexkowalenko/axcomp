@@ -3,12 +3,6 @@ source_filename = "char1"
 
 @char1_a = internal constant i32 97
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   %a = load i32, i32* @char1_a

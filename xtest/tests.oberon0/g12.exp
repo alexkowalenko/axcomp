@@ -11,12 +11,6 @@ source_filename = "g12"
 
 @g12_pt = internal global %0 zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal %2 @g12_identity(%3 %a) {
 entry:
   %a1 = alloca %4

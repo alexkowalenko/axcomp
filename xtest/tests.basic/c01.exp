@@ -4,12 +4,6 @@ source_filename = "c01"
 @c01_x = internal constant i64 1
 @c01_y = internal constant i64 2
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   ret i64 12

@@ -1,12 +1,6 @@
 ; ModuleID = 'b10'
 source_filename = "b10"
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define i64 @output() {
 entry:
   ret i64 25

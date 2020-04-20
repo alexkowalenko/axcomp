@@ -5,12 +5,6 @@ source_filename = "g02"
 @g02_x2 = internal global [5 x i64] zeroinitializer
 @g02_x3 = internal global [6 x i1] zeroinitializer
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal i64 @g02_f() {
 entry:
   %z3 = alloca [6 x i1]

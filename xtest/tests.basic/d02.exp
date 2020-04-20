@@ -1,12 +1,6 @@
 ; ModuleID = 'd02'
 source_filename = "d02"
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal void @d02_f() {
 entry:
   ret void

@@ -3,8 +3,6 @@ source_filename = "g04"
 
 @g04_x = internal global [3 x i1] zeroinitializer
 
-declare void @WriteInt(i64)
-
 declare void @WriteBoolean(i1)
 
 declare void @WriteLn()

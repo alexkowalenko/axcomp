@@ -7,8 +7,6 @@ source_filename = "PrimeNumbers"
 
 declare void @WriteInt(i64)
 
-declare void @WriteBoolean(i1)
-
 declare void @WriteLn()
 
 define internal void @PrimeNumbers_Primes(i64 %n) {

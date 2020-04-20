@@ -1,12 +1,6 @@
 ; ModuleID = 'd11'
 source_filename = "d11"
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 define internal i1 @d11_eq(i64 %x, i64 %y) {
 entry:
   %y2 = alloca i64

@@ -296,7 +296,8 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
             errors.add(e);
         }
     }
-
+    // OK
+    res->set(Attr::used);
     last_type = procType->ret;
 }
 

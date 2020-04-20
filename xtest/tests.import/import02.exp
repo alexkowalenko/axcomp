@@ -5,12 +5,6 @@ source_filename = "import02"
 @beta_b = external global i64
 @beta_d = external global i1
 
-declare void @WriteInt(i64)
-
-declare void @WriteBoolean(i1)
-
-declare void @WriteLn()
-
 declare void @beta_c(i64)
 
 define i64 @output() {

@@ -70,6 +70,11 @@ Examples:
     character = digit {hexDigit} "X" | "’" char "’".
 \end{lstlisting}
 
+\begin{lstlisting}[style=example]
+CONST a = 'A';
+    b = 13X;
+\end{lstlisting} 
+
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}
@@ -581,9 +586,33 @@ PROCEDURE mult(x : INTEGER; y : INTEGER): INTEGER;
 \label{predefined}
 The following table lists the predefined procedures. Some are generic procedures, i.e. they apply to several types of operands. v stands for a variable, x and n for expressions.
 
-\begin{tabular}{lll}
+Function procedures:
+
+\begin{tabular}{llll}
+    Name & Argument type & Result type &Function \\
+    \hline
+    \ABS(x) & numeric type & type of x & absolute value of x \\
+    \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\
+    \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\
+    \CHR(x) & integer type & \CHAR & character with ordinal number x \\
+    \LEN(v) & v: array & \INTEGER & length of array v \\
+    \MAX(T) & T = basic type & T & maximum value of type T\\
+    \MIN(T) & T = basic type & T & minimum value of type T\\
+    \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\
+    \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\
+    \hline
+\end{tabular}
+
+
+Proper procedures:
+
+\begin{tabular}{lp{4.5cm}p{4.5cm}}
     Name & Argument types & Function \\
     \hline
+    \COPY(x, v) & x: character array, v: character array & v := x \\
+    \DEC(v) & integer type & v := v - 1 \\
+    \HALT(x) & integer constant & terminate program execution \\
+    \INC(v) & integer type & v := v + 1 \\ 
     \WriteInt(x) & \INTEGER & print x to standard output. \\
     \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\
     \WriteLn() &  & print new line character to standard output. \\
