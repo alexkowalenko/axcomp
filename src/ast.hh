@@ -94,6 +94,19 @@ class ASTChar : public ASTBase, public std::enable_shared_from_this<ASTChar> {
 };
 using ASTBCharPtr = std::shared_ptr<ASTChar>;
 
+class ASTString : public ASTBase, public std::enable_shared_from_this<ASTString> {
+  public:
+    ~ASTString() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTString(shared_from_this()); };
+
+    std::string str() const { return delim + value + delim; }
+
+    std::string value;
+    char        delim{'"'};
+};
+using ASTStringPtr = std::shared_ptr<ASTString>;
+
 class ASTIdentifier : public ASTBase, public std::enable_shared_from_this<ASTIdentifier> {
   public:
     ASTIdentifier() = default;
@@ -220,6 +233,8 @@ using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
  *                  | procedureCall
  *                  | INTEGER
  *                  | "TRUE" | "FALSE"
+ *                  | character
+ *                  | string
  *                  | '('expr ')'
  *                  | "~" factor
  *
@@ -231,7 +246,7 @@ class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor>
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
 
     std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr, ASTCharPtr,
-                 ASTFactorPtr>
+                 ASTStringPtr, ASTFactorPtr>
          factor;
     bool is_not = false;
 };

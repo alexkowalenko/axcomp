@@ -24,6 +24,7 @@ Oberon-07 seems to be a refinement of Oberon-2 with some features taken out. We 
 Also we extend the definition of Oberon to include the following updates:
 \begin{itemize}
     \item Source files can be UTF-8 files. Identifiers, characters and strings can be valid UTF-8 characters.
+    \item \STRING\ type which is equivalent to \ARRAY\ of \CHAR.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,6 +71,16 @@ CONST a = 'A';
     b = 13X;
 \end{lstlisting} 
 
+\item Strings are sequences of characters enclosed in single (\lstinline!'!) or double (\lstinline!"!) quote marks. The opening quote must be the same as the closing quote and must not occur within the string. The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
+
+\begin{lstlisting}[style=ebnf]
+    string = ' " ' {char} ' " ' | " ' " {char} " ' ".
+\end{lstlisting}
+
+\begin{lstlisting}[style=example]
+"Oberon-2" "Don't worry!" "x"
+\end{lstlisting} 
+
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}[style=example]
@@ -80,7 +91,8 @@ CONST a = 'A';
     VAR WHILE
 \end{lstlisting}
 
-\item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences opened by the bracket \lstinline"(*" and closed by \lstinline"*)". Comments do not affect the meaning of a program.
+\item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between (* *). 
+Comments do not affect the meaning of a program.
 
 \end{enumerate}
 
@@ -114,6 +126,7 @@ The following identifiers are predefined; their meaning is defined in the indica
     \CHAR \> (\ref{types-basic}) \\
     \FALSE \> (\ref{bool-consts}) \\
     \INTEGER \> (\ref{types-basic}) \\
+    \STRING \> (\ref{types-basic}) \\
     \TRUE \>  (\ref{bool-consts}) \\
     \WriteInt \> (\ref{predefined}) \\
     \WriteBoolean \> (\ref{predefined}) \\
@@ -165,6 +178,7 @@ The following basic types are denoted by predeclared identifiers. The associated
     \item \BOOLEAN\ -- the truth values \TRUE\ and \FALSE.
     \item \INTEGER\ -- the integers of a 64-bit signed integer.
     \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode).
+    \item \STRING\ -- character array type. Equivalent to \ARRAY\ of \CHAR, but with length unspecified.
 \end{enumerate}
 
 \subsection{Array types}
@@ -735,6 +749,7 @@ Term = Factor {MulOp Factor}.
 Factor = Designator ["(" [ExprList] ")"] 
          | number 
          | character
+         | string
          | "(" Expr ")" 
          | "~" Factor.
 
@@ -763,6 +778,8 @@ hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
 digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 
 character = digit {hexDigit} "X" | "’" char "’".
+
+string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 
 ident = letter {letter | digit | '_' }.
 

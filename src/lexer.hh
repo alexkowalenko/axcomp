@@ -75,7 +75,7 @@ template <typename C, class CharClass> class LexerImplementation : public LexerI
   private:
     Token scan_digit(C c);
     Token scan_ident(C c);
-    Token scan_char(C c);
+    Token scan_string(C c);
 
     ErrorManager const &errors;
     std::stack<Token>   next_token;
@@ -169,7 +169,8 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         }
         return Token(TokenType::greater, ">");
     case '\'':
-        return scan_char(c);
+    case '\"':
+        return scan_string(c);
     default:;
     }
     if (CharClass::isdigit(c)) {
@@ -240,15 +241,40 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
 }
 
 template <typename C, class CharClass>
-Token LexerImplementation<C, CharClass>::scan_char(C /*not used */) {
-    // Already scanned '
+Token LexerImplementation<C, CharClass>::scan_string(C start) {
+    // Already scanned ' or "
+    std::string str;
+    CharClass::add_string(str, start);
     C c = get();
-    C final = get();
-    if (final != '\'') {
-        throw LexicalException("Expecting ' character to terminate CHAR literal", get_location());
+    if (c == start) {
+        // empty string
+        return Token(TokenType::string, str);
     }
-    return Token(TokenType::chr, long(c));
-}
+    CharClass::add_string(str, c);
+    C final = get();
+    if (final == '\'' && start == '\'') {
+        return Token(TokenType::chr, long(c));
+    };
+    if (final == start) {
+        return Token(TokenType::string, str);
+    };
+    CharClass::add_string(str, final);
+    c = get();
+    while (c != start) {
+        if (c == '\n') {
+            // End of line reached - error
+            throw LexicalException("Unterminated string", get_location());
+        }
+        CharClass::add_string(str, c);
+        if (str.length() > MAX_STR_LITTERAL) {
+            throw LexicalException(
+                llvm::formatv("String literal greater than {0}", MAX_STR_LITTERAL),
+                get_location());
+        }
+        c = get();
+    };
+    return Token(TokenType::string, str);
+} // namespace ax
 
 /**
  * @brief get first non whitespace or comment character

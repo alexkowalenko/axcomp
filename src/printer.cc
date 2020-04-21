@@ -336,6 +336,10 @@ void ASTPrinter::visit_ASTChar(ASTCharPtr ast) {
     }
 }
 
+void ASTPrinter::visit_ASTString(ASTStringPtr ast) {
+    os << ast->delim << ast->value << ast->delim;
+};
+
 void ASTPrinter::visit_ASTBool(ASTBoolPtr ast) {
     if (ast->value) {
         os << string(TokenType::true_k);

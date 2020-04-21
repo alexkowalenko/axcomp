@@ -98,6 +98,11 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
             EXPECT_EQ(result, t.output);
         } catch (AXException &e) {
+            if (t.error.empty()) {
+                std::cout << "Expect: " << t.error << "\ngot   : " << e.error_msg() << std::endl;
+                EXPECT_TRUE(false);
+                continue;
+            }
             bool x = check_errors(e.error_msg(), t.error);
             if (!x) {
                 std::cout << "Expect: " << t.error << "\ngot   : " << e.error_msg() << std::endl;

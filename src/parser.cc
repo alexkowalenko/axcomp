@@ -780,7 +780,8 @@ ASTTermPtr Parser::parse_term() {
  *                  | procedureCall
  *                  | INTEGER
  *                  | "TRUE" | "FALSE"
- *                  | CHAR
+ *                  | char
+ *                  | string
  *                  | ~ factor
  *                  | '(' expr ')'
  *
@@ -807,6 +808,9 @@ ASTFactorPtr Parser::parse_factor() {
     case TokenType::hexchr:
     case TokenType::chr:
         ast->factor = parse_char();
+        return ast;
+    case TokenType::string:
+        ast->factor = parse_string();
         return ast;
     case TokenType::true_k:
     case TokenType::false_k:
@@ -1056,6 +1060,15 @@ ASTCharPtr Parser::parse_char() {
     }
     ast->value = tok.val_int;
     debug("Parser::parse_char: x {0} {1}", ast->value, ast->str());
+    return ast;
+}
+
+ASTStringPtr Parser::parse_string() {
+    auto ast = makeAST<ASTString>(lexer);
+
+    auto tok = lexer.get_token();
+    ast->delim = tok.val[0];
+    ast->value = tok.val.substr(1);
     return ast;
 }
 

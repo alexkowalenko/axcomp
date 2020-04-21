@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "error.hh"
 #include "lexer.hh"
 
 #include <codecvt>
@@ -44,7 +45,13 @@ class Character32 : CharacterClass<Char> {
     static bool        isalnum(Char c) { return u_isalnum(c) || is_emoji(c); };
     static bool        isalpha(Char c) { return u_isalpha(c) || is_emoji(c); };
     static std::string to_string(Char c) { return converterX.to_bytes(std::wstring(1, c)); }
-    static void        add_string(std::string &s, Char c) { utf8::append(c, s); }
+    static void        add_string(std::string &s, Char c) {
+        try {
+            utf8::append(c, s);
+        } catch (utf8::invalid_code_point &e) {
+            throw LexicalException("Invalid code Point", Location(0, 0));
+        };
+    }
 };
 
 class LexerUTF8 : public LexerImplementation<Char, Character32> {

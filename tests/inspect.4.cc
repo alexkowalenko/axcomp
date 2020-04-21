@@ -74,3 +74,70 @@ TEST(Inspector, CHAR) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, String) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha;
+            CONST a = "abc";
+            TYPE str8 = STRING;
+            VAR x : STRING;
+                y : str8;
+            BEGIN
+                x := "hello world!";
+                y := 'olá';
+                RETURN
+            END alpha.)",
+         "MODULE alpha;\nCONST\na = \"abc\";\nTYPE\nstr8 = STRING;\nVAR\nx: STRING;\ny: "
+         "str8;\nBEGIN\nx := \"hello world!\";\ny := 'ol\xC3\xA1';\nRETURN \nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY 3 OF STRING;
+            BEGIN
+                x[0] := "hello world!";
+                x[1] := 'olá';
+                x[2] := 'ça va?';
+                RETURN
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY 3 OF STRING;\nBEGIN\nx[0] := \"hello world!\";\nx[1] := "
+         "'ol\xC3\xA1';\nx[2] := '\xC3\xA7"
+         "a va?';\nRETURN \nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+            VAR x : STRING;
+            BEGIN
+                x := 8;
+                RETURN
+            END alpha.)",
+         "", "4,20: Can't assign expression of type INTEGER to x"},
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+            BEGIN
+                x := "HELLO";
+                RETURN
+            END alpha.)",
+         "", "4,20: Can't assign expression of type STRING to x"},
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+            BEGIN
+                x := 1 + "HELLO";
+                RETURN
+            END alpha.)",
+         "", "4,20: types in expression don't match INTEGER and STRING"},
+
+        {R"(MODULE alpha;
+            TYPE strArray = ARRAY 3 OF STRING;
+            VAR x : strArray;
+            BEGIN
+                x[0] := "hello world!";
+                x[1] := 6;
+                RETURN
+            END alpha.)",
+         "", "6,23: Can't assign expression of type INTEGER to x[1]"},
+    };
+    do_inspect_tests(tests);
+}

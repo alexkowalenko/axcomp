@@ -67,6 +67,8 @@ class ASTInteger;
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
 class ASTChar;
 using ASTCharPtr = std::shared_ptr<ASTChar>;
+class ASTString;
+using ASTStringPtr = std::shared_ptr<ASTString>;
 class ASTBool;
 using ASTBoolPtr = std::shared_ptr<ASTBool>;
 
@@ -107,6 +109,7 @@ class ASTVisitor {
     virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
     virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};
     virtual void visit_ASTChar(ASTCharPtr /*not used*/){};
+    virtual void visit_ASTString(ASTStringPtr /*not used*/){};
     virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};
 };
 

@@ -40,6 +40,7 @@ enum class TokenType {
     hexinteger,
     chr,
     hexchr,
+    string,
 
     // Keywords
     module,

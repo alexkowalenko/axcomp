@@ -53,6 +53,18 @@ std::vector<LexTests> tests = {
     // chars
     {"'a'", TokenType::chr, "", 97},
 
+    // strings
+    {R"('a')", TokenType::chr, "", 97},
+    {R"("a")", TokenType::string, R"("a)"},
+    {R"("abc")", TokenType::string, R"("abc)"},
+    {R"("Hello there!")", TokenType::string, R"("Hello there!)"},
+    {R"("")", TokenType::string, R"(")"},
+    {R"('ABC')", TokenType::string, R"('ABC)"},
+    {R"('Hello there!')", TokenType::string, R"('Hello there!)"},
+    {R"('')", TokenType::string, R"(')"},
+    {R"("don't")", TokenType::string, R"("don't)"},
+    {R"('Your "problem"')", TokenType::string, R"('Your "problem")"},
+
     {"1F47EX", TokenType::hexchr, "1F47E"},
 
     // keyword
@@ -128,6 +140,19 @@ TEST(LexerUTF8, UTF8) {
         {"'α'", TokenType::chr, "'α'", 945},
         {"'四''", TokenType::chr, "'四''", 22235},
         {"'👾'", TokenType::chr, "'👾'", 0x1F47E},
+
+        // strings
+        {R"("α")", TokenType::string, R"("α)"},
+        {R"("χαῖρε")", TokenType::string, R"("χαῖρε)"},
+        {R"("Ça va?")", TokenType::string, R"("Ça va?)"},
+        {R"("привет")", TokenType::string, R"("привет)"},
+        {R"("こんにちは")", TokenType::string, R"("こんにちは)"},
+        {R"("👾🍎🇵🇹🍊🍌😀🏖🏄🏻‍♂️🍉")", TokenType::string,
+         R"("👾🍎🇵🇹🍊🍌😀🏖🏄🏻‍♂️🍉)"},
+
+        {R"('λόγος')", TokenType::string, R"('λόγος)"},
+        {R"('χαῖρε')", TokenType::string, R"('χαῖρε)"},
+        {R"('Ça va?')", TokenType::string, R"('Ça va?)"},
     };
 
     do_lexUTF8_tests(tests);

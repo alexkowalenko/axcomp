@@ -30,6 +30,7 @@ class TypeTable : public SymbolTable<TypePtr> {
     static std::shared_ptr<IntegerType>   IntType;
     static std::shared_ptr<BooleanType>   BoolType;
     static std::shared_ptr<CharacterType> CharType;
+    static std::shared_ptr<StringType>    StrType;
     static TypePtr                        VoidType;
     static TypePtr                        AnyType;
 };

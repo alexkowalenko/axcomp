@@ -196,8 +196,7 @@ TEST(Parser, QualidentFunctionCall) {
 TEST(Parser, Char) {
     std::vector<ParseTests> tests = {
 
-        {
-            R"(MODULE alpha;
+        {R"(MODULE alpha;
                 CONST a= 'a';
                 VAR x : CHAR;
                     y : CHAR;
@@ -212,11 +211,46 @@ TEST(Parser, Char) {
 
                     RETURN a 
                 END alpha.)",
-            "MODULE alpha;\nCONST\na = 'a';\nVAR\nx: CHAR;\ny: CHAR;\nz: CHAR;\nz1: "
-            "CHAR;\nBEGIN\nx := '\xCE\xB1';\ny := '\xE5\x9B\x9B';\nz := '\xF0\x9F\x91\xBE';\nz1 "
-            ":= 01f47eX;\nRETURN a\nEND alpha.",
-            ""},
+         "MODULE alpha;\nCONST\na = 'a';\nVAR\nx: CHAR;\ny: CHAR;\nz: CHAR;\nz1: "
+         "CHAR;\nBEGIN\nx := '\xCE\xB1';\ny := '\xE5\x9B\x9B';\nz := '\xF0\x9F\x91\xBE';\nz1 "
+         ":= 01f47eX;\nRETURN a\nEND alpha.",
+         ""},
         // Errors
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, String) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR x : STRING;
+                    y : STRING;
+                BEGIN
+                    x := 'αβγ';
+                    y := "Hello's there!";
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: STRING;\ny: STRING;\nBEGIN\nx := '\xCE\xB1\xCE\xB2\xCE\xB3';\ny "
+         ":= \"Hello's there!\";\nRETURN 0\nEND alpha.",
+         ""},
+        // Errors
+
+        {R"(MODULE alpha;
+                VAR x : STRING;
+                BEGIN
+                    x := 'αβγ;
+                    RETURN 0 
+                END alpha.)",
+         "", "4,31: Unterminated string"},
+
+        {R"(MODULE alpha;
+                VAR x : STRING;
+                BEGIN
+                    x := "Hello there!;
+                    RETURN 0 
+                END alpha.)",
+         "", "4,31: Unterminated string"},
     };
     do_parse_tests(tests);
 }

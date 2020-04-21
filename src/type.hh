@@ -31,6 +31,7 @@ enum class TypeId {
     chr,
     procedure,
     array,
+    string,
     record,
     alias,
     module
@@ -153,6 +154,12 @@ class ArrayType : public Type {
 
     TypePtr base_type;
     long    size;
+};
+
+class StringType : public SimpleType {
+  public:
+    StringType() : SimpleType("STRING", TypeId::string){};
+    ~StringType() override = default;
 };
 
 class RecordType : public Type {

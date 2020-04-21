@@ -10,6 +10,8 @@
 
 namespace ax {
 
+constexpr int MAX_STR_LITTERAL = 65536;
+
 // Types used in implementation
 
 using Int = long;

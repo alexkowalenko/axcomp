@@ -15,6 +15,7 @@
 #include "error.hh"
 #include "symbol.hh"
 #include "type.hh"
+#include "typetable.hh"
 
 namespace ax {
 
@@ -695,6 +696,8 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     is_lvalue = true;
 }
 
+// Constant literals
+
 void Inspector::visit_ASTInteger(ASTIntegerPtr /* not used */) {
     last_type = TypeTable::IntType;
     is_const = true;
@@ -706,6 +709,12 @@ void Inspector::visit_ASTChar(ASTCharPtr /* not used */) {
     is_const = true;
     is_lvalue = false;
 }
+
+void Inspector::visit_ASTString(ASTStringPtr /* not used */) {
+    last_type = TypeTable::StrType;
+    is_const = true;
+    is_lvalue = false;
+};
 
 void Inspector::visit_ASTBool(ASTBoolPtr /* not used */) {
     last_type = TypeTable::BoolType;

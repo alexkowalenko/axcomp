@@ -24,6 +24,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::hexinteger, "hexinteger"},
     {TokenType::chr, "chr"},
     {TokenType::hexchr, "hexchr"},
+    {TokenType::string, "string"},
 
     {TokenType::plus, "+"},
     {TokenType::dash, "-"},
