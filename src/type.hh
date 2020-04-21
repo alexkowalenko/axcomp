@@ -25,6 +25,7 @@ using TypePtr = std::shared_ptr<Type>;
 
 enum class TypeId {
     null, // void
+    any,  // any - used to for multi type return values like MIN, MAX
     integer,
     boolean,
     chr,
@@ -61,6 +62,9 @@ class Type {
 
     virtual unsigned get_size() { return 0; };
 
+    virtual llvm::Value *min();
+    virtual llvm::Value *max();
+
   private:
     llvm::Type *    llvm_type{nullptr};
     llvm::Constant *llvm_init{nullptr};
@@ -86,6 +90,9 @@ class IntegerType : public SimpleType {
     unsigned int    get_size() override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
     }
+
+    llvm::Value *min() override { return make_value(INT64_MIN); };
+    llvm::Value *max() override { return make_value(INT64_MAX); };
 };
 
 class BooleanType : public SimpleType {
@@ -97,6 +104,9 @@ class BooleanType : public SimpleType {
     unsigned int    get_size() override {
         return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
     }
+
+    llvm::Value *min() override { return make_value(false); };
+    llvm::Value *max() override { return make_value(true); };
 };
 
 class CharacterType : public SimpleType {
@@ -108,6 +118,9 @@ class CharacterType : public SimpleType {
     unsigned int    get_size() override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
     }
+
+    llvm::Value *min() override { return make_value(WCHAR_MIN); };
+    llvm::Value *max() override { return make_value(WCHAR_MAX); };
 };
 
 class ProcedureType : public Type {
@@ -157,10 +170,7 @@ class RecordType : public Type {
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
 
-    unsigned int get_size() override {
-        return std::accumulate(begin(fields), end(fields), begin(fields)->second->get_size(),
-                               [](unsigned int x, auto &y) { return x + y.second->get_size(); });
-    };
+    unsigned int get_size() override;
 
   private:
     std::map<std::string, TypePtr> fields;

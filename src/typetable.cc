@@ -16,6 +16,7 @@ std::shared_ptr<IntegerType>   TypeTable::IntType;
 std::shared_ptr<BooleanType>   TypeTable::BoolType;
 std::shared_ptr<CharacterType> TypeTable::CharType;
 TypePtr                        TypeTable::VoidType;
+TypePtr                        TypeTable::AnyType;
 
 void TypeTable::initialise() {
     IntType = std::make_shared<IntegerType>();
@@ -29,6 +30,8 @@ void TypeTable::initialise() {
 
     VoidType = std::make_shared<SimpleType>("void", TypeId::null);
     put(std::string(*VoidType), VoidType);
+    AnyType = std::make_shared<SimpleType>("any", TypeId::any);
+    put(std::string(*AnyType), AnyType);
 }
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {

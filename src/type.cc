@@ -5,6 +5,7 @@
 //
 
 #include "type.hh"
+#include "typetable.hh"
 
 #include <llvm/Support/FormatVariadic.h>
 
@@ -15,6 +16,14 @@ using namespace llvm;
 bool Type::equiv(TypePtr const &t) const {
     return id == t->id;
 }
+
+llvm::Value *Type::min() {
+    return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
+};
+
+llvm::Value *Type::max() {
+    return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
+};
 
 SimpleType::operator std::string() {
     return name;
@@ -101,6 +110,11 @@ void RecordType::insert(std::string const &field, TypePtr type) {
 bool RecordType::has_field(std::string const &field) {
     return fields.find(field) != fields.end();
 }
+
+unsigned int RecordType::get_size() {
+    return std::accumulate(begin(fields), end(fields), begin(fields)->second->get_size(),
+                           [](unsigned int x, auto &y) { return x + y.second->get_size(); });
+};
 
 std::optional<TypePtr> RecordType::get_type(std::string const &field) {
     auto res = fields.find(field);

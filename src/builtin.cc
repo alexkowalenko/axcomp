@@ -25,13 +25,27 @@ BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
 };
 
 BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    std::cout << "size" << std::endl;
-    auto arg = ast->args[0];
-    auto name = std::string(*arg);
+    auto name = std::string(*ast->args[0]);
     auto type = codegen->get_types().find(name);
     assert(type);
 
     return TypeTable::IntType->make_value(type->get_size());
+};
+
+BIFunctor min = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto name = std::string(*ast->args[0]);
+    auto type = codegen->get_types().find(name);
+    assert(type);
+
+    return type->min();
+};
+
+BIFunctor max = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto name = std::string(*ast->args[0]);
+    auto type = codegen->get_types().find(name);
+    assert(type);
+
+    return type->max();
 };
 
 void Builtin::initialise(SymbolFrameTable &symbols) {
@@ -101,6 +115,16 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                             ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
                         Attr::compile_function}},
 
+        {"MIN", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::AnyType,
+                           ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                       Attr::compile_function}},
+
+        {"MAX", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::AnyType,
+                           ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                       Attr::compile_function}},
+
     };
 
     std::for_each(begin(global_functions), end(global_functions),
@@ -108,6 +132,8 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
     compile_functions.emplace("LEN", len);
     compile_functions.emplace("SIZE", size);
+    compile_functions.emplace("MIN", min);
+    compile_functions.emplace("MAX", max);
 }
 
 } // namespace ax

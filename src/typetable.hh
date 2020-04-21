@@ -31,6 +31,7 @@ class TypeTable : public SymbolTable<TypePtr> {
     static std::shared_ptr<BooleanType>   BoolType;
     static std::shared_ptr<CharacterType> CharType;
     static TypePtr                        VoidType;
+    static TypePtr                        AnyType;
 };
 
 } // namespace ax

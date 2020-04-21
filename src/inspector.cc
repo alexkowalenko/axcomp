@@ -189,14 +189,10 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     ast->ident->accept(this);
     debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
-    if (!alias) {
-        auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
-                                         std::string(*expr_type), std::string(*ast->ident)),
-                           ast->get_location());
-        errors.add(e);
-    }
+    assert(alias);
     last_type = *alias;
-    if (!last_type->equiv(expr_type)) {
+
+    if (expr_type->id != TypeId::any && !last_type->equiv(expr_type)) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
                                          std::string(*expr_type), std::string(*ast->ident)),
                            ast->get_location());
@@ -275,7 +271,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
-        if ((*proc_base)->id == TypeId::null) {
+        if ((*proc_base)->id == TypeId::null || (*base_last)->id == TypeId::any) {
             // Void type - accepts any type, used for builtin compile time functions
             continue;
         }

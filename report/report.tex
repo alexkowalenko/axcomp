@@ -582,9 +582,9 @@ Function procedures:
     \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\ % Runtime
     \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\ % Runtime
     \CHR(x) & integer type & \CHAR & character with ordinal number x \\ % Runtime
-    \LEN(v) & v: \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
-%   \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
-%   \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
+    \LEN(v) & \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
+    \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
+    \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
     \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
     \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
     \SIZE(T) & T & \INTEGER & size of type T \\ % Compiletime
