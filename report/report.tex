@@ -45,12 +45,7 @@ There is some support for emoji as identifiers, emoji are treated as a non-digit
 Identifier = Letter {Letter | Digit | '_' }.
 \end{lstlisting}
 
-Examples:
-
-\begin{lstlisting}[style=example]
-    x scan Oberon GetSymbol firstLetter
-    olá привет こんにちは χαῖρε
-\end{lstlisting}
+Examples: \lstinline!x scan Oberon G3 first_Letter olá Liberté χαῖρε! 
 
 \item Numbers are (unsigned) integers. Integers are sequences of digits.
 
@@ -574,7 +569,8 @@ PROCEDURE mult(x : INTEGER; y : INTEGER): INTEGER;
 
 \subsection{Predefined Procedures}
 \label{predefined}
-The following table lists the predefined procedures. Some are generic procedures, i.e. they apply to several types of operands. v stands for a variable, x and n for expressions.
+The following table lists the predefined procedures. Some are generic procedures, i.e. they apply to several types of operands.
+\emph{v} stands for a variable, \emph{x} and \emph{n} for expressions, \emph{T} for a basic type or type alias (which can be a compound type).
 
 Function procedures:
 
@@ -586,12 +582,12 @@ Function procedures:
     \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\ % Runtime
     \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\ % Runtime
     \CHR(x) & integer type & \CHAR & character with ordinal number x \\ % Runtime
-    \LEN(v) & v: \ARRAY & \INTEGER & length of \ARRAY v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
+    \LEN(v) & v: \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
 %   \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
 %   \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
     \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
     \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
-%   \SIZE(T) & T & \INTEGER & size of type T \\ % Compiletime
+    \SIZE(T) & T & \INTEGER & size of type T \\ % Compiletime
     \hline
 \end{tabular}
 \vspace{5mm}
@@ -677,7 +673,7 @@ END Out.
 
 \section{Syntax of AX Oberon}
 
-This is what is supported.
+What is currently implemented.
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]

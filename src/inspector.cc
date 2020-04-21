@@ -670,6 +670,14 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     auto res = symboltable.find(ast->value);
     if (!res) {
         if (!is_qualid) {
+
+            // Check is type name and accept, can only then be passed to objects of type VOID
+            auto typep = types.find(ast->value);
+            if (typep) {
+                debug("type: {0}", ast->value);
+                return;
+            }
+
             throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
                                    ast->get_location());
         } else {

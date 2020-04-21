@@ -34,7 +34,6 @@ class CodeGenerator : ASTVisitor {
     void generate_objectcode();
     void generate_llcode();
 
-  private:
     void visit_ASTModule(ASTModulePtr ast) override;
     void visit_ASTImport(ASTImportPtr ast) override;
     void doTopDecs(ASTDeclarationPtr const &ast);
@@ -51,6 +50,9 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTAssignment(ASTAssignmentPtr ast) override;
     void visit_ASTReturn(ASTReturnPtr ast) override;
     void visit_ASTExit(ASTExitPtr ast) override;
+
+    std::vector<Value *> do_arguments(ASTCallPtr ast);
+
     void visit_ASTCall(ASTCallPtr ast) override;
     void visit_ASTIf(ASTIfPtr ast) override;
     void visit_ASTFor(ASTForPtr ast) override;
@@ -73,6 +75,9 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTChar(ASTCharPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
+    TypeTable &get_types() { return types; };
+
+  private:
     void init();
 
     AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,

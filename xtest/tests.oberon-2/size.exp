@@ -1,0 +1,37 @@
+; ModuleID = 'size'
+source_filename = "size"
+
+@size_x = internal global i64 0
+@size_y = internal global [7 x i64] zeroinitializer
+
+declare void @Out_Int(i64)
+
+declare void @Out_Ln()
+
+define internal i64 @size_f(i64 %x) {
+entry:
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  ret i64 0
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* @size_x
+  %x = load i64, i64* @size_x
+  call void @Out_Int(i64 %x)
+  call void @Out_Ln()
+  store i64 4, i64* @size_x
+  %x1 = load i64, i64* @size_x
+  call void @Out_Int(i64 %x1)
+  call void @Out_Ln()
+  store i64 8, i64* @size_x
+  %x2 = load i64, i64* @size_x
+  call void @Out_Int(i64 %x2)
+  call void @Out_Ln()
+  store i64 56, i64* @size_x
+  %x3 = load i64, i64* @size_x
+  call void @Out_Int(i64 %x3)
+  call void @Out_Ln()
+  ret i64 0
+}

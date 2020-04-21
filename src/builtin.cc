@@ -14,13 +14,24 @@ namespace ax {
 std::vector<std::pair<std::string, Symbol>> Builtin::global_functions;
 std::map<std::string, BIFunctor>            Builtin::compile_functions;
 
-BIFunctor len = [](CodeGenerator * /*not used*/, std::vector<Value *> args) -> Value * {
+BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isArrayTy()) {
         auto *array = dyn_cast<llvm::ArrayType>(arg->getType());
         return TypeTable::IntType->make_value(array->getArrayNumElements());
     }
     return TypeTable::IntType->make_value(1);
+};
+
+BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    std::cout << "size" << std::endl;
+    auto arg = ast->args[0];
+    auto name = std::string(*arg);
+    auto type = codegen->get_types().find(name);
+    assert(type);
+
+    return TypeTable::IntType->make_value(type->get_size());
 };
 
 void Builtin::initialise(SymbolFrameTable &symbols) {
@@ -85,12 +96,18 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                            ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
                        Attr::compile_function}},
 
+        {"SIZE", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::IntType,
+                            ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                        Attr::compile_function}},
+
     };
 
     std::for_each(begin(global_functions), end(global_functions),
                   [&symbols](auto &f) { symbols.put(f.first, mkSym(f.second)); });
 
     compile_functions.emplace("LEN", len);
+    compile_functions.emplace("SIZE", size);
 }
 
 } // namespace ax

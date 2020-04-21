@@ -378,10 +378,8 @@ void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
-    debug("CodeGenerator::visit_ASTCall");
+std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
     // Look up the name in the global module table.
-
     auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
     assert(res);
@@ -412,11 +410,19 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         args.push_back(last_value);
         i++;
     }
+    return args;
+}
+
+void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
+    auto name = ast->name->ident->make_coded_id();
+    auto res = symboltable.find(name);
+
     if (res->is(Attr::compile_function)) {
         auto &f = Builtin::compile_functions[name];
-        last_value = f(this, args);
+        last_value = f(this, ast);
         return;
     }
+    auto  args = do_arguments(ast);
     auto *callee = llvm::dyn_cast<Function>(res->value);
     last_value = builder.CreateCall(callee, args);
 }

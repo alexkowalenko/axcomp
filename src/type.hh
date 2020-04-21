@@ -8,6 +8,7 @@
 
 #include <map>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -58,6 +59,8 @@ class Type {
     void                    set_init(llvm::Constant *t) { llvm_init = t; };
     virtual llvm::Constant *get_init() { return llvm_init; };
 
+    virtual unsigned get_size() { return 0; };
+
   private:
     llvm::Type *    llvm_type{nullptr};
     llvm::Constant *llvm_init{nullptr};
@@ -68,8 +71,7 @@ class SimpleType : public Type {
     explicit SimpleType(std::string n, TypeId id) : Type(id), name(std::move(n)){};
     ~SimpleType() override = default;
 
-    explicit operator std::string() override;
-
+    explicit    operator std::string() override;
     std::string name;
 };
 
@@ -81,6 +83,9 @@ class IntegerType : public SimpleType {
     bool is_numeric() override { return true; };
 
     llvm::Constant *make_value(Int i);
+    unsigned int    get_size() override {
+        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+    }
 };
 
 class BooleanType : public SimpleType {
@@ -89,6 +94,9 @@ class BooleanType : public SimpleType {
     ~BooleanType() override = default;
 
     llvm::Constant *make_value(Bool b);
+    unsigned int    get_size() override {
+        return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+    }
 };
 
 class CharacterType : public SimpleType {
@@ -97,6 +105,9 @@ class CharacterType : public SimpleType {
     ~CharacterType() override = default;
 
     llvm::Constant *make_value(Char c);
+    unsigned int    get_size() override {
+        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+    }
 };
 
 class ProcedureType : public Type {
@@ -125,6 +136,8 @@ class ArrayType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
+    unsigned int get_size() override { return size * base_type->get_size(); }
+
     TypePtr base_type;
     long    size;
 };
@@ -144,6 +157,11 @@ class RecordType : public Type {
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
 
+    unsigned int get_size() override {
+        return std::accumulate(begin(fields), end(fields), begin(fields)->second->get_size(),
+                               [](unsigned int x, auto &y) { return x + y.second->get_size(); });
+    };
+
   private:
     std::map<std::string, TypePtr> fields;
     std::vector<std::string>       index;
@@ -155,7 +173,8 @@ class TypeAlias : public Type {
         : Type(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
-    explicit operator std::string() override { return name; };
+    explicit     operator std::string() override { return name; };
+    unsigned int get_size() override { return alias->get_size(); };
 
     TypePtr get_alias() { return alias; }
 
