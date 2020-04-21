@@ -10,7 +10,7 @@ declare void @Out_Ln()
 
 define i64 @output() {
 entry:
-  %i6 = alloca i64
+  %i7 = alloca i64
   %i = alloca i64
   %y = load [7 x i64], [7 x i64]* @len_y
   call void @Out_Int(i64 7)
@@ -33,23 +33,23 @@ loop:                                             ; preds = %loop, %entry
   br i1 %loopcond, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %loop
-  store i64 0, i64* %i6
+  store i64 0, i64* %i7
   br label %loop5
 
 loop5:                                            ; preds = %loop5, %afterloop
-  %y7 = load [7 x i64], [7 x i64]* @len_y
-  %i8 = load i64, i64* %i6
-  %idx9 = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i8
-  %idx10 = load i64, i64* %idx9
-  call void @Out_Int(i64 %idx10)
+  %y8 = load [7 x i64], [7 x i64]* @len_y
+  %i9 = load i64, i64* %i7
+  %idx10 = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i9
+  %idx11 = load i64, i64* %idx10
+  call void @Out_Int(i64 %idx11)
   call void @Out_Ln()
-  %1 = load i64, i64* %i6
-  %nextvar11 = add i64 %1, 1
-  store i64 %nextvar11, i64* %i6
-  %y12 = load [7 x i64], [7 x i64]* @len_y
-  %loopcond13 = icmp sle i64 %nextvar11, 6
-  br i1 %loopcond13, label %loop5, label %afterloop14
+  %1 = load i64, i64* %i7
+  %nextvar12 = add i64 %1, 1
+  store i64 %nextvar12, i64* %i7
+  %y13 = load [7 x i64], [7 x i64]* @len_y
+  %loopcond14 = icmp sle i64 %nextvar12, 6
+  br i1 %loopcond14, label %loop5, label %afterloop6
 
-afterloop14:                                      ; preds = %loop5
+afterloop6:                                       ; preds = %loop5
   ret i64 0
 }

@@ -350,7 +350,7 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
     }
 
     // new frame
-    symboltable.push_frame("for");
+    symboltable.push_frame(ast->get_id());
     symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });

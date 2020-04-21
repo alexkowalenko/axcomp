@@ -462,6 +462,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     std::for_each(begin(ast->if_clause.stats), end(ast->if_clause.stats),
                   [this](auto const &s) { s->accept(this); });
     builder.CreateBr(merge_block);
+    then_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     i = 0;
     for (auto const &e : ast->elsif_clause) {
@@ -489,6 +490,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         builder.SetInsertPoint(t_block);
         std::for_each(begin(e.stats), end(e.stats), [this](auto const &s) { s->accept(this); });
         builder.CreateBr(merge_block);
+        t_block = builder.GetInsertBlock(); // necessary for correct generation of code
         i++;
     }
 
@@ -500,6 +502,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
         builder.CreateBr(merge_block);
+        else_block = builder.GetInsertBlock(); // necessary for correct generation of code
     }
 
     // codegen of ELSE can change the current block, update else_block
@@ -520,8 +523,10 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     // block.
     auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
+    BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
+    last_end = after;
 
-    symboltable.push_frame("for");
+    symboltable.push_frame(ast->get_id());
     auto *index = createEntryBlockAlloca(funct, ast->ident->value, TypeTable::IntType->get_llvm());
     builder.CreateStore(last_value, index);
     symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
@@ -554,15 +559,14 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     // Convert condition to a bool
     Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
 
-    // Create the "after loop" block and insert it.
-    BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
-
     // Insert the conditional branch into the end of Loop.
     builder.CreateCondBr(endCond, loop, after);
+    loop = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
 
+    debug("CodeGenerator::visit_ASTFor after:{0}", last_end);
     symboltable.pop_frame();
 }
 
@@ -590,6 +594,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
 
     builder.CreateBr(while_block);
+    loop = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -614,6 +619,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
     // Expr
     ast->expr->accept(this);
     builder.CreateCondBr(last_value, end_block, repeat_block);
+    repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -635,10 +641,12 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
     builder.CreateBr(loop_block);
+    loop_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // END
     funct->getBasicBlockList().push_back(end_block);
     builder.SetInsertPoint(end_block);
+    end_block = builder.GetInsertBlock();
 }
 
 void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
@@ -658,6 +666,8 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
 
     builder.CreateBr(end_block);
+    begin_block = builder.GetInsertBlock(); // necessary for correct generation of code
+
     // END
     funct->getBasicBlockList().push_back(end_block);
     builder.SetInsertPoint(end_block);
