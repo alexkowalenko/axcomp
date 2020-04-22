@@ -49,6 +49,7 @@ constexpr auto file_ext_obj{".o"};
 
 CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i)
     : options{o}, symboltable{s}, types{t}, importer{i}, filename("main"), builder(context) {
+    debug("CodeGenerator::CodeGenerator");
     TypeTable::setTypes(context);
 }
 
@@ -194,8 +195,8 @@ void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
         }
         gVar->setLinkage(linkage);
-        if (isa<ConstantInt>(last_value)) {
-            gVar->setInitializer(dyn_cast<ConstantInt>(last_value));
+        if (isa<Constant>(last_value)) {
+            gVar->setInitializer(dyn_cast<Constant>(last_value));
         } else {
             throw CodeGenException("Expression based CONSTs not supported.", ast->get_location());
         }
@@ -910,6 +911,18 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
     last_value = TypeTable::CharType->make_value(ast->value);
 }
 
+void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
+
+    std::string name = llvm::formatv("STRING_{0}", string_const++);
+    module->getOrInsertGlobal(name, TypeTable::StrType->make_type(ast->value));
+
+    GlobalVariable *var = module->getNamedGlobal(name);
+    var->setInitializer(TypeTable::StrType->make_value(ast->value));
+    // var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
+    var->setConstant(true);
+    last_value = var;
+}
+
 void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }
@@ -950,7 +963,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
 }
 
 TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
-    debug("CodeGenerator::resolve_type");
+    debug("CodeGenerator::resolve_type {0}", std::string(*t));
     TypePtr result;
     std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
                               auto res = types.resolve(type->id->value);
@@ -971,9 +984,9 @@ llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
 }
 
 Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
-    debug("CodeGenerator::getType_init");
+    debug("CodeGenerator::getType_init {0}", std::string(*t));
     return resolve_type(t)->get_init();
-};
+}
 
 void CodeGenerator::setup_builtins() {
     debug("CodeGenerator::setup_builtins");

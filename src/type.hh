@@ -160,6 +160,9 @@ class StringType : public SimpleType {
   public:
     StringType() : SimpleType("STRING", TypeId::string){};
     ~StringType() override = default;
+
+    llvm::Constant *make_value(std::string const &s);
+    llvm::Type *    make_type(std::string const &s); // Type dependant on string size
 };
 
 class RecordType : public Type {

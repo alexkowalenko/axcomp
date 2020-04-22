@@ -12,6 +12,14 @@ namespace ax {
 
 using namespace llvm;
 
+inline constexpr bool debug_type{true};
+
+template <typename... T> inline void debug(const T &... msg) {
+    if constexpr (debug_type) {
+        std::cerr << std::string(formatv(msg...)) << std::endl;
+    }
+}
+
 std::shared_ptr<IntegerType>   TypeTable::IntType;
 std::shared_ptr<BooleanType>   TypeTable::BoolType;
 std::shared_ptr<CharacterType> TypeTable::CharType;
@@ -39,6 +47,8 @@ void TypeTable::initialise() {
 }
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
+    debug("TypeTable::setTypes");
+
     IntType->set_llvm(llvm::Type::getInt64Ty(context));
     IntType->set_init(IntType->make_value(0));
 
@@ -47,6 +57,10 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
 
     CharType->set_llvm(llvm::Type::getInt32Ty(context));
     CharType->set_init(CharType->make_value(0));
+
+    // Need to review this
+    StrType->set_llvm(llvm::Type::getInt32Ty(context)->getPointerTo());
+    StrType->set_init(Constant::getNullValue(llvm::Type::getInt32Ty(context)->getPointerTo()));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }

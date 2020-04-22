@@ -72,6 +72,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
     void visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast);
     void visit_ASTInteger(ASTIntegerPtr ast) override;
+    void visit_ASTString(ASTStringPtr ast) override;
     void visit_ASTChar(ASTCharPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
@@ -110,6 +111,7 @@ class CodeGenerator : ASTVisitor {
     Value *     last_value{nullptr}; // holds last value of compilation
     BasicBlock *last_end{nullptr};   // last end block in loop, used for EXIT
     bool        has_return{false};
+    int         string_const{0}; // const_strings counter
 
     bool is_var{false}; // Do VAR change in IndentifierPtr
 };

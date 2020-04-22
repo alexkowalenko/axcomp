@@ -9,6 +9,8 @@
 
 #include <llvm/Support/FormatVariadic.h>
 
+#include "utf8.h"
+
 namespace ax {
 
 using namespace llvm;
@@ -19,11 +21,11 @@ bool Type::equiv(TypePtr const &t) const {
 
 llvm::Value *Type::min() {
     return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
-};
+}
 
 llvm::Value *Type::max() {
     return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
-};
+}
 
 SimpleType::operator std::string() {
     return name;
@@ -31,15 +33,34 @@ SimpleType::operator std::string() {
 
 llvm::Constant *IntegerType::make_value(long i) {
     return ConstantInt::get(get_llvm(), i);
-};
+}
 
 llvm::Constant *BooleanType::make_value(bool b) {
     return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
-};
+}
 
 llvm::Constant *CharacterType::make_value(Char b) {
     return ConstantInt::get(get_llvm(), static_cast<Char>(b));
-};
+}
+
+llvm::Constant *StringType::make_value(std::string const &s) {
+
+    std::vector<Constant *> array;
+    auto                    it = s.begin();
+    while (it != s.end()) {
+        auto c = utf8::next(it, s.end());
+        array.push_back(TypeTable::CharType->make_value(c));
+    }
+    array.push_back(TypeTable::CharType->make_value(0)); // null terminate
+    return ConstantArray::get(llvm::dyn_cast<llvm::ArrayType>(make_type(s)), array);
+}
+
+llvm::Type *StringType::make_type(std::string const &s) {
+    // Type dependant on string size
+
+    return llvm::ArrayType::get(TypeTable::CharType->get_llvm(),
+                                utf8::distance(s.begin(), s.end()));
+}
 
 ProcedureType::operator std::string() {
     std::string res{"("};
