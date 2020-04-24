@@ -1,0 +1,13 @@
+; ModuleID = 'string1'
+source_filename = "string1"
+
+@string1_a = internal constant i32* @STRING_0
+@STRING_0 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@string1_x = internal global i32* null
+@STRING_1 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+
+define i64 @output() {
+entry:
+  store [5 x i32]* @STRING_1, i32** @string1_x
+  ret i64 0
+}

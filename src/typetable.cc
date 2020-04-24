@@ -58,9 +58,8 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     CharType->set_llvm(llvm::Type::getInt32Ty(context));
     CharType->set_init(CharType->make_value(0));
 
-    // Need to review this
-    StrType->set_llvm(llvm::Type::getInt32Ty(context)->getPointerTo());
-    StrType->set_init(Constant::getNullValue(llvm::Type::getInt32Ty(context)->getPointerTo()));
+    StrType->set_llvm(llvm::Type::getInt32PtrTy(context));
+    StrType->set_init(Constant::getNullValue(llvm::Type::getInt32PtrTy(context)));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
 }

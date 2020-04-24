@@ -38,6 +38,11 @@ BEGIN
     RETURN
 END Char;
 
+PROCEDURE String*(x : STRING);
+BEGIN
+    RETURN
+END String;
+
 PROCEDURE Ln*;
 BEGIN
     RETURN

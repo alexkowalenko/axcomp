@@ -35,6 +35,10 @@ extern "C" void Out_Char(Char x) {
     std::cout << converterX.to_bytes(std::wstring(1, x));
 }
 
+extern "C" void Out_String(String x) {
+    std::cout << converterX.to_bytes(x);
+}
+
 extern "C" void Out_Ln(void) {
     std::cout << std::endl;
 }
