@@ -323,7 +323,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x[1]
                 END alpha.)",
-         "", "4,28: variable x is not an array or record"},
+         "", "4,28: variable x is not an indexable type"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
@@ -358,7 +358,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x2[0][2][3]
                 END alpha.)",
-         "", "4,36: value not ARRAY"},
+         "", "4,36: value not indexable type"},
     };
     do_inspect_tests(tests);
 }
@@ -394,7 +394,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,21: variable x is not an array or record"},
+         "", "4,21: variable x is not an indexable type"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
@@ -626,7 +626,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt[1].y := 1;
                     RETURN 0
                 END alpha.)",
-         "", "7,23: value not ARRAY"},
+         "", "7,23: value not indexable type"},
 
         {R"(MODULE alpha;
                 VAR pt : ARRAY 3 OF RECORD

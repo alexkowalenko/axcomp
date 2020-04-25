@@ -23,7 +23,7 @@ inline constexpr bool debug_inspect{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_inspect) {
-        std::cout << std::string(llvm::formatv(msg...)) << std::endl;
+        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
     }
 }
 
@@ -496,17 +496,23 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
     ast->ident->accept(this);
 
     // check type array before processing selectors
-    auto array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
-    auto record_type = std::dynamic_pointer_cast<RecordType>(last_type);
-    if (!(array_type || record_type) && !ast->selectors.empty()) {
+    if (!last_type) {
+        // null - error in identifier
+        return;
+    }
+    bool is_array = last_type->id == TypeId::array;
+    bool is_record = last_type->id == TypeId::record;
+    bool is_string = last_type->id == TypeId::string;
+    auto b_type = last_type;
+    if (!(is_array || is_record || is_string) && !ast->selectors.empty()) {
         auto e = TypeError(
-            llvm::formatv("variable {0} is not an array or record", ast->ident->id->value),
+            llvm::formatv("variable {0} is not an indexable type", ast->ident->id->value),
             ast->get_location());
         errors.add(e);
     }
 
     // Not array or record type - no more checks.
-    if (!(array_type || record_type)) {
+    if (!(is_array || is_record || is_string)) {
         is_lvalue = true;
         return;
     }
@@ -520,8 +526,8 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             // do ARRAY type
             debug("Inspector::visit_ASTDesignator array index");
             auto s = std::get<ASTExprPtr>(ss);
-            if (!array_type) {
-                auto e = TypeError("value not ARRAY", s->get_location());
+            if (!(is_array || is_string)) {
+                auto e = TypeError("value not indexable type", s->get_location());
                 errors.add(e);
                 return;
             }
@@ -532,18 +538,24 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                     TypeError("expression in array index must be numeric", ast->get_location());
                 errors.add(e);
             }
-            last_type = array_type->base_type;
+            if (is_array) {
+                auto array_type = std::dynamic_pointer_cast<ArrayType>(b_type);
+                last_type = array_type->base_type;
+            } else if (is_string) {
+                last_type = TypeTable::CharType;
+            }
         } else if (std::holds_alternative<FieldRef>(ss)) {
 
             // do RECORD type
             debug("Inspector::visit_ASTDesignator record field");
             auto &s = std::get<FieldRef>(ss);
-            if (!record_type) {
+            if (!is_record) {
                 auto e = TypeError("value not RECORD", s.first->get_location());
                 errors.add(e);
                 return;
             }
 
+            auto record_type = std::dynamic_pointer_cast<RecordType>(b_type);
             auto field = record_type->get_type(s.first->value);
             if (!field) {
                 auto e = TypeError(llvm::formatv("no field <{0}> in RECORD", s.first->value),
@@ -561,8 +573,10 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
 
             last_type = *field;
         }
-        array_type = std::dynamic_pointer_cast<ArrayType>(last_type);
-        record_type = std::dynamic_pointer_cast<RecordType>(last_type);
+        b_type = last_type;
+        is_array = b_type->id == TypeId::array;
+        is_record = b_type->id == TypeId::record;
+        is_string = b_type->id == TypeId::string;
     }
 }
 
