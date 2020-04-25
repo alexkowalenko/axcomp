@@ -1,30 +1,30 @@
 ; ModuleID = 'string2'
 source_filename = "string2"
 
-@string2_x = internal global i32* null
-@string2_y = internal global i32* null
+@string2_x = internal global [0 x i32]* null
+@string2_y = internal global [0 x i32]* null
 @STRING_0 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 declare void @Out_Ln()
 
-declare void @Out_String(i32*)
+declare void @Out_String([0 x i32]*)
 
-define internal i32* @string2_identity(i32* %x) {
+define internal [0 x i32]* @string2_identity([0 x i32]* %x) {
 entry:
-  %x1 = alloca i32*
-  store i32* %x, i32** %x1
-  %x2 = load i32*, i32** %x1
-  ret i32* %x2
+  %x1 = alloca [0 x i32]*
+  store [0 x i32]* %x, [0 x i32]** %x1
+  %x2 = load [0 x i32]*, [0 x i32]** %x1
+  ret [0 x i32]* %x2
 }
 
 define i64 @output() {
 entry:
-  store [5 x i32]* @STRING_0, i32** @string2_x
-  %x = load i32*, i32** @string2_x
-  %0 = call i32* @string2_identity(i32* %x)
-  store i32* %0, i32** @string2_y
-  %y = load i32*, i32** @string2_y
-  call void @Out_String(i32* %y)
+  store [5 x i32]* @STRING_0, [0 x i32]** @string2_x
+  %x = load [0 x i32]*, [0 x i32]** @string2_x
+  %0 = call [0 x i32]* @string2_identity([0 x i32]* %x)
+  store [0 x i32]* %0, [0 x i32]** @string2_y
+  %y = load [0 x i32]*, [0 x i32]** @string2_y
+  call void @Out_String([0 x i32]* %y)
   call void @Out_Ln()
   ret i64 0
 }

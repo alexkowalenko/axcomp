@@ -837,7 +837,18 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
             s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
+    debug("GEP is array: {0}", arg_ptr->getType()->isArrayTy());
+    // arg_ptr->getType()->print(llvm::errs());
+    debug("\nindexes:");
+    for (auto x : index) {
+        // x->print(llvm::errs());
+        debug("");
+    }
+
     assert(arg_ptr->getType()->isPointerTy());
+    if (ast->ident->id->is(Attr::ptr)) {
+        arg_ptr = builder.CreateLoad(arg_ptr);
+    }
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
 }
 

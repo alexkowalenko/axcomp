@@ -17,6 +17,7 @@ enum class Attr {
     global,    // * symbol on global objects in modules
     read_only, // - symbol on read_only objects
     cnst,      // CONST variables
+    ptr,       // ptr types and STRINGs
     used,      // function is called in the module
 
     global_function,  // global function defined in runtime

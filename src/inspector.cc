@@ -707,6 +707,9 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     }
     last_type = *resType;
     is_const = res->is(Attr::cnst);
+    if (last_type->id == TypeId::string) {
+        ast->set(Attr::ptr);
+    }
     is_lvalue = true;
 }
 
