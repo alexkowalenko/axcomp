@@ -6,6 +6,7 @@
 
 #include "codegen.hh"
 
+#include <cstddef>
 #include <iostream>
 
 #include "llvm/Support/FormatVariadic.h"
@@ -38,7 +39,7 @@ inline constexpr bool debug_codegen{false};
 
 template <typename... T> inline void debug(const T &... msg) {
     if constexpr (debug_codegen) {
-        std::cerr << std::string(formatv(msg...)) << std::endl;
+        llvm::errs() << std::string(formatv(msg...)) << '\n';
     }
 }
 
@@ -464,7 +465,17 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
 
     std::for_each(begin(ast->if_clause.stats), end(ast->if_clause.stats),
                   [this](auto const &s) { s->accept(this); });
-    builder.CreateBr(merge_block);
+
+    // check if last instruction is branch (EXIT)
+    Instruction *last = nullptr;
+    for (Instruction &i : *then_block) {
+        last = &i;
+    }
+    if (last && !last->isTerminator()) {
+        // not terminator (branch) put in EXIT
+        debug("CodeGenerator::visit_ASTIf then not terminator");
+        builder.CreateBr(merge_block);
+    }
     then_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     i = 0;
@@ -492,7 +503,16 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         // THEN
         builder.SetInsertPoint(t_block);
         std::for_each(begin(e.stats), end(e.stats), [this](auto const &s) { s->accept(this); });
-        builder.CreateBr(merge_block);
+        // check if last instruction is branch (EXIT)
+        Instruction *last = nullptr;
+        for (Instruction &i : *t_block) {
+            last = &i;
+        }
+        if (last && !last->isTerminator()) {
+            // not terminator (branch) put in EXIT
+            debug("CodeGenerator::visit_ASTIf elsif not terminator");
+            builder.CreateBr(merge_block);
+        }
         t_block = builder.GetInsertBlock(); // necessary for correct generation of code
         i++;
     }
@@ -504,7 +524,16 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         builder.SetInsertPoint(else_block);
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
-        builder.CreateBr(merge_block);
+        // check if last instruction is branch (EXIT)
+        Instruction *last = nullptr;
+        for (Instruction &i : *else_block) {
+            last = &i;
+        }
+        if (last && !last->isTerminator()) {
+            // not terminator (branch) put in EXIT
+            debug("CodeGenerator::visit_ASTIf then not terminator");
+            builder.CreateBr(merge_block);
+        }
         else_block = builder.GetInsertBlock(); // necessary for correct generation of code
     }
 

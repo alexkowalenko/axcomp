@@ -14,8 +14,7 @@ then:                                             ; preds = %entry
   %x1 = load i32, i32* @char5_x
   %1 = zext i32 %x1 to i64
   ret i64 %1
-  br label %ifcont
 
-ifcont:                                           ; preds = %then, %entry
+ifcont:                                           ; preds = %entry
   ret i64 0
 }
