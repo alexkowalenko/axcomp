@@ -1,0 +1,10 @@
+MODULE Strings;
+
+PROCEDURE Length* (s: STRING): INTEGER;
+BEGIN
+    RETURN 0
+END Length;
+
+BEGIN
+    RETURN
+END Strings.

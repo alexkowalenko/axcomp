@@ -1,0 +1,44 @@
+; ModuleID = 'string3'
+source_filename = "string3"
+
+@string3_a = internal constant i32* @STRING_0
+@STRING_0 = constant [14 x i32] [i32 77, i32 111, i32 114, i32 101, i32 32, i32 99, i32 111, i32 110, i32 115, i32 116, i32 97, i32 110, i32 116, i32 115, i32 0]
+@string3_x = internal global i32* null
+@STRING_1 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_2 = constant [12 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 32, i32 87, i32 111, i32 114, i32 108, i32 100, i32 33, i32 0]
+@STRING_3 = constant [12 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 32, i32 87, i32 111, i32 114, i32 108, i32 100, i32 33, i32 0]
+
+declare void @Out_Char(i32)
+
+declare void @Out_Int(i64)
+
+declare void @Out_Ln()
+
+declare void @Out_String(i32*)
+
+define i64 @output() {
+entry:
+  store [5 x i32]* @STRING_1, i32** @string3_x
+  call void @Out_String([12 x i32]* @STRING_2)
+  call void @Out_Char(i32 32)
+  %0 = call i64 @Strings_Length([12 x i32]* @STRING_3)
+  call void @Out_Int(i64 %0)
+  call void @Out_Ln()
+  %x = load i32*, i32** @string3_x
+  call void @Out_String(i32* %x)
+  call void @Out_Char(i32 32)
+  %x1 = load i32*, i32** @string3_x
+  %1 = call i64 @Strings_Length(i32* %x1)
+  call void @Out_Int(i64 %1)
+  call void @Out_Ln()
+  %a = load i32*, i32** @string3_a
+  call void @Out_String(i32* %a)
+  call void @Out_Char(i32 32)
+  %a2 = load i32*, i32** @string3_a
+  %2 = call i64 @Strings_Length(i32* %a2)
+  call void @Out_Int(i64 %2)
+  call void @Out_Ln()
+  ret i64 0
+}
+
+declare i64 @Strings_Length([12 x i32]*)

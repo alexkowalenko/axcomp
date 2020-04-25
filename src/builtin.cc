@@ -21,6 +21,9 @@ BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
         auto *array = dyn_cast<llvm::ArrayType>(arg->getType());
         return TypeTable::IntType->make_value(array->getArrayNumElements());
     }
+    if (arg->getType()->isPointerTy()) {
+        return codegen->call_function("Strings_Length", TypeTable::IntType->get_llvm(), {arg});
+    }
     return TypeTable::IntType->make_value(1);
 };
 

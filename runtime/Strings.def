@@ -1,0 +1,3 @@
+DEFINITION Strings;
+PROCEDURE Length*(s : STRING): INTEGER;
+END Strings.

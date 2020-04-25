@@ -21,4 +21,12 @@ extern "C" Int ORD(Char x) {
     return Int(x);
 }
 
+extern "C" Int Strings_Length(String x) {
+    Int len = 0;
+    while (*x++) {
+        len++;
+    }
+    return len;
+}
+
 } // namespace ax

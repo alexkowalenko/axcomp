@@ -25,6 +25,14 @@
 
 namespace ax {
 
+inline constexpr bool debug_import{false};
+
+template <typename... T> inline void debug(const T &... msg) {
+    if constexpr (debug_import) {
+        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
+    }
+}
+
 constexpr auto suffix{".def"};
 
 void Importer::set_search_path(std::string const &path) {
@@ -45,7 +53,7 @@ bool ends_with(std::string const &s) {
 }
 
 std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
-
+    debug("Importer::read_module {0}", name);
     for (auto path : paths) {
 
         auto *dir = opendir(path.c_str());
@@ -86,7 +94,6 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 
 void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
-
     for (const auto &iter : from) {
         std::string n = ASTQualident::make_coded_id(module_name, iter.first);
         to.put(n, iter.second);
@@ -94,6 +101,7 @@ void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
 }
 
 bool Importer::find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &types) {
+    debug("Importer::find_module {0}", name);
     // Look at cache
 
     if (auto res = cache.find(name); res != cache.end()) {
@@ -103,6 +111,7 @@ bool Importer::find_module(std::string const &name, SymbolFrameTable &symbols, T
 
     if (auto mod_symbols = read_module(name, types); mod_symbols) {
         transfer_symbols(*mod_symbols, symbols, name);
+        cache[name] = *mod_symbols;
         return true;
     }
     return false;

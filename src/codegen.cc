@@ -115,10 +115,12 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
 void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
     debug("CodeGenerator::visit_ASTImport");
 
-    SymbolFrameTable symbols;
-    std::for_each(begin(ast->imports), end(ast->imports), [this, &symbols](auto const &i) {
-        auto found = importer.find_module(i.first->value, symbols, types);
+    std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
+        SymbolFrameTable symbols;
+        auto             found = importer.find_module(i.first->value, symbols, types);
         assert(found);
+
+        debug("CodeGenerator::visit_ASTImport do {0}", i.first->value);
 
         // convert table to ValueSymboltable
         std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto const &s) {
@@ -929,6 +931,33 @@ void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
 
 std::string CodeGenerator::gen_module_id(std::string const &id) const {
     return ASTQualident::make_coded_id(module_name, id);
+}
+
+/**
+ * @brief like AST_Call but arguments already compiled, used from builtins to call other functions,
+ * like LEN(STRING)
+ *
+ * @param name
+ * @param ret
+ * @param args
+ * @return Value*
+ */
+Value *CodeGenerator::call_function(std::string const &name, llvm::Type *ret,
+                                    std::vector<Value *> const &args) {
+    debug("CodeGenerator::call_function {0}", name);
+
+    auto *f = module->getFunction(name);
+    if (!f) {
+
+        debug("CodeGenerator::call_function generate {0}", name);
+        std::vector<llvm::Type *> proto;
+        std::for_each(begin(args), end(args),
+                      [this, &proto](auto const &t) { proto.push_back(t->getType()); });
+        auto *ft = FunctionType::get(ret, proto, false);
+        f = Function::Create(ft, Function::LinkageTypes::ExternalLinkage, name, module.get());
+    }
+    debug("CodeGenerator::call_function call {0}", name);
+    return builder.CreateCall(f, args);
 }
 
 /**

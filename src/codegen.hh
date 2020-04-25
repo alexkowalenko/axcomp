@@ -78,6 +78,9 @@ class CodeGenerator : ASTVisitor {
 
     TypeTable &get_types() { return types; };
 
+    Value *call_function(std::string const &name, llvm::Type *ret,
+                         std::vector<Value *> const &args);
+
   private:
     void init();
 
