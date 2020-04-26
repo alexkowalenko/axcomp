@@ -27,7 +27,7 @@ link_objs = ""
 exclude = ""
 
 compiler = f"{install_dir}/ax"
-linker = f"clang++ ../main.cc -L {lib_dir} -lAx "
+linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
 
 red = fg('red_1')
 restore = attr('reset')
@@ -35,7 +35,7 @@ restore = attr('reset')
 
 def do_clang(stem):
     obj = stem + ".o"
-    cmd = linker + f"{link_objs} {obj}"
+    cmd = linker + f" {link_objs} {obj}"
     # print(cmd)
     ret = os.system(cmd)
     if (ret != 0):

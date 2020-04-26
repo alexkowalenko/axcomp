@@ -245,7 +245,8 @@ With the exception of sets and literal constants, i.e. numbers, operands are den
 
 This identifier may possibly be followed by selectors, if the designated object is an element of a structure.
 
-If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type.
+If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type. A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
+
 If r designates a record, then r.f denotes the field f of r.
 
 \begin{lstlisting}[style=ebnf]
@@ -256,12 +257,14 @@ If the designated object is a variable, then the designator refers to the variab
 
 Examples of designators (see examples in section \ref{types}):
 
-\begin{tabbing}
-    XXXXXX \= \kill
-    i \> (\INTEGER) \\
-    a[i] \> (\INTEGER) \\
-    w[3].count \> (\INTEGER) \\
-\end{tabbing}
+\vspace{2mm}
+\begin{tabular}{l|l}
+    designator & type \\
+     \hline
+    i & (\INTEGER) \\
+    a[i] & (\INTEGER) \\
+    w[3].count & (\INTEGER) \\
+\end{tabular}
 
 \subsection{Operators}
 \label{operators}
@@ -516,7 +519,7 @@ BEGIN
 END
 \end{lstlisting} 
 
-\subsection{\RETURN\ statements}
+\subsection{\RETURN\ and \EXIT\ statements}
 \label{return}
 
 A return statement consists of the symbol \RETURN, possibly followed by an expression. It indicates the termination of a procedure, and the expression specifies the result of a function procedure. Its type must be identical to the result type specified in the procedure heading (see \ref{procedures}).
@@ -612,13 +615,14 @@ Proper procedures:
 \begin{tabular}{lp{4.5cm}p{4.5cm}}
     Name & Argument types & Function \\
     \hline
- %  \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
+    \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
  %  \DEC(v) & integer type & v := v - 1 \\ % Runtime
  %  \DEC(v, n) & integer type & v := v - n \\ % Runtime
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
  %  \INC(v) & integer type & v := v + 1 \\  % Runtime
  %  \INC(v, n) & integer type & v := v + n \\  % Runtime
- %  \NEW(v) & pointer to record or array type & allocate v^ \\  % Runtime
+ %   \NEW(v) & pointer to record or array type & allocate v^ \\  % Runtime
+    \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
     \WriteInt(x) & \INTEGER & print x to standard output. \\ % Runtime
     \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\ % Runtime
     \WriteLn() &  & print new line character to standard output. \\ % Runtime

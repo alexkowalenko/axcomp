@@ -517,7 +517,11 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         return;
     }
 
-    is_lvalue = false; // no lvalues for aggregate values
+    if (is_array || is_record) {
+        is_lvalue = false; // no lvalues for aggregate values
+    } else {
+        is_lvalue = true; // STRINGs can be passed
+    }
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop

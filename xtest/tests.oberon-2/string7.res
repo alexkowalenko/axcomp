@@ -1,0 +1,2 @@
+Hello!
+output: 0

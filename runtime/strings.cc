@@ -5,7 +5,12 @@
 //
 
 #include "ax.hh"
+
 #include <cctype>
+#include <cstring>
+#include <cwchar>
+
+#include <gc.h>
 
 namespace ax {
 
@@ -27,6 +32,31 @@ extern "C" Int Strings_Length(String x) {
         len++;
     }
     return len;
+}
+
+static bool init_gc{false};
+
+void gc_init() {
+    GC_init();
+    init_gc = true;
+}
+
+extern "C" void NEW(String **ptr, Int x) {
+    if (!init_gc) {
+        gc_init();
+    }
+    *ptr = static_cast<String *>(GC_malloc(x));
+    memset(*ptr, 0, x);
+}
+
+extern "C" void COPY(String x, String **v) {
+    if (!init_gc) {
+        gc_init();
+    }
+    auto len = std::wcslen(x) * sizeof(wchar_t);
+    *v = static_cast<String *>(GC_malloc(len));
+    // Opposite to Oberon
+    std::wcscpy(*(String *)v, x);
 }
 
 } // namespace ax

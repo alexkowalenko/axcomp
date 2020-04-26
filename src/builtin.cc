@@ -107,6 +107,20 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                             ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
                         Attr::global_function}},
 
+        {"NEW", Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType,
+                                                       ProcedureType::ParamsList{
+                                                           {TypeTable::StrType, Attr::var},
+                                                           {TypeTable::IntType, Attr::null},
+                                                       }),
+                       Attr::global_function}},
+
+        {"COPY", Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType,
+                                                        ProcedureType::ParamsList{
+                                                            {TypeTable::StrType, Attr::null},
+                                                            {TypeTable::StrType, Attr::var},
+                                                        }),
+                        Attr::global_function}},
+
         // Compile time Functions
         {"LEN", Symbol{std::make_shared<ProcedureType>(
                            TypeTable::IntType,

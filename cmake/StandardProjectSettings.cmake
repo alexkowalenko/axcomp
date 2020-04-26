@@ -62,7 +62,6 @@ set(LLVM_ENABLE_RTTI ON)
 
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 
-
 # utfcpp library
 message("Using utfcpp")
 include_directories("${PROJECT_SOURCE_DIR}/extern/utfcpp/source")
