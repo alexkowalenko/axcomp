@@ -4,7 +4,7 @@ source_filename = "string4"
 @string4_x = internal global [0 x i32]* null
 @string4_xx = internal global [3 x i32] zeroinitializer
 @string4_c = internal global i32 0
-@STRING_0 = constant [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 declare void @Out_Char(i32)
 
@@ -14,7 +14,7 @@ declare void @Out_String([0 x i32]*)
 
 define i64 @output() {
 entry:
-  store [6 x i32]* @STRING_0, [0 x i32]** @string4_x
+  store [0 x i32]* @STRING_0, [0 x i32]** @string4_x
   store i32 65, i32* getelementptr inbounds ([3 x i32], [3 x i32]* @string4_xx, i64 0, i64 0)
   %x = load [0 x i32]*, [0 x i32]** @string4_x
   call void @Out_String([0 x i32]* %x)

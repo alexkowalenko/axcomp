@@ -340,12 +340,17 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
-    debug(" CodeGenerator::visit_ASTAssignment {0}", std::string(*(ast->ident)));
+    debug("CodeGenerator::visit_ASTAssignment {0}", std::string(*(ast->ident)));
     ast->expr->accept(this);
     auto *val = last_value;
 
-    auto var = find_var_Identifier(ast->ident);
-    debug(" CodeGenerator::visit_ASTAssignment VAR {0}", var);
+    bool var = false;
+    if (auto res = symboltable.find(ast->ident->ident->id->value); res) {
+        if (res->is(Attr::var)) {
+            var = true;
+        }
+    }
+    debug("CodeGenerator::visit_ASTAssignment VAR {0}", var);
     if (var) {
         // Handle VAR assignment
         is_var = true; // Set change in visit_ASTIdentifierPtr to notify
@@ -836,13 +841,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
             s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
-    debug("GEP is array: {0}", arg_ptr->getType()->isArrayTy());
     // arg_ptr->getType()->print(llvm::dbgs());
-    debug("\nindexes:");
-    for (auto x : index) {
-        // x->print(llvm::errs());
-        debug("");
-    }
 
     assert(arg_ptr->getType()->isPointerTy());
     if (ast->ident->id->is(Attr::ptr)) {
@@ -935,15 +934,6 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
     throw CodeGenException(formatv("identifier {0} unknown", ast->value), ast->get_location());
 }
 
-bool CodeGenerator::find_var_Identifier(ASTDesignatorPtr const &ast) {
-    if (auto res = symboltable.find(ast->ident->id->value); res) {
-        if (res->is(Attr::var)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void CodeGenerator::visit_ASTInteger(ASTIntegerPtr ast) {
     last_value = TypeTable::IntType->make_value(ast->value);
 }
@@ -959,8 +949,7 @@ void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
 
     GlobalVariable *var = module->getNamedGlobal(name);
     var->setInitializer(TypeTable::StrType->make_value(ast->value));
-    // var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
-    var->setConstant(true);
+    var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
     last_value = var;
 }
 
@@ -973,8 +962,8 @@ std::string CodeGenerator::gen_module_id(std::string const &id) const {
 }
 
 /**
- * @brief like AST_Call but arguments already compiled, used from builtins to call other functions,
- * like LEN(STRING)
+ * @brief like AST_Call but arguments already compiled, used from builtins to call other
+ * functions, like LEN(STRING)
  *
  * @param name
  * @param ret

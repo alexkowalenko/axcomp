@@ -103,7 +103,6 @@ add_library(libax STATIC
   src/importer.cc
 )
 include_directories(src)
-include_directories(extern/CLI11/include)
 
 # ax compiler executable
 add_executable(ax cmd/ax.cc)

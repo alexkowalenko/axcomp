@@ -94,7 +94,6 @@ class CodeGenerator : ASTVisitor {
     llvm::Type *getType(ASTTypePtr const &type);
     Constant *  getType_init(ASTTypePtr const &type);
 
-    bool                      find_var_Identifier(ASTDesignatorPtr const &ast);
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
     Options &         options;
