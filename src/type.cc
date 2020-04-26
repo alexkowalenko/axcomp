@@ -59,7 +59,7 @@ llvm::Type *StringType::make_type(std::string const &s) {
     // Type dependant on string size
 
     return llvm::ArrayType::get(TypeTable::CharType->get_llvm(),
-                                utf8::distance(s.begin(), s.end()));
+                                utf8::distance(s.begin(), s.end()) + 1);
 }
 
 ProcedureType::operator std::string() {

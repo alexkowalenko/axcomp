@@ -11,6 +11,7 @@
 #include <optional>
 #include <utility>
 
+#include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
@@ -21,12 +22,10 @@
 
 namespace ax {
 
-inline constexpr bool debug_parser{false};
+#define DEBUG_TYPE "parser"
 
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_parser) {
-        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
-    }
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
 
 // module identifier markers

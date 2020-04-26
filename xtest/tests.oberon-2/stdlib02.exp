@@ -2,10 +2,10 @@
 source_filename = "stdlib02"
 
 @stdlib02_a = internal constant [0 x i32]* @STRING_0
-@STRING_0 = constant [9 x i32] [i32 67, i32 111, i32 110, i32 115, i32 116, i32 97, i32 110, i32 116, i32 33, i32 0]
+@STRING_0 = constant [10 x i32] [i32 67, i32 111, i32 110, i32 115, i32 116, i32 97, i32 110, i32 116, i32 33, i32 0]
 @stdlib02_x = internal global [0 x i32]* null
-@STRING_1 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
-@STRING_2 = constant [6 x i32] [i32 87, i32 111, i32 114, i32 108, i32 100, i32 33, i32 0]
+@STRING_1 = constant [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_2 = constant [7 x i32] [i32 87, i32 111, i32 114, i32 108, i32 100, i32 33, i32 0]
 
 declare void @Out_Char(i32)
 
@@ -15,11 +15,11 @@ declare void @Out_String([0 x i32]*)
 
 define i64 @output() {
 entry:
-  store [5 x i32]* @STRING_1, [0 x i32]** @stdlib02_x
+  store [6 x i32]* @STRING_1, [0 x i32]** @stdlib02_x
   %x = load [0 x i32]*, [0 x i32]** @stdlib02_x
   call void @Out_String([0 x i32]* %x)
   call void @Out_Char(i32 32)
-  call void @Out_String([6 x i32]* @STRING_2)
+  call void @Out_String([7 x i32]* @STRING_2)
   call void @Out_Ln()
   %a = load [0 x i32]*, [0 x i32]** @stdlib02_a
   call void @Out_String([0 x i32]* %a)

@@ -14,7 +14,9 @@
 #include <dirent.h>
 #include <sys/types.h>
 
-#include "llvm/Support/FormatVariadic.h"
+#include <llvm/ADT/Statistic.h>
+#include <llvm/Support/Debug.h>
+#include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "defparser.hh"
@@ -25,13 +27,13 @@
 
 namespace ax {
 
-inline constexpr bool debug_import{false};
+#define DEBUG_TYPE "importer"
 
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_import) {
-        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
-    }
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
+
+STATISTIC(st_imports, "Number of imports");
 
 constexpr auto suffix{".def"};
 
@@ -84,6 +86,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
                             llvm::formatv("Importer MODULE {0} error: {1} at: {2}", name,
                                           e.error_msg(), full_path));
                     }
+                    st_imports++;
                     return module_symbols;
                 }
             }

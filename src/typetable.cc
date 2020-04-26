@@ -7,17 +7,16 @@
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/Support/Debug.h>
 
 namespace ax {
 
 using namespace llvm;
 
-inline constexpr bool debug_type{true};
+#define DEBUG_TYPE "types"
 
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_type) {
-        std::cerr << std::string(formatv(msg...)) << std::endl;
-    }
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
 
 std::shared_ptr<IntegerType>   TypeTable::IntType;

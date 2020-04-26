@@ -2,7 +2,7 @@
 source_filename = "string5"
 
 @string5_x = internal global [0 x i32]* null
-@STRING_0 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_0 = constant [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 declare void @Out_Char(i32)
 
@@ -11,7 +11,7 @@ declare void @Out_Ln()
 define i64 @output() {
 entry:
   %i = alloca i64
-  store [5 x i32]* @STRING_0, [0 x i32]** @string5_x
+  store [6 x i32]* @STRING_0, [0 x i32]** @string5_x
   store i64 0, i64* %i
   br label %loop
 

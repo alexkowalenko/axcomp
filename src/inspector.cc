@@ -8,8 +8,10 @@
 
 #include <algorithm>
 #include <iostream>
-#include <llvm/Support/FormatVariadic.h>
 #include <memory>
+
+#include <llvm/Support/Debug.h>
+#include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "error.hh"
@@ -19,12 +21,10 @@
 
 namespace ax {
 
-inline constexpr bool debug_inspect{false};
+#define DEBUG_TYPE "inspector"
 
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_inspect) {
-        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
-    }
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)

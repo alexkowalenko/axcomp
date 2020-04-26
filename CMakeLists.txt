@@ -75,12 +75,10 @@ if(ENABLE_FUZZING)
   add_subdirectory(fuzz_test)
 endif()
 
-# External libraries
-message("Using CLI11")
-add_subdirectory(extern/CLI11)
-
 # Doxygen docs
 add_subdirectory(docs)
+
+set (CMAKE_CXX_FLAGS "-DLLVM_ENABLE_STATS=1")
 
 # src dir
 add_library(libax STATIC 

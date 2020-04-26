@@ -2,9 +2,6 @@
 	path = extern/googletest
 	url = ../../google/googletest.git
 	branch = v1.10.x
-[submodule "extern/CLI11"]
-	path = extern/CLI11
-	url = https://github.com/CLIUtils/CLI11.git
 [submodule "extern/utfcpp"]
 	path = extern/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git

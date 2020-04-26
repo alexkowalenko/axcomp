@@ -15,6 +15,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/TargetRegistry.h>
@@ -35,12 +36,10 @@
 
 namespace ax {
 
-inline constexpr bool debug_codegen{false};
+#define DEBUG_TYPE "codegen"
 
-template <typename... T> inline void debug(const T &... msg) {
-    if constexpr (debug_codegen) {
-        llvm::errs() << std::string(formatv(msg...)) << '\n';
-    }
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
 }
 
 using namespace llvm::sys;
@@ -838,7 +837,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
     debug("GEP is array: {0}", arg_ptr->getType()->isArrayTy());
-    // arg_ptr->getType()->print(llvm::errs());
+    // arg_ptr->getType()->print(llvm::dbgs());
     debug("\nindexes:");
     for (auto x : index) {
         // x->print(llvm::errs());

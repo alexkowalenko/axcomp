@@ -114,14 +114,6 @@ class Lexer : public LexerImplementation<char, Character8> {
 extern const std::unordered_map<std::string, Token> keyword_map;
 extern const std::unordered_map<char, Token>        single_tokens;
 
-inline constexpr bool debug_lexer{false};
-
-template <typename... T> inline void debugl(const T &... msg) {
-    if constexpr (debug_lexer) {
-        std::cerr << std::string(llvm::formatv(msg...)) << std::endl;
-    }
-}
-
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::peek_token() {
     if (next_token.empty()) {
         Token t{get_token()};
@@ -134,7 +126,6 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::get_token() {
     // Check if there is already a token
     if (!next_token.empty()) {
-        debugl("size: {}", next_token.size());
         Token s{next_token.top()};
         next_token.pop();
         return s;

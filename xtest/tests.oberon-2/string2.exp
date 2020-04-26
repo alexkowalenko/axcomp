@@ -3,7 +3,7 @@ source_filename = "string2"
 
 @string2_x = internal global [0 x i32]* null
 @string2_y = internal global [0 x i32]* null
-@STRING_0 = constant [5 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_0 = constant [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 declare void @Out_Ln()
 
@@ -19,7 +19,7 @@ entry:
 
 define i64 @output() {
 entry:
-  store [5 x i32]* @STRING_0, [0 x i32]** @string2_x
+  store [6 x i32]* @STRING_0, [0 x i32]** @string2_x
   %x = load [0 x i32]*, [0 x i32]** @string2_x
   %0 = call [0 x i32]* @string2_identity([0 x i32]* %x)
   store [0 x i32]* %0, [0 x i32]** @string2_y
