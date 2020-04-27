@@ -51,6 +51,22 @@ BIFunctor max = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return type->max();
 };
 
+BIFunctor inc = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto   args = codegen->do_arguments(ast);
+    auto * arg = args[0];
+    Value *val = codegen->get_builder().CreateLoad(arg);
+    val = codegen->get_builder().CreateAdd(val, TypeTable::IntType->make_value(1), "inc");
+    return codegen->get_builder().CreateStore(val, arg);
+};
+
+BIFunctor dec = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto   args = codegen->do_arguments(ast);
+    auto * arg = args[0];
+    Value *val = codegen->get_builder().CreateLoad(arg);
+    val = codegen->get_builder().CreateSub(val, TypeTable::IntType->make_value(1), "dec");
+    return codegen->get_builder().CreateStore(val, arg);
+};
+
 void Builtin::initialise(SymbolFrameTable &symbols) {
 
     global_functions = {
@@ -71,6 +87,15 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                                                            {TypeTable::IntType, Attr::null},
                                                        }),
                        Attr::global_function}},
+
+        {"INC", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::VoidType,
+                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::var}}),
+                       Attr::compile_function}},
+        {"DEC", Symbol{std::make_shared<ProcedureType>(
+                           TypeTable::VoidType,
+                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::var}}),
+                       Attr::compile_function}},
 
         // CHARs
         {"CAP", Symbol{std::make_shared<ProcedureType>(
@@ -151,6 +176,8 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("SIZE", size);
     compile_functions.try_emplace("MIN", min);
     compile_functions.try_emplace("MAX", max);
+    compile_functions.try_emplace("INC", inc);
+    compile_functions.try_emplace("DEC", dec);
 }
 
 } // namespace ax
