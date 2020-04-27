@@ -12,7 +12,7 @@ namespace ax {
 
 // builtin procedures
 std::vector<std::pair<std::string, Symbol>> Builtin::global_functions;
-std::map<std::string, BIFunctor>            Builtin::compile_functions;
+llvm::StringMap<BIFunctor>                  Builtin::compile_functions;
 
 BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
@@ -147,10 +147,10 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     std::for_each(begin(global_functions), end(global_functions),
                   [&symbols](auto &f) { symbols.put(f.first, mkSym(f.second)); });
 
-    compile_functions.emplace("LEN", len);
-    compile_functions.emplace("SIZE", size);
-    compile_functions.emplace("MIN", min);
-    compile_functions.emplace("MAX", max);
+    compile_functions.try_emplace("LEN", len);
+    compile_functions.try_emplace("SIZE", size);
+    compile_functions.try_emplace("MIN", min);
+    compile_functions.try_emplace("MAX", max);
 }
 
 } // namespace ax

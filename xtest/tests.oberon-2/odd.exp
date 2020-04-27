@@ -5,9 +5,9 @@ source_filename = "odd"
 
 declare i1 @ODD(i64)
 
-declare void @Out_Bool(i1)
-
 declare void @Out_Ln()
+
+declare void @Out_Bool(i1)
 
 define i64 @output() {
 entry:

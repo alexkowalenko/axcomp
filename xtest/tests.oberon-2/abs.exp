@@ -5,9 +5,9 @@ source_filename = "abs"
 
 declare i64 @ABS(i64)
 
-declare void @Out_Int(i64)
-
 declare void @Out_Ln()
+
+declare void @Out_Int(i64)
 
 define i64 @output() {
 entry:

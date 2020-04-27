@@ -3,17 +3,17 @@ source_filename = "stdlib01"
 
 @stdlib01_x = internal constant i64 12
 
+declare void @Out_Ln()
+
+declare void @Out_Int(i64)
+
 declare void @Out_Bool(i1)
+
+declare void @Out_Open()
 
 declare void @Out_Flush()
 
 declare void @Out_Hex(i64)
-
-declare void @Out_Int(i64)
-
-declare void @Out_Ln()
-
-declare void @Out_Open()
 
 define i64 @output() {
 entry:

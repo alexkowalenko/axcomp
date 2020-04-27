@@ -98,7 +98,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
     for (const auto &iter : from) {
-        std::string n = ASTQualident::make_coded_id(module_name, iter.first);
+        std::string n = ASTQualident::make_coded_id(module_name, iter.first());
         to.put(n, iter.second);
     }
 }

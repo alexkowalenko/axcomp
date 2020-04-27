@@ -4,13 +4,13 @@ source_filename = "max"
 @max_x = internal global i64 0
 @max_b = internal global i1 false
 
-declare void @Out_Bool(i1)
-
-declare void @Out_Char(i32)
+declare void @Out_Ln()
 
 declare void @Out_Int(i64)
 
-declare void @Out_Ln()
+declare void @Out_Bool(i1)
+
+declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:

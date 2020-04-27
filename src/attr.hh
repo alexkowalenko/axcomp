@@ -7,7 +7,8 @@
 #pragma once
 
 #include <string>
-#include <unordered_set>
+
+#include <llvm/ADT/SmallSet.h>
 
 namespace ax {
 
@@ -27,13 +28,13 @@ enum class Attr {
 constexpr auto attr_star{"*"};
 constexpr auto attr_dash{"-"};
 
-class Attrs : std::unordered_set<Attr> {
+class Attrs : llvm::SmallSet<Attr, 4> {
   public:
     Attrs() = default;
     ~Attrs() = default;
 
     void               set(Attr const &t) { insert(t); };
-    [[nodiscard]] bool contains(Attr const &t) const { return (this->find(t) != end()); }
+    [[nodiscard]] bool contains(Attr const &t) const { return (this->count(t) == 1); }
 
     explicit operator std::string() const {
         if (contains(Attr::global)) {

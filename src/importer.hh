@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <llvm/ADT/StringMap.h>
+
 #include "ast.hh"
 #include "error.hh"
 #include "symboltable.hh"
@@ -25,8 +27,8 @@ class Importer {
   private:
     std::optional<SymbolFrameTable> read_module(std::string const &name, TypeTable &types);
 
-    ErrorManager &                          errors;
-    std::map<std::string, SymbolFrameTable> cache;
-    std::vector<std::string>                paths;
+    ErrorManager &                    errors;
+    llvm::StringMap<SymbolFrameTable> cache;
+    std::vector<std::string>          paths;
 };
 } // namespace ax

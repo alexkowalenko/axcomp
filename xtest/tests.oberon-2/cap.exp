@@ -7,9 +7,9 @@ declare i32 @CAP(i32)
 
 declare i32 @CHR(i64)
 
-declare void @Out_Char(i32)
-
 declare void @Out_Ln()
+
+declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:

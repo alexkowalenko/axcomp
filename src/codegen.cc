@@ -123,8 +123,8 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
         debug("CodeGenerator::visit_ASTImport do {0}", i.first->value);
 
         // convert table to ValueSymboltable
-        std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto const &s) {
-            auto name = s.first;
+        std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto &s) {
+            auto name = s.first();
             auto type = s.second->type;
             debug("CodeGenerator::visit_ASTImport get {0} : {1}", name, type->get_name());
 

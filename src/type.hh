@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <numeric>
 #include <string>
 #include <vector>
 
+#include <llvm/ADT/StringMap.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 
@@ -183,8 +183,8 @@ class RecordType : public Type {
     unsigned int get_size() override;
 
   private:
-    std::map<std::string, TypePtr> fields;
-    std::vector<std::string>       index;
+    llvm::StringMap<TypePtr> fields;
+    std::vector<std::string> index;
 };
 
 class TypeAlias : public Type {

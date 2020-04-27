@@ -7,11 +7,11 @@ declare i32 @CHR(i64)
 
 declare i64 @ORD(i32)
 
-declare void @Out_Char(i32)
+declare void @Out_Ln()
 
 declare void @Out_Int(i64)
 
-declare void @Out_Ln()
+declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:

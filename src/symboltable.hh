@@ -14,6 +14,8 @@
 #include <stack>
 #include <string>
 
+#include <llvm/ADT/StringMap.h>
+
 namespace ax {
 
 template <typename T> class TableInterface {
@@ -25,8 +27,8 @@ template <typename T> class TableInterface {
     virtual bool            set(const std::string &name, T const &val) = 0;
     virtual void            remove(const std::string &name) = 0;
 
-    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator begin() const = 0;
-    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator end() const = 0;
+    [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator begin() const = 0;
+    [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator end() const = 0;
 };
 
 template <typename T> class SymbolTable : public TableInterface<T> {
@@ -42,17 +44,17 @@ template <typename T> class SymbolTable : public TableInterface<T> {
     bool            set(const std::string &name, T const &val) override;
     void            remove(const std::string &name) override;
 
-    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
+    [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
         return table.begin();
     }
-    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
+    [[nodiscard]] typename llvm::StringMap<T>::const_iterator end() const override {
         return table.end();
     }
 
     void dump(std::ostream &os) const;
 
   private:
-    std::map<std::string, T>     table;
+    llvm::StringMap<T>           table;
     std::shared_ptr<SymbolTable> next = nullptr;
 };
 
@@ -111,10 +113,10 @@ template <typename T> class FrameTable : public TableInterface<T> {
     };
     void remove(const std::string &name) override { current_table->remove(name); };
 
-    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
+    [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
         return current_table->begin();
     };
-    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
+    [[nodiscard]] typename llvm::StringMap<T>::const_iterator end() const override {
         return current_table->end();
     };
 
@@ -153,7 +155,7 @@ template <typename T> void FrameTable<T>::dump(std::ostream &os) {
     std::for_each(std::begin(frame_map), std::end(frame_map), [&os](auto &f) {
         os << f.first << "  ------------------------------\n";
         std::for_each(f.second->begin(), f.second->end(), [&os](auto &s) {
-            os << s.first << " : " << s.second->type->get_name() << '\n';
+            os << std::string(s.first()) << " : " << s.second->type->get_name() << '\n';
         });
     });
 }
