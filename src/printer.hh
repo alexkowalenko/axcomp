@@ -7,9 +7,11 @@
 #pragma once
 
 #include <iostream>
+#include <ostream>
 
 #include "ast.hh"
 #include "astvisitor.hh"
+#include "defparser.hh"
 
 namespace ax {
 
@@ -52,8 +54,19 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTString(ASTStringPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
 
+    void set_indent(int i) { indent_width = i; }
+
   protected:
     std::ostream &os;
+
+    void push() { level++; }
+    void pop() { level--; }
+
+    std::string indent() const { return std::string(indent_width * level, char(' ')); }
+
+  private:
+    int indent_width{0};
+    int level{0};
 };
 
 } // namespace ax

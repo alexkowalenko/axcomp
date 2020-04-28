@@ -131,6 +131,7 @@ int main(int argc, char **argv) {
 
         if (options.debug_parse) {
             ax::ASTPrinter printer(std::cout);
+            printer.set_indent(4);
             printer.print(ast);
         }
 
@@ -140,7 +141,7 @@ int main(int argc, char **argv) {
         Inspector inspect(symbols, types, errors, importer);
         inspect.check(ast);
         if (errors.has_errors()) {
-            errors.print_errors(std::cout);
+            errors.print_errors(std::cerr);
             return -1;
         }
 
