@@ -251,8 +251,8 @@ TEST(Inspector, CASE) {
                 END;
                 RETURN 0;
             END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nCASE x OF\n1 : x := 1;\n2 : x := 2;\n3, 4, 5 : "
-         "x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nCASE x OF\n1 : x := 1;\n| 2 : x := 2;\n| 3, 4, "
+         "5 : x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -268,8 +268,8 @@ TEST(Inspector, CASE) {
                 END;
                 RETURN 0;
             END alpha.)",
-         "MODULE alpha;\nVAR\nx: INTEGER;\nc: CHAR;\nBEGIN\nCASE c OF\n'a' : x := 1;\n'A' : x := "
-         "2;\n'B', 'b', 'C' : x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nc: CHAR;\nBEGIN\nCASE c OF\n'a' : x := 1;\n| 'A' : x "
+         ":= 2;\n| 'B', 'b', 'C' : x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         // Errors

@@ -311,8 +311,8 @@ TEST(Parser, CASE) {
                 END
                 RETURN 0;
             END alpha.)",
-         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : Out.String('Two');\n3 : "
-         "Out.String('Three');\nELSE\nOut.String(\"More\")\nEND;\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n| 2 : Out.String('Two');\n| 3 "
+         ": Out.String('Three');\nELSE\nOut.String(\"More\")\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -324,8 +324,8 @@ TEST(Parser, CASE) {
                 END
                 RETURN 0;
             END alpha.)",
-         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : Out.String('Two');\n3 : "
-         "Out.String('Three');\nELSE\nEND;\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n| 2 : Out.String('Two');\n| 3 "
+         ": Out.String('Three');\nELSE\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -336,7 +336,7 @@ TEST(Parser, CASE) {
                 END
                 RETURN 0;
             END alpha.)",
-         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : "
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n| 2 : "
          "Out.String('Two');\nELSE\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
@@ -354,7 +354,7 @@ TEST(Parser, CASE) {
                 RETURN 0;
             END alpha.)",
          "MODULE alpha;\nIMPORT Out;\nBEGIN\nFOR i := 1 TO 4 DO\nCASE i OF\n1 : "
-         "Out.String('One');\n2 : Out.String('Two');\n3, 4, 5 : "
+         "Out.String('One');\n| 2 : Out.String('Two');\n| 3, 4, 5 : "
          "Out.String('More');\nELSE\nEND;\nOut.Ln()\nEND;\nRETURN 0\nEND alpha.",
          ""},
 

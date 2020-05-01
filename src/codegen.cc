@@ -556,13 +556,10 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     auto *                    funct = builder.GetInsertBlock()->getParent();
     BasicBlock *              else_block = nullptr;
     std::vector<BasicBlock *> element_blocks;
-    std::vector<BasicBlock *> eval_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
         auto *block = BasicBlock::Create(context, formatv("case.element{0}", i));
         element_blocks.push_back(block);
-        block = BasicBlock::Create(context, formatv("case.eval{0}", i));
-        eval_blocks.push_back(block);
     });
 
     if (!ast->else_stats.empty()) {
@@ -575,26 +572,31 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     auto *case_value = last_value;
 
     // CASE elements
-    i = 0;
-    builder.CreateBr(eval_blocks[0]);
-    for (auto const &element : ast->elements) {
+    BasicBlock *next = nullptr;
+    if (!ast->else_stats.empty()) {
+        next = else_block;
+    } else {
+        next = end_block;
+    }
+    auto switch_inst = builder.CreateSwitch(case_value, next);
 
+    i = 0;
+    for (auto const &element : ast->elements) {
         debug("CodeGenerator::visit_ASTCase {0}", i);
-        funct->getBasicBlockList().push_back(eval_blocks[i]);
-        builder.SetInsertPoint(eval_blocks[i]);
-        element->expr[0]->accept(this);
-        last_value = builder.CreateICmpEQ(case_value, last_value);
-        BasicBlock *next = nullptr;
-        if (i < ast->elements.size() - 1) {
-            next = eval_blocks[i + 1];
-        } else {
-            if (!ast->else_stats.empty()) {
-                next = else_block;
-            } else {
-                next = end_block;
-            }
-        }
-        builder.CreateCondBr(last_value, element_blocks[i], next);
+        std::for_each(begin(element->expr), end(element->expr),
+                      [this, switch_inst, element_blocks, i](auto &expr) {
+                          expr->accept(this);
+                          assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
+                          switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
+                                               element_blocks[i]);
+                      });
+
+        i++;
+    }
+
+    i = 0;
+    for (auto const &element : ast->elements) {
+        debug("CodeGenerator::visit_ASTCase element {0}", i);
 
         funct->getBasicBlockList().push_back(element_blocks[i]);
         builder.SetInsertPoint(element_blocks[i]);

@@ -197,7 +197,6 @@ void ASTPrinter::visit_ASTIf(ASTIfPtr ast) {
 }
 
 void ASTPrinter::visit_ASTCaseElement(ASTCaseElementPtr ast) {
-    os << indent();
     std::for_each(begin(ast->expr), end(ast->expr), [this, ast](auto const &e) {
         e->accept(this);
         if (e != ast->expr.back()) {
@@ -205,10 +204,17 @@ void ASTPrinter::visit_ASTCaseElement(ASTCaseElementPtr ast) {
         }
     });
     os << " : ";
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+    int i = 0;
+    push();
+    std::for_each(begin(ast->stats), end(ast->stats), [this, &i](auto const &x) {
+        if (i != 0) {
+            os << indent();
+        }
         x->accept(this);
         os << ";\n";
+        i++;
     });
+    pop();
 }
 
 void ASTPrinter::visit_ASTCase(ASTCasePtr ast) {
@@ -216,15 +222,22 @@ void ASTPrinter::visit_ASTCase(ASTCasePtr ast) {
     ast->expr->accept(this);
     os << " OF\n";
     push();
-    std::for_each(begin(ast->elements), end(ast->elements),
-                  [this](auto const &x) { x->accept(this); });
+    int i = 0;
+    std::for_each(begin(ast->elements), end(ast->elements), [this, &i](auto const &x) {
+        os << indent();
+        if (i != 0) {
+            os << "| ";
+        }
+        x->accept(this);
+        i++;
+    });
     pop();
     if (!ast->elements.empty()) {
         os << indent() << "ELSE\n";
         print_stats(ast->else_stats);
         os << indent() << "END";
     }
-}
+} // namespace ax
 
 void ASTPrinter::visit_ASTFor(ASTForPtr ast) {
     os << "FOR ";

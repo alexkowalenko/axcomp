@@ -1,11 +1,13 @@
-; ModuleID = 'case1'
-source_filename = "case1"
+; ModuleID = 'case3'
+source_filename = "case3"
 
-@case1_i = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 79, i32 110, i32 101, i32 0]
-@STRING_1 = private global [0 x i32] [i32 84, i32 119, i32 111, i32 0]
-@STRING_2 = private global [0 x i32] [i32 77, i32 111, i32 114, i32 101, i32 0]
-@STRING_3 = private global [0 x i32] [i32 77, i32 97, i32 110, i32 121, i32 0]
+@case3_c = internal global i32 0
+@STRING_0 = private global [0 x i32] [i32 65, i32 0]
+@STRING_1 = private global [0 x i32] [i32 66, i32 0]
+@STRING_2 = private global [0 x i32] [i32 67, i32 0]
+@STRING_3 = private global [0 x i32] [i32 68, i32 45, i32 90, i32 0]
+
+declare i32 @CHR(i64)
 
 declare void @Out_Ln()
 
@@ -19,10 +21,14 @@ entry:
 
 loop:                                             ; preds = %case_end, %entry
   %i1 = load i64, i64* %i
-  switch i64 %i1, label %else [
-    i64 1, label %case.element0
-    i64 2, label %case.element02
-    i64 3, label %case.element03
+  %addtmp = add i64 64, %i1
+  %0 = call i32 @CHR(i64 %addtmp)
+  store i32 %0, i32* @case3_c
+  %c = load i32, i32* @case3_c
+  switch i32 %c, label %else [
+    i32 65, label %case.element0
+    i32 66, label %case.element02
+    i32 67, label %case.element03
   ]
 
 afterloop:                                        ; preds = %case_end
@@ -49,8 +55,8 @@ else:                                             ; preds = %loop
   br label %case_end
 
 case_end:                                         ; preds = %else, %case.element03, %case.element02, %case.element0
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
+  %1 = load i64, i64* %i
+  %nextvar = add i64 %1, 1
   store i64 %nextvar, i64* %i
   %loopcond = icmp sle i64 %nextvar, 4
   br i1 %loopcond, label %loop, label %afterloop
