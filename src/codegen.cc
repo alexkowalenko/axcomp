@@ -148,6 +148,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                     symboltable.set_value(name, func);
                 }
             } else {
+                // Should be not here
                 assert(false);
             }
         });
@@ -471,11 +472,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
                   [this](auto const &s) { s->accept(this); });
 
     // check if last instruction is branch (EXIT)
-    Instruction *last = nullptr;
-    for (Instruction &i : *then_block) {
-        last = &i;
-    }
-    if (last && !last->isTerminator()) {
+    if (!then_block->back().isTerminator()) {
         // not terminator (branch) put in EXIT
         debug("CodeGenerator::visit_ASTIf then not terminator");
         builder.CreateBr(merge_block);
@@ -508,12 +505,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         builder.SetInsertPoint(t_block);
         std::for_each(begin(e.stats), end(e.stats), [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
-        Instruction *last = nullptr;
-        for (Instruction &i : *t_block) {
-            last = &i;
-        }
-        if (last && !last->isTerminator()) {
-            // not terminator (branch) put in EXIT
+        if (!t_block->back().isTerminator()) {
             debug("CodeGenerator::visit_ASTIf elsif not terminator");
             builder.CreateBr(merge_block);
         }
@@ -529,12 +521,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
-        Instruction *last = nullptr;
-        for (Instruction &i : *else_block) {
-            last = &i;
-        }
-        if (last && !last->isTerminator()) {
-            // not terminator (branch) put in EXIT
+        if (!else_block->back().isTerminator()) {
             debug("CodeGenerator::visit_ASTIf then not terminator");
             builder.CreateBr(merge_block);
         }
@@ -578,7 +565,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     } else {
         next = end_block;
     }
-    auto switch_inst = builder.CreateSwitch(case_value, next);
+    auto *switch_inst = builder.CreateSwitch(case_value, next);
 
     i = 0;
     for (auto const &element : ast->elements) {
@@ -604,12 +591,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
                       [this](auto const &s) { s->accept(this); });
 
         // check if last instruction is branch (EXIT)
-        Instruction *last = nullptr;
-        for (Instruction &i : *element_blocks[i]) {
-            last = &i;
-        }
-        if (last && !last->isTerminator()) {
-            // not terminator (branch) put in EXIT
+        if (!element_blocks[i]->back().isTerminator()) {
             builder.CreateBr(end_block);
         }
         element_blocks[i] = builder.GetInsertBlock(); // necessary for correct generation of code
@@ -624,12 +606,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
                       [this](auto const &s) { s->accept(this); });
 
         // check if last instruction is branch (EXIT)
-        Instruction *last = nullptr;
-        for (Instruction &i : *else_block) {
-            last = &i;
-        }
-        if (last && !last->isTerminator()) {
-            // not terminator (branch) put in EXIT
+        if (!else_block->back().isTerminator()) {
             builder.CreateBr(end_block);
         }
         else_block = builder.GetInsertBlock(); // necessary for correct generation of code

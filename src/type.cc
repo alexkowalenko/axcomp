@@ -39,8 +39,8 @@ llvm::Constant *BooleanType::make_value(bool b) {
     return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
 }
 
-llvm::Constant *CharacterType::make_value(Char b) {
-    return ConstantInt::get(get_llvm(), static_cast<Char>(b));
+llvm::Constant *CharacterType::make_value(Char c) {
+    return ConstantInt::get(get_llvm(), static_cast<Char>(c));
 }
 
 llvm::Constant *StringType::make_value(std::string const &s) {
@@ -55,13 +55,12 @@ llvm::Constant *StringType::make_value(std::string const &s) {
     return ConstantArray::get(llvm::dyn_cast<llvm::ArrayType>(make_type(s)), array);
 }
 
-llvm::Type *StringType::make_type(std::string const &s) {
+llvm::Type *StringType::make_type(std::string const & /* unused */) {
     // Type dependant on string size
 
     return llvm::ArrayType::get(TypeTable::CharType->get_llvm(),
                                 // utf8::distance(s.begin(), s.end()) + 1
-                                0
-                                );  // All strings are undetermined length
+                                0); // All strings are undetermined length
 }
 
 ProcedureType::operator std::string() {

@@ -89,7 +89,7 @@ class ASTChar : public ASTBase, public std::enable_shared_from_this<ASTChar> {
         return s;
     }
 
-    Char value;
+    Char value = 0;
     bool hex{false};
 };
 using ASTBCharPtr = std::shared_ptr<ASTChar>;

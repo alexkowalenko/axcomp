@@ -75,7 +75,7 @@ template <typename C, class CharClass> class LexerImplementation : public LexerI
   private:
     Token scan_digit(C c);
     Token scan_ident(C c);
-    Token scan_string(C c);
+    Token scan_string(C start);
 
     ErrorManager const &errors;
     std::stack<Token>   next_token;
@@ -99,7 +99,7 @@ class Character8 : CharacterClass<char> {
 class Lexer : public LexerImplementation<char, Character8> {
   public:
     Lexer(std::istream &stream, ErrorManager const &e) : LexerImplementation{stream, e} {};
-    ~Lexer() = default;
+    ~Lexer() override = default;
 
   private:
     char get() override {

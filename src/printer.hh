@@ -64,7 +64,9 @@ class ASTPrinter : public ASTVisitor {
     void push() { level++; }
     void pop() { level--; }
 
-    std::string indent() const { return std::string(indent_width * level, char(' ')); }
+    [[nodiscard]] std::string indent() const {
+        return std::string(indent_width * level, char(' '));
+    }
 
   private:
     int indent_width{0};
