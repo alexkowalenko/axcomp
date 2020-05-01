@@ -433,6 +433,8 @@ ASTStatementPtr Parser::parse_statement() {
         return parse_return();
     case TokenType::if_k:
         return parse_if();
+    case TokenType::cse:
+        return parse_case();
     case TokenType::for_k:
         return parse_for();
     case TokenType::while_k:
@@ -603,6 +605,82 @@ ASTIfPtr Parser::parse_if() {
     get_token(TokenType::end);
     return stat;
 };
+
+inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::else_k,
+                                                   TokenType::end};
+
+/**
+ * @brief  = [CaseLabelList ":" StatementSequence].
+ *
+ * CaseLabelList = ConstExpression ["..." ConstExpression].
+ *
+ * ConstExpr = SimpleExpr.
+ *
+ * @return std::vector<ASTCaseElementPtr>
+ */
+void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
+    debug("Parser::parse_caseElements");
+
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::bar) {
+        lexer.get_token();
+        tok = lexer.peek_token();
+    }
+    while (tok.type != TokenType::end && tok.type != TokenType::else_k) {
+        debug("Parser::parse_caseElement {0}", std::string(tok));
+        auto element = makeAST<ASTCaseElement>(lexer);
+
+        while (true) {
+            auto e = parse_simpleexpr();
+            element->expr.push_back(e);
+            tok = lexer.peek_token();
+            if (tok.type != TokenType::comma) {
+                break;
+            }
+            lexer.get_token(); // ,
+        };
+
+        get_token(TokenType::colon);
+        parse_statement_block(element->stats, case_element_ends);
+        elements.push_back(element);
+
+        tok = lexer.peek_token();
+        debug("Parser::parse_caseElement {0}", std::string(tok));
+        if (tok.type == TokenType::bar) {
+            lexer.get_token();
+            tok = lexer.peek_token();
+        }
+    }
+}
+
+/**
+ * @brief = CASE Expression OF Case {"|" Case} [ELSE StatementSequence] END.
+ *
+ * @return ASTCasePtr
+ */
+ASTCasePtr Parser::parse_case() {
+    debug("Parser::parse_case");
+    auto ast = makeAST<ASTCase>(lexer);
+
+    // CASE
+    get_token(TokenType::cse);
+    ast->expr = parse_simpleexpr();
+    get_token(TokenType::of);
+
+    parse_caseElements(ast->elements);
+
+    // ELSE
+    auto tok = lexer.peek_token();
+    debug("Parser::parse_case {0}", std::string(tok));
+    if (tok.type == TokenType::else_k) {
+        lexer.get_token();
+        parse_statement_block(ast->else_stats, module_ends);
+    }
+
+    // END
+    get_token(TokenType::end);
+    return ast;
+}
 
 /**
  * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"

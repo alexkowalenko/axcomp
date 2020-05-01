@@ -183,7 +183,7 @@ void ASTPrinter::visit_ASTIf(ASTIfPtr ast) {
     ast->if_clause.expr->accept(this);
     os << " THEN\n";
     print_stats(ast->if_clause.stats);
-    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(), [this](auto const &x) {
+    std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause), [this](auto const &x) {
         os << indent() << "ELSIF ";
         x.expr->accept(this);
         os << " THEN\n";
@@ -194,6 +194,36 @@ void ASTPrinter::visit_ASTIf(ASTIfPtr ast) {
         print_stats(*ast->else_clause);
     }
     os << indent() << "END";
+}
+
+void ASTPrinter::visit_ASTCaseElement(ASTCaseElementPtr ast) {
+    os << indent();
+    std::for_each(begin(ast->expr), end(ast->expr), [this, ast](auto const &e) {
+        e->accept(this);
+        if (e != ast->expr.back()) {
+            os << ", ";
+        }
+    });
+    os << " : ";
+    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) {
+        x->accept(this);
+        os << ";\n";
+    });
+}
+
+void ASTPrinter::visit_ASTCase(ASTCasePtr ast) {
+    os << "CASE ";
+    ast->expr->accept(this);
+    os << " OF\n";
+    push();
+    std::for_each(begin(ast->elements), end(ast->elements),
+                  [this](auto const &x) { x->accept(this); });
+    pop();
+    if (!ast->elements.empty()) {
+        os << indent() << "ELSE\n";
+        print_stats(ast->else_stats);
+        os << indent() << "END";
+    }
 }
 
 void ASTPrinter::visit_ASTFor(ASTForPtr ast) {

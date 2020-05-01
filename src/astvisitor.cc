@@ -93,6 +93,10 @@ void ASTVisitor::visit_ASTIf(ASTIfPtr ast) {
     }
 }
 
+void ASTVisitor::visit_ASTCaseElement(ASTCaseElementPtr ast){};
+
+void ASTVisitor::visit_ASTCase(ASTCasePtr ast){};
+
 void ASTVisitor::visit_ASTFor(ASTForPtr ast) {
     ast->ident->accept(this);
     ast->start->accept(this);
@@ -127,6 +131,11 @@ void ASTVisitor::visit_ASTExpr(ASTExprPtr ast) {
         (*ast->relation_expr)->accept(this);
     }
 }
+
+void ASTVisitor::visit_ASTRange(ASTRangePtr ast) {
+    ast->first->accept(this);
+    ast->last->accept(this);
+};
 
 void ASTVisitor::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     ast->term->accept(this);

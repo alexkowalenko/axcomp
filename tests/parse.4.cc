@@ -296,3 +296,126 @@ TEST(Parser, BEGIN) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, CASE) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i OF
+                    1 : Out.String('One');
+                |   2 : Out.String('Two');
+                |   3 : Out.String('Three');
+                ELSE
+                    Out.String("More")
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : Out.String('Two');\n3 : "
+         "Out.String('Three');\nELSE\nOut.String(\"More\")\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i OF
+                    1 : Out.String('One');
+                |   2 : Out.String('Two');
+                |   3 : Out.String('Three');
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : Out.String('Two');\n3 : "
+         "Out.String('Three');\nELSE\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i OF
+                |   1 : Out.String('One');
+                |   2 : Out.String('Two');
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n2 : "
+         "Out.String('Two');\nELSE\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            BEGIN
+                FOR i := 1 TO 4 DO
+                    CASE i OF
+                        1 : Out.String('One');
+                    |   2 : Out.String('Two');
+                    |   3, 4, 5: Out.String('More');
+                    END
+                    Out.Ln;
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT Out;\nBEGIN\nFOR i := 1 TO 4 DO\nCASE i OF\n1 : "
+         "Out.String('One');\n2 : Out.String('Two');\n3, 4, 5 : "
+         "Out.String('More');\nELSE\nEND;\nOut.Ln()\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i
+                |   1 : Out.String('One');
+                |   2 : Out.String('Two');
+                END
+                RETURN 0;
+            END alpha.)",
+         "", "4,17: Unexpected token: | - expecting OF"},
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i OF
+                |   1 : Out.String('One');
+                   2 : Out.String('Two');
+                END
+                RETURN 0;
+            END alpha.)",
+         "", "5,20: Unexpected token: integer(2)"},
+
+        {R"(MODULE alpha;
+            BEGIN
+                CASE i OF
+                |   1 : Out.String('One');
+                |   2 : Out.String('Two');
+                
+                RETURN 0;
+            END alpha.)",
+         "", "9,0: Unexpected token: EOF - expecting indent"},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            BEGIN
+                CASE i OF
+                    1 : Out.String('One');
+                |   2 : Out.String('Two');
+                |   3, 4, : Out.String('More');
+                END
+                Out.Ln;
+                RETURN 0;
+            END alpha.)",
+         "", "7,27: Unexpected token: :"},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            BEGIN
+                CASE i OF
+                    1 : Out.String('One');
+                |   2 : Out.String('Two');
+                |   3 4 : Out.String('More');
+                END
+                Out.Ln;
+                RETURN 0;
+            END alpha.)",
+         "", "7,23: Unexpected token: integer(4) - expecting :"},
+
+    };
+    do_parse_tests(tests);
+}

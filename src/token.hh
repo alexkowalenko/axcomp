@@ -35,6 +35,8 @@ enum class TokenType {
     ampersand,
     l_bracket,
     r_bracket,
+    dotdot,
+    bar,
 
     integer,
     hexinteger,
@@ -74,6 +76,7 @@ enum class TokenType {
     record,
     definition,
     import,
+    cse,
 };
 
 std::string string(TokenType t);

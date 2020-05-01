@@ -33,6 +33,10 @@ class ASTCall;
 using ASTCallPtr = std::shared_ptr<ASTCall>;
 class ASTIf;
 using ASTIfPtr = std::shared_ptr<ASTIf>;
+class ASTCaseElement;
+using ASTCaseElementPtr = std::shared_ptr<ASTCaseElement>;
+class ASTCase;
+using ASTCasePtr = std::shared_ptr<ASTCase>;
 class ASTFor;
 using ASTForPtr = std::shared_ptr<ASTFor>;
 class ASTWhile;
@@ -47,6 +51,8 @@ class ASTExpr;
 using ASTExprPtr = std::shared_ptr<ASTExpr>;
 class ASTSimpleExpr;
 using ASTSimpleExprPtr = std::shared_ptr<ASTSimpleExpr>;
+class ASTRange;
+using ASTRangePtr = std::shared_ptr<ASTRange>;
 class ASTTerm;
 using ASTTermPtr = std::shared_ptr<ASTTerm>;
 class ASTFactor;
@@ -90,6 +96,8 @@ class ASTVisitor {
     virtual void visit_ASTExit(ASTExitPtr ast);
     virtual void visit_ASTCall(ASTCallPtr ast);
     virtual void visit_ASTIf(ASTIfPtr ast);
+    virtual void visit_ASTCaseElement(ASTCaseElementPtr ast);
+    virtual void visit_ASTCase(ASTCasePtr ast);
     virtual void visit_ASTFor(ASTForPtr ast);
     virtual void visit_ASTWhile(ASTWhilePtr ast);
     virtual void visit_ASTRepeat(ASTRepeatPtr ast);
@@ -97,6 +105,7 @@ class ASTVisitor {
     virtual void visit_ASTBlock(ASTBlockPtr ast);
 
     virtual void visit_ASTExpr(ASTExprPtr ast);
+    virtual void visit_ASTRange(ASTRangePtr ast);
     virtual void visit_ASTSimpleExpr(ASTSimpleExprPtr ast);
     virtual void visit_ASTTerm(ASTTermPtr ast);
     virtual void visit_ASTFactor(ASTFactorPtr ast);

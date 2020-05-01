@@ -423,7 +423,36 @@ If statements specify the conditional execution of guarded statements. The boole
     ELSIF (ch >= "0") & (ch <= "9") THEN ReadNumber 
     ELSIF ch = 22X THEN ReadString
     END
+\end{lstlisting}
+
+\subsection{\CASE\ statement}
+
+Case statements specify the selection and execution of a statement sequence according to the value of an expression. 
+First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. 
+The case expression must either be of an integer type that includes the types of all case labels, or both the case expression and the case labels must be of type \CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol \ELSE\ is selected, if there is one, otherwise the program is aborted.
+
+\begin{lstlisting}[style=ebnf]
+CaseStatement = CASE Expression OF 
+                Case 
+                {"|" Case} 
+                [ELSE StatementSequence] 
+                END. 
+
+Case = [CaseLabelList ":" StatementSequence].
+
+CaseLabelList = CaseLabels {"," CaseLabels}.
+
+CaseLabels = ConstExpression [".." ConstExpression].
 \end{lstlisting} 
+
+\begin{lstlisting}[style=example]
+CASE ch OF
+"A" .. "Z": ReadIdentifier
+| "0" .. "9": ReadNumber 
+| "'",'"':ReadString 
+ELSE SpecialCharacter 
+END    
+\end{lstlisting}
 
 \subsection{\WHILE\ statements}
 
@@ -733,6 +762,7 @@ Statement = [ Designator ":=" Expr
       | IF Expr THEN StatementSeq 
         {ELSIF Expr THEN StatementSeq } 
         [ ELSE StatementSeq ] END
+      | CASE Expr OF Case {"|" Case} [ELSE StatementSequence] END. 
       | WHILE Expr DO StatementSeq END
       | REPEAT StatementSeq UNTIL Expr
       | FOR ident ":=" Expr TO Expr [BY ConstExpr ] DO StatementSeq END
@@ -742,7 +772,13 @@ Statement = [ Designator ":=" Expr
       | RETURN [Expr] 
       ].
 
-ConstExpr = Expr.
+Case = [CaseLabelList ":" StatementSequence].
+
+CaseLabelList = CaseLabels {"," CaseLabels}.
+
+CaseLabels = ConstExpression ["..." ConstExpression].
+
+ConstExpr = SimpleExpr.
 
 Expr = SimpleExpr [Relation SimpleExpr].
 

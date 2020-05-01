@@ -44,6 +44,10 @@ class Parser {
     ASTExitPtr       parse_exit();
     ASTCallPtr       parse_call(ASTDesignatorPtr d);
     ASTIfPtr         parse_if();
+
+    ASTCasePtr parse_case();
+    void       parse_caseElements(std::vector<ASTCaseElementPtr> &elements);
+
     ASTForPtr        parse_for();
     ASTWhilePtr      parse_while();
     ASTRepeatPtr     parse_repeat();

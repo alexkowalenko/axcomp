@@ -159,6 +159,12 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
             return Token(TokenType::gteq, ">=");
         }
         return Token(TokenType::greater, ">");
+    case '.':
+        if (peek() == '.') {
+            get_char();
+            return Token(TokenType::dotdot, "..");
+        }
+        return Token(TokenType::period, ".");
     case '\'':
     case '\"':
         return scan_string(c);

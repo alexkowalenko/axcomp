@@ -288,6 +288,21 @@ class ASTSimpleExpr : public ASTBase, public std::enable_shared_from_this<ASTSim
 using ASTSimpleExprPtr = std::shared_ptr<ASTSimpleExpr>;
 
 /**
+ * @brief range -> simpleExpr .. simpleExpr
+ *
+ */
+class ASTRange : public ASTBase, public std::enable_shared_from_this<ASTRange> {
+  public:
+    ~ASTRange() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTRange(shared_from_this()); };
+
+    ASTSimpleExprPtr first;
+    ASTSimpleExprPtr last;
+};
+using ASTRangePtr = std::shared_ptr<ASTRange>;
+
+/**
  * @brief expr = simpleExpr [ relation simpleExpr]
  *
  * relation = "=" | "#" | "<" | "<=" | ">" | ">="
@@ -393,6 +408,37 @@ class ASTIf : public ASTStatement, public std::enable_shared_from_this<ASTIf> {
     std::optional<std::vector<ASTStatementPtr>> else_clause;
 };
 using ASTIfPtr = std::shared_ptr<ASTIf>;
+
+/**
+ * @brief
+ *
+ */
+class ASTCaseElement : public ASTStatement, public std::enable_shared_from_this<ASTCaseElement> {
+  public:
+    ~ASTCaseElement() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTCaseElement(shared_from_this()); };
+
+    std::vector<ASTSimpleExprPtr> expr;
+    std::vector<ASTStatementPtr>  stats;
+};
+using ASTCaseElementPtr = std::shared_ptr<ASTCaseElement>;
+
+/**
+ * @brief  CASE Expression OF Case {"|" Case} [ELSE StatementSequence] END.
+ *
+ */
+class ASTCase : public ASTStatement, public std::enable_shared_from_this<ASTCase> {
+  public:
+    ~ASTCase() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTCase(shared_from_this()); };
+
+    ASTSimpleExprPtr               expr;
+    std::vector<ASTCaseElementPtr> elements;
+    std::vector<ASTStatementPtr>   else_stats;
+};
+using ASTCasePtr = std::shared_ptr<ASTCase>;
 
 /**
  * @brief "FOR" IDENT ":=" expr "TO" expr [ "BY" INTEGER ] "DO"

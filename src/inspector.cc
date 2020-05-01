@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <memory>
 
 #include <llvm/Support/Debug.h>
@@ -325,6 +326,21 @@ void Inspector::visit_ASTIf(ASTIfPtr ast) {
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
     }
+}
+
+void Inspector::visit_ASTCaseElement(ASTCaseElementPtr ast) {
+    std::for_each(std::begin(ast->stats), end(ast->stats), [this](auto &s) { s->accept(this); });
+}
+
+void Inspector::visit_ASTCase(ASTCasePtr ast) {
+    ast->expr->accept(this);
+
+    // elements
+    std::for_each(begin(ast->elements), end(ast->elements), [this](auto &e) { e->accept(this); });
+
+    // else
+    std::for_each(begin(ast->else_stats), end(ast->else_stats),
+                  [this](auto &s) { s->accept(this); });
 }
 
 void Inspector::visit_ASTFor(ASTForPtr ast) {

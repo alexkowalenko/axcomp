@@ -41,6 +41,8 @@ std::vector<LexTests> tests = {
     {"&", TokenType::ampersand, "&"},
     {"[", TokenType::l_bracket, "["},
     {"]", TokenType::r_bracket, "]"},
+    {"..", TokenType::dotdot, ".."},
+    {"|", TokenType::bar, "|"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -98,6 +100,7 @@ std::vector<LexTests> tests = {
     {"RECORD", TokenType::record, "RECORD"},
     {"DEFINITION", TokenType::definition, "DEFINITION"},
     {"IMPORT", TokenType::import, "IMPORT"},
+    {"CASE", TokenType::cse, "CASE"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

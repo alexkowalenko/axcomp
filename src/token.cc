@@ -44,6 +44,8 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::ampersand, "&"},
     {TokenType::l_bracket, "["},
     {TokenType::r_bracket, "]"},
+    {TokenType::dotdot, ".."},
+    {TokenType::bar, "|"},
 
     // Keywords
     {TokenType::module, "MODULE"},
@@ -77,6 +79,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::record, "RECORD"},
     {TokenType::definition, "DEFINITION"},
     {TokenType::import, "IMPORT"},
+    {TokenType::cse, "CASE"},
 
     {TokenType::eof, "EOF"},
 };
