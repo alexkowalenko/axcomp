@@ -1,0 +1,65 @@
+; ModuleID = 'case1'
+source_filename = "case1"
+
+@case1_i = internal global i64 0
+@STRING_0 = private global [0 x i32] [i32 79, i32 110, i32 101, i32 0]
+@STRING_1 = private global [0 x i32] [i32 84, i32 119, i32 111, i32 0]
+@STRING_2 = private global [0 x i32] [i32 77, i32 111, i32 114, i32 101, i32 0]
+@STRING_3 = private global [0 x i32] [i32 77, i32 97, i32 110, i32 121, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_String([0 x i32]*)
+
+define i64 @output() {
+entry:
+  %i = alloca i64
+  store i64 1, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %case_end, %entry
+  %i1 = load i64, i64* %i
+  br label %case.eval0
+
+afterloop:                                        ; preds = %case_end
+  ret i64 0
+
+case.eval0:                                       ; preds = %loop
+  %0 = icmp eq i64 %i1, 1
+  br i1 %0, label %case.element0, label %case.eval02
+
+case.element0:                                    ; preds = %case.eval0
+  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_Ln()
+  br label %case_end
+
+case.eval02:                                      ; preds = %case.eval0
+  %1 = icmp eq i64 %i1, 2
+  br i1 %1, label %case.element03, label %case.eval04
+
+case.element03:                                   ; preds = %case.eval02
+  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_Ln()
+  br label %case_end
+
+case.eval04:                                      ; preds = %case.eval02
+  %2 = icmp eq i64 %i1, 3
+  br i1 %2, label %case.element05, label %else
+
+case.element05:                                   ; preds = %case.eval04
+  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_Ln()
+  br label %case_end
+
+else:                                             ; preds = %case.eval04
+  call void @Out_String([0 x i32]* @STRING_3)
+  call void @Out_Ln()
+  br label %case_end
+
+case_end:                                         ; preds = %else, %case.element05, %case.element03, %case.element0
+  %3 = load i64, i64* %i
+  %nextvar = add i64 %3, 1
+  store i64 %nextvar, i64* %i
+  %loopcond = icmp sle i64 %nextvar, 4
+  br i1 %loopcond, label %loop, label %afterloop
+}

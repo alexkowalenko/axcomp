@@ -66,7 +66,7 @@ Options do_args(int argc, char **argv) {
     cl::alias     outputA("o", cl::aliasopt(output));
 
     cl::opt<bool> ll("ll", cl::desc("(-l) generate only the .ll file"), cl::cat(oberon));
-    cl::alias     llA("l", cl::aliasopt(llA));
+    cl::alias     llA("l", cl::aliasopt(ll));
 
     cl::opt<bool> symbols("symbols", cl::desc("(-s) generate only the .ll file"), cl::cat(oberon));
     cl::alias     symbolsA("s", cl::aliasopt(symbols));

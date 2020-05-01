@@ -55,6 +55,7 @@ class CodeGenerator : ASTVisitor {
 
     void visit_ASTCall(ASTCallPtr ast) override;
     void visit_ASTIf(ASTIfPtr ast) override;
+    void visit_ASTCase(ASTCasePtr ast) override;
     void visit_ASTFor(ASTForPtr ast) override;
     void visit_ASTWhile(ASTWhilePtr ast) override;
     void visit_ASTRepeat(ASTRepeatPtr ast) override;

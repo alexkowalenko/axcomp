@@ -334,9 +334,28 @@ void Inspector::visit_ASTCaseElement(ASTCaseElementPtr ast) {
 
 void Inspector::visit_ASTCase(ASTCasePtr ast) {
     ast->expr->accept(this);
+    if (!last_type->equiv(TypeTable::IntType) && !last_type->equiv(TypeTable::CharType)) {
+        auto ex =
+            TypeError("CASE expression has to be INTEGER or CHAR", ast->expr->get_location());
+        errors.add(ex);
+    }
+    auto case_type = last_type;
 
     // elements
-    std::for_each(begin(ast->elements), end(ast->elements), [this](auto &e) { e->accept(this); });
+    std::for_each(begin(ast->elements), end(ast->elements), [this, case_type](auto &e) {
+        std::for_each(begin(e->expr), end(e->expr), [this, case_type](auto expr) {
+            expr->accept(this);
+            if (!last_type->equiv(case_type)) {
+                auto ex =
+                    TypeError(llvm::formatv("CASE expression mismatch type {0} does not "
+                                            "match CASE expression type {1}",
+                                            std::string(*last_type), std::string(*case_type)),
+                              expr->get_location());
+                errors.add(ex);
+            }
+        });
+        e->accept(this);
+    });
 
     // else
     std::for_each(begin(ast->else_stats), end(ast->else_stats),

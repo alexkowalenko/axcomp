@@ -549,6 +549,96 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     builder.SetInsertPoint(merge_block);
 }
 
+void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
+    debug("CodeGenerator::visit_ASTCase");
+
+    // Create blocks, insert then block
+    auto *                    funct = builder.GetInsertBlock()->getParent();
+    BasicBlock *              else_block = nullptr;
+    std::vector<BasicBlock *> element_blocks;
+    std::vector<BasicBlock *> eval_blocks;
+    int                       i = 0;
+    std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
+        auto *block = BasicBlock::Create(context, formatv("case.element{0}", i));
+        element_blocks.push_back(block);
+        block = BasicBlock::Create(context, formatv("case.eval{0}", i));
+        eval_blocks.push_back(block);
+    });
+
+    if (!ast->else_stats.empty()) {
+        else_block = BasicBlock::Create(context, "else");
+    }
+    BasicBlock *end_block = BasicBlock::Create(context, "case_end");
+
+    // CASE
+    ast->expr->accept(this);
+    auto *case_value = last_value;
+
+    // CASE elements
+    i = 0;
+    builder.CreateBr(eval_blocks[0]);
+    for (auto const &element : ast->elements) {
+
+        debug("CodeGenerator::visit_ASTCase {0}", i);
+        funct->getBasicBlockList().push_back(eval_blocks[i]);
+        builder.SetInsertPoint(eval_blocks[i]);
+        element->expr[0]->accept(this);
+        last_value = builder.CreateICmpEQ(case_value, last_value);
+        BasicBlock *next = nullptr;
+        if (i < ast->elements.size() - 1) {
+            next = eval_blocks[i + 1];
+        } else {
+            if (!ast->else_stats.empty()) {
+                next = else_block;
+            } else {
+                next = end_block;
+            }
+        }
+        builder.CreateCondBr(last_value, element_blocks[i], next);
+
+        funct->getBasicBlockList().push_back(element_blocks[i]);
+        builder.SetInsertPoint(element_blocks[i]);
+        std::for_each(begin(element->stats), end(element->stats),
+                      [this](auto const &s) { s->accept(this); });
+
+        // check if last instruction is branch (EXIT)
+        Instruction *last = nullptr;
+        for (Instruction &i : *element_blocks[i]) {
+            last = &i;
+        }
+        if (last && !last->isTerminator()) {
+            // not terminator (branch) put in EXIT
+            builder.CreateBr(end_block);
+        }
+        element_blocks[i] = builder.GetInsertBlock(); // necessary for correct generation of code
+        i++;
+    }
+
+    // ELSE
+    if (!ast->else_stats.empty()) {
+        funct->getBasicBlockList().push_back(else_block);
+        builder.SetInsertPoint(else_block);
+        std::for_each(begin(ast->else_stats), end(ast->else_stats),
+                      [this](auto const &s) { s->accept(this); });
+
+        // check if last instruction is branch (EXIT)
+        Instruction *last = nullptr;
+        for (Instruction &i : *else_block) {
+            last = &i;
+        }
+        if (last && !last->isTerminator()) {
+            // not terminator (branch) put in EXIT
+            builder.CreateBr(end_block);
+        }
+        else_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    }
+
+    // END
+    funct->getBasicBlockList().push_back(end_block);
+    builder.SetInsertPoint(end_block);
+    end_block = builder.GetInsertBlock(); // necessary for correct generation of code
+}
+
 void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     debug("CodeGenerator::visit_ASTFor");
 

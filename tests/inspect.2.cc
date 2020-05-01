@@ -236,6 +236,78 @@ TEST(Inspector, BEGIN) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, CASE) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+            BEGIN
+                CASE x OF
+                    1 : x := 1;
+                |   2 : x := 2;
+                |   3, 4, 5: x := 5;
+                ELSE
+                    x := 0;
+                END;
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nCASE x OF\n1 : x := 1;\n2 : x := 2;\n3, 4, 5 : "
+         "x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+                c : CHAR;
+            BEGIN
+                CASE c OF
+                    'a' : x := 1;
+                |   'A' : x := 2;
+                |   'B', 'b', 'C': x := 5;
+                ELSE
+                    x := 0;
+                END;
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nc: CHAR;\nBEGIN\nCASE c OF\n'a' : x := 1;\n'A' : x := "
+         "2;\n'B', 'b', 'C' : x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+            BEGIN
+                CASE x OF
+                    1 : x := 1;
+                |   's' : x := 2;
+                |   3, 4, 5: x := 5;
+                ELSE
+                    x := 0;
+                END;
+                RETURN 0;
+            END alpha.)",
+         "",
+         "6,23: CASE expression mismatch type CHAR does not match CASE expression type INTEGER"},
+
+        {R"(MODULE alpha;
+            VAR x : INTEGER;
+                c : CHAR;
+            BEGIN
+                CASE c OF
+                    1 : x := 1;
+                |   'A' : x := 2;
+                |   'B', 'b', 'C': x := 5;
+                ELSE
+                    x := 0;
+                END;
+                RETURN 0;
+            END alpha.)",
+         "",
+         "6,21: CASE expression mismatch type INTEGER does not match CASE expression type CHAR"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Builtins) {
     std::vector<ParseTests> tests = {
 
