@@ -550,39 +550,84 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
         auto *block = BasicBlock::Create(context, formatv("case.element{0}", i));
         element_blocks.push_back(block);
+        i++;
     });
 
     if (!ast->else_stats.empty()) {
         else_block = BasicBlock::Create(context, "else");
     }
+    BasicBlock *range_block = BasicBlock::Create(context, "range");
     BasicBlock *end_block = BasicBlock::Create(context, "case_end");
 
     // CASE
     ast->expr->accept(this);
     auto *case_value = last_value;
 
+    std::vector<std::pair<ASTRangePtr, int>> range_list;
+
     // CASE elements
-    BasicBlock *next = nullptr;
-    if (!ast->else_stats.empty()) {
-        next = else_block;
-    } else {
-        next = end_block;
-    }
-    auto *switch_inst = builder.CreateSwitch(case_value, next);
+    auto *switch_inst = builder.CreateSwitch(case_value, range_block);
 
     i = 0;
     for (auto const &element : ast->elements) {
         debug("CodeGenerator::visit_ASTCase {0}", i);
         std::for_each(begin(element->exprs), end(element->exprs),
-                      [this, switch_inst, element_blocks, i](auto &expr) {
+                      [this, switch_inst, element_blocks, i, &range_list](auto &expr) {
                           if (std::holds_alternative<ASTSimpleExprPtr>(expr)) {
+                              debug("CodeGenerator::visit_ASTCase {0} expr", i);
                               std::get<ASTSimpleExprPtr>(expr)->accept(this);
                               assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
                               switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
                                                    element_blocks[i]);
+                          } else if (std::holds_alternative<ASTRangePtr>(expr)) {
+                              debug("CodeGenerator::visit_ASTCase {0} range", i);
+                              auto range = std::get<ASTRangePtr>(expr);
+                              range_list.push_back({range, i});
                           }
                       });
         i++;
+    }
+
+    funct->getBasicBlockList().push_back(range_block);
+    builder.SetInsertPoint(range_block);
+
+    // Go through Range values
+    if (!range_list.empty()) {
+        std::vector<BasicBlock *> range_blocks;
+        i = 0;
+        std::for_each(begin(range_list), end(range_list), [&](auto const & /*not used*/) {
+            auto *block = BasicBlock::Create(context, formatv("case.range{0}", i));
+            range_blocks.push_back(block);
+            i++;
+        });
+        i = 0;
+        builder.CreateBr(range_blocks[0]);
+        for (auto &p : range_list) {
+            funct->getBasicBlockList().push_back(range_blocks[i]);
+            builder.SetInsertPoint(range_blocks[i]);
+            visit_ASTRange_value(p.first, case_value);
+
+            BasicBlock *next = nullptr;
+            if (i == range_list.size() - 1) {
+                if (!ast->else_stats.empty()) {
+                    next = else_block;
+                } else {
+                    next = end_block;
+                }
+            } else {
+                next = range_blocks[i + 1];
+            }
+            builder.CreateCondBr(last_value, element_blocks[p.second], next);
+            i++;
+        }
+    } else {
+        BasicBlock *next = nullptr;
+        if (!ast->else_stats.empty()) {
+            next = else_block;
+        } else {
+            next = end_block;
+        }
+        builder.CreateBr(next);
     }
 
     i = 0;
@@ -591,10 +636,8 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
 
         funct->getBasicBlockList().push_back(element_blocks[i]);
         builder.SetInsertPoint(element_blocks[i]);
-        std::for_each(begin(element->stats), end(element->stats), [this](auto const &s) {
-            llvm::dbgs() << std::string(*s) << '\n';
-            s->accept(this);
-        });
+        std::for_each(begin(element->stats), end(element->stats),
+                      [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
         if (!element_blocks[i]->back().isTerminator()) {
             builder.CreateBr(end_block);
@@ -884,6 +927,15 @@ void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
                               }
                           }},
                ast->factor);
+}
+
+void CodeGenerator::visit_ASTRange_value(ASTRangePtr ast, Value *case_value) {
+    debug("CodeGenerator::visit_ASTRange");
+    ast->first->accept(this);
+    auto *low = builder.CreateICmpSLE(last_value, case_value);
+    ast->last->accept(this);
+    auto *high = builder.CreateICmpSLE(case_value, last_value);
+    last_value = builder.CreateAnd(low, high);
 }
 
 void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {

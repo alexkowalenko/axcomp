@@ -65,6 +65,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
     void visit_ASTTerm(ASTTermPtr ast) override;
     void visit_ASTFactor(ASTFactorPtr ast) override;
+    void visit_ASTRange_value(ASTRangePtr ast, Value *case_value);
     void get_index(ASTDesignatorPtr const &ast);
     void visit_ASTDesignator(ASTDesignatorPtr ast) override;
     void visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast);

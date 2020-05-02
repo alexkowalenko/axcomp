@@ -24,31 +24,34 @@ loop:                                             ; preds = %case_end, %entry
   %0 = call i32 @CHR(i64 %addtmp)
   store i32 %0, i32* @case4_c
   %c = load i32, i32* @case4_c
-  switch i32 %c, label %else [
+  switch i32 %c, label %range [
     i32 65, label %case.element0
-    i32 66, label %case.element02
-    i32 67, label %case.element02
+    i32 66, label %case.element1
+    i32 67, label %case.element1
   ]
 
 afterloop:                                        ; preds = %case_end
   ret i64 0
+
+range:                                            ; preds = %loop
+  br label %else
 
 case.element0:                                    ; preds = %loop
   call void @Out_String([0 x i32]* @STRING_0)
   call void @Out_Ln()
   br label %case_end
 
-case.element02:                                   ; preds = %loop, %loop
+case.element1:                                    ; preds = %loop, %loop
   call void @Out_String([0 x i32]* @STRING_1)
   call void @Out_Ln()
   br label %case_end
 
-else:                                             ; preds = %loop
+else:                                             ; preds = %range
   call void @Out_String([0 x i32]* @STRING_2)
   call void @Out_Ln()
   br label %case_end
 
-case_end:                                         ; preds = %else, %case.element02, %case.element0
+case_end:                                         ; preds = %else, %case.element1, %case.element0
   %1 = load i64, i64* %i
   %nextvar = add i64 %1, 1
   store i64 %nextvar, i64* %i
