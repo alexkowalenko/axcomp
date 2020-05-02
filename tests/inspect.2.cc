@@ -272,6 +272,39 @@ TEST(Inspector, CASE) {
          ":= 2;\n| 'B', 'b', 'C' : x := 5;\nELSE\nx := 0\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
+        {R"(MODULE beta;
+            VAR x :INTEGER;
+
+            BEGIN
+                CASE x OF
+                    1..2 : x := 1;
+                |   5, 6..8, 9 :  x := 5;
+                |   10..11, 12..15, 16 : x := 10;
+                ELSE
+                    x := 20;
+                END
+                RETURN 0
+            END beta.)",
+         "MODULE beta;\nVAR\nx: INTEGER;\nBEGIN\nCASE x OF\n1..2 : x := 1;\n| 5, 6..8, 9 : x := "
+         "5;\n| 10..11, 12..15, 16 : x := 10;\nELSE\nx := 20\nEND;\nRETURN 0\nEND beta.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR c : CHAR;
+            BEGIN
+                CASE c OF
+                    'A' : c := 'a';
+                |   'B', 'C' : c := 'b';
+                |   'D' .. 'F' : c := 'd';
+                ELSE
+                    c := 'g';
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nc: CHAR;\nBEGIN\nCASE c OF\n'A' : c := 'a';\n| 'B', 'C' : c := "
+         "'b';\n| 'D'..'F' : c := 'd';\nELSE\nc := 'g'\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE alpha;
             VAR x : INTEGER;
@@ -303,6 +336,54 @@ TEST(Inspector, CASE) {
             END alpha.)",
          "",
          "6,21: CASE expression mismatch type INTEGER does not match CASE expression type CHAR"},
+
+        {R"(MODULE beta;
+            VAR x :INTEGER;
+            BEGIN
+                CASE x OF
+                    'a'..2 : x := 1;
+                END
+                RETURN 0
+            END beta.)",
+         "",
+         "5,25: CASE expression range mismatch first type CHAR does not match CASE expression "
+         "type INTEGER"},
+
+        {R"(MODULE beta;
+            VAR x :INTEGER;
+            BEGIN
+                CASE x OF
+                    1..'z' : x := 1;
+                END
+                RETURN 0
+            END beta.)",
+         "",
+         "5,23: CASE expression range mismatch last type CHAR does not match CASE expression type "
+         "INTEGER"},
+
+        {R"(MODULE alpha;
+            VAR c : CHAR;
+            BEGIN
+                CASE c OF
+                |   1..'F' : c := 'd';
+                END
+                RETURN 0;
+            END alpha.)",
+         "",
+         "5,23: CASE expression range mismatch first type INTEGER does not match CASE expression "
+         "type CHAR"},
+
+        {R"(MODULE alpha;
+            VAR c : CHAR;
+            BEGIN
+                CASE c OF
+                |   'D'..99 : c := 'd';
+                END
+                RETURN 0;
+            END alpha.)",
+         "",
+         "5,25: CASE expression range mismatch last type INTEGER does not match CASE expression "
+         "type CHAR"},
 
     };
     do_inspect_tests(tests);

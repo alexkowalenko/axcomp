@@ -325,7 +325,7 @@ TEST(Parser, CASE) {
                 RETURN 0;
             END alpha.)",
          "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n| 2 : Out.String('Two');\n| 3 "
-         ": Out.String('Three');\nELSE\nEND;\nRETURN 0\nEND alpha.",
+         ": Out.String('Three');\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -337,7 +337,7 @@ TEST(Parser, CASE) {
                 RETURN 0;
             END alpha.)",
          "MODULE alpha;\nBEGIN\nCASE i OF\n1 : Out.String('One');\n| 2 : "
-         "Out.String('Two');\nELSE\nEND;\nRETURN 0\nEND alpha.",
+         "Out.String('Two');\nEND;\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha; (* CASE *)
@@ -355,7 +355,48 @@ TEST(Parser, CASE) {
             END alpha.)",
          "MODULE alpha;\nIMPORT Out;\nBEGIN\nFOR i := 1 TO 4 DO\nCASE i OF\n1 : "
          "Out.String('One');\n| 2 : Out.String('Two');\n| 3, 4, 5 : "
-         "Out.String('More');\nELSE\nEND;\nOut.Ln()\nEND;\nRETURN 0\nEND alpha.",
+         "Out.String('More');\nEND;\nOut.Ln()\nEND;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE beta;
+            IMPORT Out;
+            VAR x :INTEGER;
+
+            BEGIN
+                CASE x OF
+                    1..2 : Out.String("A"); Out.Ln;
+                |   5, 6..8, 9 : Out.String("B,C"); Out.Ln;
+                |   10..11, 12..15, 16 : Out.String("D-F"); Out.Ln;
+                ELSE
+                    Out.String('D-Z'); Out.Ln;
+                END
+                RETURN 0
+            END beta.)",
+         "MODULE beta;\nIMPORT Out;\nVAR\nx: INTEGER;\nBEGIN\nCASE x OF\n1..2 : "
+         "Out.String(\"A\");\nOut.Ln();\n| 5, 6..8, 9 : Out.String(\"B,C\");\nOut.Ln();\n| "
+         "10..11, 12..15, 16 : "
+         "Out.String(\"D-F\");\nOut.Ln();\nELSE\nOut.String('D-Z');\nOut.Ln()\nEND;\nRETURN "
+         "0\nEND beta.",
+         ""},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            VAR c : CHAR;
+
+            BEGIN
+                CASE c OF
+                    'A' : Out.String("A"); Out.Ln;
+                |   'B', 'C' : Out.String("B,C"); Out.Ln;
+                |   'D' .. 'F' : Out.String("D-F"); Out.Ln;
+                ELSE
+                    Out.String('D-Z'); Out.Ln;
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT Out;\nVAR\nc: CHAR;\nBEGIN\nCASE c OF\n'A' : "
+         "Out.String(\"A\");\nOut.Ln();\n| 'B', 'C' : Out.String(\"B,C\");\nOut.Ln();\n| 'D'..'F' "
+         ": Out.String(\"D-F\");\nOut.Ln();\nELSE\nOut.String('D-Z');\nOut.Ln()\nEND;\nRETURN "
+         "0\nEND alpha.",
          ""},
 
         // Errors

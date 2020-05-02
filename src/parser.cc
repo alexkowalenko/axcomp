@@ -606,15 +606,36 @@ ASTIfPtr Parser::parse_if() {
     return stat;
 };
 
+/**
+ * @brief CaseLabels = ConstExpression ["..." ConstExpression].
+ *
+ * ConstExpr = SimpleExpr.
+ *
+ * @return std::variant<ASTSimpleExprPtr, ASTRangePtr>
+ */
+
+std::variant<ASTSimpleExprPtr, ASTRangePtr> Parser::parse_caseLabel() {
+    debug("Parser::parse_caseLabel");
+    auto e = parse_simpleexpr();
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::dotdot) {
+        lexer.get_token(); // ..
+        auto range = makeAST<ASTRange>(lexer);
+        range->first = e;
+        range->last = parse_simpleexpr();
+        return std::variant<ASTSimpleExprPtr, ASTRangePtr>(range);
+    } else {
+        return std::variant<ASTSimpleExprPtr, ASTRangePtr>(e);
+    }
+}
+
 inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::else_k,
                                                    TokenType::end};
 
 /**
  * @brief  = [CaseLabelList ":" StatementSequence].
  *
- * CaseLabelList = ConstExpression ["..." ConstExpression].
- *
- * ConstExpr = SimpleExpr.
+ * CaseLabelList = CaseLabels {"," CaseLabels}.
  *
  * @return std::vector<ASTCaseElementPtr>
  */
@@ -630,9 +651,10 @@ void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
         debug("Parser::parse_caseElement {0}", std::string(tok));
         auto element = makeAST<ASTCaseElement>(lexer);
 
-        while (true) {
-            auto e = parse_simpleexpr();
-            element->expr.push_back(e);
+        while (tok.type != TokenType::colon) {
+            auto v = parse_caseLabel();
+            element->exprs.push_back(v);
+
             tok = lexer.peek_token();
             if (tok.type != TokenType::comma) {
                 break;
@@ -1164,5 +1186,4 @@ ASTBoolPtr Parser::parse_boolean() {
 ASTModulePtr Parser::parse() {
     return parse_module();
 }
-
 }; // namespace ax

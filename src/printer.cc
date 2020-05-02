@@ -197,9 +197,16 @@ void ASTPrinter::visit_ASTIf(ASTIfPtr ast) {
 }
 
 void ASTPrinter::visit_ASTCaseElement(ASTCaseElementPtr ast) {
-    std::for_each(begin(ast->expr), end(ast->expr), [this, ast](auto const &e) {
-        e->accept(this);
-        if (e != ast->expr.back()) {
+    std::for_each(begin(ast->exprs), end(ast->exprs), [this, ast](auto const &e) {
+        if (std::holds_alternative<ASTSimpleExprPtr>(e)) {
+            std::get<ASTSimpleExprPtr>(e)->accept(this);
+        } else if (std::holds_alternative<ASTRangePtr>(e)) {
+            auto casexpr = std::get<ASTRangePtr>(e);
+            casexpr->first->accept(this);
+            os << "..";
+            casexpr->last->accept(this);
+        }
+        if (e != ast->exprs.back()) {
             os << ", ";
         }
     });
@@ -232,11 +239,11 @@ void ASTPrinter::visit_ASTCase(ASTCasePtr ast) {
         i++;
     });
     pop();
-    if (!ast->elements.empty()) {
+    if (!ast->else_stats.empty()) {
         os << indent() << "ELSE\n";
         print_stats(ast->else_stats);
-        os << indent() << "END";
     }
+    os << indent() << "END";
 } // namespace ax
 
 void ASTPrinter::visit_ASTFor(ASTForPtr ast) {

@@ -419,8 +419,8 @@ class ASTCaseElement : public ASTStatement, public std::enable_shared_from_this<
 
     void accept(ASTVisitor *v) override { v->visit_ASTCaseElement(shared_from_this()); };
 
-    std::vector<ASTSimpleExprPtr> expr;
-    std::vector<ASTStatementPtr>  stats;
+    std::vector<std::variant<ASTSimpleExprPtr, ASTRangePtr>> exprs;
+    std::vector<ASTStatementPtr>                             stats;
 };
 using ASTCaseElementPtr = std::shared_ptr<ASTCaseElement>;
 

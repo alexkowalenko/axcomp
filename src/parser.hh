@@ -7,6 +7,7 @@
 #pragma once
 
 #include <set>
+#include <variant>
 #include <vector>
 
 #include "ast.hh"
@@ -47,6 +48,7 @@ class Parser {
 
     ASTCasePtr parse_case();
     void       parse_caseElements(std::vector<ASTCaseElementPtr> &elements);
+    std::variant<ASTSimpleExprPtr, ASTRangePtr> parse_caseLabel();
 
     ASTForPtr        parse_for();
     ASTWhilePtr      parse_while();

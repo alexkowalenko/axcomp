@@ -146,6 +146,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                         funcType, Function::LinkageTypes::ExternalLinkage, name, module.get());
                     verifyFunction(*func);
                     symboltable.set_value(name, func);
+                    debug("CodeGenerator::visit_ASTImport proc {0} set ", name);
                 }
             } else {
                 // Should be not here
@@ -423,6 +424,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
 }
 
 void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
+    debug("CodeGenerator::visit_ASTCall");
     auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
 
@@ -431,7 +433,8 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         last_value = f(this, ast);
         return;
     }
-    auto  args = do_arguments(ast);
+    auto args = do_arguments(ast);
+    assert(res->value);
     auto *callee = llvm::dyn_cast<Function>(res->value);
     last_value = builder.CreateCall(callee, args);
 }
@@ -570,14 +573,15 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     i = 0;
     for (auto const &element : ast->elements) {
         debug("CodeGenerator::visit_ASTCase {0}", i);
-        std::for_each(begin(element->expr), end(element->expr),
+        std::for_each(begin(element->exprs), end(element->exprs),
                       [this, switch_inst, element_blocks, i](auto &expr) {
-                          expr->accept(this);
-                          assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
-                          switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
-                                               element_blocks[i]);
+                          if (std::holds_alternative<ASTSimpleExprPtr>(expr)) {
+                              std::get<ASTSimpleExprPtr>(expr)->accept(this);
+                              assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
+                              switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
+                                                   element_blocks[i]);
+                          }
                       });
-
         i++;
     }
 
@@ -587,9 +591,10 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
 
         funct->getBasicBlockList().push_back(element_blocks[i]);
         builder.SetInsertPoint(element_blocks[i]);
-        std::for_each(begin(element->stats), end(element->stats),
-                      [this](auto const &s) { s->accept(this); });
-
+        std::for_each(begin(element->stats), end(element->stats), [this](auto const &s) {
+            llvm::dbgs() << std::string(*s) << '\n';
+            s->accept(this);
+        });
         // check if last instruction is branch (EXIT)
         if (!element_blocks[i]->back().isTerminator()) {
             builder.CreateBr(end_block);
@@ -867,7 +872,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
 }
 
 void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
-    debug("CodeGenerator::visit_ASTFactor");
+    debug("CodeGenerator::visit_ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
                           [this, ast](ASTFactorPtr const &arg) {
@@ -1012,7 +1017,7 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
 }
 
 void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
-
+    debug("CodeGenerator::visit_ASTString {0}", ast->value);
     std::string name = llvm::formatv("STRING_{0}", string_const++);
     module->getOrInsertGlobal(name, TypeTable::StrType->make_type(ast->value));
 
