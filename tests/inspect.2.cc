@@ -402,28 +402,28 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x[1] + 1
                 END alpha.)",
-         "", "4,28: types in expression don't match BOOLEAN and INTEGER"},
+         "", "4,28: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x3 : ARRAY 6 OF BOOLEAN;
                 BEGIN
                     RETURN x3[0] + 1
                 END alpha.)",
-         "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
+         "", "4,29: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     RETURN x2[0] + 1
                 END alpha.)",
-         "", "4,29: types in expression don't match INTEGER[5] and INTEGER"},
+         "", "4,29: operator + doesn't takes types INTEGER[5] and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
                 BEGIN
                     RETURN x2[0][0] + 1
                 END alpha.)",
-         "", "4,29: types in expression don't match BOOLEAN and INTEGER"},
+         "", "4,29: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;

@@ -43,7 +43,43 @@ void TypeTable::initialise() {
     put(std::string(*VoidType), VoidType);
     AnyType = std::make_shared<SimpleType>("any", TypeId::any);
     put(std::string(*AnyType), AnyType);
-}
+
+    // Type Rules
+
+    reg(TokenType::tilde, BoolType);
+
+    reg(TokenType::plus, IntType, IntType);
+    reg(TokenType::dash, IntType, IntType);
+    reg(TokenType::asterisk, IntType, IntType);
+    reg(TokenType::div, IntType, IntType);
+    reg(TokenType::mod, IntType, IntType);
+
+    reg(TokenType::equals, IntType, IntType);
+    reg(TokenType::hash, IntType, IntType);
+    reg(TokenType::less, IntType, IntType);
+    reg(TokenType::leq, IntType, IntType);
+    reg(TokenType::greater, IntType, IntType);
+    reg(TokenType::gteq, IntType, IntType);
+
+    reg(TokenType::ampersand, BoolType, BoolType);
+    reg(TokenType::or_k, BoolType, BoolType);
+    reg(TokenType::equals, BoolType, BoolType);
+    reg(TokenType::hash, BoolType, BoolType);
+
+    reg(TokenType::equals, CharType, CharType);
+    reg(TokenType::hash, CharType, CharType);
+
+    // assignment
+    reg(TokenType::assign, IntType, IntType);
+    reg(TokenType::assign, BoolType, BoolType);
+    reg(TokenType::assign, CharType, CharType);
+    reg(TokenType::assign, StrType, StrType);
+
+    reg(TokenType::assign, IntType, AnyType); // Any type can be assigned to anything
+    reg(TokenType::assign, BoolType, AnyType);
+    reg(TokenType::assign, CharType, AnyType);
+    reg(TokenType::assign, StrType, AnyType);
+} // namespace ax
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
     debug("TypeTable::setTypes");
@@ -78,6 +114,34 @@ std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
         }
         name = alias->get_alias()->get_name();
     }
+}
+
+bool TypeTable::check(TokenType op, TypePtr type) {
+    auto range = rules1.equal_range(op);
+    for (auto i = range.first; i != range.second; ++i) {
+        if (i->second == type) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TypeTable::check(TokenType op, TypePtr L, TypePtr R) {
+    auto range = rules2.equal_range(op);
+    for (auto i = range.first; i != range.second; ++i) {
+        if (i->second.first == L && i->second.second == R) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void TypeTable::reg(TokenType op, TypePtr type) {
+    rules1.insert({op, type});
+}
+
+void TypeTable::reg(TokenType op, TypePtr L, TypePtr R) {
+    rules2.insert({op, {L, R}});
 }
 
 } // namespace ax

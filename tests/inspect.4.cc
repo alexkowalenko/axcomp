@@ -53,7 +53,7 @@ TEST(Inspector, CHAR) {
                 x := 'a' - 1;
                 RETURN
             END alpha.)",
-         "", "4,20: types in expression don't match CHAR and INTEGER"},
+         "", "4,20: operator - doesn't takes types CHAR and INTEGER"},
 
         {R"(MODULE alpha;
             VAR x : ARRAY 3 OF CHAR;
@@ -69,7 +69,7 @@ TEST(Inspector, CHAR) {
                 x[0] := 1 * 'a';
                 RETURN
             END alpha.)",
-         "", "4,25: types in expression don't match INTEGER and CHAR"},
+         "", "4,25: operator * doesn't takes types INTEGER and CHAR"},
 
     };
     do_inspect_tests(tests);
@@ -127,7 +127,7 @@ TEST(Inspector, String) {
                 x := 1 + "HELLO";
                 RETURN
             END alpha.)",
-         "", "4,20: types in expression don't match INTEGER and STRING"},
+         "", "4,20: operator + doesn't takes types INTEGER and STRING"},
 
         {R"(MODULE alpha;
             TYPE strArray = ARRAY 3 OF STRING;

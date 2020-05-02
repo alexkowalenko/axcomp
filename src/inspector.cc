@@ -17,6 +17,7 @@
 #include "ast.hh"
 #include "error.hh"
 #include "symbol.hh"
+#include "token.hh"
 #include "type.hh"
 #include "typetable.hh"
 
@@ -193,8 +194,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
     last_type = *alias;
-
-    if (expr_type->id != TypeId::any && !last_type->equiv(expr_type)) {
+    if (!types.check(TokenType::assign, last_type, expr_type)) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
                                          std::string(*expr_type), std::string(*ast->ident)),
                            ast->get_location());
@@ -423,10 +423,10 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
         is_lvalue = false;
         auto t1 = last_type;
         (*ast->relation_expr)->accept(this);
-        // Types have to be the same BOOLEANs or INTEGERs
-        if (!last_type->equiv(t1)) {
-            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
-                                             std::string(*t1), std::string(*last_type)),
+        if (!types.check(*ast->relation, t1, last_type)) {
+            auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
+                                             string(*ast->relation), std::string(*t1),
+                                             std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
         }
@@ -444,24 +444,12 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &t : ast->rest) {
         is_lvalue = false;
         t.second->accept(this);
-        if (!last_type->equiv(t1)) {
-            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
-                                             std::string(*t1), std::string(*last_type)),
+        if (!types.check(t.first, t1, last_type)) {
+            auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
+                                             string(t.first), std::string(*t1),
+                                             std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
-        }
-        if (t.first == TokenType::or_k) {
-            if (last_type != TypeTable::BoolType) {
-                auto e = TypeError("types in OR expression must be BOOLEAN", ast->get_location());
-                errors.add(e);
-            }
-        } else {
-            if (last_type != TypeTable::IntType) {
-                auto e = TypeError(
-                    llvm::formatv("types in {0} expression must be numeric", string(t.first)),
-                    ast->get_location());
-                errors.add(e);
-            }
         }
         t1 = last_type;
         c1 = c1 && is_const; // if both are const
@@ -476,24 +464,12 @@ void Inspector::visit_ASTTerm(ASTTermPtr ast) {
     for (auto const &t : ast->rest) {
         is_lvalue = false;
         t.second->accept(this);
-        if (!last_type->equiv(t1)) {
-            auto e = TypeError(llvm::formatv("types in expression don't match {0} and {1}",
-                                             std::string(*t1), std::string(*last_type)),
+        if (!types.check(t.first, t1, last_type)) {
+            auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
+                                             string(t.first), std::string(*t1),
+                                             std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
-        }
-        if (t.first == TokenType::ampersand) {
-            if (last_type != TypeTable::BoolType) {
-                auto e = TypeError("types in & expression must be BOOLEAN", ast->get_location());
-                errors.add(e);
-            }
-        } else {
-            if (last_type != TypeTable::IntType) {
-                auto e = TypeError(
-                    llvm::formatv("types in {0} expression must be numeric", string(t.first)),
-                    ast->get_location());
-                errors.add(e);
-            }
         }
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
@@ -513,7 +489,7 @@ void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
                    [this, ast](ASTFactorPtr const &arg) {
                        if (ast->is_not) {
                            arg->accept(this);
-                           if (last_type != TypeTable::BoolType) {
+                           if (!types.check(TokenType::tilde, last_type)) {
                                auto e = TypeError("type in ~ expression must be BOOLEAN",
                                                   ast->get_location());
                                errors.add(e);

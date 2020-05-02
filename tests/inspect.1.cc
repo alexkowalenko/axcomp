@@ -411,12 +411,12 @@ TEST(Inspector, ExprCompare) {
             BEGIN
             RETURN TRUE = 1
             END xxx.)",
-         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: operator = doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 # FALSE
             END xxx.)",
-         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: operator # doesn't takes types INTEGER and BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -435,22 +435,22 @@ TEST(Inspector, SimpleExpr) {
             BEGIN
             RETURN TRUE + 1
             END xxx.)",
-         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: operator + doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR FALSE
             END xxx.)",
-         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: operator OR doesn't takes types INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR 0
             END xxx.)",
-         "", "3,20: types in OR expression must be BOOLEAN"},
+         "", "3,20: operator OR doesn't takes types INTEGER and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN FALSE + FALSE
             END xxx.)",
-         "", "3,24: types in + expression must be numeric"},
+         "", "3,24: operator + doesn't takes types BOOLEAN and BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -469,22 +469,22 @@ TEST(Inspector, Term) {
             BEGIN
             RETURN TRUE * 1
             END xxx.)",
-         "", "3,23: types in expression don't match BOOLEAN and INTEGER"},
+         "", "3,23: operator * doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & FALSE
             END xxx.)",
-         "", "3,20: types in expression don't match INTEGER and BOOLEAN"},
+         "", "3,20: operator & doesn't takes types INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN TRUE DIV FALSE
             END xxx.)",
-         "", "3,23: types in DIV expression must be numeric"},
+         "", "3,23: operator DIV doesn't takes types BOOLEAN and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & 23
             END xxx.)",
-         "", "3,20: types in & expression must be BOOLEAN"},
+         "", "3,20: operator & doesn't takes types INTEGER and INTEGER"},
     };
     do_inspect_tests(tests);
 }
