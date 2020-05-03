@@ -904,6 +904,9 @@ ASTFactorPtr Parser::parse_factor() {
         ast->factor = parse_integer();
         return ast;
     }
+    case TokenType::real:
+        ast->factor = parse_real();
+        return ast;
     case TokenType::hexchr:
     case TokenType::chr:
         ast->factor = parse_char();
@@ -1135,6 +1138,28 @@ ASTIntegerPtr Parser::parse_integer() {
     throw ParseException(
         llvm::formatv("Unexpected token: {0} - expecting integer", std::string(tok)),
         lexer.get_location());
+}
+
+ASTRealPtr Parser::parse_real() {
+    debug("Parser::parse_real");
+    auto ast = makeAST<ASTReal>(lexer);
+
+    auto tok = lexer.get_token();
+    ast->style = tok.val;
+    auto str = tok.val;
+    if (str.find('D') != std::string::npos) {
+        str.replace(str.find('D'), 1, "E");
+    }
+    try {
+        ast->value = std::stod(str);
+    } catch (std::invalid_argument &) {
+        throw ParseException(llvm::formatv("REAL number invalid argument: {0} ", tok.val),
+                             lexer.get_location());
+    } catch (std::out_of_range &) {
+        throw ParseException(llvm::formatv("REAL number out of range: {0} ", tok.val),
+                             lexer.get_location());
+    }
+    return ast;
 }
 
 /**

@@ -364,9 +364,9 @@ TEST(Parser, CASE) {
 
             BEGIN
                 CASE x OF
-                    1..2 : Out.String("A"); Out.Ln;
-                |   5, 6..8, 9 : Out.String("B,C"); Out.Ln;
-                |   10..11, 12..15, 16 : Out.String("D-F"); Out.Ln;
+                    1 .. 2 : Out.String("A"); Out.Ln;
+                |   5, 6 .. 8, 9 : Out.String("B,C"); Out.Ln;
+                |   10 .. 11, 12 .. 15, 16 : Out.String("D-F"); Out.Ln;
                 ELSE
                     Out.String('D-Z'); Out.Ln;
                 END
@@ -456,6 +456,28 @@ TEST(Parser, CASE) {
                 RETURN 0;
             END alpha.)",
          "", "7,23: Unexpected token: integer(4) - expecting :"},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            BEGIN
+                CASE i OF
+                    1 .. : Out.String('One');
+                END
+                Out.Ln;
+                RETURN 0;
+            END alpha.)",
+         "", "5,26: Unexpected token: :"},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            BEGIN
+                CASE i OF
+                    .. 3 : Out.String('One');
+                END
+                Out.Ln;
+                RETURN 0;
+            END alpha.)",
+         "", "5,22: Unexpected token: .."},
 
     };
     do_parse_tests(tests);

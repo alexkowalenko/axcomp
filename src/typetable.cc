@@ -8,6 +8,7 @@
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/Debug.h>
+#include <memory>
 
 namespace ax {
 
@@ -21,6 +22,7 @@ template <typename... T> static void debug(const T &... msg) {
 
 std::shared_ptr<IntegerType>   TypeTable::IntType;
 std::shared_ptr<BooleanType>   TypeTable::BoolType;
+std::shared_ptr<RealCType>     TypeTable::RealType;
 std::shared_ptr<CharacterType> TypeTable::CharType;
 std::shared_ptr<StringType>    TypeTable::StrType;
 TypePtr                        TypeTable::VoidType;
@@ -32,6 +34,9 @@ void TypeTable::initialise() {
 
     BoolType = std::make_shared<BooleanType>();
     put(std::string(*BoolType), BoolType);
+
+    RealType = std::make_shared<RealCType>();
+    put(std::string(*RealType), RealType);
 
     CharType = std::make_shared<CharacterType>();
     put(std::string(*CharType), CharType);
@@ -89,6 +94,9 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
 
     BoolType->set_llvm(llvm::Type::getInt1Ty(context));
     BoolType->set_init(BoolType->make_value(false));
+
+    RealType->set_llvm(llvm::Type::getDoubleTy(context));
+    RealType->set_init(RealType->make_value(0.0));
 
     CharType->set_llvm(llvm::Type::getInt32Ty(context));
     CharType->set_init(CharType->make_value(0));

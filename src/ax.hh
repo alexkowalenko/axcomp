@@ -17,6 +17,7 @@ constexpr int MAX_STR_LITTERAL = 65536;
 // Types used in implementation
 
 using Int = long;
+using Real = double;
 using Bool = bool;
 using Char = wchar_t;
 using String = wchar_t *;

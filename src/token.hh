@@ -37,9 +37,11 @@ enum class TokenType {
     r_bracket,
     dotdot,
     bar,
+    slash,
 
     integer,
     hexinteger,
+    real,
     chr,
     hexchr,
     string,

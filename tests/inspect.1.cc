@@ -614,6 +614,13 @@ TEST(Inspector, Const) {
          "60*seconds;\nBEGIN\nRETURN minutes\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha; (* REAL *)
+                CONST pi = 3.1415927;
+                BEGIN
+                    RETURN 0
+                END alpha.)",
+         "MODULE alpha;\nCONST\npi = 3.1415927;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
         // Errors
 
         {R"(MODULE alpha;

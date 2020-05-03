@@ -761,6 +761,12 @@ void Inspector::visit_ASTInteger(ASTIntegerPtr /* not used */) {
     is_lvalue = false;
 }
 
+void Inspector::visit_ASTReal(ASTRealPtr /* not used */) {
+    last_type = TypeTable::RealType;
+    is_const = true;
+    is_lvalue = false;
+}
+
 void Inspector::visit_ASTChar(ASTCharPtr /* not used */) {
     last_type = TypeTable::CharType;
     is_const = true;

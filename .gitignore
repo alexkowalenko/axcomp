@@ -14,3 +14,6 @@ compile_commands.json
 *.toc
 report.pdf
 *.synctex.gz
+__latexindent_temp.tex
+*.fdb_latexmk
+*.fls

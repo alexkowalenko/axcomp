@@ -277,9 +277,9 @@ TEST(Inspector, CASE) {
 
             BEGIN
                 CASE x OF
-                    1..2 : x := 1;
-                |   5, 6..8, 9 :  x := 5;
-                |   10..11, 12..15, 16 : x := 10;
+                    1 .. 2 : x := 1;
+                |   5, 6 .. 8, 9 :  x := 5;
+                |   10 .. 11, 12 .. 15, 16 : x := 10;
                 ELSE
                     x := 20;
                 END
@@ -341,7 +341,7 @@ TEST(Inspector, CASE) {
             VAR x :INTEGER;
             BEGIN
                 CASE x OF
-                    'a'..2 : x := 1;
+                    'a'.. 2 : x := 1;
                 END
                 RETURN 0
             END beta.)",
@@ -353,36 +353,36 @@ TEST(Inspector, CASE) {
             VAR x :INTEGER;
             BEGIN
                 CASE x OF
-                    1..'z' : x := 1;
+                    1 ..'z' : x := 1;
                 END
                 RETURN 0
             END beta.)",
          "",
-         "5,23: CASE expression range mismatch last type CHAR does not match CASE expression type "
+         "5,24: CASE expression range mismatch last type CHAR does not match CASE expression type "
          "INTEGER"},
 
         {R"(MODULE alpha;
             VAR c : CHAR;
             BEGIN
                 CASE c OF
-                |   1..'F' : c := 'd';
+                |   1 ..'F' : c := 'd';
                 END
                 RETURN 0;
             END alpha.)",
          "",
-         "5,23: CASE expression range mismatch first type INTEGER does not match CASE expression "
+         "5,24: CASE expression range mismatch first type INTEGER does not match CASE expression "
          "type CHAR"},
 
         {R"(MODULE alpha;
             VAR c : CHAR;
             BEGIN
                 CASE c OF
-                |   'D'..99 : c := 'd';
+                |   'D' .. 99 : c := 'd';
                 END
                 RETURN 0;
             END alpha.)",
          "",
-         "5,25: CASE expression range mismatch last type INTEGER does not match CASE expression "
+         "5,26: CASE expression range mismatch last type INTEGER does not match CASE expression "
          "type CHAR"},
 
     };

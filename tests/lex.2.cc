@@ -43,6 +43,7 @@ std::vector<LexTests> tests = {
     {"]", TokenType::r_bracket, "]"},
     {"..", TokenType::dotdot, ".."},
     {"|", TokenType::bar, "|"},
+    {"/", TokenType::slash, "/"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -156,6 +157,32 @@ TEST(LexerUTF8, UTF8) {
         {R"('λόγος')", TokenType::string, R"('λόγος)"},
         {R"('χαῖρε')", TokenType::string, R"('χαῖρε)"},
         {R"('Ça va?')", TokenType::string, R"('Ça va?)"},
+    };
+
+    do_lexUTF8_tests(tests);
+}
+
+TEST(Lexer, REAL) {
+
+    std::vector<LexTests> tests = {
+
+        // integer
+        {"1", TokenType::integer, "1"},
+
+        // float
+        {"1.", TokenType::real, "1."},
+        {"12.", TokenType::real, "12."},
+        {"12.0", TokenType::real, "12.0"},
+        {"1.2", TokenType::real, "1.2"},
+        {"1.23", TokenType::real, "1.23"},
+        {"0.123", TokenType::real, "0.123"},
+
+        // exponentials
+        {"1.E1", TokenType::real, "1.E1"},
+        {"12.E+2", TokenType::real, "12.E+2"},
+        {"1.2D-3", TokenType::real, "1.2D-3"},
+        {"1.23E+45", TokenType::real, "1.23E+45"},
+        {"0.123D-12", TokenType::real, "0.123D-12"},
     };
 
     do_lexUTF8_tests(tests);

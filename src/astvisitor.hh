@@ -71,6 +71,8 @@ class ASTIdentifier;
 using ASTIdentifierPtr = std::shared_ptr<ASTIdentifier>;
 class ASTInteger;
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
+class ASTReal;
+using ASTRealPtr = std::shared_ptr<ASTReal>;
 class ASTChar;
 using ASTCharPtr = std::shared_ptr<ASTChar>;
 class ASTString;
@@ -117,6 +119,7 @@ class ASTVisitor {
     virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/){};
     virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
     virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};
+    virtual void visit_ASTReal(ASTRealPtr /*not used*/){};
     virtual void visit_ASTChar(ASTCharPtr /*not used*/){};
     virtual void visit_ASTString(ASTStringPtr /*not used*/){};
     virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};

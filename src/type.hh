@@ -27,6 +27,7 @@ enum class TypeId {
     null, // void
     any,  // any - used to for multi type return values like MIN, MAX
     integer,
+    real,
     boolean,
     chr,
     procedure,
@@ -105,6 +106,18 @@ class BooleanType : public SimpleType {
     unsigned int    get_size() override {
         return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
     }
+
+    llvm::Value *min() override { return make_value(false); };
+    llvm::Value *max() override { return make_value(true); };
+};
+
+class RealCType : public SimpleType {
+  public:
+    explicit RealCType() : SimpleType("REAL", TypeId::real){};
+    ~RealCType() override = default;
+
+    llvm::Constant *make_value(Real f) { return llvm::ConstantFP::get(get_llvm(), f); }
+    unsigned int    get_size() override { return 8; } // 64 bit floats;
 
     llvm::Value *min() override { return make_value(false); };
     llvm::Value *max() override { return make_value(true); };

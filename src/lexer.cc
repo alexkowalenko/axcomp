@@ -59,6 +59,7 @@ const std::unordered_map<char, Token> single_tokens = {
     {'[', Token(TokenType::l_bracket, "[")},
     {']', Token(TokenType::r_bracket, "]")},
     {'|', Token(TokenType::bar, "|")},
+    {'/', Token(TokenType::slash, "/")},
 };
 
 } // namespace ax

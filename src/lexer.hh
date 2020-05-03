@@ -212,13 +212,40 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         get();
         return Token(TokenType::hexinteger, digit);
     }
+    if (c == '.') {
+        // float
+        get();
+        digit += c;
+        c = peek();
+        while (CharClass::isdigit(c)) {
+            get();
+            digit += c;
+            c = peek();
+        }
+        if (c == 'D' || c == 'E') {
+            get();
+            digit += c;
+            c = peek();
+        }
+        if (c == '+' || c == '-') {
+            get();
+            digit += c;
+            c = peek();
+        }
+        while (CharClass::isdigit(c)) {
+            get();
+            digit += c;
+            c = peek();
+        }
+        return Token(TokenType::real, digit);
+    }
     if (c == 'X') {
         // Characters in this format 0d34X
         get();
         return Token(TokenType::hexchr, digit);
     };
     return Token(TokenType::integer, digit);
-} // namespace ax
+}
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_ident(C c) {
     std::string ident;

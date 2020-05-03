@@ -48,22 +48,36 @@ Identifier = Letter {Letter | Digit | '_' }.
 
 Examples: \lstinline!x scan Oberon G3 first_Letter olá Liberté χαῖρε! 
 
-\item Numbers are (unsigned) integers. Integers are sequences of digits.
+\item Numbers are (unsigned) integers. Integers are sequences of digits. 
+If the constant is specified with the suffix \lstinline!H!, the representation is hexadecimal otherwise it is decimal.
 
 \begin{lstlisting}[style=ebnf]
-    integer = digit {digit} | digit {hexDigit} "H".
+integer = digit {digit} | digit {hexDigit} "H".
 
-    hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
+hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
 
-    digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
+digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 \end{lstlisting}
+
+A real number always contains a decimal point. Optionally it may also contain a decimal scale factor.
+The letter \lstinline!E! (or \lstinline!D!) means "times ten to the power of". A real number is of type \REAL.
+
+\begin{lstlisting}[style=ebnf]
+real = digit {digit} "." {digit} [ScaleFactor]. 
+
+ScaleFactor = ("E" | "D") ["+" | "-"] digit {digit}.
+\end{lstlisting}
+
+\begin{lstlisting}[style=example]
+    2020 0DH 12.3 4.567E8 0.55712566D-6
+\end{lstlisting} 
 
 \item \BOOLEAN\ constants are \TRUE\ and \FALSE. \label{bool-consts}
 
 \item Character constants are denoted by the ordinal number of the character in hexadecimal notation followed by the letter X or by the ASCII symbol of the character embraced by single quotes.
 
 \begin{lstlisting}[style=ebnf]
-    character = digit {hexDigit} "X" | "’" char "’".
+character = digit {hexDigit} "X" | "’" char "’".
 \end{lstlisting}
 
 \begin{lstlisting}[style=example]
@@ -74,7 +88,7 @@ CONST a = 'A';
 \item Strings are sequences of characters enclosed in single (\lstinline!'!) or double (\lstinline!"!) quote marks. The opening quote must be the same as the closing quote and must not occur within the string. The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
 
 \begin{lstlisting}[style=ebnf]
-    string = ' " ' {char} ' " ' | " ' " {char} " ' ".
+string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 \end{lstlisting}
 
 \begin{lstlisting}[style=example]
@@ -84,11 +98,11 @@ CONST a = 'A';
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}[style=example]
-    + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; 
++ := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | ..
     
-    ARRAY BEGIN BY CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT LOOP
-    MOD MODULE OF OR PROCEDURE RECORD REPEAT RETURN TO THEN TYPE UNTIL
-    VAR WHILE
+ARRAY BEGIN BY CASE CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT LOOP
+MOD MODULE OF OR PROCEDURE RECORD REPEAT RETURN THEN TO TYPE UNTIL
+VAR WHILE
 \end{lstlisting}
 
 \item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between (* *). 
@@ -122,10 +136,24 @@ IdentDef = ident ["*" | "-"].
 The following identifiers are predefined; their meaning is defined in the indicated sections:
 \begin{tabbing}
     XXXXXXXXXX \= \kill
+    \ABS \> (\ref{predefined}) \\
+    \ASH \> (\ref{predefined}) \\
     \BOOLEAN \> (\ref{types-basic}) \\
+    \CAP \> (\ref{predefined}) \\
     \CHAR \> (\ref{types-basic}) \\
+    \COPY \> (\ref{predefined}) \\
+    \DEC \> (\ref{predefined}) \\
     \FALSE \> (\ref{bool-consts}) \\
+    \HALT \> (\ref{predefined}) \\
+    \INC \> (\ref{predefined}) \\
     \INTEGER \> (\ref{types-basic}) \\
+    \LEN \> (\ref{predefined}) \\
+    \MAX \> (\ref{predefined}) \\
+    \MIN \> (\ref{predefined}) \\
+    \ODD \> (\ref{predefined}) \\
+    \ORD \> (\ref{predefined}) \\
+    \REAL \> (\ref{types-basic}) \\
+    \SIZE \> (\ref{predefined}) \\
     \STRING \> (\ref{types-basic}) \\
     \TRUE \>  (\ref{bool-consts}) \\
     \WriteInt \> (\ref{predefined}) \\
@@ -176,10 +204,16 @@ The following basic types are denoted by predeclared identifiers. The associated
 
 \begin{enumerate}
     \item \BOOLEAN\ -- the truth values \TRUE\ and \FALSE.
-    \item \INTEGER\ -- the integers of a 64-bit signed integer.
-    \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode).
+    \item \INTEGER\ -- the integers of a 64-bit signed integer, between \MIN(\INTEGER)\ and \MAX(\INTEGER).
+    \item \REAL\ -- double precision floating point type. Usually IEEE-754 64 bit floating point, numbers between \MIN(\REAL) and \MAX(\REAL).
+    \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode), between \MIN(\CHAR)\ and \MAX(\CHAR).
     \item \STRING\ -- character array type. Equivalent to \ARRAY\ of \CHAR, but with length unspecified.
 \end{enumerate}
+
+Types \INTEGER\ and \REAL\ together they are called numeric types. They form a hierarchy; the larger type includes (the values of) the smaller type:
+\begin{quote}
+    \REAL\ $\supseteq$ \INTEGER\
+\end{quote}
 
 \subsection{Array types}
 
@@ -809,9 +843,13 @@ Qualident = [ident "."] ident.
 
 IdentDef = ident [" * " | "-"].
 
-number = integer.
+number = integer | real.
 
 integer = digit {digit} | digit {hexDigit} "H".
+
+real = digit {digit} "." {digit} [ScaleFactor]. 
+
+ScaleFactor = ("E" | "D") ["+" | "-"] digit {digit}.
 
 hexDigit = digit|"A"|"B"|"C"|"D"|"E"|"F"|"a"|"b"|"c"|"d"|"e"|"f".
 

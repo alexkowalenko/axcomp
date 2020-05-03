@@ -46,6 +46,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::r_bracket, "]"},
     {TokenType::dotdot, ".."},
     {TokenType::bar, "|"},
+    {TokenType::slash, "/"},
 
     // Keywords
     {TokenType::module, "MODULE"},

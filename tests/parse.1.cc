@@ -159,3 +159,29 @@ TEST(Parser, HexDigits) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, REAL) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* REAL *)
+            CONST c = 1.2;
+                d = 1.2E+2;
+                f = 2.3D+2;
+                h = 0.23D-8;
+            BEGIN
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nCONST\nc = 1.2;\nd = 1.2E+2;\nf = 2.3D+2;\nh = 0.23D-8;\nBEGIN\nRETURN "
+         "0\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha; (* REAL *)
+            CONST c = .E;
+            BEGIN
+                RETURN 0;
+            END alpha.)",
+         "", "2,23: Unexpected token: period"},
+    };
+    do_parse_tests(tests);
+}

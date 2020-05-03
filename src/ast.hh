@@ -63,6 +63,17 @@ class ASTInteger : public ASTBase, public std::enable_shared_from_this<ASTIntege
 };
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
 
+class ASTReal : public ASTBase, public std::enable_shared_from_this<ASTReal> {
+  public:
+    ~ASTReal() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTReal(shared_from_this()); };
+
+    Real        value{0.0};
+    std::string style;
+};
+using ASTRealPtr = std::shared_ptr<ASTReal>;
+
 class ASTBool : public ASTBase, public std::enable_shared_from_this<ASTBool> {
   public:
     ~ASTBool() override = default;
@@ -232,6 +243,7 @@ using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
  * @brief factor -> designator
  *                  | procedureCall
  *                  | INTEGER
+ *                  | REAL
  *                  | "TRUE" | "FALSE"
  *                  | character
  *                  | string
@@ -245,8 +257,8 @@ class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor>
 
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
 
-    std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr, ASTCharPtr,
-                 ASTStringPtr, ASTFactorPtr>
+    std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTRealPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr,
+                 ASTCharPtr, ASTStringPtr, ASTFactorPtr>
          factor;
     bool is_not = false;
 };

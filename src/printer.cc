@@ -403,6 +403,10 @@ void ASTPrinter::visit_ASTInteger(ASTIntegerPtr ast) {
     };
 }
 
+void ASTPrinter::visit_ASTReal(ASTRealPtr ast) {
+    os << ast->style;
+}
+
 void ASTPrinter::visit_ASTChar(ASTCharPtr ast) {
     if (ast->hex) {
         os << std::hex << '0' << int(ast->value) << 'X' << std::dec;
