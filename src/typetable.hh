@@ -20,6 +20,17 @@
 
 namespace ax {
 
+struct TypeRule1 {
+    TypePtr value;
+    TypePtr result;
+};
+
+struct TypeRule2 {
+    TypePtr L;
+    TypePtr R;
+    TypePtr result;
+};
+
 class TypeTable : public SymbolTable<TypePtr> {
   public:
     TypeTable() : SymbolTable(nullptr){};
@@ -37,7 +48,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return true - operator accepts the this type
      * @return false
      */
-    bool check(TokenType op, TypePtr type);
+    std::optional<TypePtr> check(TokenType op, TypePtr const &type);
 
     /**
      * @brief  Check two argument operator with types
@@ -49,7 +60,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return false
      */
 
-    bool check(TokenType op, TypePtr L, TypePtr R);
+    std::optional<TypePtr> check(TokenType op, TypePtr const &L, TypePtr const &R);
 
     // Standard types
     static std::shared_ptr<IntegerType>   IntType;
@@ -61,11 +72,11 @@ class TypeTable : public SymbolTable<TypePtr> {
     static TypePtr                        AnyType;
 
   private:
-    void reg(TokenType op, TypePtr type);
-    void reg(TokenType op, TypePtr L, TypePtr R);
+    void reg(TokenType op, TypePtr const &type, TypePtr const &result);
+    void reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result);
 
-    std::multimap<TokenType, TypePtr>                     rules1;
-    std::multimap<TokenType, std::pair<TypePtr, TypePtr>> rules2;
+    std::multimap<TokenType, TypeRule1> rules1;
+    std::multimap<TokenType, TypeRule2> rules2;
 };
 
 } // namespace ax

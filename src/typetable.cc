@@ -51,39 +51,59 @@ void TypeTable::initialise() {
 
     // Type Rules
 
-    reg(TokenType::tilde, BoolType);
+    reg(TokenType::tilde, BoolType, BoolType);
 
-    reg(TokenType::plus, IntType, IntType);
-    reg(TokenType::dash, IntType, IntType);
-    reg(TokenType::asterisk, IntType, IntType);
-    reg(TokenType::div, IntType, IntType);
-    reg(TokenType::mod, IntType, IntType);
+    reg(TokenType::plus, IntType, IntType, IntType);
+    reg(TokenType::plus, IntType, RealType, RealType);
+    reg(TokenType::plus, RealType, IntType, RealType);
+    reg(TokenType::plus, RealType, RealType, RealType);
 
-    reg(TokenType::equals, IntType, IntType);
-    reg(TokenType::hash, IntType, IntType);
-    reg(TokenType::less, IntType, IntType);
-    reg(TokenType::leq, IntType, IntType);
-    reg(TokenType::greater, IntType, IntType);
-    reg(TokenType::gteq, IntType, IntType);
+    reg(TokenType::dash, IntType, IntType, IntType);
+    reg(TokenType::dash, IntType, RealType, RealType);
+    reg(TokenType::dash, RealType, IntType, RealType);
+    reg(TokenType::dash, RealType, RealType, RealType);
 
-    reg(TokenType::ampersand, BoolType, BoolType);
-    reg(TokenType::or_k, BoolType, BoolType);
-    reg(TokenType::equals, BoolType, BoolType);
-    reg(TokenType::hash, BoolType, BoolType);
+    reg(TokenType::asterisk, IntType, IntType, IntType);
+    reg(TokenType::asterisk, IntType, RealType, RealType);
+    reg(TokenType::asterisk, RealType, IntType, RealType);
+    reg(TokenType::asterisk, RealType, RealType, RealType);
 
-    reg(TokenType::equals, CharType, CharType);
-    reg(TokenType::hash, CharType, CharType);
+    reg(TokenType::slash, IntType, IntType, IntType);
+    reg(TokenType::slash, IntType, RealType, RealType);
+    reg(TokenType::slash, RealType, IntType, RealType);
+    reg(TokenType::slash, RealType, RealType, RealType);
+
+    reg(TokenType::div, IntType, IntType, IntType);
+    reg(TokenType::mod, IntType, IntType, IntType);
+
+    // logical operators
+    reg(TokenType::equals, IntType, IntType, BoolType);
+    reg(TokenType::hash, IntType, IntType, BoolType);
+    reg(TokenType::less, IntType, IntType, BoolType);
+    reg(TokenType::leq, IntType, IntType, BoolType);
+    reg(TokenType::greater, IntType, IntType, BoolType);
+    reg(TokenType::gteq, IntType, IntType, BoolType);
+
+    reg(TokenType::ampersand, BoolType, BoolType, BoolType);
+    reg(TokenType::or_k, BoolType, BoolType, BoolType);
+    reg(TokenType::equals, BoolType, BoolType, BoolType);
+    reg(TokenType::hash, BoolType, BoolType, BoolType);
+
+    reg(TokenType::equals, CharType, CharType, BoolType);
+    reg(TokenType::hash, CharType, CharType, BoolType);
 
     // assignment
-    reg(TokenType::assign, IntType, IntType);
-    reg(TokenType::assign, BoolType, BoolType);
-    reg(TokenType::assign, CharType, CharType);
-    reg(TokenType::assign, StrType, StrType);
+    reg(TokenType::assign, IntType, IntType, VoidType);
+    reg(TokenType::assign, BoolType, BoolType, VoidType);
+    reg(TokenType::assign, RealType, RealType, VoidType);
+    reg(TokenType::assign, CharType, CharType, VoidType);
+    reg(TokenType::assign, StrType, StrType, VoidType);
 
-    reg(TokenType::assign, IntType, AnyType); // Any type can be assigned to anything
-    reg(TokenType::assign, BoolType, AnyType);
-    reg(TokenType::assign, CharType, AnyType);
-    reg(TokenType::assign, StrType, AnyType);
+    reg(TokenType::assign, IntType, AnyType, VoidType); // Any type can be assigned to anything
+    reg(TokenType::assign, BoolType, AnyType, VoidType);
+    reg(TokenType::assign, RealType, AnyType, VoidType);
+    reg(TokenType::assign, CharType, AnyType, VoidType);
+    reg(TokenType::assign, StrType, AnyType, VoidType);
 } // namespace ax
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
@@ -124,32 +144,32 @@ std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
     }
 }
 
-bool TypeTable::check(TokenType op, TypePtr type) {
+std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &type) {
     auto range = rules1.equal_range(op);
     for (auto i = range.first; i != range.second; ++i) {
-        if (i->second == type) {
-            return true;
+        if (i->second.value == type) {
+            return i->second.result;
         }
     }
-    return false;
+    return {};
 }
 
-bool TypeTable::check(TokenType op, TypePtr L, TypePtr R) {
+std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &L, TypePtr const &R) {
     auto range = rules2.equal_range(op);
     for (auto i = range.first; i != range.second; ++i) {
-        if (i->second.first == L && i->second.second == R) {
-            return true;
+        if (i->second.L == L && i->second.R == R) {
+            return i->second.result;
         }
     }
-    return false;
+    return {};
 }
 
-void TypeTable::reg(TokenType op, TypePtr type) {
-    rules1.insert({op, type});
+void TypeTable::reg(TokenType op, TypePtr const &type, TypePtr const &result) {
+    rules1.insert({op, {type, result}});
 }
 
-void TypeTable::reg(TokenType op, TypePtr L, TypePtr R) {
-    rules2.insert({op, {L, R}});
+void TypeTable::reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result) {
+    rules2.insert({op, {L, R, result}});
 }
 
 } // namespace ax

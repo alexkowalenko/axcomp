@@ -661,3 +661,49 @@ TEST(Inspector, ConstAssign) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, RealExpr) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                CONST pi = 3.14159269;
+                VAR x, y : REAL;
+                BEGIN
+                    x := 2.3 * 2.3 * pi;
+                    y := (x + 1) / 2;
+                    RETURN 0
+                END alpha.)",
+         "MODULE alpha;\nCONST\npi = 3.14159269;\nVAR\nx: REAL;\ny: REAL;\nBEGIN\nx := "
+         "2.3*2.3*pi;\ny :=  (x+1)  / 2;\nRETURN 0\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                CONST pi = 3.14159269;
+                VAR x, y : INTEGER;
+                BEGIN
+                    x := 2.3 * 2.3 * pi;
+                    RETURN 0
+                END alpha.)",
+         "", "5,24: Can't assign expression of type REAL to x"},
+
+        {R"(MODULE alpha;
+                CONST pi = 3.14159269;
+                VAR x : INTEGER;
+                BEGIN
+                    x := 1 * pi;
+                    RETURN 0
+                END alpha.)",
+         "", "5,24: Can't assign expression of type REAL to x"},
+
+        {R"(MODULE alpha;
+                VAR x : INTEGER;
+                BEGIN
+                    x := 3 + 2.5;
+                    RETURN 0
+                END alpha.)",
+         "", "4,24: Can't assign expression of type REAL to x"},
+
+    };
+    do_inspect_tests(tests);
+}

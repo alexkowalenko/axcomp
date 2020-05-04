@@ -854,8 +854,8 @@ ASTSimpleExprPtr Parser::parse_simpleexpr() {
  * @return ASTTermPtr
  */
 
-inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::div, TokenType::mod,
-                                            TokenType::ampersand};
+inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::slash, TokenType::div,
+                                            TokenType::mod, TokenType::ampersand};
 
 ASTTermPtr Parser::parse_term() {
     debug("Parser::parse_term");

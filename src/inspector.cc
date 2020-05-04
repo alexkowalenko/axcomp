@@ -447,15 +447,16 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
         is_lvalue = false;
         auto t1 = last_type;
         (*ast->relation_expr)->accept(this);
-        if (!types.check(*ast->relation, t1, last_type)) {
+        auto result_type = types.check(*ast->relation, t1, last_type);
+        if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
                                              string(*ast->relation), std::string(*t1),
                                              std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
+            return;
         }
-        // Comparison operators return BOOLEAN
-        last_type = TypeTable::BoolType;
+        last_type = *result_type;
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
     }
@@ -468,14 +469,17 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &t : ast->rest) {
         is_lvalue = false;
         t.second->accept(this);
-        if (!types.check(t.first, t1, last_type)) {
+        auto result_type = types.check(t.first, t1, last_type);
+        if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
                                              string(t.first), std::string(*t1),
                                              std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
+            return;
         }
-        t1 = last_type;
+        t1 = *result_type;
+        last_type = t1;
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
     };
@@ -488,17 +492,21 @@ void Inspector::visit_ASTTerm(ASTTermPtr ast) {
     for (auto const &t : ast->rest) {
         is_lvalue = false;
         t.second->accept(this);
-        if (!types.check(t.first, t1, last_type)) {
+        auto result_type = types.check(t.first, t1, last_type);
+        if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
                                              string(t.first), std::string(*t1),
                                              std::string(*last_type)),
                                ast->get_location());
             errors.add(e);
+            return;
         }
+
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
 
-        t1 = last_type;
+        t1 = *result_type;
+        last_type = t1;
     };
 }
 
@@ -513,11 +521,14 @@ void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
                    [this, ast](ASTFactorPtr const &arg) {
                        if (ast->is_not) {
                            arg->accept(this);
-                           if (!types.check(TokenType::tilde, last_type)) {
+                           auto result_type = types.check(TokenType::tilde, last_type);
+                           if (!result_type) {
                                auto e = TypeError("type in ~ expression must be BOOLEAN",
                                                   ast->get_location());
                                errors.add(e);
+                               return;
                            }
+                           last_type = *result_type;
                            is_lvalue = false;
                        }
                    },
