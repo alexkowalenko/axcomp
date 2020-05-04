@@ -51,8 +51,10 @@ void TypeTable::initialise() {
 
     // Type Rules
 
+    // 1-Arity
     reg(TokenType::tilde, BoolType, BoolType);
 
+    // 2-Arity
     reg(TokenType::plus, IntType, IntType, IntType);
     reg(TokenType::plus, IntType, RealType, RealType);
     reg(TokenType::plus, RealType, IntType, RealType);
@@ -68,7 +70,7 @@ void TypeTable::initialise() {
     reg(TokenType::asterisk, RealType, IntType, RealType);
     reg(TokenType::asterisk, RealType, RealType, RealType);
 
-    reg(TokenType::slash, IntType, IntType, IntType);
+    reg(TokenType::slash, IntType, IntType, RealType);
     reg(TokenType::slash, IntType, RealType, RealType);
     reg(TokenType::slash, RealType, IntType, RealType);
     reg(TokenType::slash, RealType, RealType, RealType);

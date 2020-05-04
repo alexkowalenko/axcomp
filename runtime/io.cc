@@ -31,6 +31,10 @@ extern "C" void Out_Bool(Bool x) {
     std::cout << x;
 }
 
+extern "C" void Out_Real(Real x) {
+    std::cout << x;
+}
+
 extern "C" void Out_Char(Char x) {
     std::cout << converterX.to_bytes(std::wstring(1, x));
 }

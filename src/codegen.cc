@@ -833,26 +833,52 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
         auto *L = last_value;
         (*ast->relation_expr)->accept(this);
         auto *R = last_value;
-        switch (*ast->relation) {
-        case TokenType::equals:
-            last_value = builder.CreateICmpEQ(L, R);
-            break;
-        case TokenType::hash:
-            last_value = builder.CreateICmpNE(L, R);
-            break;
-        case TokenType::less:
-            last_value = builder.CreateICmpSLT(L, R);
-            break;
-        case TokenType::leq:
-            last_value = builder.CreateICmpSLE(L, R);
-            break;
-        case TokenType::greater:
-            last_value = builder.CreateICmpSGT(L, R);
-            break;
-        case TokenType::gteq:
-            last_value = builder.CreateICmpSGE(L, R);
-            break;
-        default:;
+        if (L->getType() == TypeTable::RealType->get_llvm()) {
+            // do float equivalent
+            switch (*ast->relation) {
+            case TokenType::equals:
+                last_value = builder.CreateFCmpOEQ(L, R);
+                break;
+            case TokenType::hash:
+                last_value = builder.CreateFCmpONE(L, R);
+                break;
+            case TokenType::less:
+                last_value = builder.CreateFCmpOLT(L, R);
+                break;
+            case TokenType::leq:
+                last_value = builder.CreateFCmpOLE(L, R);
+                break;
+            case TokenType::greater:
+                last_value = builder.CreateFCmpOGT(L, R);
+                break;
+            case TokenType::gteq:
+                last_value = builder.CreateFCmpOGE(L, R);
+                break;
+            default:;
+            }
+        } else {
+            // Do integer versions
+            switch (*ast->relation) {
+            case TokenType::equals:
+                last_value = builder.CreateICmpEQ(L, R);
+                break;
+            case TokenType::hash:
+                last_value = builder.CreateICmpNE(L, R);
+                break;
+            case TokenType::less:
+                last_value = builder.CreateICmpSLT(L, R);
+                break;
+            case TokenType::leq:
+                last_value = builder.CreateICmpSLE(L, R);
+                break;
+            case TokenType::greater:
+                last_value = builder.CreateICmpSGT(L, R);
+                break;
+            case TokenType::gteq:
+                last_value = builder.CreateICmpSGE(L, R);
+                break;
+            default:;
+            }
         }
     }
 }
@@ -869,47 +895,92 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
-        switch (t.first) {
-        case TokenType::plus:
-            last_value = builder.CreateAdd(L, R, "addtmp");
-            break;
-        case TokenType::dash:
-            last_value = builder.CreateSub(L, R, "subtmp");
-            break;
-        case TokenType::or_k:
-            last_value = builder.CreateOr(L, R, "subtmp");
-            break;
-        default:
-            throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
-                                   ast->get_location());
+        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
+            switch (t.first) {
+            case TokenType::plus:
+                last_value = builder.CreateAdd(L, R, "addtmp");
+                break;
+            case TokenType::dash:
+                last_value = builder.CreateSub(L, R, "subtmp");
+                break;
+            case TokenType::or_k:
+                last_value = builder.CreateOr(L, R, "subtmp");
+                break;
+            default:
+                throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
+                                       ast->get_location());
+            }
+        } else {
+            // Do float calculations
+            // Promote any integers to floats
+            if (L->getType() == TypeTable::IntType->get_llvm()) {
+                L = builder.CreateSIToFP(L, TypeTable::RealType->get_llvm());
+            }
+            if (R->getType() == TypeTable::IntType->get_llvm()) {
+                R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
+            }
+            switch (t.first) {
+            case TokenType::plus:
+                last_value = builder.CreateFAdd(L, R, "addtmp");
+                break;
+            case TokenType::dash:
+                last_value = builder.CreateFSub(L, R, "subtmp");
+                break;
+            default:
+                throw CodeGenException("ASTSimpleExpr float with sign" + string(t.first),
+                                       ast->get_location());
+            }
         }
         L = last_value;
     }
 }
 
 void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
+    debug("CodeGenerator::visit_ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
     for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
-        switch (t.first) {
-        case TokenType::asterisk:
-            last_value = builder.CreateMul(L, R, "multmp");
-            break;
-        case TokenType::div:
-            last_value = builder.CreateSDiv(L, R, "divtmp");
-            break;
-        case TokenType::mod:
-            last_value = builder.CreateSRem(L, R, "modtmp");
-            break;
-        case TokenType::ampersand:
-            last_value = builder.CreateAnd(L, R, "modtmp");
-            break;
-        default:
-            throw CodeGenException("ASTTerm with sign" + string(t.first), ast->get_location());
+        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
+            // Do integer calculations
+            switch (t.first) {
+            case TokenType::asterisk:
+                last_value = builder.CreateMul(L, R, "multmp");
+                break;
+            case TokenType::div:
+                last_value = builder.CreateSDiv(L, R, "divtmp");
+                break;
+            case TokenType::mod:
+                last_value = builder.CreateSRem(L, R, "modtmp");
+                break;
+            case TokenType::ampersand:
+                last_value = builder.CreateAnd(L, R, "modtmp");
+                break;
+            default:
+                throw CodeGenException("ASTTerm with sign" + string(t.first), ast->get_location());
+            }
+        } else {
+            // Do float calculations
+            // Promote any integers to floats
+            if (L->getType() == TypeTable::IntType->get_llvm()) {
+                L = builder.CreateSIToFP(L, TypeTable::RealType->get_llvm());
+            }
+            if (R->getType() == TypeTable::IntType->get_llvm()) {
+                R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
+            }
+            switch (t.first) {
+            case TokenType::asterisk:
+                last_value = builder.CreateFMul(L, R, "multmp");
+                break;
+            case TokenType::slash:
+                last_value = builder.CreateFDiv(L, R, "divtmp");
+                break;
+            default:
+                throw CodeGenException("ASTTerm float with sign" + string(t.first),
+                                       ast->get_location());
+            }
         }
-
         L = last_value;
     }
 }

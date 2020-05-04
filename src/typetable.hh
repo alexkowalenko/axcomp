@@ -62,6 +62,10 @@ class TypeTable : public SymbolTable<TypePtr> {
 
     std::optional<TypePtr> check(TokenType op, TypePtr const &L, TypePtr const &R);
 
+    static bool is_int_instruct(llvm::Type *t) {
+        return t == IntType->get_llvm() || t == BoolType->get_llvm() || t == CharType->get_llvm();
+    }
+
     // Standard types
     static std::shared_ptr<IntegerType>   IntType;
     static std::shared_ptr<BooleanType>   BoolType;
