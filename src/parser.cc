@@ -182,7 +182,7 @@ ASTDeclarationPtr Parser::parse_declaration() {
             if (!decs->type) {
                 decs->type = types;
             } else {
-                decs->type->types.insert(decs->var->vars.end(), begin(types->types),
+                decs->type->types.insert(decs->type->types.end(), begin(types->types),
                                          end(types->types));
             }
             break;
@@ -473,19 +473,15 @@ ASTStatementPtr Parser::parse_statement() {
 void Parser::parse_statement_block(std::vector<ASTStatementPtr> &stats,
                                    const std::set<TokenType> &   end_tokens) {
 
-    auto s = parse_statement();
-    stats.push_back(s);
-    auto tok = lexer.peek_token();
     while (true) {
+        auto tok = lexer.peek_token();
         if (tok.type == TokenType::semicolon) {
             get_token(TokenType::semicolon);
-        } else if (end_tokens.find(tok.type) != end_tokens.end()) {
+        } else if (end_tokens.count(tok.type)) {
             return;
         } else {
-            auto s = parse_statement();
-            stats.push_back(s);
+            stats.push_back(parse_statement());
         }
-        tok = lexer.peek_token();
     }
 }
 

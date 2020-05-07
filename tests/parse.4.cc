@@ -75,6 +75,29 @@ TEST(Parser, IF) {
          "4\nELSIF TRUE THEN\nRETURN 5\nELSE\nRETURN 2\nEND\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            IF TRUE THEN
+            ELSE
+            END
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nELSE\nEND\nEND alpha.", ""},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            IF TRUE THEN
+            ELSIF TRUE THEN
+            ELSIF TRUE THEN
+            ELSIF TRUE THEN
+            ELSE
+            END
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nIF TRUE THEN\nELSIF TRUE THEN\nELSIF TRUE "
+         "THEN\nELSIF TRUE THEN\nELSE\nEND\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -138,6 +161,17 @@ TEST(Parser, FOR) {
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 19 BY 2 DO\nx "
          ":= x+i\nEND;\nRETURN x\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            FOR i := 0 TO 19 BY 2 DO
+            END;
+            RETURN x
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nFOR i := 0 TO 19 BY 2 DO\nEND;\nRETURN x\nEND "
+         "alpha.",
          ""},
 
         // Errors
@@ -218,6 +252,16 @@ TEST(Parser, WHILE) {
          "x+1\nEND;\nRETURN x\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            WHILE x < 10 DO
+            END;
+            RETURN x
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nWHILE x < 10 DO\nEND;\nRETURN x\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -245,6 +289,14 @@ TEST(Parser, REPEAT) {
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nx := x+1\nUNTIL x > "
          "10\nEND alpha.",
          ""},
+
+        {R"(MODULE alpha;
+        VAR x : INTEGER;
+        BEGIN
+            REPEAT
+            UNTIL x > 10
+        END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nREPEAT\nUNTIL x > 10\nEND alpha.", ""},
 
         // Errors
         {R"(MODULE alpha;
@@ -274,6 +326,14 @@ TEST(Parser, LOOP) {
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nLOOP\nx := "
          "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
          ""},
+
+        {R"(MODULE alpha;
+        BEGIN
+            LOOP
+            END;
+            RETURN x
+        END alpha.)",
+         "MODULE alpha;\nBEGIN\nLOOP\nEND;\nRETURN x\nEND alpha.", ""},
     };
     do_parse_tests(tests);
 }
@@ -293,6 +353,14 @@ TEST(Parser, BEGIN) {
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nBEGIN\nx := "
          "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
          ""},
+
+        {R"(MODULE alpha;
+        BEGIN
+            BEGIN
+            END;
+            RETURN x
+        END alpha.)",
+         "MODULE alpha;\nBEGIN\nBEGIN\nEND;\nRETURN x\nEND alpha.", ""},
     };
     do_parse_tests(tests);
 }
@@ -397,6 +465,23 @@ TEST(Parser, CASE) {
          "Out.String(\"A\");\nOut.Ln();\n| 'B', 'C' : Out.String(\"B,C\");\nOut.Ln();\n| 'D'..'F' "
          ": Out.String(\"D-F\");\nOut.Ln();\nELSE\nOut.String('D-Z');\nOut.Ln()\nEND;\nRETURN "
          "0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* CASE *)
+            IMPORT Out;
+            VAR c : CHAR;
+
+            BEGIN
+                CASE c OF
+                    'A' :
+                |   'B', 'C' : 
+                |   'D' .. 'F' : 
+                ELSE
+                END
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nIMPORT Out;\nVAR\nc: CHAR;\nBEGIN\nCASE c OF\n'A' : | 'B', 'C' : | "
+         "'D'..'F' : END;\nRETURN 0\nEND alpha.",
          ""},
 
         // Errors

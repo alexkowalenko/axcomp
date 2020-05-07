@@ -40,6 +40,7 @@ TEST(Parser, Module) {
         {"MODULE y; BEGIN RETURN 12; RETURN 24 END y.",
          "MODULE y;\nBEGIN\nRETURN 12;\nRETURN 24\nEND y.", ""},
         {"MODULE y; BEGIN RETURN END y.", "MODULE y;\nBEGIN\nRETURN \nEND y.", ""},
+        {"MODULE y; BEGIN END y.", "MODULE y;\nEND y.", ""},
         {"MODULE y; END y.", "MODULE y;\nEND y.", ""},
 
         // Errors
