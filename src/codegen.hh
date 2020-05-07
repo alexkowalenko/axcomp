@@ -84,7 +84,8 @@ class CodeGenerator : ASTVisitor {
     Value *call_function(std::string const &name, llvm::Type *ret,
                          std::vector<Value *> const &args);
 
-    IRBuilder<> &get_builder() { return builder; };
+    IRBuilder<> &            get_builder() { return builder; };
+    std::unique_ptr<Module> &get_module() { return module; };
 
   private:
     void init();

@@ -888,7 +888,11 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
     if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
-        L = builder.CreateSub(TypeTable::IntType->get_init(), L, "negtmp");
+        if (TypeTable::is_int_instruct(L->getType())) {
+            L = builder.CreateSub(TypeTable::IntType->get_init(), L, "negtmp");
+        } else {
+            L = builder.CreateFSub(TypeTable::RealType->get_init(), L, "negtmp");
+        }
         last_value = L;
     }
 

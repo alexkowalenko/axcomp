@@ -662,6 +662,8 @@ Function procedures:
     \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\ % Runtime
     \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\ % Runtime
     \CHR(x) & integer type & \CHAR & character with ordinal number x \\ % Runtime
+    \FLOOR(x) & \REAL & \INTEGER & round down \\ % Runtime
+    \FLT(x) & \INTEGER & \REAL & identity \\ % Runtime
     \LEN(v) & \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
     \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
     \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
@@ -736,13 +738,18 @@ END g10.
 
 \subsection{Out.mod}
 
+Standard output.
+
 \begin{lstlisting}[style=oberon]
 DEFINITION Out;
     PROCEDURE Open*;
     PROCEDURE Flush*;
     PROCEDURE Int*(x : INTEGER);
-    PROCEDURE Hex*(x : INTEGER);
+    PROCEDURE Hex*(x : INTEGER); 
     PROCEDURE Bool*(x : BOOLEAN);
+    PROCEDURE Real*(x : REAL);
+    PROCEDURE Char*(x : CHAR);
+    PROCEDURE String*(x : STRING);
     PROCEDURE Ln*;
 END Out.
 \end{lstlisting} 

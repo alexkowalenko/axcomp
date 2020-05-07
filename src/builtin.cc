@@ -6,6 +6,8 @@
 
 #include "builtin.hh"
 
+#include <llvm/Support/Debug.h>
+
 #include "typetable.hh"
 
 namespace ax {
@@ -13,6 +15,30 @@ namespace ax {
 // builtin procedures
 std::vector<std::pair<std::string, Symbol>> Builtin::global_functions;
 llvm::StringMap<BIFunctor>                  Builtin::compile_functions;
+
+#define DEBUG_TYPE "builtin"
+
+template <typename... T> static void debug(const T &... msg) {
+    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
+}
+
+BIFunctor abs = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    debug("builtin abs");
+    auto  args = codegen->do_arguments(ast);
+    auto *arg = args[0];
+    if (arg->getType()->isIntegerTy()) {
+        debug("builtin abs int");
+        return codegen->call_function("ABS", TypeTable::IntType->get_llvm(), {arg});
+    }
+    if (arg->getType()->isFloatingPointTy()) {
+        debug("builtin abs fabs");
+        std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
+        auto                      fun =
+            Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::fabs, type_args);
+        return codegen->get_builder().CreateCall(fun, args);
+    }
+    return TypeTable::IntType->make_value(1);
+};
 
 BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
@@ -67,15 +93,29 @@ BIFunctor dec = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return codegen->get_builder().CreateStore(val, arg);
 };
 
+BIFunctor floor = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    debug("builtin floor");
+    auto                      args = codegen->do_arguments(ast);
+    std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
+    auto fun = Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
+    auto value = codegen->get_builder().CreateCall(fun, args);
+    return codegen->get_builder().CreateFPToSI(value, TypeTable::IntType->get_llvm());
+};
+
+BIFunctor flt = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto args = codegen->do_arguments(ast);
+    return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
+};
+
 void Builtin::initialise(SymbolFrameTable &symbols) {
 
     global_functions = {
 
         // Maths
         {"ABS", Symbol{std::make_shared<ProcedureType>(
-                           TypeTable::IntType,
-                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
-                       Attr::global_function}},
+                           TypeTable::AnyType,
+                           ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                       Attr::compile_function}},
 
         {"ASH", Symbol{std::make_shared<ProcedureType>(
                            TypeTable::IntType,
@@ -87,6 +127,16 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                                                            {TypeTable::IntType, Attr::null},
                                                        }),
                        Attr::global_function}},
+        {"FLOOR", Symbol{std::make_shared<ProcedureType>(TypeTable::IntType,
+                                                         ProcedureType::ParamsList{
+                                                             {TypeTable::RealType, Attr::null},
+                                                         }),
+                         Attr::compile_function}},
+        {"FLT", Symbol{std::make_shared<ProcedureType>(TypeTable::RealType,
+                                                       ProcedureType::ParamsList{
+                                                           {TypeTable::IntType, Attr::null},
+                                                       }),
+                       Attr::compile_function}},
 
         {"INC", Symbol{std::make_shared<ProcedureType>(
                            TypeTable::VoidType,
@@ -178,6 +228,9 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("MAX", max);
     compile_functions.try_emplace("INC", inc);
     compile_functions.try_emplace("DEC", dec);
+    compile_functions.try_emplace("ABS", abs);
+    compile_functions.try_emplace("FLOOR", floor);
+    compile_functions.try_emplace("FLT", flt);
 }
 
 } // namespace ax

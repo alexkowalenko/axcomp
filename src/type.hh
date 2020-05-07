@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <cfloat>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -119,8 +120,8 @@ class RealCType : public SimpleType {
     llvm::Constant *make_value(Real f) { return llvm::ConstantFP::get(get_llvm(), f); }
     unsigned int    get_size() override { return 8; } // 64 bit floats;
 
-    llvm::Value *min() override { return make_value(false); };
-    llvm::Value *max() override { return make_value(true); };
+    llvm::Value *min() override { return make_value(DBL_MIN); };
+    llvm::Value *max() override { return make_value(DBL_MAX); };
 };
 
 class CharacterType : public SimpleType {
