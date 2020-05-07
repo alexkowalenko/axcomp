@@ -15,5 +15,6 @@ link_directories(${BOEHM_LIBRARY_DIRS})
 add_library(Ax io.cc math.cc strings.cc)
 
 install(FILES Out.def DESTINATION lib)
+install(FILES Math.def DESTINATION lib)
 install(FILES Strings.def DESTINATION lib)
 install(TARGETS Ax DESTINATION lib)

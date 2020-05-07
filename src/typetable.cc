@@ -86,6 +86,13 @@ void TypeTable::initialise() {
     reg(TokenType::greater, IntType, IntType, BoolType);
     reg(TokenType::gteq, IntType, IntType, BoolType);
 
+    reg(TokenType::equals, RealType, RealType, BoolType);
+    reg(TokenType::hash, RealType, RealType, BoolType);
+    reg(TokenType::less, RealType, RealType, BoolType);
+    reg(TokenType::leq, RealType, RealType, BoolType);
+    reg(TokenType::greater, RealType, RealType, BoolType);
+    reg(TokenType::gteq, RealType, RealType, BoolType);
+
     reg(TokenType::ampersand, BoolType, BoolType, BoolType);
     reg(TokenType::or_k, BoolType, BoolType, BoolType);
     reg(TokenType::equals, BoolType, BoolType, BoolType);
