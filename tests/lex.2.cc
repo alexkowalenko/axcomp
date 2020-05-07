@@ -55,6 +55,7 @@ std::vector<LexTests> tests = {
 
     // chars
     {"'a'", TokenType::chr, "", 97},
+    {"12X", TokenType::hexchr, "12"},
 
     // strings
     {R"('a')", TokenType::chr, "", 97},

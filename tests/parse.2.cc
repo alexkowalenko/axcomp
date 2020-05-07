@@ -15,10 +15,11 @@ TEST(Parser, Const) {
          "MODULE y;\nCONST\nx = 1;\nBEGIN\nRETURN 12\nEND y.", ""},
         {"MODULE y; CONST x = 1; y=2; BEGIN RETURN 12 END y.",
          "MODULE y;\nCONST\nx = 1;\ny = 2;\nBEGIN\nRETURN 12\nEND y.", ""},
+        {"MODULE y; CONST x = 12X; END y.", "MODULE y;\nCONST\nx = 012X;\nEND y.", ""},
 
         // Errors
         {"MODULE y; x = 1; BEGIN RETURN 12 END y.", "",
-         "1,11: Unexpected token: x - expecting BEGIN"},
+         "1,11: Unexpected token: x - expecting END"},
 
     };
     do_parse_tests(tests);
@@ -49,8 +50,7 @@ TEST(Parser, Var) {
         {"MODULE y; VAR x : INTEGER; BEGIN RETURN 12 END y.",
          "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nRETURN 12\nEND y.", ""},
         {"MODULE y; VAR x : INTEGER; y: INTEGER; BEGIN RETURN 12 END y.",
-         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nRETURN 12\nEND y.",
-         ""},
+         "MODULE y;\nVAR\nx: INTEGER;\ny: INTEGER;\nBEGIN\nRETURN 12\nEND y.", ""},
         {"MODULE y; "
          "CONST z = 10; "
          "VAR x : INTEGER; y: INTEGER; "
@@ -63,7 +63,7 @@ TEST(Parser, Var) {
         {"MODULE y; VAR x : INTEGER BEGIN RETURN 12 END y.", "",
          "1,31: Unexpected token: BEGIN - expecting semicolon"},
         {"MODULE y; VAR : INTEGER; BEGIN RETURN 12 END y.", "",
-         "1,15: Unexpected token: : - expecting BEGIN"},
+         "1,15: Unexpected token: : - expecting END"},
 
     };
     do_parse_tests(tests);
@@ -102,8 +102,7 @@ TEST(Parser, Assignment) {
          ""},
 
         // Errors
-        {"MODULE y; VAR x : INTEGER; BEGIN := 2 END y.", "",
-         "1,35: Unexpected token: :="},
+        {"MODULE y; VAR x : INTEGER; BEGIN := 2 END y.", "", "1,35: Unexpected token: :="},
         {"MODULE y; VAR x : INTEGER;  BEGIN x 12 END y.", "",
          "1,38: Unexpected token: integer(12) - expecting :="},
 

@@ -25,6 +25,7 @@ pre_test = ""
 post_test = ""
 link_objs = ""
 exclude = ""
+c_flags = ""
 
 compiler = f"{install_dir}/ax"
 linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
@@ -60,7 +61,7 @@ def do_test(t):
     fail = stem + ".fail"
 
     # Compile file
-    cmd = f"{compiler} -L {axlib_dir} --output_funct {t} > result.txt"
+    cmd = f"{compiler} {c_flags} -L {axlib_dir} --output_funct {t} > result.txt"
     # print(cmd)
     ret = os.system(cmd)
     if ret:
@@ -87,6 +88,36 @@ def do_test(t):
     return do_clang(stem)
 
 
+def do_test_parse(t):
+    stem = Path(t).stem
+    fail = stem + ".fail"
+
+    # Compile file
+    cmd = f"{compiler} {c_flags} -L {axlib_dir} {t} > result.txt"
+    # print(cmd)
+    ret = os.system(cmd)
+    if ret:
+        os.system(f"mv result.txt {fail}")
+        print(red + "compile " + restore, end="")
+        return 0
+
+    # Check output
+    exp = stem + ".exp"
+    cmd = f"diff --strip-trailing-cr {exp} result.txt > result.diff.txt"
+    # print(cmd)
+    ret = os.system(cmd)
+    if(ret != 0):
+        os.system(f"mv result.txt {fail}")
+        os.system(f"rm -f {stem}.def")
+    else:
+        os.system(f"rm -f {fail} result.txt")
+    os.system("rm -f result.diff.txt")
+    if (ret != 0):
+        print(red + "parse " + restore, end="")
+        return 0
+    return 1
+
+
 # Perform tests on a list of filename
 def do_tests(l):
     global exclude
@@ -107,7 +138,10 @@ def do_tests(l):
         if x == exclude:
             continue
         print(f"  : {x} ", end="")
-        result = do_test(x)
+        if c_flags == "-p":
+            result = do_test_parse(x)
+        else:
+            result = do_test(x)
         count += 1
         if(not result):
             print(red + f"-> :Fail" + restore, end="")
@@ -128,6 +162,7 @@ def do_tests_dir(d):
     global post_test
     global link_objs
     global exclude
+    global c_flags
 
     print(f"Tests: {d}")
     os.chdir(d)
@@ -139,12 +174,13 @@ def do_tests_dir(d):
     if os.path.isfile(test_cfg):
         config = configparser.ConfigParser()
         config.read(test_cfg)
-        pre_test = config.get("compile", "pre_test")
-        post_test = config.get("compile", "post_test")
-        link_objs = config.get("compile", "link_objs")
-        exclude = config.get("compile", "exclude")
+        pre_test = config.get("compile", "pre_test", fallback="")
+        post_test = config.get("compile", "post_test",  fallback="")
+        link_objs = config.get("compile", "link_objs",  fallback="")
+        exclude = config.get("compile", "exclude",  fallback="")
+        c_flags = config.get("compile", "flags",  fallback="")
 
-    tests = glob('*.mod')
+    tests = sorted(glob('*.[mM]od'))
     res = do_tests(tests)
     os.chdir("..")
     return res

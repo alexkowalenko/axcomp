@@ -69,7 +69,7 @@ TEST(Parser, Proc) {
             BEGIN
                 RETURN 0
             END x.)",
-         "", "2,13: Unexpected token: f - expecting BEGIN"},
+         "", "2,13: Unexpected token: f - expecting END"},
 
         {R"(MODULE x;
             PROCEDURE f;

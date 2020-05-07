@@ -40,6 +40,7 @@ TEST(Parser, Module) {
         {"MODULE y; BEGIN RETURN 12; RETURN 24 END y.",
          "MODULE y;\nBEGIN\nRETURN 12;\nRETURN 24\nEND y.", ""},
         {"MODULE y; BEGIN RETURN END y.", "MODULE y;\nBEGIN\nRETURN \nEND y.", ""},
+        {"MODULE y; END y.", "MODULE y;\nEND y.", ""},
 
         // Errors
         {"y; BEGIN RETURN 12 END y.", "", "1,1: Unexpected token: y - expecting MODULE"},
@@ -47,7 +48,7 @@ TEST(Parser, Module) {
          "1,8: Unexpected token: semicolon - expecting indent"},
         {"MODULE y BEGIN RETURN 12 END y.", "",
          "1,14: Unexpected token: BEGIN - expecting semicolon"},
-        {"MODULE y; RETURN 12 END y.", "", "1,16: Unexpected token: RETURN - expecting BEGIN"},
+        {"MODULE y; RETURN 12 END y.", "", "1,16: Unexpected token: RETURN - expecting END"},
 
         {"MODULE y; BEGIN RETURN 12 y.", "", "1,29: Unexpected token: EOF - expecting indent"},
         {"MODULE y; BEGIN RETURN 12 END .", "",

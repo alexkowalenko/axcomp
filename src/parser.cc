@@ -91,10 +91,13 @@ ASTModulePtr Parser::parse_module() {
         tok = lexer.peek_token();
     }
 
-    get_token(TokenType::begin);
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::begin) {
+        get_token(TokenType::begin);
 
-    // statement_seq
-    parse_statement_block(module->stats, module_ends);
+        // statement_seq
+        parse_statement_block(module->stats, module_ends);
+    }
 
     // END
     get_token(TokenType::end);
@@ -1176,7 +1179,6 @@ ASTCharPtr Parser::parse_char() {
     auto tok = lexer.get_token();
     if (tok.type == TokenType::hexchr) {
         char *end = nullptr;
-        lexer.get_token();
         debug("Parser::parse_char hex {0}", tok.val);
         ast->value = Char(std::strtol(tok.val.c_str(), &end, hex_radix));
         ast->hex = true;

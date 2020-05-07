@@ -77,7 +77,7 @@ Options do_args(int argc, char **argv) {
                                     cl::init(axlib), cl::cat(oberon));
     cl::alias            axlib_pathA("L", cl::aliasopt(axlib_path));
 
-    cl::opt<std::string> debug_options("D", cl::desc("Debug options : p=parse"), cl::cat(oberon));
+    cl::opt<bool> parse("p", cl::desc("parse only"), cl::cat(oberon));
 
     cl::opt<bool>         dbg("debug", cl::desc("turn on debugging"), cl::cat(oberon));
     cl::list<std::string> doptions("debug-only", cl::desc("debug options"), cl::cat(oberon));
@@ -92,6 +92,8 @@ Options do_args(int argc, char **argv) {
     options.print_symbols = symbols;
     options.file_name = file_name;
     options.axlib_path = axlib_path;
+    options.debug_parse = parse;
+
     llvm::DebugFlag = dbg;
     std::for_each(begin(doptions), end(doptions),
                   [](auto x) { llvm::setCurrentDebugType(x.c_str()); });
@@ -99,11 +101,6 @@ Options do_args(int argc, char **argv) {
     //    llvm::EnableStatistics(stats);
     // }
     llvm::EnableStatistics(true);
-
-    if (debug_options.find('p') != std::string::npos) {
-        options.debug_parse = true;
-        std::cout << "Print parsed program.\n";
-    }
 
     return options;
 }
@@ -133,6 +130,7 @@ int main(int argc, char **argv) {
             ax::ASTPrinter printer(std::cout);
             printer.set_indent(4);
             printer.print(ast);
+            return 0;
         }
 
         // Run the semantic inspector

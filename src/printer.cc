@@ -34,8 +34,10 @@ void ASTPrinter::visit_ASTModule(ASTModulePtr ast) {
         }
     });
     pop();
-    os << "BEGIN\n";
-    print_stats(ast->stats);
+    if (!ast->stats.empty()) {
+        os << "BEGIN\n";
+        print_stats(ast->stats);
+    }
     os << std::string(llvm::formatv("END {0}.\n", ast->name));
 }
 

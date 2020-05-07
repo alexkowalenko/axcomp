@@ -54,6 +54,4 @@ BEGIN
     RETURN 0.0;
 END exp;
 
-BEGIN
-    RETURN 0;
 END Math.

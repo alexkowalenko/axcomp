@@ -53,6 +53,4 @@ BEGIN
     RETURN
 END Ln;
 
-BEGIN
-    RETURN
 END Out.
