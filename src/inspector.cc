@@ -594,6 +594,16 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
 
             if (is_array) {
                 auto array_type = std::dynamic_pointer_cast<ArrayType>(b_type);
+
+                // check index count
+                if (array_type->dimensions.size() != s.size()) {
+                    auto e = TypeError(
+                        llvm::formatv("array indexes don't match array dimensions of {0}",
+                                      ast->ident->id->value),
+                        ast->get_location());
+                    errors.add(e);
+                }
+
                 last_type = array_type->base_type;
             } else if (is_string) {
                 last_type = TypeTable::CharType;
@@ -677,10 +687,10 @@ void Inspector::visit_ASTArray(ASTArrayPtr ast) {
     }
 
     ast->type->accept(this);
-    // one dimension
-    auto size = ast->dimensions[0]->value;
+
     auto array_type = std::make_shared<ax::ArrayType>(last_type);
-    array_type->dimensions.push_back(size);
+    std::for_each(begin(ast->dimensions), end(ast->dimensions),
+                  [&array_type](auto &d) { array_type->dimensions.push_back(d->value); });
     last_type = array_type;
     types.put(last_type->get_name(), last_type);
 }

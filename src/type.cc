@@ -7,6 +7,7 @@
 #include "type.hh"
 #include "typetable.hh"
 
+#include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
 
 #include "utf8.h"
@@ -92,13 +93,27 @@ ArrayType::operator std::string() {
 }
 
 llvm::Type *ArrayType::get_llvm() {
-    return llvm::ArrayType::get(base_type->get_llvm(), dimensions[0]);
-};
+    if (dimensions.size() == 0) {
+        return llvm::ArrayType::get(base_type->get_llvm(), 0);
+    } else {
+        llvm::Type *array_type = base_type->get_llvm();
+        for (auto d : dimensions) {
+            array_type = llvm::ArrayType::get(array_type, d);
+        }
+        return array_type;
+    }
+}
 
 llvm::Constant *ArrayType::get_init() {
-    auto const_array = std::vector<Constant *>(dimensions[0], base_type->get_init());
-    return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
-};
+    if (dimensions.size() == 0) {
+        auto const_array = std::vector<Constant *>(0, base_type->get_init());
+        return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
+    } else {
+        std::vector<Constant *> const_array =
+            std::vector<Constant *>(dimensions[0], base_type->get_init());
+        return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
+    }
+}
 
 RecordType::operator std::string() {
     std::string str{"{"};
@@ -115,14 +130,14 @@ llvm::Type *RecordType::get_llvm() {
     std::for_each(begin(index), end(index),
                   [&fs, this](auto const &name) { fs.push_back(fields[name]->get_llvm()); });
     return StructType::create(fs);
-};
+}
 
 llvm::Constant *RecordType::get_init() {
     std::vector<llvm::Constant *> fs;
     std::for_each(begin(index), end(index),
                   [&fs, this](auto const &name) { fs.push_back(fields[name]->get_init()); });
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
-};
+}
 
 void RecordType::insert(std::string const &field, TypePtr type) {
     fields[field] = std::move(type);
@@ -136,7 +151,7 @@ bool RecordType::has_field(std::string const &field) {
 unsigned int RecordType::get_size() {
     return std::accumulate(begin(fields), end(fields), begin(fields)->second->get_size(),
                            [](unsigned int x, auto &y) { return x + y.second->get_size(); });
-};
+}
 
 std::optional<TypePtr> RecordType::get_type(std::string const &field) {
     auto res = fields.find(field);

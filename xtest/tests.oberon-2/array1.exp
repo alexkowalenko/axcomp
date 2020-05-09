@@ -1,0 +1,86 @@
+; ModuleID = 'array1'
+source_filename = "array1"
+
+@array1_x = internal global [4 x [3 x i64]] zeroinitializer
+@array1_sum = internal global i64 0
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64)
+
+declare void @Out_Char(i32)
+
+define i64 @output() {
+entry:
+  %j12 = alloca i64
+  %i9 = alloca i64
+  %j = alloca i64
+  %i = alloca i64
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %afterloop2, %entry
+  store i64 0, i64* %j
+  br label %loop1
+
+afterloop:                                        ; preds = %afterloop2
+  store i64 0, i64* %i9
+  br label %loop7
+
+loop1:                                            ; preds = %loop1, %loop
+  %sum = load i64, i64* @array1_sum
+  %j3 = load i64, i64* %j
+  %i4 = load i64, i64* %i
+  %idx = getelementptr [4 x [3 x i64]], [4 x [3 x i64]]* @array1_x, i64 0, i64 %j3, i64 %i4
+  store i64 %sum, i64* %idx
+  %0 = load i64, i64* @array1_sum
+  %inc = add i64 %0, 1
+  store i64 %inc, i64* @array1_sum
+  %1 = load i64, i64* %j
+  %nextvar = add i64 %1, 1
+  store i64 %nextvar, i64* %j
+  %loopcond = icmp sle i64 %nextvar, 3
+  br i1 %loopcond, label %loop1, label %afterloop2
+
+afterloop2:                                       ; preds = %loop1
+  %2 = load i64, i64* %i
+  %nextvar5 = add i64 %2, 1
+  store i64 %nextvar5, i64* %i
+  %loopcond6 = icmp sle i64 %nextvar5, 2
+  br i1 %loopcond6, label %loop, label %afterloop
+
+loop7:                                            ; preds = %afterloop11, %afterloop
+  store i64 0, i64* %j12
+  br label %loop10
+
+afterloop8:                                       ; preds = %afterloop11
+  ret i64 0
+
+loop10:                                           ; preds = %loop10, %loop7
+  %i13 = load i64, i64* %i9
+  call void @Out_Int(i64 %i13)
+  call void @Out_Char(i32 44)
+  %j14 = load i64, i64* %j12
+  call void @Out_Int(i64 %j14)
+  call void @Out_Char(i32 61)
+  %x = load [4 x [3 x i64]], [4 x [3 x i64]]* @array1_x
+  %j15 = load i64, i64* %j12
+  %i16 = load i64, i64* %i9
+  %idx17 = getelementptr [4 x [3 x i64]], [4 x [3 x i64]]* @array1_x, i64 0, i64 %j15, i64 %i16
+  %idx18 = load i64, i64* %idx17
+  call void @Out_Int(i64 %idx18)
+  call void @Out_Char(i32 32)
+  %3 = load i64, i64* %j12
+  %nextvar19 = add i64 %3, 1
+  store i64 %nextvar19, i64* %j12
+  %loopcond20 = icmp sle i64 %nextvar19, 3
+  br i1 %loopcond20, label %loop10, label %afterloop11
+
+afterloop11:                                      ; preds = %loop10
+  call void @Out_Ln()
+  %4 = load i64, i64* %i9
+  %nextvar21 = add i64 %4, 1
+  store i64 %nextvar21, i64* %i9
+  %loopcond22 = icmp sle i64 %nextvar21, 2
+  br i1 %loopcond22, label %loop7, label %afterloop8
+}

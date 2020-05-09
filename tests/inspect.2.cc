@@ -662,6 +662,14 @@ TEST(Inspector, ArrayIndex_Dimension) {
             END alpha.)",
          "", "4,26: Can't assign expression of type REAL to x[2,3]"},
 
+        {R"(MODULE alpha;
+            VAR x : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                x[2] := 3;
+                RETURN 0
+            END alpha.)",
+         "", "4,17: array indexes don't match array dimensions of x"},
+
     };
 
     do_inspect_tests(tests);
