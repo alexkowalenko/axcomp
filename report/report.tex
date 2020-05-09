@@ -218,12 +218,26 @@ Types \INTEGER\ and \REAL\ together they are called numeric types. They form a h
 \subsection{Array types}
 
 \begin{lstlisting}[style=ebnf]
-ArrayType = ARRAY integer OF type. 
+ArrayType = ARRAY  [Length {"," Length}] OF Type.
+
+Length = ConstExpression.
 \end{lstlisting}
+
+A type of the form
+\begin{lstlisting}[style=example]
+ARRAY L0, L1, ..., Ln OF T
+\end{lstlisting}
+is understood as an abbreviation of
+\begin{lstlisting}[style=example]
+ARRAY L0 OF ARRAY L1 OF ... ARRAY Ln OF T
+\end{lstlisting}
+
+Arrays declared without length are called open arrays.
 
 Examples of array types:
 \begin{lstlisting}[style=example]
-ARRAY 10 OF INTEGER 
+ARRAY 10, N OF INTEGER
+ARRAY OF CHAR 
 \end{lstlisting}
 
 \subsection{Record types}
@@ -279,7 +293,7 @@ With the exception of sets and literal constants, i.e. numbers, operands are den
 
 This identifier may possibly be followed by selectors, if the designated object is an element of a structure.
 
-If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type. A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
+If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type. A designator of the form a[$e_0$, $e_1$, ..., $e_n$] stands for a[$e_0$][$e_1$]...[$e_n$]. A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
 
 If r designates a record, then r.f denotes the field f of r.
 
@@ -297,6 +311,7 @@ Examples of designators (see examples in section \ref{types}):
      \hline
     i & (\INTEGER) \\
     a[i] & (\INTEGER) \\
+    w[3].name[0] & (\CHAR) \\
     w[3].count & (\INTEGER) \\
 \end{tabular}
 
@@ -822,7 +837,7 @@ FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Type].
 FPSection = [VAR] ident {"," ident} ":" Type.
 
 Type = Qualident
-    | ARRAY [ConstExpr] OF Type
+    | ARRAY [ConstExpr { "," ConstExpr }] OF Type
     | RECORD FieldList { ";" FieldList } END.
 
 FieldList = [ IdentList ":" Type ].
@@ -871,7 +886,7 @@ AddOp = "+" | "-" | OR.
 
 MulOp = "*" | "/" | DIV | MOD | "&".
 
-Designator = Qualident { "." ident | "[" Expr "]" }. 
+Designator = Qualident { "." ident | "[" ExprList "]" }. 
 
 ExprList = Expr {"," Expr}.
 

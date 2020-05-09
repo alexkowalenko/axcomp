@@ -54,13 +54,14 @@ TEST(Parser, ARRAY) {
          "INTEGER;\nBEGIN\nRETURN 0\nEND add.\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
-        // Errors
         {R"(MODULE alpha;
                 VAR x : ARRAY  OF INTEGER;
                 BEGIN
                     RETURN 0
                 END alpha.)",
-         "", "2,33: Unexpected token: OF - expecting integer"},
+         "MODULE alpha;\nVAR\nx: ARRAY OF INTEGER;\nBEGIN\nRETURN 0\nEND alpha.", ""},
+
+        // Errors
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 INTEGER;
@@ -75,6 +76,39 @@ TEST(Parser, ARRAY) {
                     RETURN 0
                 END alpha.)",
          "", "2,36: Unexpected token: semicolon - expecting indent"},
+
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, ARRAY_Dimensions) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY 5, 5 OF INTEGER;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY 5, 5 OF INTEGER;\nBEGIN\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR tensor : ARRAY 3, 3, 3 OF INTEGER;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 3, 3, 3 OF INTEGER;\nBEGIN\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                VAR tensor : ARRAY 3 3 OF INTEGER;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "", "2,38: Unexpected token: integer(3) - expecting OF"},
 
     };
     do_parse_tests(tests);

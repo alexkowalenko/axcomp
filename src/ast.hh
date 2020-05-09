@@ -184,7 +184,7 @@ class ASTType : public ASTBase, public std::enable_shared_from_this<ASTType> {
 using ASTTypePtr = std::shared_ptr<ASTType>;
 
 /**
- * @brief  "ARRAY" "[" expr "]" "OF" type
+ * @brief  "ARRAY" [ expr ( , expr ) ] "OF" type
  *
  */
 
@@ -194,8 +194,8 @@ class ASTArray : public ASTBase, public std::enable_shared_from_this<ASTArray> {
 
     void accept(ASTVisitor *v) override { v->visit_ASTArray(shared_from_this()); };
 
-    ASTIntegerPtr size;
-    ASTTypePtr    type;
+    std::vector<ASTIntegerPtr> dimensions;
+    ASTTypePtr                 type;
 };
 using ASTArrayPtr = std::shared_ptr<ASTArray>;
 

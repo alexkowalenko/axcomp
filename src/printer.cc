@@ -364,8 +364,15 @@ void ASTPrinter::visit_ASTType(ASTTypePtr ast) {
 
 void ASTPrinter::visit_ASTArray(ASTArrayPtr ast) {
     os << "ARRAY ";
-    ast->size->accept(this);
-    os << " OF ";
+    std::for_each(begin(ast->dimensions), end(ast->dimensions), [this, ast](auto &expr) {
+        expr->accept(this);
+        if (expr != ast->dimensions.back()) {
+            os << ", ";
+        } else {
+            os << ' ';
+        }
+    });
+    os << "OF ";
     ast->type->accept(this);
 }
 

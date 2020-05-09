@@ -28,6 +28,9 @@ class Symbol {
 
     explicit Symbol(TypePtr t) : type{std::move(t)} {};
     Symbol(TypePtr t, Attr const &a) : type{std::move(t)} { attrs.insert(a); };
+    Symbol(TypePtr t, Attr const &a, llvm::Value *v) : type{std::move(t)}, value(v) {
+        attrs.insert(a);
+    };
 
     void set(const Attr &a) { attrs.insert(a); };
     bool is(const Attr &a) { return attrs.find(a) != attrs.end(); }

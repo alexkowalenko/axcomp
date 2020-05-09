@@ -167,7 +167,8 @@ void ASTVisitor::visit_ASTType(ASTTypePtr ast) {
 }
 
 void ASTVisitor::visit_ASTArray(ASTArrayPtr ast) {
-    ast->size->accept(this);
+    std::for_each(begin(ast->dimensions), end(ast->dimensions),
+                  [this](auto &expr) { expr->accept(this); });
     ast->type->accept(this);
 };
 

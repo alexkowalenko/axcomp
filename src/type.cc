@@ -88,15 +88,15 @@ llvm::Type *ProcedureType::get_llvm() {
 }
 
 ArrayType::operator std::string() {
-    return llvm::formatv("{0}[{1}]", std::string(*base_type), size);
+    return llvm::formatv("{0}[{1}]", std::string(*base_type), dimensions[0]);
 }
 
 llvm::Type *ArrayType::get_llvm() {
-    return llvm::ArrayType::get(base_type->get_llvm(), size);
+    return llvm::ArrayType::get(base_type->get_llvm(), dimensions[0]);
 };
 
 llvm::Constant *ArrayType::get_init() {
-    auto const_array = std::vector<Constant *>(size, base_type->get_init());
+    auto const_array = std::vector<Constant *>(dimensions[0], base_type->get_init());
     return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
 };
 

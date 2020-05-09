@@ -16,6 +16,7 @@
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 
+#include "astvisitor.hh"
 #include "attr.hh"
 #include "ax.hh"
 
@@ -156,7 +157,7 @@ class ProcedureType : public Type {
 
 class ArrayType : public Type {
   public:
-    ArrayType(TypePtr b, long s) : Type(TypeId::array), base_type(std::move(b)), size(s){};
+    ArrayType(TypePtr b) : Type(TypeId::array), base_type(std::move(b)){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
@@ -164,10 +165,10 @@ class ArrayType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    unsigned int get_size() override { return size * base_type->get_size(); }
+    unsigned int get_size() override { return dimensions[0] * base_type->get_size(); }
 
-    TypePtr base_type;
-    long    size;
+    TypePtr          base_type;
+    std::vector<int> dimensions;
 };
 
 class StringType : public SimpleType {

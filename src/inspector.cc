@@ -15,6 +15,7 @@
 #include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
+#include "astvisitor.hh"
 #include "error.hh"
 #include "symbol.hh"
 #include "token.hh"
@@ -656,17 +657,28 @@ void Inspector::visit_ASTType(ASTTypePtr ast) {
 }
 
 void Inspector::visit_ASTArray(ASTArrayPtr ast) {
-    ast->size->accept(this);
-    if (!last_type->is_numeric()) {
-        auto e = TypeError("ARRAY expecting numeric size", ast->get_location());
-        errors.add(e);
+    int i = 0;
+    for (auto &expr : ast->dimensions) {
+        expr->accept(this);
+        if (!is_const) {
+            auto e = TypeError(
+                llvm::formatv("ARRAY expecting constant expression for dimension {0}", i),
+                ast->get_location());
+            errors.add(e);
+        }
+        if (!last_type->is_numeric()) {
+            auto e = TypeError(llvm::formatv("ARRAY expecting numeric size for dimension {0}", i),
+                               ast->get_location());
+            errors.add(e);
+        }
     }
-    if (!is_const) {
-        auto e = TypeError("ARRAY expecting constant expression", ast->get_location());
-        errors.add(e);
-    }
+
     ast->type->accept(this);
-    last_type = std::make_shared<ax::ArrayType>(last_type, ast->size->value);
+    // one dimension
+    auto size = ast->dimensions[0]->value;
+    auto array_type = std::make_shared<ax::ArrayType>(last_type);
+    array_type->dimensions.push_back(size);
+    last_type = array_type;
     types.put(last_type->get_name(), last_type);
 }
 
