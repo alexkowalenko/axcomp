@@ -944,7 +944,9 @@ ASTFactorPtr Parser::parse_factor() {
 /**
  * @brief IDENT selector
  *
- * selector = ( '[' expr ']' )*
+ * selector = ( '[' exprList ']' | '.' IDENT )*
+ *
+ * exprList = simpleExpr {"," simpleExpr}.
  *
  * @return ASTDesignatorPtr
  */
@@ -962,9 +964,18 @@ ASTDesignatorPtr Parser::parse_designator() {
         switch (tok.type) {
         case TokenType::l_bracket: {
             lexer.get_token(); // [
-            auto expr = parse_expr();
+            ArrayRef ref;
+            debug("Parser::parse_designator array ref");
+            do {
+                ref.push_back(parse_simpleexpr());
+                tok = lexer.peek_token();
+                if (tok.type == TokenType::comma) {
+                    lexer.get_token();
+                    continue;
+                }
+            } while (tok.type != TokenType::r_bracket);
             get_token(TokenType::r_bracket);
-            ast->selectors.emplace_back(expr);
+            ast->selectors.emplace_back(ref);
             break;
         }
         case TokenType::period:

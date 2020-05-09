@@ -446,6 +446,31 @@ TEST(Inspector, Arrays) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ARRAY_Dimensions) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                VAR x : ARRAY 5, 5 OF INTEGER;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY 5, 5 OF INTEGER;\nBEGIN\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                VAR tensor : ARRAY 3, 3, 3 OF INTEGER;
+                BEGIN
+                    RETURN 0 
+                END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 3, 3, 3 OF INTEGER;\nBEGIN\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, ArraysIndex) {
     std::vector<ParseTests> tests = {
 
@@ -511,7 +536,7 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x2[0][2][3]
                 END alpha.)",
-         "", "4,36: value not indexable type"},
+         "", "4,29: value not indexable type"},
     };
     do_inspect_tests(tests);
 }
@@ -581,6 +606,64 @@ TEST(Inspector, ArraysIndexAssign) {
                 END alpha.)",
          "", "4,31: Can't assign expression of type INTEGER to x2[1][2]"},
     };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, ArrayIndex_Dimension) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                x[2, 3] := 2;
+                RETURN x[2, 3]
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY 5, 5 OF INTEGER;\nBEGIN\nx[2,3] := 2;\nRETURN x[2,3]\nEND "
+         "alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR tensor : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                FOR i := 0 TO 4 DO
+                    FOR j := 0 TO 4 DO
+                        tensor[i, j] := i*i + j;
+                    END
+                END
+                RETURN tensor[4, 4]
+            END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j := "
+         "0 TO 4 DO\ntensor[i,j] := i*i+j\nEND\nEND;\nRETURN tensor[4,4]\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR tensor : ARRAY 5, 5, 5 OF INTEGER;
+            BEGIN
+                FOR i := 0 TO 4 DO
+                    FOR j := 0 TO 4 DO
+                        FOR k := 0 TO 4 DO
+                            tensor[i,j,k] := i*i*i + j*j + k;
+                        END
+                    END
+                END
+                RETURN tensor[4,4,4]
+            END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j "
+         ":= 0 TO 4 DO\nFOR k := 0 TO 4 DO\ntensor[i,j,k] := i*i*i+j*j+k\nEND\nEND\nEND;\nRETURN "
+         "tensor[4,4,4]\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+            VAR x : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                x[2, 3] := 3.3;
+                RETURN x[2, 3]
+            END alpha.)",
+         "", "4,26: Can't assign expression of type REAL to x[2,3]"},
+
+    };
+
     do_inspect_tests(tests);
 }
 
@@ -779,7 +862,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt[1].y := 1;
                     RETURN 0
                 END alpha.)",
-         "", "7,23: value not indexable type"},
+         "", "7,22: value not indexable type"},
 
         {R"(MODULE alpha;
                 VAR pt : ARRAY 3 OF RECORD

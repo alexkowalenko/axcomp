@@ -572,23 +572,26 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop
-        if (std::holds_alternative<ASTExprPtr>(ss)) {
+        if (std::holds_alternative<ArrayRef>(ss)) {
 
-            // do ARRAY type
+            // do ARRAY indexes
             debug("Inspector::visit_ASTDesignator array index");
-            auto s = std::get<ASTExprPtr>(ss);
+            auto s = std::get<ArrayRef>(ss);
             if (!(is_array || is_string)) {
-                auto e = TypeError("value not indexable type", s->get_location());
+                auto e = TypeError("value not indexable type", ast->get_location());
                 errors.add(e);
                 return;
             }
 
-            s->accept(this);
-            if (!last_type->is_numeric()) {
-                auto e =
-                    TypeError("expression in array index must be numeric", ast->get_location());
-                errors.add(e);
-            }
+            std::for_each(begin(s), end(s), [this, ast](auto &e) {
+                e->accept(this);
+                if (!last_type->is_numeric()) {
+                    auto e = TypeError("expression in array index must be numeric",
+                                       ast->get_location());
+                    errors.add(e);
+                }
+            });
+
             if (is_array) {
                 auto array_type = std::dynamic_pointer_cast<ArrayType>(b_type);
                 last_type = array_type->base_type;

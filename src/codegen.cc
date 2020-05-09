@@ -1022,9 +1022,9 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     for (auto const &s : ast->selectors) {
 
         std::visit(
-            overloaded{[this, &index](ASTExprPtr const &s) {
+            overloaded{[this, &index](ArrayRef const &s) {
                            // calculate index;
-                           s->expr->accept(this);
+                           s[0]->accept(this);
                            debug("GEP index is Int: {0}", last_value->getType()->isIntegerTy());
                            index.push_back(last_value);
                        },

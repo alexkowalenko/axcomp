@@ -157,7 +157,7 @@ TEST(Parser, ArrayIndex) {
             BEGIN
                 RETURN x[2
             END alpha.)",
-         "", "5,15: Unexpected token: END - expecting ]"},
+         "", "5,15: Unexpected token: END"},
     };
 
     do_parse_tests(tests);
@@ -211,7 +211,63 @@ TEST(Parser, ArrayIndexAssign) {
                 x[2 := 2;
                 RETURN x[2]
             END alpha.)",
-         "", "4,22: Unexpected token: := - expecting ]"},
+         "", "4,22: Unexpected token: :="},
+    };
+
+    do_parse_tests(tests);
+}
+
+TEST(Parser, ArrayIndex_Dimension) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+            VAR x : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                x[2, 3] := 2;
+                RETURN x[2, 3]
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: ARRAY 5, 5 OF INTEGER;\nBEGIN\nx[2,3] := 2;\nRETURN x[2,3]\nEND "
+         "alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR tensor : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                FOR i := 0 TO 4 DO
+                    FOR j := 0 TO 4 DO
+                        tensor[i, j] := i*i + j;
+                    END
+                END
+                RETURN tensor[4, 4]
+            END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j := "
+         "0 TO 4 DO\ntensor[i,j] := i*i+j\nEND\nEND;\nRETURN tensor[4,4]\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            VAR tensor : ARRAY 5, 5, 5 OF INTEGER;
+            BEGIN
+                FOR i := 0 TO 4 DO
+                    FOR j := 0 TO 4 DO
+                        FOR k := 0 TO 4 DO
+                            tensor[i,j,k] := i*i*i + j*j + k;
+                        END
+                    END
+                END
+                RETURN tensor[4,4,4]
+            END alpha.)",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j "
+         ":= 0 TO 4 DO\nFOR k := 0 TO 4 DO\ntensor[i,j,k] := i*i*i+j*j+k\nEND\nEND\nEND;\nRETURN "
+         "tensor[4,4,4]\nEND alpha.",
+         ""},
+
+        //
+        {R"(MODULE alpha;
+            VAR x : ARRAY 5, 5 OF INTEGER;
+            BEGIN
+                RETURN x[2, ]
+            END alpha.)",
+         "", "4,29: Unexpected token: ]"},
     };
 
     do_parse_tests(tests);

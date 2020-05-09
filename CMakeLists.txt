@@ -84,6 +84,8 @@ set (CMAKE_CXX_FLAGS "-DLLVM_ENABLE_STATS=1")
 add_library(libax STATIC 
   src/ast.cc
   src/error.cc 
+  src/printer.cc
+  src/parser.cc
   src/inspector.cc 
   src/lexer.cc
   src/lexerUTF8.cc 
@@ -94,8 +96,6 @@ add_library(libax STATIC
   src/typetable.cc
   src/builtin.cc
   src/astvisitor.cc
-  src/printer.cc
-  src/parser.cc
   src/inspector.cc 
   src/codegen.cc
   src/defprinter.cc

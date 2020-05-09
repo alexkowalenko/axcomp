@@ -155,7 +155,10 @@ void ASTVisitor::visit_ASTFactor(ASTFactorPtr ast) {
 void ASTVisitor::visit_ASTDesignator(ASTDesignatorPtr ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
-        std::visit(overloaded{[this](ASTExprPtr const &s) { s->accept(this); },
+        std::visit(overloaded{[this](ArrayRef const &s) {
+                                  std::for_each(begin(s), end(s),
+                                                [this](auto &e) { e->accept(this); });
+                              },
                               [this](FieldRef const &s) { s.first->accept(this); }},
                    arg);
     });

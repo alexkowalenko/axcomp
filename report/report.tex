@@ -298,7 +298,9 @@ If A designates an array, then A[E] denotes that element of A whose index is the
 If r designates a record, then r.f denotes the field f of r.
 
 \begin{lstlisting}[style=ebnf]
-designator = Qualident {"." ident | "[" expression "]" }.
+designator = Qualident {"." ident | "[" ExprList "]" }.
+
+ExprList = Expr {"," Expr}.
 \end{lstlisting}
 
 If the designated object is a variable, then the designator refers to the variable's current value.

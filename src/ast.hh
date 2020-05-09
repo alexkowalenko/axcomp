@@ -222,11 +222,14 @@ using ASTRecordPtr = std::shared_ptr<ASTRecord>;
 /**
  * @brief IDENT selector
  *
- * selector = ( '[' expr ']' | '.' IDENT )*
+ * selector = ( '[' exprList ']' | '.' IDENT )*
+ *
+ * exprList = simpleExpr {"," simpleExpr}.
  *
  */
 
 using FieldRef = std::pair<ASTIdentifierPtr, int>;
+using ArrayRef = std::vector<ASTSimpleExprPtr>;
 
 class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDesignator> {
   public:
@@ -234,8 +237,8 @@ class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDes
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(shared_from_this()); };
 
-    ASTQualidentPtr                                 ident;
-    std::vector<std::variant<ASTExprPtr, FieldRef>> selectors;
+    ASTQualidentPtr                               ident;
+    std::vector<std::variant<ArrayRef, FieldRef>> selectors;
 };
 using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
 

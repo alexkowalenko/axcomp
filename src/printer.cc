@@ -345,9 +345,14 @@ void ASTPrinter::visit_ASTFactor(ASTFactorPtr ast) {
 void ASTPrinter::visit_ASTDesignator(ASTDesignatorPtr ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
-        std::visit(overloaded{[this](ASTExprPtr const &s) {
+        std::visit(overloaded{[this](ArrayRef const &s) {
                                   os << '[';
-                                  s->accept(this);
+                                  std::for_each(begin(s), end(s), [this, s](auto &e) {
+                                      e->accept(this);
+                                      if (e != s.back()) {
+                                          os << ',';
+                                      }
+                                  });
                                   os << ']';
                               },
                               [this](FieldRef const &s) {
