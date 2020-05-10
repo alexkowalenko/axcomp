@@ -41,7 +41,7 @@ void gc_init() {
     init_gc = true;
 }
 
-extern "C" void NEW(String **ptr, Int x) {
+extern "C" void NEW_String(String **ptr, Int x) {
     if (!init_gc) {
         gc_init();
     }
@@ -57,6 +57,14 @@ extern "C" void COPY(String x, String **v) {
     *v = static_cast<String *>(GC_malloc(len));
     // Opposite to Oberon
     std::wcscpy(*(String *)v, x);
+}
+
+extern "C" void NEW_Array(void **ptr, Int size) {
+    if (!init_gc) {
+        gc_init();
+    }
+    *ptr = static_cast<void *>(GC_malloc(size));
+    memset(*ptr, 0, size);
 }
 
 } // namespace ax

@@ -187,7 +187,7 @@ void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
 void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
     debug("CodeGenerator::doTopConsts");
     for (auto const &c : ast->consts) {
-        debug("CodeGenerator::doTopConsts type: {0}", c.type->type_info->get_name());
+        debug("CodeGenerator::doTopConsts type: {0}", c.type->get_type()->get_name());
         auto *type = getType(c.type);
         auto  const_name = gen_module_id(c.ident->value);
         module->getOrInsertGlobal(const_name, type);
@@ -1051,6 +1051,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     if (ast->ident->id->is(Attr::ptr)) {
         arg_ptr = builder.CreateLoad(arg_ptr);
     }
+    debug("GEP number of indices: {0}", index.size());
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
 }
 
@@ -1238,7 +1239,7 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
                               };
                               result = *res;
                           },
-                          [t, &result](auto /* not used*/) { result = t->type_info; }},
+                          [t, &result](auto /* not used*/) { result = t->get_type(); }},
                t->type);
     return result;
 }

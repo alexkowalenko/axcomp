@@ -89,7 +89,15 @@ llvm::Type *ProcedureType::get_llvm() {
 }
 
 ArrayType::operator std::string() {
-    return llvm::formatv("{0}[{1}]", std::string(*base_type), dimensions[0]);
+    std::string result = llvm::formatv("{0}[", std::string(*base_type));
+    for (auto iter = dimensions.begin(); iter != dimensions.end(); iter++) {
+        result += llvm::formatv("{0}", *iter);
+        if ((iter + 1) != dimensions.end()) {
+            result += ',';
+        }
+    };
+    result += ']';
+    return result;
 }
 
 llvm::Type *ArrayType::get_llvm() {

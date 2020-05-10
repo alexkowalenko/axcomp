@@ -38,10 +38,14 @@ class ASTBase {
     void            set_location(Location const &l) { location = l; };
     Location const &get_location() { return location; };
 
+    TypePtr get_type() const { return type_info; };
+    void    set_type(TypePtr const &t) { type_info = t; }
+
     explicit operator std::string();
 
   private:
     Location location;
+    TypePtr  type_info{nullptr}; // store information about the type
 };
 using ASTBasePtr = std::shared_ptr<ASTBase>;
 
@@ -179,7 +183,6 @@ class ASTType : public ASTBase, public std::enable_shared_from_this<ASTType> {
     void accept(ASTVisitor *v) override { v->visit_ASTType(shared_from_this()); };
 
     std::variant<ASTQualidentPtr, ASTArrayPtr, ASTRecordPtr> type;
-    TypePtr type_info = nullptr; // store information about the type
 };
 using ASTTypePtr = std::shared_ptr<ASTType>;
 

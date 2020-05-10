@@ -72,8 +72,10 @@ class TypeTable : public SymbolTable<TypePtr> {
     static std::shared_ptr<RealCType>     RealType;
     static std::shared_ptr<CharacterType> CharType;
     static std::shared_ptr<StringType>    StrType;
-    static TypePtr                        VoidType;
-    static TypePtr                        AnyType;
+    static TypePtr VoidType; // For procedures which don't return anything, also arguments which
+                             // can any type (internal for built-ins)
+    static TypePtr AnyType;  // For procedures which can return any time (built-ins), also for
+                             // non-fixed length types arguments (built-ins).
 
   private:
     void reg(TokenType op, TypePtr const &type, TypePtr const &result);

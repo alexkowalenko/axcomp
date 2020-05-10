@@ -260,6 +260,10 @@ RECORD day, month, year: INTEGER
 END
 \end{lstlisting}
 
+\subsection{Pointer types}
+
+If T is an n-dimensional open array the allocation has to be done with \NEW(p, $e_0$, ... $e_{n-1}$), where T is allocated with lengths given by the expressions $e_0$, ... $e_{n-1}$.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variable declarations}
 
@@ -704,6 +708,7 @@ Proper procedures:
     \INC(v) & integer type & v := v + 1 \\  % Runtime
  %  \INC(v, n) & integer type & v := v + n \\  % Runtime
  %  \NEW(v) & pointer to record or array type & allocate v^ \\  % Runtime
+    \NEW(v, $x_0$, ... $x_n$) & v: pointer to open array, $x_i$: integer type & allocate v with lengths $x_0$, ... $x_n$ \\
     \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
     \WriteInt(x) & \INTEGER & print x to standard output. \\ % Runtime
     \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\ % Runtime

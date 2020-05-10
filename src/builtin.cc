@@ -7,7 +7,10 @@
 #include "builtin.hh"
 
 #include <llvm/Support/Debug.h>
+#include <memory>
 
+#include "codegen.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -23,7 +26,7 @@ template <typename... T> static void debug(const T &... msg) {
 }
 
 BIFunctor abs = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    debug("builtin abs");
+    debug("builtin ABS");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isIntegerTy()) {
@@ -61,6 +64,31 @@ BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return TypeTable::IntType->make_value(type->get_size());
 };
 
+BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    debug("builtin NEW");
+    auto args = codegen->do_arguments(ast);
+    if (ast->args.size() > 1 && ast->args[0]->get_type() == TypeTable::StrType) {
+        debug("builtin NEW STRING");
+        return codegen->call_function("NEW_String", TypeTable::IntType->get_llvm(),
+                                      {args[0], args[1]});
+    }
+    if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::array) {
+        debug("builtin NEW ARRAY");
+
+        auto   array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
+        auto   base_size = array_type->base_type->get_size();
+        Value *value = TypeTable::IntType->make_value(base_size);
+        for (int i = 1; i < args.size(); i++) {
+            value = codegen->get_builder().CreateMul(args[i], value);
+        }
+        return codegen->call_function("NEW_Array", TypeTable::IntType->get_llvm(),
+                                      {args[0], value});
+    }
+    throw CodeGenException(llvm::formatv("Variable with type {0} passed to NEW",
+                                         ast->args[0]->get_type()->get_name()),
+                           ast->get_location());
+};
+
 BIFunctor min = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto name = std::string(*ast->args[0]);
     auto type = codegen->get_types().find(name);
@@ -94,7 +122,7 @@ BIFunctor dec = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
 };
 
 BIFunctor floor = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    debug("builtin floor");
+    debug("builtin FLOOR");
     auto                      args = codegen->do_arguments(ast);
     std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
     auto fun = Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
@@ -184,10 +212,9 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
         {"NEW", Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType,
                                                        ProcedureType::ParamsList{
-                                                           {TypeTable::StrType, Attr::var},
-                                                           {TypeTable::IntType, Attr::null},
+                                                           {TypeTable::AnyType, Attr::var},
                                                        }),
-                       Attr::global_function}},
+                       Attr::compile_function}},
 
         {"COPY", Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType,
                                                         ProcedureType::ParamsList{
@@ -231,6 +258,7 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("ABS", abs);
     compile_functions.try_emplace("FLOOR", floor);
     compile_functions.try_emplace("FLT", flt);
+    compile_functions.try_emplace("NEW", newfunct);
 }
 
 } // namespace ax

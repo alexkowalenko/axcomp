@@ -75,7 +75,7 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
             errors.add(e);
         }
         c.type = std::make_shared<ASTType>();
-        c.type->type_info = last_type;
+        c.type->set_type(last_type);
         c.type->type = make<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
         symboltable.put(c.ident->value, mkSym(last_type, Attr::cnst));
@@ -243,6 +243,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
     debug("Inspector::visit_ASTCall");
     // auto name = ast->name->ident->make_coded_id();
     auto name = get_Qualident(ast->name->ident);
+    bool skip_argument_typecheck{false};
 
     debug("Inspector::visit_ASTCall - {0} {1}", name, name);
     auto res = symboltable.find(name);
@@ -257,12 +258,19 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
         throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
     }
 
-    if (ast->args.size() != procType->params.size()) {
-        std::replace(begin(name), end(name), '_', '.');
-        throw TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
-                                      "arguments: {1} instead of {2}",
-                                      name, ast->args.size(), procType->params.size()),
-                        ast->get_location());
+    // Check if procedure argument is a AnyType - then skip check argument types
+    if (procType->params.empty() || procType->params[0].first != TypeTable::AnyType) {
+
+        if (ast->args.size() != procType->params.size()) {
+            std::replace(begin(name), end(name), '_', '.');
+            throw TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
+                                          "arguments: {1} instead of {2}",
+                                          name, ast->args.size(), procType->params.size()),
+                            ast->get_location());
+        }
+    } else {
+        debug("Inspector::visit_ASTCall: {0} AnyType args", name);
+        skip_argument_typecheck = true;
     }
 
     // Check argument types
@@ -271,6 +279,10 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
          call_iter++, proc_iter++) {
 
         (*call_iter)->accept(this);
+
+        if (skip_argument_typecheck) {
+            continue;
+        }
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
@@ -300,9 +312,11 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
             errors.add(e);
         }
     }
+
     // OK
     res->set(Attr::used);
     last_type = procType->ret;
+    ast->set_type(last_type);
 }
 
 void Inspector::visit_ASTIf(ASTIfPtr ast) {
@@ -461,6 +475,7 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
     }
+    ast->set_type(last_type);
 }
 
 void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
@@ -484,6 +499,7 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
     };
+    ast->set_type(last_type);
 }
 
 void Inspector::visit_ASTTerm(ASTTermPtr ast) {
@@ -509,15 +525,20 @@ void Inspector::visit_ASTTerm(ASTTermPtr ast) {
         t1 = *result_type;
         last_type = t1;
     };
+    ast->set_type(last_type);
 }
 
 void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
     std::visit(overloaded{
-                   [this](auto factor) { factor->accept(this); },
-                   [this](ASTCallPtr const &factor) {
+                   [this, ast](auto factor) {
+                       factor->accept(this);
+                       ast->set_type(last_type);
+                   },
+                   [this, ast](ASTCallPtr const &factor) {
                        // need to pass on return type */
                        factor->accept(this);
                        is_lvalue = false;
+                       ast->set_type(last_type);
                    },
                    [this, ast](ASTFactorPtr const &arg) {
                        if (ast->is_not) {
@@ -530,10 +551,10 @@ void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
                                return;
                            }
                            last_type = *result_type;
+                           ast->set_type(last_type);
                            is_lvalue = false;
                        }
                    },
-
                },
                ast->factor);
 }
@@ -595,8 +616,8 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             if (is_array) {
                 auto array_type = std::dynamic_pointer_cast<ArrayType>(b_type);
 
-                // check index count
-                if (array_type->dimensions.size() != s.size()) {
+                // check index count, zero array dimensions means open array
+                if (!array_type->dimensions.empty() && array_type->dimensions.size() != s.size()) {
                     auto e = TypeError(
                         llvm::formatv("array indexes don't match array dimensions of {0}",
                                       ast->ident->id->value),
@@ -605,8 +626,10 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                 }
 
                 last_type = array_type->base_type;
+                ast->set_type(last_type);
             } else if (is_string) {
                 last_type = TypeTable::CharType;
+                ast->set_type(last_type);
             }
         } else if (std::holds_alternative<FieldRef>(ss)) {
 
@@ -636,6 +659,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                   s.first->value);
 
             last_type = *field;
+            ast->set_type(last_type);
         }
         b_type = last_type;
         is_array = b_type->id == TypeId::array;
@@ -655,16 +679,16 @@ void Inspector::visit_ASTType(ASTTypePtr ast) {
                                       ast->get_location());
                               }
                               debug("Inspector::visit_ASTType 2 {0}", type->id->value);
-                              ast->type_info = result;
+                              ast->set_type(result);
                               last_type = result;
                           },
                           [this, ast](ASTArrayPtr const &arg) {
                               arg->accept(this);
-                              ast->type_info = last_type;
+                              ast->set_type(last_type);
                           },
                           [this, ast](ASTRecordPtr const &arg) {
                               arg->accept(this);
-                              ast->type_info = last_type;
+                              ast->set_type(last_type);
                           }},
                ast->type);
 }
@@ -692,6 +716,7 @@ void Inspector::visit_ASTArray(ASTArrayPtr ast) {
     std::for_each(begin(ast->dimensions), end(ast->dimensions),
                   [&array_type](auto &d) { array_type->dimensions.push_back(d->value); });
     last_type = array_type;
+    ast->set_type(last_type);
     types.put(last_type->get_name(), last_type);
 }
 
@@ -711,6 +736,7 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
         rec_type->insert(v.first->value, last_type);
     });
     last_type = rec_type;
+    ast->set_type(last_type);
     types.put(last_type->get_name(), last_type);
 }
 
@@ -734,6 +760,7 @@ void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
     debug("Inspector::visit_ASTQualident");
     if (ast->qual.empty()) {
         visit_ASTIdentifier(ast->id);
+        ast->set_type(last_type);
     } else {
         debug("Inspector::visit_ASTQualident {0}", ast->qual);
 
@@ -748,6 +775,7 @@ void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
                 ast->get_location());
             errors.add(e);
         }
+        ast->set_type(last_type);
     }
 }
 
@@ -782,6 +810,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
         return;
     }
     last_type = *resType;
+    ast->set_type(last_type);
     is_const = res->is(Attr::cnst);
     if (last_type->id == TypeId::string) {
         ast->set(Attr::ptr);
