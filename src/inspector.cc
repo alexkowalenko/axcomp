@@ -689,6 +689,10 @@ void Inspector::visit_ASTType(ASTTypePtr ast) {
                           [this, ast](ASTRecordPtr const &arg) {
                               arg->accept(this);
                               ast->set_type(last_type);
+                          },
+                          [this, ast](ASTPointerTypePtr const &arg) {
+                              arg->reference->accept(this);
+                              // set Pointer type
                           }},
                ast->type);
 }

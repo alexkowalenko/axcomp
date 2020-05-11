@@ -38,6 +38,7 @@ enum class TokenType {
     dotdot,
     bar,
     slash,
+    caret,
 
     integer,
     hexinteger,
@@ -79,6 +80,8 @@ enum class TokenType {
     definition,
     import,
     cse,
+    pointer,
+    nil
 };
 
 std::string string(TokenType t);

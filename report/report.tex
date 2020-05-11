@@ -98,11 +98,11 @@ string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}[style=example]
-+ := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | ..
++ := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | .. ^
     
 ARRAY BEGIN BY CASE CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT LOOP
-MOD MODULE OF OR PROCEDURE RECORD REPEAT RETURN THEN TO TYPE UNTIL
-VAR WHILE
+MOD MODULE NIL OF OR POINTER PROCEDURE RECORD REPEAT RETURN THEN TO TYPE
+UNTIL VAR WHILE
 \end{lstlisting}
 
 \item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between (* *). 
@@ -122,6 +122,7 @@ The scope rule has the following amendments:
 \begin{enumerate}
     \item No identifier may denote more than one object within a given scope (i.e. no identifier may be declared twice in a block);
     \item An object may only be referenced within its scope;
+    \item A type T of the form \POINTER\ \TO\ T1 (see \ref{pointers}) can be declared at a point where T1 is unknown. The declaration of T1 must follow in the same block to which T is local;
     \item Field identifiers of a record declaration (see \ref{records}) are valid in field designators only.
 \end{enumerate}
 
@@ -150,6 +151,7 @@ The following identifiers are predefined; their meaning is defined in the indica
     \LEN \> (\ref{predefined}) \\
     \MAX \> (\ref{predefined}) \\
     \MIN \> (\ref{predefined}) \\
+    \NEW \> (\ref{predefined}) \\
     \ODD \> (\ref{predefined}) \\
     \ORD \> (\ref{predefined}) \\
     \REAL \> (\ref{types-basic}) \\
@@ -188,14 +190,17 @@ A data type determines the set of values which variables of that type may assume
 \begin{lstlisting}[style=ebnf]
     TypeDeclaration = IdentDef "=" type.
 
-    type = Qualident | ArrayType | RecordType.
+    type = Qualident | ArrayType | RecordType | PointerType.
 \end{lstlisting}
 
 Examples:
 
 \begin{lstlisting}[style=example]
 Table = ARRAY 10 OF INTEGER
-Node =  RECORD key: INTEGER; left, right: Tree END
+Tree = POINTER TO Node
+Node =  RECORD key: INTEGER; 
+               left, right: Tree 
+        END
 \end{lstlisting}
 
 \subsection{Basic types}
@@ -261,8 +266,22 @@ END
 \end{lstlisting}
 
 \subsection{Pointer types}
+\label{pointers}
 
-If T is an n-dimensional open array the allocation has to be done with \NEW(p, $e_0$, ... $e_{n-1}$), where T is allocated with lengths given by the expressions $e_0$, ... $e_{n-1}$.
+Variables of a pointer type P assume as values pointers to variables of some type T. T is called the pointer base type of P and must be a record or array type.
+
+\begin{lstlisting}[style=ebnf]
+PointerType = POINTER TO Type.
+\end{lstlisting}
+
+\begin{itemize}
+    \item If p is a variable of type P = \POINTER\ \TO\ T, a call of the predeclared procedure \NEW(p) (see \ref{predefined}) allocates a variable of type T in free storage. 
+    \item If T is a record type or an array type with fixed length, the allocation has to be done with NEW(p).
+    \item If T is an n-dimensional open array the allocation has to be done with \NEW(p, $e_0$, ... $e_{n-1}$), where T is allocated with lengths given by the expressions $e_0$, ... $e_{n-1}$.
+\end{itemize}
+In either case a pointer to the allocated variable is assigned to p, p is of type P. The referenced variable p\lstinline!^! (pronounced as p-referenced) is of type T.
+
+Any pointer variable may assume the value \NIL, which points to no variable at all. All pointer variables are initialized to \NIL.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variable declarations}
@@ -293,19 +312,22 @@ Expressions are constructs denoting rules of computation whereby constants and c
 \subsection{Operands}
 \label{operands}
 
-With the exception of sets and literal constants, i.e. numbers, operands are denoted by designators. A designator consists of an identifier referring to the constant, variable, or procedure to be designated. 
+With the exception of sets and literal constants, i.e. numbers, operands are denoted by designators. A designator consists of an identifier referring to the constant, variable, or procedure to be designated. A designator consists of an identifier referring to a constant, variable, or procedure. 
 
 This identifier may possibly be followed by selectors, if the designated object is an element of a structure.
+
+\begin{lstlisting}[style=ebnf]
+    designator = Qualident {"." ident | "[" ExprList "]" | "^" }.
+    
+    ExprList = Expr {"," Expr}.
+\end{lstlisting}
+
 
 If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type. A designator of the form a[$e_0$, $e_1$, ..., $e_n$] stands for a[$e_0$][$e_1$]...[$e_n$]. A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
 
 If r designates a record, then r.f denotes the field f of r.
 
-\begin{lstlisting}[style=ebnf]
-designator = Qualident {"." ident | "[" ExprList "]" }.
-
-ExprList = Expr {"," Expr}.
-\end{lstlisting}
+If p designates a pointer, p\^{} denotes the variable which is referenced by p. The designators p\^{}.f and p\^{}[e] may be abbreviated as p.f and p[e], i.e. record and array selectors imply dereferencing. If a or r are read-only, then also a[e] and r.f are read-only.
 
 If the designated object is a variable, then the designator refers to the variable's current value.
 
@@ -502,9 +524,9 @@ CaseLabels = ConstExpression [".." ConstExpression].
 
 \begin{lstlisting}[style=example]
 CASE ch OF
-"A" .. "Z": ReadIdentifier
-| "0" .. "9": ReadNumber 
-| "'",'"':ReadString 
+    "A" .. "Z": ReadIdentifier
+    | "0" .. "9": ReadNumber 
+    | "'",'"':ReadString 
 ELSE SpecialCharacter 
 END    
 \end{lstlisting}
@@ -707,7 +729,7 @@ Proper procedures:
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
     \INC(v) & integer type & v := v + 1 \\  % Runtime
  %  \INC(v, n) & integer type & v := v + n \\  % Runtime
- %  \NEW(v) & pointer to record or array type & allocate v^ \\  % Runtime
+    \NEW(v) & pointer to record or array type & allocate v\^{} \\  % Runtime
     \NEW(v, $x_0$, ... $x_n$) & v: pointer to open array, $x_i$: integer type & allocate v with lengths $x_0$, ... $x_n$ \\
     \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
     \WriteInt(x) & \INTEGER & print x to standard output. \\ % Runtime
@@ -846,6 +868,7 @@ FPSection = [VAR] ident {"," ident} ":" Type.
 Type = Qualident
     | ARRAY [ConstExpr { "," ConstExpr }] OF Type
     | RECORD FieldList { ";" FieldList } END.
+    | POINTER TO Type.
 
 FieldList = [ IdentList ":" Type ].
     
@@ -884,6 +907,7 @@ Factor = Designator ["(" [ExprList] ")"]
          | number 
          | character
          | string
+         | NIL
          | "(" Expr ")" 
          | "~" Factor.
 
@@ -893,7 +917,7 @@ AddOp = "+" | "-" | OR.
 
 MulOp = "*" | "/" | DIV | MOD | "&".
 
-Designator = Qualident { "." ident | "[" ExprList "]" }. 
+Designator = Qualident { "." ident | "[" ExprList "]" | "^" }. 
 
 ExprList = Expr {"," Expr}.
 
@@ -1225,7 +1249,7 @@ ident = letter {letter | digit}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The ax compiler}
 
-Program \lstinline"ax" options are: 
+The program \lstinline"ax" has the following options: 
 \begin{itemize}
     \item \lstinline"-d" \lstinline"--defs" generate only the \lstinline".def" file.
     \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
@@ -1238,10 +1262,11 @@ Program \lstinline"ax" options are:
 
 The environment variable \lstinline"AXLIB_PATH" can be used to set the path to search for \lstinline".def" files for \IMPORT\ statements.
 
-\subsection{Implementation details}
+\subsection{Implementation limitations}
 \begin{itemize}
     \item \PROCEDURE s don't have nested procedures.
     \item \ARRAY\ sizes must be integers.
+    \item Open \ARRAY s only work with 1 dimensional open arrays.
 \end{itemize}
 
 

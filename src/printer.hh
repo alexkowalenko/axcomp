@@ -49,6 +49,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTType(ASTTypePtr ast) override;
     void visit_ASTArray(ASTArrayPtr ast) override;
     void visit_ASTRecord(ASTRecordPtr ast) override;
+    void visit_ASTPointerType(ASTPointerTypePtr ast) override;
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
     void visit_ASTQualident(ASTQualidentPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
@@ -56,6 +57,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTChar(ASTCharPtr ast) override;
     void visit_ASTString(ASTStringPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
+    void visit_ASTNil(ASTNilPtr /*not used*/) override;
 
     void set_indent(int i) { indent_width = i; }
 

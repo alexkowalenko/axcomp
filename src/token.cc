@@ -47,6 +47,7 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::dotdot, ".."},
     {TokenType::bar, "|"},
     {TokenType::slash, "/"},
+    {TokenType::caret, "^"},
 
     // Keywords
     {TokenType::module, "MODULE"},
@@ -81,6 +82,8 @@ static const std::unordered_map<TokenType, std::string> mapping{
     {TokenType::definition, "DEFINITION"},
     {TokenType::import, "IMPORT"},
     {TokenType::cse, "CASE"},
+    {TokenType::pointer, "POINTER"},
+    {TokenType::nil, "NIL"},
 
     {TokenType::eof, "EOF"},
 };

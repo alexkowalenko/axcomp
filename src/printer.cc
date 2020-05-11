@@ -358,7 +358,8 @@ void ASTPrinter::visit_ASTDesignator(ASTDesignatorPtr ast) {
                               [this](FieldRef const &s) {
                                   os << '.';
                                   s.first->accept(this);
-                              }},
+                              },
+                              [this](PointerRef /* unused */) { os << '^'; }},
                    s);
     });
 }
@@ -394,6 +395,11 @@ void ASTPrinter::visit_ASTRecord(ASTRecordPtr ast) {
         }
         os << '\n';
     });
+}
+
+void ASTPrinter::visit_ASTPointerType(ASTPointerTypePtr ast) {
+    os << "POINTER TO ";
+    ast->reference->accept(this);
 }
 
 void ASTPrinter::visit_ASTQualident(ASTQualidentPtr ast) {
@@ -439,6 +445,10 @@ void ASTPrinter::visit_ASTBool(ASTBoolPtr ast) {
     } else {
         os << string(TokenType::false_k);
     }
+}
+
+void ASTPrinter::visit_ASTNil(ASTNilPtr /*not used*/) {
+    os << "NIL";
 }
 
 } // namespace ax

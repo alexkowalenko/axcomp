@@ -65,6 +65,8 @@ class ASTArray;
 using ASTArrayPtr = std::shared_ptr<ASTArray>;
 class ASTRecord;
 using ASTRecordPtr = std::shared_ptr<ASTRecord>;
+class ASTPointerType;
+using ASTPointerTypePtr = std::shared_ptr<ASTPointerType>;
 class ASTQualident;
 using ASTQualidentPtr = std::shared_ptr<ASTQualident>;
 class ASTIdentifier;
@@ -79,6 +81,8 @@ class ASTString;
 using ASTStringPtr = std::shared_ptr<ASTString>;
 class ASTBool;
 using ASTBoolPtr = std::shared_ptr<ASTBool>;
+class ASTNil;
+using ASTNilPtr = std::shared_ptr<ASTNil>;
 
 class ASTVisitor {
 
@@ -115,6 +119,7 @@ class ASTVisitor {
 
     virtual void visit_ASTType(ASTTypePtr ast);
     virtual void visit_ASTArray(ASTArrayPtr ast);
+    virtual void visit_ASTPointerType(ASTPointerTypePtr ast);
     virtual void visit_ASTRecord(ASTRecordPtr ast);
     virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/){};
     virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
@@ -123,6 +128,7 @@ class ASTVisitor {
     virtual void visit_ASTChar(ASTCharPtr /*not used*/){};
     virtual void visit_ASTString(ASTStringPtr /*not used*/){};
     virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};
+    virtual void visit_ASTNil(ASTNilPtr /*not used*/){};
 };
 
 } // namespace ax

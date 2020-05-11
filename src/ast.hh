@@ -56,6 +56,14 @@ template <class T, typename... Rest> auto make(Rest... rest) {
 ////////////////
 // Basic Objects
 
+class ASTNil : public ASTBase, public std::enable_shared_from_this<ASTNil> {
+  public:
+    ~ASTNil() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTNil(shared_from_this()); };
+};
+using ASTNilPtr = std::shared_ptr<ASTNil>;
+
 class ASTInteger : public ASTBase, public std::enable_shared_from_this<ASTInteger> {
   public:
     ~ASTInteger() override = default;
@@ -172,7 +180,7 @@ class ASTQualident : public ASTBase, public std::enable_shared_from_this<ASTQual
 using ASTQualidentPtr = std::shared_ptr<ASTQualident>;
 
 /**
- * @brief INDENT | arrayType
+ * @brief INDENT | arrayType | recordType | pointerType
  *
  */
 
@@ -182,7 +190,7 @@ class ASTType : public ASTBase, public std::enable_shared_from_this<ASTType> {
 
     void accept(ASTVisitor *v) override { v->visit_ASTType(shared_from_this()); };
 
-    std::variant<ASTQualidentPtr, ASTArrayPtr, ASTRecordPtr> type;
+    std::variant<ASTQualidentPtr, ASTArrayPtr, ASTRecordPtr, ASTPointerTypePtr> type;
 };
 using ASTTypePtr = std::shared_ptr<ASTType>;
 
@@ -219,13 +227,28 @@ class ASTRecord : public ASTBase, public std::enable_shared_from_this<ASTRecord>
 };
 using ASTRecordPtr = std::shared_ptr<ASTRecord>;
 
+/**
+ * @brief "POINTER" "TO" type
+ *
+ */
+
+class ASTPointerType : public ASTBase, public std::enable_shared_from_this<ASTPointerType> {
+  public:
+    ~ASTPointerType() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTPointerType(shared_from_this()); };
+
+    ASTTypePtr reference;
+};
+using ASTPointerTypePtr = std::shared_ptr<ASTPointerType>;
+
 /////////////////////
 // Expression Objects
 
 /**
  * @brief IDENT selector
  *
- * selector = ( '[' exprList ']' | '.' IDENT )*
+ * selector = ( '[' exprList ']' | '.' IDENT | "^")*
  *
  * exprList = simpleExpr {"," simpleExpr}.
  *
@@ -233,6 +256,7 @@ using ASTRecordPtr = std::shared_ptr<ASTRecord>;
 
 using FieldRef = std::pair<ASTIdentifierPtr, int>;
 using ArrayRef = std::vector<ASTSimpleExprPtr>;
+using PointerRef = bool;
 
 class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDesignator> {
   public:
@@ -240,8 +264,8 @@ class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDes
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(shared_from_this()); };
 
-    ASTQualidentPtr                               ident;
-    std::vector<std::variant<ArrayRef, FieldRef>> selectors;
+    ASTQualidentPtr                                           ident;
+    std::vector<std::variant<ArrayRef, FieldRef, PointerRef>> selectors;
 };
 using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
 
@@ -264,7 +288,7 @@ class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor>
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
 
     std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTRealPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr,
-                 ASTCharPtr, ASTStringPtr, ASTFactorPtr>
+                 ASTCharPtr, ASTStringPtr, ASTNilPtr, ASTFactorPtr>
          factor;
     bool is_not = false;
 };

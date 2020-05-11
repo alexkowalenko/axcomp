@@ -41,6 +41,8 @@ const std::unordered_map<std::string, Token> keyword_map = {
     {"DEFINITION", Token(TokenType::definition, "DEFINITION")},
     {"IMPORT", Token(TokenType::import, "IMPORT")},
     {"CASE", Token(TokenType::cse, "CASE")},
+    {"POINTER", Token(TokenType::pointer, "POINTER")},
+    {"NIL", Token(TokenType::nil, "NIL")},
 };
 
 const std::unordered_map<char, Token> single_tokens = {
@@ -60,6 +62,7 @@ const std::unordered_map<char, Token> single_tokens = {
     {']', Token(TokenType::r_bracket, "]")},
     {'|', Token(TokenType::bar, "|")},
     {'/', Token(TokenType::slash, "/")},
+    {'^', Token(TokenType::caret, "^")},
 };
 
 } // namespace ax

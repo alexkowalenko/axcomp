@@ -159,10 +159,11 @@ void ASTVisitor::visit_ASTDesignator(ASTDesignatorPtr ast) {
                                   std::for_each(begin(s), end(s),
                                                 [this](auto &e) { e->accept(this); });
                               },
-                              [this](FieldRef const &s) { s.first->accept(this); }},
+                              [this](FieldRef const &s) { s.first->accept(this); },
+                              [this](PointerRef /* unused */) {}},
                    arg);
     });
-}
+} // namespace ax
 
 void ASTVisitor::visit_ASTType(ASTTypePtr ast) {
     // Visit the appropriate type
@@ -180,6 +181,10 @@ void ASTVisitor::visit_ASTRecord(ASTRecordPtr ast) {
         s.first->accept(this);
         s.second->accept(this);
     });
+}
+
+void ASTVisitor::visit_ASTPointerType(ASTPointerTypePtr ast) {
+    ast->reference->accept(this);
 }
 
 } // namespace ax

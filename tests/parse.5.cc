@@ -440,3 +440,100 @@ TEST(Parser, RecordArrayProcedures) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, POINTER) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE g11; (* POINTER *)
+           TYPE Frame = POINTER TO FrameDesc;
+                FrameDesc = RECORD
+                    col: INTEGER
+                END ;
+            END g11.)",
+         "MODULE g11;\nTYPE\nFrame = POINTER TO FrameDesc;\nFrameDesc = RECORD\n  col: "
+         "INTEGER\n;\nEND g11.",
+         ""},
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO INTEGER;
+               FrameSet : POINTER TO ARRAY OF INTEGER;
+               FrameTable : POINTER TO ARRAY OF POINTER TO INTEGER;
+            END g11.)",
+         "MODULE g11;\nVAR\nFrame: POINTER TO INTEGER;\nFrameSet: POINTER TO ARRAY OF "
+         "INTEGER;\nFrameTable: POINTER TO ARRAY OF POINTER TO INTEGER;\nEND g11.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER INTEGER;
+            END g11.)",
+         "", "2,38: Unexpected token: INTEGER - expecting TO"},
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO ;
+            END g11.)",
+         "", "2,35: Unexpected token: semicolon - expecting indent"},
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, NIL) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO INTEGER;
+               FrameSet : POINTER TO ARRAY OF INTEGER;
+               FrameTable : POINTER TO ARRAY OF POINTER TO INTEGER;
+            BEGIN
+                Frame := NIL;
+                IF Frame # NIL THEN
+                END
+            END g11.)",
+         "MODULE g11;\nVAR\nFrame: POINTER TO INTEGER;\nFrameSet: POINTER TO ARRAY OF "
+         "INTEGER;\nFrameTable: POINTER TO ARRAY OF POINTER TO INTEGER;\nBEGIN\nFrame := NIL;\nIF "
+         "Frame # NIL THEN\nEND\nEND g11.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO INTEGER;
+            BEGIN
+                FRAME := NIL NIL;
+            END g11.)",
+         "", "4,32: Unexpected token: NIL"},
+    };
+    do_parse_tests(tests);
+}
+
+TEST(Parser, Reference) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO INTEGER;
+               x : INTEGER;
+            BEGIN
+                Frame := NEW(INTEGER);
+                Frame^ := 1;
+                IF (Frame # NIL) & (Frame^ # 2) THEN
+                    x := Frame^;
+                END
+            END g11.)",
+         "MODULE g11;\nVAR\nFrame: POINTER TO INTEGER;\nx: INTEGER;\nBEGIN\nFrame := "
+         "NEW(INTEGER);\nFrame^ := 1;\nIF  (Frame # NIL)  &  (Frame^ # 2)  THEN\nx := "
+         "Frame^\nEND\nEND g11.",
+         ""},
+
+        // Errors
+        {R"(MODULE g11; (* POINTER *)
+           VAR Frame : POINTER TO INTEGER;
+               x : INTEGER;
+            BEGIN
+                Frame^x := 1;
+            END g11.)",
+         "", "5,23: Unexpected token: x - expecting :="},
+
+    };
+    do_parse_tests(tests);
+}

@@ -50,26 +50,28 @@ class Parser {
     void       parse_caseElements(std::vector<ASTCaseElementPtr> &elements);
     std::variant<ASTSimpleExprPtr, ASTRangePtr> parse_caseLabel();
 
-    ASTForPtr        parse_for();
-    ASTWhilePtr      parse_while();
-    ASTRepeatPtr     parse_repeat();
-    ASTLoopPtr       parse_loop();
-    ASTBlockPtr      parse_block();
-    ASTExprPtr       parse_expr();
-    ASTSimpleExprPtr parse_simpleexpr();
-    ASTTermPtr       parse_term();
-    ASTFactorPtr     parse_factor();
-    ASTDesignatorPtr parse_designator();
-    ASTTypePtr       parse_type();
-    ASTArrayPtr      parse_array();
-    ASTRecordPtr     parse_record();
-    ASTQualidentPtr  parse_qualident();
-    ASTIdentifierPtr parse_identifier();
-    ASTIntegerPtr    parse_integer();
-    ASTRealPtr       parse_real();
-    ASTCharPtr       parse_char();
-    ASTStringPtr     parse_string();
-    ASTBoolPtr       parse_boolean();
+    ASTForPtr         parse_for();
+    ASTWhilePtr       parse_while();
+    ASTRepeatPtr      parse_repeat();
+    ASTLoopPtr        parse_loop();
+    ASTBlockPtr       parse_block();
+    ASTExprPtr        parse_expr();
+    ASTSimpleExprPtr  parse_simpleexpr();
+    ASTTermPtr        parse_term();
+    ASTFactorPtr      parse_factor();
+    ASTDesignatorPtr  parse_designator();
+    ASTTypePtr        parse_type();
+    ASTArrayPtr       parse_array();
+    ASTRecordPtr      parse_record();
+    ASTPointerTypePtr parse_pointer();
+    ASTQualidentPtr   parse_qualident();
+    ASTIdentifierPtr  parse_identifier();
+    ASTIntegerPtr     parse_integer();
+    ASTRealPtr        parse_real();
+    ASTCharPtr        parse_char();
+    ASTStringPtr      parse_string();
+    ASTBoolPtr        parse_boolean();
+    ASTNilPtr         parse_nil();
 
     Token get_token(TokenType const &t);
 

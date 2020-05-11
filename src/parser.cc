@@ -880,6 +880,7 @@ ASTTermPtr Parser::parse_term() {
  *                  | "TRUE" | "FALSE"
  *                  | char
  *                  | string
+ *                  | NIL
  *                  | ~ factor
  *                  | '(' expr ')'
  *
@@ -917,6 +918,9 @@ ASTFactorPtr Parser::parse_factor() {
     case TokenType::false_k:
         ast->factor = parse_boolean();
         return ast;
+    case TokenType::nil:
+        ast->factor = parse_nil();
+        return ast;
     case TokenType::tilde:
         lexer.get_token(); // get ~
         ast->is_not = true;
@@ -951,7 +955,8 @@ ASTFactorPtr Parser::parse_factor() {
  * @return ASTDesignatorPtr
  */
 
-inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenType::period};
+inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenType::period,
+                                                  TokenType::caret};
 
 ASTDesignatorPtr Parser::parse_designator() {
     debug("Parser::parse_designator");
@@ -982,6 +987,10 @@ ASTDesignatorPtr Parser::parse_designator() {
             lexer.get_token(); // .
             ast->selectors.push_back(FieldRef{parse_identifier(), -1});
             break;
+        case TokenType::caret:
+            lexer.get_token(); // ^
+            ast->selectors.emplace_back(PointerRef{true});
+            break;
         default:;
         }
 
@@ -1005,6 +1014,9 @@ ASTTypePtr Parser::parse_type() {
         return ast;
     case TokenType::record:
         ast->type = parse_record();
+        return ast;
+    case TokenType::pointer:
+        ast->type = parse_pointer();
         return ast;
     default:
         ast->type = parse_qualident();
@@ -1067,6 +1079,21 @@ ASTRecordPtr Parser::parse_record() {
         }
     }
     get_token(TokenType::end);
+    return ast;
+}
+
+/**
+ * @brief "POINTER" "TO" type
+ *
+ * @return ASTPointerTypePtr
+ */
+ASTPointerTypePtr Parser::parse_pointer() {
+    debug("Parser::parse_record");
+    auto ast = makeAST<ASTPointerType>(lexer);
+
+    get_token(TokenType::pointer);
+    get_token(TokenType::to);
+    ast->reference = parse_type();
     return ast;
 }
 
@@ -1228,7 +1255,19 @@ ASTBoolPtr Parser::parse_boolean() {
     return ast;
 }
 
+/**
+ * @brief NIL
+ *
+ * @return ASTNilPtr
+ */
+ASTNilPtr Parser::parse_nil() {
+    auto ast = makeAST<ASTNil>(lexer);
+    get_token(TokenType::nil);
+    return ast;
+}
+
 ASTModulePtr Parser::parse() {
     return parse_module();
 }
+
 }; // namespace ax

@@ -1041,7 +1041,8 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
                                   auto *idx =
                                       ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
                                   index.push_back(idx);
-                              }},
+                              },
+                              [this](PointerRef /* unused */) {}},
                    s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
@@ -1053,7 +1054,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     }
     debug("GEP number of indices: {0}", index.size());
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
-}
+} // namespace ax
 
 /**
  * @brief Used to fetch values
