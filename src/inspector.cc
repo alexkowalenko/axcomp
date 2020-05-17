@@ -572,8 +572,9 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
     bool is_array = last_type->id == TypeId::array;
     bool is_record = last_type->id == TypeId::record;
     bool is_string = last_type->id == TypeId::string;
+    bool is_pointer = last_type->id == TypeId::pointer;
     auto b_type = last_type;
-    if (!(is_array || is_record || is_string) && !ast->selectors.empty()) {
+    if (!(is_array || is_record || is_string || is_pointer) && !ast->selectors.empty()) {
         auto e = TypeError(
             llvm::formatv("variable {0} is not an indexable type", ast->ident->id->value),
             ast->get_location());
@@ -581,7 +582,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
     }
 
     // Not array or record type - no more checks.
-    if (!(is_array || is_record || is_string)) {
+    if (!(is_array || is_record || is_string || is_pointer)) {
         is_lvalue = true;
         return;
     }
@@ -660,6 +661,18 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                   s.first->value);
 
             last_type = *field;
+            ast->set_type(last_type);
+        } else if (std::holds_alternative<PointerRef>(ss)) {
+            // Reference
+            if (!is_pointer) {
+                auto e = TypeError(
+                    llvm::formatv("variable {0} is not a pointer ", std::string(*ast->ident)),
+                    ast->get_location());
+                errors.add(e);
+                return;
+            }
+            auto ptr_type = std::dynamic_pointer_cast<PointerType>(b_type);
+            last_type = ptr_type->get_reference();
             ast->set_type(last_type);
         }
         b_type = last_type;
@@ -868,7 +881,7 @@ void Inspector::visit_ASTBool(ASTBoolPtr /* not used */) {
 
 void Inspector::visit_ASTNil(ASTNilPtr /*not used*/) {
     debug("Inspector::visit_ASTNil");
-    last_type = TypeTable::AnyType; // NIL can be assigned to any pointer
+    last_type = TypeTable::VoidType; // NIL can be assigned to any pointer
     is_const = true;
     is_lvalue = false;
 }

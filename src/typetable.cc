@@ -174,7 +174,7 @@ std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &L, TypePtr 
         }
     }
     // Deal with the assignment of NIL to pointers
-    if (op == TokenType::assign && L->id == TypeId::pointer && R->id == TypeId::any) {
+    if (op == TokenType::assign && L->id == TypeId::pointer && R->id == TypeId::null) {
         return TypeTable::VoidType;
     }
     return {};

@@ -58,10 +58,13 @@ BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
 
 BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto name = std::string(*ast->args[0]);
+    debug("builtin SIZE {0}", name);
     auto type = codegen->get_types().find(name);
-    assert(type);
-
-    return TypeTable::IntType->make_value(type->get_size());
+    if (type) {
+        return TypeTable::IntType->make_value(type->get_size());
+    }
+    auto ty = ast->args[0]->get_type();
+    return TypeTable::IntType->make_value(ty->get_size());
 };
 
 BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
@@ -71,6 +74,13 @@ BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
         debug("builtin NEW STRING");
         return codegen->call_function("NEW_String", TypeTable::IntType->get_llvm(),
                                       {args[0], args[1]});
+    }
+    if (ast->args.size() == 1 && ast->args[0]->get_type()->id == TypeId::pointer) {
+        debug("builtin NEW POINTER");
+        auto ptr_type = std::dynamic_pointer_cast<ax::PointerType>(ast->args[0]->get_type());
+        auto size = ptr_type->get_reference()->get_size();
+        return codegen->call_function("NEW_ptr", TypeTable::IntType->get_llvm(),
+                                      {args[0], TypeTable::IntType->make_value(size)});
     }
     if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::array) {
         debug("builtin NEW ARRAY");

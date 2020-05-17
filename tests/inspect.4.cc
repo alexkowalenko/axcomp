@@ -141,3 +141,78 @@ TEST(Inspector, String) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, NIL) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO INTEGER;
+            BEGIN
+                x := NIL;
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO INTEGER;\nBEGIN\nx := NIL;\nRETURN 0\nEND alpha.", ""},
+
+        // Errors
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : INTEGER;
+            BEGIN
+                x := NIL;
+                RETURN 0;
+            END alpha.)",
+         "", "4,20: Can't assign expression of type void to x"},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO INTEGER;
+            BEGIN
+                x := 5;
+                RETURN 0;
+            END alpha.)",
+         "", "4,20: Can't assign expression of type INTEGER to x"},
+
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, Reference) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO INTEGER;
+                y : INTEGER;
+            BEGIN
+                x^ := 5;
+                x^ := y + x^;
+                RETURN 0;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO INTEGER;\ny: INTEGER;\nBEGIN\nx^ := 5;\nx^ := "
+         "y+x^;\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO POINTER TO INTEGER;
+            BEGIN
+                x^^ := 5;
+                RETURN  x^^;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO POINTER TO INTEGER;\nBEGIN\nx^^ := "
+         "5;\nRETURN x^^\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : INTEGER;
+            BEGIN
+                x^ := 5;
+                RETURN 0;
+            END alpha.)",
+         "", "4,17: variable x is not an indexable type"},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO POINTER TO INTEGER;
+            BEGIN
+                x^ := 5;
+                RETURN  x^^;
+            END alpha.)",
+         "", "4,21: Can't assign expression of type INTEGER to x^"},
+    };
+    do_inspect_tests(tests);
+}

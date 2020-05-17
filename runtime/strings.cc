@@ -49,6 +49,14 @@ extern "C" void NEW_String(String **ptr, Int x) {
     memset(*ptr, 0, x);
 }
 
+extern "C" void NEW_ptr(void **ptr, Int x) {
+    if (!init_gc) {
+        gc_init();
+    }
+    *ptr = GC_malloc(x);
+    memset(*ptr, 0, x);
+}
+
 extern "C" void COPY(String x, String **v) {
     if (!init_gc) {
         gc_init();

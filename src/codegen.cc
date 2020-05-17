@@ -1042,7 +1042,9 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
                                       ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
                                   index.push_back(idx);
                               },
-                              [this](PointerRef /* unused */) {}},
+                              [this, &arg_ptr](PointerRef /* unused */) {
+                                  arg_ptr = builder.CreateLoad(arg_ptr);
+                              }},
                    s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
