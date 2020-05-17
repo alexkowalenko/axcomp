@@ -21,11 +21,13 @@ bool Type::equiv(TypePtr const &t) const {
 }
 
 llvm::Value *Type::min() {
-    return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
+    return llvm::ConstantPointerNull::get(
+        dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
 
 llvm::Value *Type::max() {
-    return llvm::ConstantPointerNull::get(dyn_cast<PointerType>(TypeTable::VoidType->get_llvm()));
+    return llvm::ConstantPointerNull::get(
+        dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
 
 SimpleType::operator std::string() {
@@ -172,6 +174,14 @@ std::optional<TypePtr> RecordType::get_type(std::string const &field) {
 int RecordType::get_index(std::string const &field) {
     auto it = std::find(begin(index), end(index), field);
     return std::distance(begin(index), it);
+}
+
+llvm::Type *PointerType::get_llvm() {
+    return reference->get_llvm()->getPointerTo();
+}
+
+llvm::Constant *PointerType::get_init() {
+    return Constant::getNullValue(get_llvm());
 }
 
 } // namespace ax

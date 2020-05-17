@@ -37,6 +37,7 @@ enum class TypeId {
     string,
     record,
     alias,
+    pointer,
     module
 };
 inline bool is_referencable(TypeId &id) {
@@ -216,6 +217,25 @@ class TypeAlias : public Type {
   private:
     std::string name;
     TypePtr     alias;
+};
+
+class PointerType : public Type {
+  public:
+    PointerType(TypePtr t) : Type(TypeId::pointer), reference{std::move(t)} {};
+    ~PointerType() override = default;
+
+    explicit     operator std::string() override { return '^' + std::string(*reference); };
+    unsigned int get_size() override {
+        return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / 8;
+    };
+
+    llvm::Type *    get_llvm() override;
+    llvm::Constant *get_init() override;
+
+    TypePtr get_reference() { return reference; }
+
+  private:
+    TypePtr reference;
 };
 
 class ModuleType : public Type {

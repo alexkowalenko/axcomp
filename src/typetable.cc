@@ -4,6 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 
 #include "typetable.hh"
+#include "type.hh"
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
@@ -134,6 +135,8 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     StrType->set_init(Constant::getNullValue(llvm::Type::getInt32PtrTy(context)));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
+    VoidType->set_init(
+        llvm::ConstantPointerNull::get(llvm::Type::getVoidTy(context)->getPointerTo()));
 }
 
 std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
@@ -169,6 +172,10 @@ std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &L, TypePtr 
         if (i->second.L == L && i->second.R == R) {
             return i->second.result;
         }
+    }
+    // Deal with the assignment of NIL to pointers
+    if (op == TokenType::assign && L->id == TypeId::pointer && R->id == TypeId::any) {
+        return TypeTable::VoidType;
     }
     return {};
 }

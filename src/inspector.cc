@@ -105,6 +105,7 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
         // defined.
         v.second->accept(this);
         // Update VAR declaration symbols with type
+        debug("var type: {0}", last_type->get_name());
         symboltable.put(v.first->value, mkSym(last_type));
     });
 }
@@ -191,7 +192,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     };
 
     ast->ident->accept(this);
-    debug("type of ident: {} ", last_type->get_name());
+    // debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
     last_type = *alias;
@@ -691,8 +692,8 @@ void Inspector::visit_ASTType(ASTTypePtr ast) {
                               ast->set_type(last_type);
                           },
                           [this, ast](ASTPointerTypePtr const &arg) {
-                              arg->reference->accept(this);
-                              // set Pointer type
+                              arg->accept(this);
+                              ast->set_type(last_type);
                           }},
                ast->type);
 }
@@ -741,6 +742,17 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
     });
     last_type = rec_type;
     ast->set_type(last_type);
+    types.put(last_type->get_name(), last_type);
+}
+
+void Inspector::visit_ASTPointerType(ASTPointerTypePtr ast) {
+    debug("Inspector::visit_ASTPointerType");
+    ast->reference->accept(this);
+    auto ptr_type = std::make_shared<ax::PointerType>(last_type);
+    ast->set_type(ptr_type);
+    last_type = ptr_type;
+
+    // Put into type table
     types.put(last_type->get_name(), last_type);
 }
 
@@ -804,7 +816,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
             return;
         }
     }
-    // debug("find type: {} for {}", res, res->name);
+    // debug("find type: {0} for {1}", res->type->get_name(), ast->value);
     auto resType = types.resolve(res->type->get_name());
     if (!resType) {
         auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",
@@ -850,6 +862,13 @@ void Inspector::visit_ASTString(ASTStringPtr /* not used */) {
 
 void Inspector::visit_ASTBool(ASTBoolPtr /* not used */) {
     last_type = TypeTable::BoolType;
+    is_const = true;
+    is_lvalue = false;
+}
+
+void Inspector::visit_ASTNil(ASTNilPtr /*not used*/) {
+    debug("Inspector::visit_ASTNil");
+    last_type = TypeTable::AnyType; // NIL can be assigned to any pointer
     is_const = true;
     is_lvalue = false;
 }

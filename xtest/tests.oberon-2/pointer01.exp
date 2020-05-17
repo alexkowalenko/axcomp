@@ -1,0 +1,10 @@
+; ModuleID = 'pointer01'
+source_filename = "pointer01"
+
+@pointer01_x = internal global i64* null
+
+define i64 @output() {
+entry:
+  store void* null, i64** @pointer01_x
+  ret i64 0
+}

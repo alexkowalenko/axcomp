@@ -78,6 +78,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTString(ASTStringPtr ast) override;
     void visit_ASTChar(ASTCharPtr ast) override;
     void visit_ASTBool(ASTBoolPtr ast) override;
+    void visit_ASTNil(ASTNilPtr /*not used*/) override;
 
     TypeTable &get_types() { return types; };
 

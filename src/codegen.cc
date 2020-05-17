@@ -1167,6 +1167,10 @@ void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }
 
+void CodeGenerator::visit_ASTNil(ASTNilPtr /*not used*/) {
+    last_value = TypeTable::VoidType->get_init();
+}
+
 std::string CodeGenerator::gen_module_id(std::string const &id) const {
     return ASTQualident::make_coded_id(module_name, id);
 }
