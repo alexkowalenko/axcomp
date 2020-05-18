@@ -284,8 +284,8 @@ TEST(Parser, RECORD) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nBEGIN\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nBEGIN\nRETURN 0\nEND "
+         "alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -295,8 +295,8 @@ TEST(Parser, RECORD) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
-         "INTEGER\n;\nBEGIN\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER;\nz: "
+         "INTEGER\nEND;\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         // Errors
@@ -325,8 +325,8 @@ TEST(Parser, RecordFields) {
                 BEGIN
                     RETURN pt.x + pt.y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nBEGIN\nRETURN pt.x+pt.y\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nBEGIN\nRETURN "
+         "pt.x+pt.y\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -339,9 +339,8 @@ TEST(Parser, RecordFields) {
                     pt.z := 3;
                     RETURN pt.x * pt.y * pt.z
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
-         "INTEGER\n;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z := 3;\nRETURN "
-         "pt.x*pt.y*pt.z\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER;\nz: INTEGER\nEND;\nBEGIN\npt.x "
+         ":= 1;\npt.y := 2;\npt.z := 3;\nRETURN pt.x*pt.y*pt.z\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -354,9 +353,8 @@ TEST(Parser, RecordFields) {
                     a.y[1] := 2;
                     RETURN a.y[2]
                 END alpha.)",
-         "MODULE alpha;\nVAR\na: RECORD\n  x: INTEGER;\n  y: ARRAY 3 OF "
-         "INTEGER\n;\nBEGIN\na.x := 1;\na.y[1] := 2;\nRETURN a.y[2]\nEND "
-         "alpha.",
+         "MODULE alpha;\nVAR\na: RECORD\nx: INTEGER;\ny: ARRAY 3 OF INTEGER\nEND;\nBEGIN\na.x := "
+         "1;\na.y[1] := 2;\nRETURN a.y[2]\nEND alpha.",
          ""},
 
         // Errors
@@ -401,12 +399,11 @@ TEST(Parser, RecordArrayProcedures) {
                 END;
                 RETURN sum(identity(pt))
             END g11.)",
-         "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : "
-         "ARRAY 3 OF INTEGER): ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND "
-         "identity.\nPROCEDURE sum(a : ARRAY 3 OF INTEGER): "
-         "INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
-         "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 "
-         "DO\npt[i] := i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
+         "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : ARRAY 3 OF INTEGER): "
+         "ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : ARRAY 3 OF "
+         "INTEGER): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
+         "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 DO\npt[i] := "
+         "i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
          ""},
 
         {R"(MODULE g12; (* Mix ARRAY and RECORD *)
@@ -429,13 +426,11 @@ TEST(Parser, RecordArrayProcedures) {
                 pt.y := 24;
                 RETURN sum(identity(pt))
             END g12.)",
-         "MODULE g12;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nPROCEDURE identity(a : RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n): RECORD\n  x: INTEGER;\n  y: INTEGER\n;\nBEGIN\nRETURN "
-         "a\nEND identity.\nPROCEDURE sum(a : RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN "
-         "a.x+a.y\nEND sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN "
-         "sum(identity(pt))\nEND g12.",
+         "MODULE g12;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE identity(a : "
+         "RECORD\nx: INTEGER;\ny: INTEGER\nEND): RECORD\nx: INTEGER;\ny: "
+         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : RECORD\nx: "
+         "INTEGER;\ny: INTEGER\nEND): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN a.x+a.y\nEND "
+         "sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
          ""},
     };
     do_parse_tests(tests);
@@ -450,8 +445,8 @@ TEST(Parser, POINTER) {
                     col: INTEGER
                 END ;
             END g11.)",
-         "MODULE g11;\nTYPE\nFrame = POINTER TO FrameDesc;\nFrameDesc = RECORD\n  col: "
-         "INTEGER\n;\nEND g11.",
+         "MODULE g11;\nTYPE\nFrame = POINTER TO FrameDesc;\nFrameDesc = RECORD\ncol: "
+         "INTEGER\nEND;\nEND g11.",
          ""},
 
         {R"(MODULE g11; (* POINTER *)

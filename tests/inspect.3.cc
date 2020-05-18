@@ -23,10 +23,9 @@ TEST(Inspector, ReadOnly) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "MODULE alpha;\nCONST\na* = 10;\nTYPE\nsecond* = INTEGER;\nVAR\nx*: "
-         "ARRAY 5 OF INTEGER;\npt: RECORD\n  x*: INTEGER;\n  y*: "
-         "INTEGER\n;\nPROCEDURE f*(): INTEGER;\nBEGIN\nRETURN 0\nEND "
-         "f.\nBEGIN\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nCONST\na* = 10;\nTYPE\nsecond* = INTEGER;\nVAR\nx*: ARRAY 5 OF "
+         "INTEGER;\npt: RECORD\nx*: INTEGER;\ny*: INTEGER\nEND;\nPROCEDURE f*(): "
+         "INTEGER;\nBEGIN\nRETURN 0\nEND f.\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -36,8 +35,8 @@ TEST(Inspector, ReadOnly) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "MODULE alpha;\nVAR\nx-: ARRAY 5 OF INTEGER;\npt: RECORD\n  x-: "
-         "INTEGER;\n  y-: INTEGER\n;\nBEGIN\nRETURN 0\nEND alpha.",
+         "MODULE alpha;\nVAR\nx-: ARRAY 5 OF INTEGER;\npt: RECORD\nx-: INTEGER;\ny-: "
+         "INTEGER\nEND;\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         // Errors

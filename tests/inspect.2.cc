@@ -686,8 +686,8 @@ TEST(Inspector, Record) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nBEGIN\nRETURN 0\nEND alpha."},
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nBEGIN\nRETURN 0\nEND "
+         "alpha."},
 
         // Errors
         {R"(MODULE alpha;
@@ -723,8 +723,8 @@ TEST(Inspector, RecordFields) {
                 BEGIN
                     RETURN pt.x + pt.y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nBEGIN\nRETURN pt.x+pt.y\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nBEGIN\nRETURN "
+         "pt.x+pt.y\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -738,9 +738,8 @@ TEST(Inspector, RecordFields) {
                     pt.z := TRUE;
                     RETURN pt.x * pt.y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
-         "BOOLEAN\n;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z := TRUE;\nRETURN "
-         "pt.x*pt.y\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER;\nz: BOOLEAN\nEND;\nBEGIN\npt.x "
+         ":= 1;\npt.y := 2;\npt.z := TRUE;\nRETURN pt.x*pt.y\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -758,9 +757,9 @@ TEST(Inspector, RecordFields) {
                     pt.z.y := 1;
                     RETURN pt.z.x * pt.z.y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: INTEGER;\n  z: "
-         "RECORD\n  x: INTEGER;\n  y: INTEGER\n\n;\nBEGIN\npt.x := 1;\npt.y := "
-         "2;\npt.z.x := 1;\npt.z.y := 1;\nRETURN pt.z.x*pt.z.y\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER;\nz: RECORD\nx: INTEGER;\ny: "
+         "INTEGER\nEND\nEND;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z.x := 1;\npt.z.y := 1;\nRETURN "
+         "pt.z.x*pt.z.y\nEND alpha.",
          ""},
 
         // Errors
@@ -842,8 +841,8 @@ TEST(Inspector, RecordArrayMix) {
                     pt.y[1] := 1;
                     RETURN pt.x + pt.y[2]
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: ARRAY 3 OF "
-         "INTEGER\n;\nBEGIN\npt.y[1] := 1;\nRETURN pt.x+pt.y[2]\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: ARRAY 3 OF "
+         "INTEGER\nEND;\nBEGIN\npt.y[1] := 1;\nRETURN pt.x+pt.y[2]\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -855,9 +854,8 @@ TEST(Inspector, RecordArrayMix) {
                     pt[0].y := 2;
                     RETURN pt[1].x * pt[1].y
                 END alpha.)",
-         "MODULE alpha;\nVAR\npt: ARRAY 3 OF RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nBEGIN\npt[0].x := 1;\npt[0].y := 2;\nRETURN "
-         "pt[1].x*pt[1].y\nEND alpha.",
+         "MODULE alpha;\nVAR\npt: ARRAY 3 OF RECORD\nx: INTEGER;\ny: "
+         "INTEGER\nEND;\nBEGIN\npt[0].x := 1;\npt[0].y := 2;\nRETURN pt[1].x*pt[1].y\nEND alpha.",
          ""},
 
         // Errors
@@ -941,13 +939,11 @@ TEST(Inspector, RecordArrayProcedure) {
                 pt.y := 24;
                 RETURN sum(identity(pt))
             END g12.)",
-         "MODULE g12;\nVAR\npt: RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n;\nPROCEDURE identity(a : RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n): RECORD\n  x: INTEGER;\n  y: INTEGER\n;\nBEGIN\nRETURN "
-         "a\nEND identity.\nPROCEDURE sum(a : RECORD\n  x: INTEGER;\n  y: "
-         "INTEGER\n): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN "
-         "a.x+a.y\nEND sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN "
-         "sum(identity(pt))\nEND g12.",
+         "MODULE g12;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE identity(a : "
+         "RECORD\nx: INTEGER;\ny: INTEGER\nEND): RECORD\nx: INTEGER;\ny: "
+         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : RECORD\nx: "
+         "INTEGER;\ny: INTEGER\nEND): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN a.x+a.y\nEND "
+         "sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
          ""},
 
         // Errors

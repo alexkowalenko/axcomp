@@ -384,16 +384,19 @@ void ASTPrinter::visit_ASTArray(ASTArrayPtr ast) {
 
 void ASTPrinter::visit_ASTRecord(ASTRecordPtr ast) {
     os << "RECORD\n";
+    push();
     std::for_each(begin(ast->fields), end(ast->fields), [this, ast](auto const &s) {
-        os << "  ";
+        os << indent();
         s.first->accept(this);
         os << std::string(s.first->attrs);
         os << ": ";
         s.second->accept(this);
         if (s != *(ast->fields.end() - 1)) {
-            os << ';';
+            os << ";\n";
+        } else {
+            pop();
+            os << "\n" << indent() << "END";
         }
-        os << '\n';
     });
 }
 
