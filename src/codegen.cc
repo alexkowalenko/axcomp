@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <memory>
 
 #include "llvm/Support/FormatVariadic.h"
 #include <llvm/IR/Constants.h>
@@ -23,7 +24,6 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-#include <memory>
 
 #include "ast.hh"
 #include "builtin.hh"
@@ -168,8 +168,12 @@ void CodeGenerator::doTopDecs(ASTDeclarationPtr const &ast) {
 void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
     debug("CodeGenerator::doTopVars");
     for (auto const &c : ast->vars) {
+        debug("CodeGenerator::doTopVars {0}: {1}", c.first->value,
+              c.second->get_type()->get_name(), c.second->get_type()->get_llvm());
+
         llvm::Type *type = getType(c.second);
         auto        var_name = gen_module_id(c.first->value);
+
         module->getOrInsertGlobal(var_name, type);
         GlobalVariable *gVar = module->getNamedGlobal(var_name);
 
@@ -1246,13 +1250,17 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
                               };
                               result = *res;
                           },
-                          [t, &result](auto /* not used*/) { result = t->get_type(); }},
+                          [t, &result, this](auto /* not used*/) {
+                              auto res = types.resolve(t->get_type()->get_name());
+                              result = *res;
+                          }},
                t->type);
+    debug("CodeGenerator::resolve_type to {0}", std::string(*result));
     return result;
 }
 
 llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
-    debug("CodeGenerator::getType");
+    debug("CodeGenerator::getType {0}", std::string(*t));
     return resolve_type(t)->get_llvm();
 }
 
@@ -1265,7 +1273,7 @@ void CodeGenerator::setup_builtins() {
     debug("CodeGenerator::setup_builtins");
 
     for (auto const &f : Builtin::global_functions) {
-        debug("function: {0} ", f.first);
+        // debug("function: {0} ", f.first);
 
         if (auto res = symboltable.find(f.first);
             res->is(Attr::used) && res->is(Attr::global_function)) {

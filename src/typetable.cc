@@ -21,6 +21,8 @@ template <typename... T> static void debug(const T &... msg) {
     LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
 
+TypeTable *TypeTable::singleton;
+
 std::shared_ptr<IntegerType>   TypeTable::IntType;
 std::shared_ptr<BooleanType>   TypeTable::BoolType;
 std::shared_ptr<RealCType>     TypeTable::RealType;
@@ -30,6 +32,8 @@ TypePtr                        TypeTable::VoidType;
 TypePtr                        TypeTable::AnyType;
 
 void TypeTable::initialise() {
+
+    set_singleton(this);
     IntType = std::make_shared<IntegerType>();
     put(std::string(*IntType), IntType);
 

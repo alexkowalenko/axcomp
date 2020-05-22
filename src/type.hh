@@ -40,6 +40,9 @@ enum class TypeId {
     pointer,
     module
 };
+
+std::string string(TypeId t);
+
 inline bool is_referencable(TypeId &id) {
     return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
 }
@@ -221,10 +224,10 @@ class TypeAlias : public Type {
 
 class PointerType : public Type {
   public:
-    PointerType(TypePtr t) : Type(TypeId::pointer), reference{std::move(t)} {};
+    PointerType(std::string r) : Type(TypeId::pointer), ref_name{std::move(r)} {};
     ~PointerType() override = default;
 
-    explicit     operator std::string() override { return '^' + std::string(*reference); };
+    explicit     operator std::string() override { return '^' + ref_name; };
     unsigned int get_size() override {
         return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / 8;
     };
@@ -233,9 +236,13 @@ class PointerType : public Type {
     llvm::Constant *get_init() override;
 
     TypePtr get_reference() { return reference; }
+    void    set_reference(TypePtr &r) { reference = r; }
+
+    std::string &get_ref_name() { return ref_name; };
 
   private:
-    TypePtr reference;
+    TypePtr     reference;
+    std::string ref_name;
 };
 
 class ModuleType : public Type {

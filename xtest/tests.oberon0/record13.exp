@@ -1,0 +1,15 @@
+; ModuleID = 'record13'
+source_filename = "record13"
+
+%0 = type { i64, i64 }
+%1 = type { i64, i64 }
+
+@record13_current = internal global %0 zeroinitializer
+
+define i64 @output() {
+entry:
+  store i64 5, i64* getelementptr inbounds (%0, %0* @record13_current, i64 0, i32 0)
+  %current = load %0, %0* @record13_current
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @record13_current, i64 0, i32 0)
+  ret i64 %idx
+}

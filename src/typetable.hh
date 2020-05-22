@@ -77,12 +77,19 @@ class TypeTable : public SymbolTable<TypePtr> {
     static TypePtr AnyType;  // For procedures which can return any time (built-ins), also for
                              // non-fixed length types arguments (built-ins).
 
+    static TypeTable *sgl() { return singleton; };
+
   private:
+    // Set singleton
+    static void set_singleton(TypeTable *s) { singleton = s; };
+
     void reg(TokenType op, TypePtr const &type, TypePtr const &result);
     void reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result);
 
     std::multimap<TokenType, TypeRule1> rules1;
     std::multimap<TokenType, TypeRule2> rules2;
+
+    static TypeTable *singleton;
 };
 
 } // namespace ax

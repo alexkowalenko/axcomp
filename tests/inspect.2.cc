@@ -878,7 +878,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt.x[0] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "6,24: value not RECORD"},
+         "", "6,24: value not RECORD: {x,y}[3]"},
 
     };
     do_inspect_tests(tests);

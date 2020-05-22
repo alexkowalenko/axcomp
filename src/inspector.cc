@@ -108,6 +108,19 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
         debug("var type: {0}", last_type->get_name());
         symboltable.put(v.first->value, mkSym(last_type));
     });
+
+    // Post process all pointer defintions
+    for (auto &ptr_type : pointer_types) {
+        debug("Inspector::visit_ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
+        auto ref = types.resolve(ptr_type->get_ref_name());
+        if (!ref) {
+            auto e = TypeError(llvm::formatv("TYPE {0} not found", ptr_type->get_ref_name()),
+                               ast->get_location());
+            errors.add(e);
+        }
+        ptr_type->set_reference(*ref);
+    };
+    pointer_types.clear();
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
@@ -192,11 +205,15 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     };
 
     ast->ident->accept(this);
+    if (!last_type) {
+        // error return;
+        return;
+    }
     // debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
     last_type = *alias;
-    if (!types.check(TokenType::assign, last_type, expr_type)) {
+    if (!(types.check(TokenType::assign, last_type, expr_type) || last_type->equiv(expr_type))) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
                                          std::string(*expr_type), std::string(*ast->ident)),
                            ast->get_location());
@@ -579,6 +596,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             llvm::formatv("variable {0} is not an indexable type", ast->ident->id->value),
             ast->get_location());
         errors.add(e);
+        return;
     }
 
     // Not array or record type - no more checks.
@@ -639,7 +657,8 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             debug("Inspector::visit_ASTDesignator record field");
             auto &s = std::get<FieldRef>(ss);
             if (!is_record) {
-                auto e = TypeError("value not RECORD", s.first->get_location());
+                auto e = TypeError(llvm::formatv("value not RECORD: {0}", last_type->get_name()),
+                                   s.first->get_location());
                 errors.add(e);
                 return;
             }
@@ -672,15 +691,18 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                 return;
             }
             auto ptr_type = std::dynamic_pointer_cast<PointerType>(b_type);
-            last_type = ptr_type->get_reference();
+            debug("Inspector::visit_ASTDesignator ptr {0} ref: {1}", ptr_type->get_name(),
+                  ptr_type->get_ref_name());
+            last_type = *types.resolve(ptr_type->get_ref_name());
+            debug("Inspector::visit_ASTDesignator {0} ", last_type->get_name());
             ast->set_type(last_type);
         }
-        b_type = last_type;
+        b_type = *types.resolve(last_type->get_name());
         is_array = b_type->id == TypeId::array;
         is_record = b_type->id == TypeId::record;
         is_string = b_type->id == TypeId::string;
     }
-}
+} // namespace ax
 
 void Inspector::visit_ASTType(ASTTypePtr ast) {
     debug("Inspector::visit_ASTType");
@@ -759,14 +781,16 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
 }
 
 void Inspector::visit_ASTPointerType(ASTPointerTypePtr ast) {
-    debug("Inspector::visit_ASTPointerType");
-    ast->reference->accept(this);
-    auto ptr_type = std::make_shared<ax::PointerType>(last_type);
+    auto ref_name = std::string(*ast->reference);
+    debug("Inspector::visit_ASTPointerType {0}", ref_name);
+    // ast->reference->accept(this);
+    auto ptr_type = std::make_shared<ax::PointerType>(ref_name);
     ast->set_type(ptr_type);
     last_type = ptr_type;
 
     // Put into type table
-    types.put(last_type->get_name(), last_type);
+    types.put(last_type->get_name(), ptr_type);
+    pointer_types.push_back(ptr_type);
 }
 
 std::string Inspector::get_Qualident(ASTQualidentPtr const &ast) {
@@ -884,6 +908,10 @@ void Inspector::visit_ASTNil(ASTNilPtr /*not used*/) {
     last_type = TypeTable::VoidType; // NIL can be assigned to any pointer
     is_const = true;
     is_lvalue = false;
+}
+
+void Inspector::check(ASTModulePtr const &ast) {
+    ast->accept(this);
 }
 
 } // namespace ax

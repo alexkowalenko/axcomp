@@ -13,6 +13,7 @@
 #include "error.hh"
 #include "importer.hh"
 #include "symboltable.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -22,7 +23,7 @@ class Inspector : ASTVisitor {
   public:
     explicit Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i);
 
-    void check(ASTModulePtr const &ast) { ast->accept(this); };
+    void check(ASTModulePtr const &ast);
 
   private:
     void visit_ASTModule(ASTModulePtr ast) override;
@@ -73,6 +74,9 @@ class Inspector : ASTVisitor {
     bool            qualid_error{false};
     TypePtr         last_type{nullptr};
     ASTProcedurePtr last_proc{nullptr};
+
+    // Post process
+    std::vector<std::shared_ptr<PointerType>> pointer_types;
 };
 
 } // namespace ax

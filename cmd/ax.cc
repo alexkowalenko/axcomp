@@ -45,6 +45,14 @@ void output_defs(std::shared_ptr<ASTModule> const &ast, Options const &options) 
     defs.print(ast);
 }
 
+void dump_symbols(SymbolFrameTable &symbols, TypeTable &types) {
+    symbols.dump(std::cout);
+    std::cout << "- Types -------------------------------\n";
+    std::for_each(types.begin(), types.end(), [](auto &t) {
+        std::cout << std::string(t.first()) << " : " << string(t.second->id) << "\n";
+    });
+}
+
 Options do_args(int argc, char **argv) {
     Options options;
 
@@ -68,7 +76,7 @@ Options do_args(int argc, char **argv) {
     cl::opt<bool> ll("ll", cl::desc("(-l) generate only the .ll file"), cl::cat(oberon));
     cl::alias     llA("l", cl::aliasopt(ll));
 
-    cl::opt<bool> symbols("symbols", cl::desc("(-s) generate only the .ll file"), cl::cat(oberon));
+    cl::opt<bool> symbols("symbols", cl::desc("(-s) dump the symbol table"), cl::cat(oberon));
     cl::alias     symbolsA("s", cl::aliasopt(symbols));
 
     cl::opt<std::string> file_name(cl::Positional, cl::desc("<input file>"));
@@ -140,6 +148,9 @@ int main(int argc, char **argv) {
         inspect.check(ast);
         if (errors.has_errors()) {
             errors.print_errors(std::cerr);
+            if (options.print_symbols) {
+                dump_symbols(symbols, types);
+            }
             return -1;
         }
 
@@ -147,6 +158,10 @@ int main(int argc, char **argv) {
         output_defs(ast, options);
         if (options.output_defs) {
             return 0;
+        }
+
+        if (options.print_symbols) {
+            dump_symbols(symbols, types);
         }
 
         ax::CodeGenerator code(options, symbols, types, importer);
@@ -157,17 +172,13 @@ int main(int argc, char **argv) {
             code.generate_objectcode();
         }
 
-        if (options.print_symbols) {
-            symbols.dump(std::cout);
-        }
-
         if (AreStatisticsEnabled()) {
             PrintStatistics();
         }
     } catch (ax::AXException &e) {
         std::cout << e.error_msg() << std::endl;
         if (options.print_symbols) {
-            symbols.dump(std::cout);
+            dump_symbols(symbols, types);
         }
         return -1;
     } catch (std::exception &e) {

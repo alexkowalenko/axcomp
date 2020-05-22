@@ -16,6 +16,18 @@ namespace ax {
 
 using namespace llvm;
 
+static std::unordered_map<TypeId, std::string> mapping{
+    {TypeId::null, "null"},           {TypeId::any, "any"},         {TypeId::integer, "integer"},
+    {TypeId::real, "real"},           {TypeId::boolean, "boolean"}, {TypeId::chr, "chr"},
+    {TypeId::procedure, "procedure"}, {TypeId::array, "array"},     {TypeId::string, "string"},
+    {TypeId::record, "record"},       {TypeId::alias, "alias"},     {TypeId::pointer, "pointer"},
+    {TypeId::module, "module"},
+};
+
+std::string string(TypeId const t) {
+    return mapping[t];
+}
+
 bool Type::equiv(TypePtr const &t) const {
     return id == t->id;
 }
@@ -127,18 +139,22 @@ llvm::Constant *ArrayType::get_init() {
 
 RecordType::operator std::string() {
     std::string str{"{"};
-    std::for_each(begin(index), end(index), [&str](auto const &name) {
-        str += name;
-        str += ",";
-    });
+    for (auto iter = index.begin(); iter != index.end(); ++iter) {
+        str += *iter;
+        if ((iter + 1) != index.end()) {
+            str += ',';
+        }
+    };
     str += "}";
     return str;
 }
 
 llvm::Type *RecordType::get_llvm() {
     std::vector<llvm::Type *> fs;
-    std::for_each(begin(index), end(index),
-                  [&fs, this](auto const &name) { fs.push_back(fields[name]->get_llvm()); });
+    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
+        auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
+        fs.push_back((*res)->get_llvm());
+    });
     return StructType::create(fs);
 }
 
@@ -177,6 +193,9 @@ int RecordType::get_index(std::string const &field) {
 }
 
 llvm::Type *PointerType::get_llvm() {
+    // if (reference->id == TypeId::record) {
+    //     return reference->get_llvm();
+    // }
     return reference->get_llvm()->getPointerTo();
 }
 
