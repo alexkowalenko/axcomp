@@ -1,26 +1,26 @@
 ; ModuleID = 'c10'
 source_filename = "c10"
 
-%0 = type { i64, i64, i64 }
-%1 = type { i64, i64, i64 }
-%2 = type { i64, i64, i64 }
-%3 = type { i64, i64, i64 }
+%point = type { i64, i64, i64 }
+%point.0 = type { i64, i64, i64 }
+%point.1 = type { i64, i64, i64 }
+%point.2 = type { i64, i64, i64 }
 
-@c10_z0 = internal global %0 zeroinitializer
+@c10_z0 = internal global %point zeroinitializer
 
-define internal i64 @c10_sum(%2 %a) {
+define internal i64 @c10_sum(%point.1 %a) {
 entry:
-  %a1 = alloca %3
-  store %2 %a, %3* %a1
-  %a2 = load %3, %3* %a1
-  %idx = getelementptr %3, %3* %a1, i64 0, i32 0
+  %a1 = alloca %point.2
+  store %point.1 %a, %point.2* %a1
+  %a2 = load %point.2, %point.2* %a1
+  %idx = getelementptr %point.2, %point.2* %a1, i64 0, i32 0
   %idx3 = load i64, i64* %idx
-  %a4 = load %3, %3* %a1
-  %idx5 = getelementptr %3, %3* %a1, i64 0, i32 1
+  %a4 = load %point.2, %point.2* %a1
+  %idx5 = getelementptr %point.2, %point.2* %a1, i64 0, i32 1
   %idx6 = load i64, i64* %idx5
   %addtmp = add i64 %idx3, %idx6
-  %a7 = load %3, %3* %a1
-  %idx8 = getelementptr %3, %3* %a1, i64 0, i32 2
+  %a7 = load %point.2, %point.2* %a1
+  %idx8 = getelementptr %point.2, %point.2* %a1, i64 0, i32 2
   %idx9 = load i64, i64* %idx8
   %addtmp10 = add i64 %addtmp, %idx9
   ret i64 %addtmp10
@@ -28,10 +28,10 @@ entry:
 
 define i64 @output() {
 entry:
-  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 0)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 1)
-  store i64 1, i64* getelementptr inbounds (%0, %0* @c10_z0, i64 0, i32 2)
-  %z0 = load %0, %0* @c10_z0
-  %0 = call i64 @c10_sum(%0 %z0)
+  store i64 1, i64* getelementptr inbounds (%point, %point* @c10_z0, i64 0, i32 0)
+  store i64 1, i64* getelementptr inbounds (%point, %point* @c10_z0, i64 0, i32 1)
+  store i64 1, i64* getelementptr inbounds (%point, %point* @c10_z0, i64 0, i32 2)
+  %z0 = load %point, %point* @c10_z0
+  %0 = call i64 @c10_sum(%point %z0)
   ret i64 %0
 }

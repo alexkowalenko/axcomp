@@ -1,10 +1,10 @@
 ; ModuleID = 'pointer03'
 source_filename = "pointer03"
 
-%0 = type { i64 }
-%1 = type { i64 }
+%List = type { i64 }
+%List.0 = type { i64 }
 
-@pointer03_start = internal global %0* null
+@pointer03_start = internal global %List* null
 
 declare void @Out_Ln()
 
@@ -12,18 +12,18 @@ declare void @Out_Int(i64)
 
 define i64 @output() {
 entry:
-  store void* null, %0** @pointer03_start
-  %0 = call i64 @NEW_ptr(%0** @pointer03_start, i64 16)
-  %1 = load %0*, %0** @pointer03_start
-  %idx = getelementptr %0, %0* %1, i64 0, i32 0
+  store void* null, %List** @pointer03_start
+  %0 = call i64 @NEW_ptr(%List** @pointer03_start, i64 16)
+  %1 = load %List*, %List** @pointer03_start
+  %idx = getelementptr %List, %List* %1, i64 0, i32 0
   store i64 5, i64* %idx
-  %start = load %0*, %0** @pointer03_start
-  %2 = load %0*, %0** @pointer03_start
-  %idx1 = getelementptr %0, %0* %2, i64 0, i32 0
+  %start = load %List*, %List** @pointer03_start
+  %2 = load %List*, %List** @pointer03_start
+  %idx1 = getelementptr %List, %List* %2, i64 0, i32 0
   %idx2 = load i64, i64* %idx1
   call void @Out_Int(i64 %idx2)
   call void @Out_Ln()
   ret i64 0
 }
 
-declare i64 @NEW_ptr(%0**, i64)
+declare i64 @NEW_ptr(%List**, i64)

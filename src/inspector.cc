@@ -91,6 +91,9 @@ void Inspector::visit_ASTTypeDec(ASTTypeDecPtr ast) {
             errors.add(e);
         }
         t.second->accept(this);
+        if (last_type->id == TypeId::record) {
+            std::dynamic_pointer_cast<RecordType>(last_type)->set_identified(t.first->value);
+        }
         auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
         debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
         types.put(t.first->value, type);

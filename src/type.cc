@@ -155,7 +155,10 @@ llvm::Type *RecordType::get_llvm() {
         auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
         fs.push_back((*res)->get_llvm());
     });
-    return StructType::create(fs);
+    if (identified.empty()) {
+        return StructType::create(fs);
+    }
+    return StructType::create(fs, identified);
 }
 
 llvm::Constant *RecordType::get_init() {

@@ -201,7 +201,11 @@ class RecordType : public Type {
 
     unsigned int get_size() override;
 
+    void        set_identified(std::string const &s) { identified = s; };
+    std::string get_identified() { return identified; };
+
   private:
+    std::string              identified{}; // identified records
     llvm::StringMap<TypePtr> fields;
     std::vector<std::string> index;
 };
