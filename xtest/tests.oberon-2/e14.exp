@@ -5,7 +5,7 @@ source_filename = "e14"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 define i64 @output() {
 entry:
@@ -16,7 +16,7 @@ loop:                                             ; preds = %ifcont, %entry
   %addtmp = add i64 %x, 1
   store i64 %addtmp, i64* @e14_x
   %x1 = load i64, i64* @e14_x
-  call void @Out_Int(i64 %x1)
+  call void @Out_Int(i64 %x1, i64 0)
   call void @Out_Ln()
   %x2 = load i64, i64* @e14_x
   %0 = icmp eq i64 %x2, 10

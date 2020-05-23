@@ -14,8 +14,8 @@ BEGIN
     FOR i := 0 TO 2 DO
         FOR j := 0 TO 3 DO
             FOR k := 0 TO 4 DO
-                Out.Int(i) Out.Char(','); Out.Int(j) Out.Char(','); Out.Int(k) Out.Char('='); 
-                Out.Int(x[i,j,k]) Out.Char(' ');
+                Out.Int(i, 0) Out.Char(','); Out.Int(j, 0) Out.Char(','); Out.Int(k, 0) Out.Char('='); 
+                Out.Int(x[i,j,k], 0) Out.Char(' ');
             END
             Out.Ln;
         END

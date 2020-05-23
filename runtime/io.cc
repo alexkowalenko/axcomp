@@ -5,7 +5,8 @@
 //
 
 #include <codecvt>
-#include <iostream>
+#include <cstdio>
+#include <locale>
 
 #include "ax.hh"
 
@@ -16,35 +17,35 @@ namespace ax {
 extern "C" void Out_Open(void) {}
 
 extern "C" void Out_Flush(void) {
-    std::cout << std::flush;
+    std::fflush(stdout);
 }
 
-extern "C" void Out_Int(Int x) {
-    std::cout << x;
+extern "C" void Out_Int(Int x, Int n) {
+    std::printf("%*li", int(n), x);
 }
 
-extern "C" void Out_Hex(Int x) {
-    std::cout << std::hex << x << std::dec;
+extern "C" void Out_Hex(Int x, Int n) {
+    std::printf("%*lx", int(n), x);
 }
 
 extern "C" void Out_Bool(Bool x) {
-    std::cout << x;
+    std::printf(x ? "1" : "0");
 }
 
 extern "C" void Out_Real(Real x) {
-    std::cout << x;
+    std::printf("%G", x);
 }
 
 extern "C" void Out_Char(Char x) {
-    std::cout << converterX.to_bytes(std::wstring(1, x));
+    std::fputs(converterX.to_bytes(std::wstring(1, x)).c_str(), stdout);
 }
 
 extern "C" void Out_String(String x) {
-    std::cout << converterX.to_bytes(x);
+    std::fputs(converterX.to_bytes(x).c_str(), stdout);
 }
 
 extern "C" void Out_Ln(void) {
-    std::cout << std::endl;
+    std::putc('\n', stdout);
 }
 
 extern "C" void WriteLn(void) {
@@ -52,7 +53,7 @@ extern "C" void WriteLn(void) {
 }
 
 extern "C" void WriteInt(Int x) {
-    Out_Int(x);
+    Out_Int(x, 0);
 }
 
 extern "C" void WriteBoolean(Bool x) {

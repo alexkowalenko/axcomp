@@ -4,5 +4,5 @@ VAR x : INTEGER;
 
 BEGIN
        x := ABS(-3);
-       Out.Int(x); Out.Ln;
+       Out.Int(x, 0); Out.Ln;
 END abs.

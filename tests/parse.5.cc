@@ -49,9 +49,9 @@ TEST(Parser, ARRAY) {
                 END alpha.)",
          "MODULE alpha;\nVAR\nx: ARRAY 5 OF INTEGER;\ny: ARRAY 5 OF ARRAY "
          "5 OF INTEGER;\nPROCEDURE sum(a : ARRAY 5 OF BOOLEAN): "
-         "INTEGER;\nBEGIN\nRETURN 0\nEND sum.\nPROCEDURE add(a : ARRAY 5 OF "
+         "INTEGER;\nBEGIN\nRETURN 0\nEND sum;\nPROCEDURE add(a : ARRAY 5 OF "
          "INTEGER; a : ARRAY 5 OF INTEGER): ARRAY 5 OF "
-         "INTEGER;\nBEGIN\nRETURN 0\nEND add.\nBEGIN\nRETURN 0\nEND alpha.",
+         "INTEGER;\nBEGIN\nRETURN 0\nEND add;\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -400,9 +400,9 @@ TEST(Parser, RecordArrayProcedures) {
                 RETURN sum(identity(pt))
             END g11.)",
          "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : ARRAY 3 OF INTEGER): "
-         "ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : ARRAY 3 OF "
+         "ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND identity;\nPROCEDURE sum(a : ARRAY 3 OF "
          "INTEGER): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
-         "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 DO\npt[i] := "
+         "total+a[i]\nEND;\nRETURN total\nEND sum;\nBEGIN\nFOR i := 0 TO 2 DO\npt[i] := "
          "i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
          ""},
 
@@ -428,9 +428,9 @@ TEST(Parser, RecordArrayProcedures) {
             END g12.)",
          "MODULE g12;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE identity(a : "
          "RECORD\nx: INTEGER;\ny: INTEGER\nEND): RECORD\nx: INTEGER;\ny: "
-         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : RECORD\nx: "
+         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity;\nPROCEDURE sum(a : RECORD\nx: "
          "INTEGER;\ny: INTEGER\nEND): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN a.x+a.y\nEND "
-         "sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
+         "sum;\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
          ""},
     };
     do_parse_tests(tests);

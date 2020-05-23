@@ -19,7 +19,7 @@ TEST(Parser, Proc) {
         BEGIN
             RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nBEGIN\nRETURN "
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f;\nBEGIN\nRETURN "
          "0\nEND x.",
          ""},
 
@@ -36,9 +36,18 @@ TEST(Parser, Proc) {
         BEGIN
             RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
-         "g;\nBEGIN\nRETURN 24\nEND g.\nBEGIN\nRETURN 0\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f;\nPROCEDURE "
+         "g;\nBEGIN\nRETURN 24\nEND g;\nBEGIN\nRETURN 0\nEND x.",
          ""},
+
+        {R"(MODULE x;
+        PROCEDURE f;
+        END f;
+
+        BEGIN
+            RETURN 0
+        END x.)",
+         "MODULE x;\nPROCEDURE f;\nEND f;\nBEGIN\nRETURN 0\nEND x.", ""},
 
         // Errors
         {R"(MODULE x;
@@ -49,7 +58,7 @@ TEST(Parser, Proc) {
             RETURN 0
         END x.
         )",
-         "", "3,18: Unexpected token: RETURN - expecting BEGIN"},
+         "", "3,18: Unexpected token: RETURN - expecting END"},
 
         {R"(MODULE x;
         PROCEDURE f;
@@ -96,7 +105,7 @@ TEST(Parser, Call) {
             BEGIN
                 f()
             END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nBEGIN\nf()\nEND "
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f;\nBEGIN\nf()\nEND "
          "x.",
          ""},
 
@@ -115,8 +124,8 @@ TEST(Parser, Call) {
             g();
             RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
-         "g;\nBEGIN\nf();\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN 0\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f;\nPROCEDURE "
+         "g;\nBEGIN\nf();\nRETURN 24\nEND g;\nBEGIN\ng();\nRETURN 0\nEND x.",
          ""},
 
         {R"(MODULE x;
@@ -134,8 +143,8 @@ TEST(Parser, Call) {
             g;
             RETURN 0
         END x.)",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f.\nPROCEDURE "
-         "g;\nBEGIN\nf();\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN 0\nEND x.",
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN 12\nEND f;\nPROCEDURE "
+         "g;\nBEGIN\nf();\nRETURN 24\nEND g;\nBEGIN\ng();\nRETURN 0\nEND x.",
          ""},
 
         // Error
@@ -163,7 +172,7 @@ TEST(Parser, ReturnType) {
             f()
             END x.)",
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
-         "f.\nBEGIN\nf()\nEND x.",
+         "f;\nBEGIN\nf()\nEND x.",
          ""},
 
         {R"(MODULE x;
@@ -178,7 +187,7 @@ TEST(Parser, ReturnType) {
         RETURN 0
         END x.)",
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
-         "f.\nPROCEDURE g;\nBEGIN\nRETURN 24\nEND g.\nBEGIN\ng();\nRETURN "
+         "f;\nPROCEDURE g;\nBEGIN\nRETURN 24\nEND g;\nBEGIN\ng();\nRETURN "
          "0\nEND x.",
          ""},
 
@@ -217,7 +226,7 @@ TEST(Parser, FunctionCall) {
                 + (f() * f())
             END x.)",
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 12\nEND "
-         "f.\nBEGIN\nRETURN f()+ (f()*f()) \nEND x.",
+         "f;\nBEGIN\nRETURN f()+ (f()*f()) \nEND x.",
          ""},
 
         // Error
@@ -248,7 +257,7 @@ TEST(Parser, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
          "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -263,7 +272,7 @@ TEST(Parser, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
          "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -278,7 +287,7 @@ TEST(Parser, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
          "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -293,7 +302,7 @@ TEST(Parser, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : INTEGER; "
          "bx : BOOLEAN; by : BOOLEAN): INTEGER;\nVAR\nzz: "
-         "INTEGER;\nBEGIN\nRETURN zz\nEND f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "INTEGER;\nBEGIN\nRETURN zz\nEND f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         // Errors
@@ -349,7 +358,7 @@ TEST(Parser, CallArgs) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
          "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN f(3)\nEND xxx.",
+         "f;\nBEGIN\nRETURN f(3)\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -364,7 +373,7 @@ TEST(Parser, CallArgs) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
          "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN f(3, 4)+f(2, f(3+4))\nEND xxx.",
+         "f;\nBEGIN\nRETURN f(3, 4)+f(2, f(3+4))\nEND xxx.",
          ""},
 
         // Errors
@@ -397,7 +406,7 @@ TEST(Parser, VarArgs) {
             RETURN f(3)
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER): "
-         "INTEGER;\nBEGIN\nRETURN x\nEND f.\nBEGIN\nRETURN f(3)\nEND xxx.",
+         "INTEGER;\nBEGIN\nRETURN x\nEND f;\nBEGIN\nRETURN f(3)\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -410,7 +419,7 @@ TEST(Parser, VarArgs) {
             RETURN 0
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER; VAR y : "
-         "INTEGER): INTEGER;\nBEGIN\nRETURN x\nEND f.\nBEGIN\nRETURN 0\nEND "
+         "INTEGER): INTEGER;\nBEGIN\nRETURN x\nEND f;\nBEGIN\nRETURN 0\nEND "
          "xxx.",
          ""},
 
@@ -425,7 +434,7 @@ TEST(Parser, VarArgs) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(VAR x : INTEGER; VAR y : "
          "INTEGER; z : BOOLEAN): INTEGER;\nBEGIN\nRETURN x\nEND "
-         "f.\nBEGIN\nRETURN 0\nEND xxx.",
+         "f;\nBEGIN\nRETURN 0\nEND xxx.",
          ""},
 
         // Errors

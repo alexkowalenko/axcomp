@@ -6,7 +6,7 @@ source_filename = "array3"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -43,7 +43,7 @@ loop6:                                            ; preds = %loop6, %afterloop
   %i9 = load i64, i64* %i8
   %idx10 = getelementptr [0 x i64], [0 x i64]* @array3_x, i64 0, i64 %i9
   %idx11 = load i64, i64* %idx10
-  call void @Out_Int(i64 %idx11)
+  call void @Out_Int(i64 %idx11, i64 0)
   call void @Out_Char(i32 32)
   %2 = load i64, i64* %i8
   %nextvar12 = add i64 %2, 1

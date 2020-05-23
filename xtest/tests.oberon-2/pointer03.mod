@@ -11,6 +11,6 @@ BEGIN
     start := NIL;
     NEW(start);    
     start^.value := 5;
-    Out.Int(start^.value); Out.Ln;
+    Out.Int(start^.value, 0); Out.Ln;
     RETURN 0;
 END pointer03.

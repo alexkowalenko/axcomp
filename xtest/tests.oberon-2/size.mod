@@ -11,11 +11,11 @@ END f;
 
 BEGIN
     x := SIZE(BOOLEAN);
-    Out.Int(x); Out.Ln;
+    Out.Int(x, 0); Out.Ln;
     x := SIZE(CHAR);
-    Out.Int(x); Out.Ln;
+    Out.Int(x, 0); Out.Ln;
      x := SIZE(INTEGER);
-    Out.Int(x); Out.Ln;
+    Out.Int(x, 0); Out.Ln;
     x := SIZE(arrayType);
-    Out.Int(x); Out.Ln;
+    Out.Int(x, 0); Out.Ln;
 END size.

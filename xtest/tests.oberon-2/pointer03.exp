@@ -8,7 +8,7 @@ source_filename = "pointer03"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 define i64 @output() {
 entry:
@@ -21,7 +21,7 @@ entry:
   %2 = load %List*, %List** @pointer03_start
   %idx1 = getelementptr %List, %List* %2, i64 0, i32 0
   %idx2 = load i64, i64* %idx1
-  call void @Out_Int(i64 %idx2)
+  call void @Out_Int(i64 %idx2, i64 0)
   call void @Out_Ln()
   ret i64 0
 }

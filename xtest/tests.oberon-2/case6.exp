@@ -9,7 +9,7 @@ source_filename = "case6"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -23,7 +23,7 @@ entry:
 
 loop:                                             ; preds = %case_end, %entry
   %i1 = load i64, i64* %i
-  call void @Out_Int(i64 %i1)
+  call void @Out_Int(i64 %i1, i64 0)
   call void @Out_Char(i32 32)
   %i2 = load i64, i64* %i
   switch i64 %i2, label %range [

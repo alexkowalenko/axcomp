@@ -38,7 +38,7 @@ TEST(Inspector, Return) {
         {"MODULE x; VAR z: INTEGER; PROCEDURE y; BEGIN z := 1 END y; "
          "BEGIN z := 10; END x.",
          "MODULE x;\nVAR\nz: INTEGER;\nPROCEDURE y;\nBEGIN\nz := 1\nEND "
-         "y.\nBEGIN\nz := 10\nEND x.",
+         "y;\nBEGIN\nz := 10\nEND x.",
          ""},
     };
     do_inspect_tests(tests);
@@ -49,11 +49,11 @@ TEST(Inspector, ReturnType) {
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN 0 END f; BEGIN "
          "RETURN 333 END x.",
          "MODULE x;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN 0\nEND "
-         "f.\nBEGIN\nRETURN 333\nEND x.",
+         "f;\nBEGIN\nRETURN 333\nEND x.",
          ""},
         {"MODULE x; PROCEDURE f; BEGIN RETURN END f; BEGIN "
          "RETURN 333 END x.",
-         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN \nEND f.\nBEGIN\nRETURN "
+         "MODULE x;\nPROCEDURE f;\nBEGIN\nRETURN \nEND f;\nBEGIN\nRETURN "
          "333\nEND x.",
          ""},
 
@@ -66,7 +66,7 @@ TEST(Inspector, ReturnType) {
             RETURN 3
             END xxx.)",
          "MODULE xxx;\nPROCEDURE f(): BOOLEAN;\nBEGIN\nRETURN TRUE\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         // Error
@@ -107,7 +107,7 @@ TEST(Inspector, Call) {
             RETURN x
         END y.)",
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f;\nBEGIN\nRETURN \nEND "
-         "f.\nBEGIN\nf();\nRETURN x\nEND y.",
+         "f;\nBEGIN\nf();\nRETURN x\nEND y.",
          ""},
 
         {R"(MODULE y; 
@@ -121,7 +121,7 @@ TEST(Inspector, Call) {
                 RETURN f()
            END y.)",
          "MODULE y;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nBEGIN\nRETURN "
-         "0\nEND f.\nBEGIN\nf();\nRETURN f()\nEND y.",
+         "0\nEND f;\nBEGIN\nf();\nRETURN f()\nEND y.",
          ""},
 
         {R"(MODULE xxx;
@@ -133,7 +133,7 @@ TEST(Inspector, Call) {
                 RETURN f(1)
             END xxx.)",
          "MODULE xxx;\nPROCEDURE f(x : INTEGER): INTEGER;\nBEGIN\nRETURN "
-         "0\nEND f.\nBEGIN\nRETURN f(1)\nEND xxx.",
+         "0\nEND f;\nBEGIN\nRETURN f(1)\nEND xxx.",
          ""},
 
         // Errors
@@ -188,7 +188,7 @@ TEST(Inspector, CallType) {
             f(1) 
         END y.)",
          "MODULE y;\nPROCEDURE f(x : INTEGER);\nBEGIN\nRETURN \nEND "
-         "f.\nBEGIN\nf(1)\nEND y.",
+         "f;\nBEGIN\nf(1)\nEND y.",
          ""},
 
         {R"(MODULE y; 
@@ -200,7 +200,7 @@ TEST(Inspector, CallType) {
             f(1,2)
         END y.)",
          "MODULE y;\nPROCEDURE f(x : INTEGER; y : INTEGER);\nBEGIN\nRETURN "
-         "\nEND f.\nBEGIN\nf(1, 2)\nEND y.",
+         "\nEND f;\nBEGIN\nf(1, 2)\nEND y.",
          ""},
 
         // Errors
@@ -257,7 +257,7 @@ TEST(Inspector, CallVar) {
         END y.)",
          "MODULE y;\nVAR\ny: INTEGER;\nPROCEDURE f(VAR x : "
          "INTEGER);\nBEGIN\nx "
-         ":= 0;\nRETURN \nEND f.\nBEGIN\nf(y)\nEND y.",
+         ":= 0;\nRETURN \nEND f;\nBEGIN\nf(y)\nEND y.",
          ""},
 
         {R"(MODULE y; 
@@ -271,7 +271,7 @@ TEST(Inspector, CallVar) {
             f(1, y) 
         END y.)",
          "MODULE y;\nVAR\ny: INTEGER;\nPROCEDURE f(x : INTEGER; VAR y : "
-         "INTEGER);\nBEGIN\nx := 0;\nRETURN \nEND f.\nBEGIN\nf(1, y)\nEND y.",
+         "INTEGER);\nBEGIN\nx := 0;\nRETURN \nEND f;\nBEGIN\nf(1, y)\nEND y.",
          ""},
 
         // Errors
@@ -323,7 +323,7 @@ TEST(Inspector, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER): "
          "INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         {R"(MODULE xxx;
@@ -338,7 +338,7 @@ TEST(Inspector, FunctionParams) {
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : "
          "INTEGER): INTEGER;\nVAR\nzz: INTEGER;\nBEGIN\nRETURN zz\nEND "
-         "f.\nBEGIN\nRETURN 3\nEND xxx.",
+         "f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 
         // Errors

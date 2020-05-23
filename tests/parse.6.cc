@@ -26,7 +26,7 @@ TEST(Parser, Globals) {
                 END alpha.)",
          "MODULE alpha;\nCONST\na* = 10;\nTYPE\nsecond* = INTEGER;\nVAR\nx*: ARRAY 5 OF "
          "INTEGER;\npt: RECORD\nx*: INTEGER;\ny*: INTEGER\nEND;\nPROCEDURE f*(): "
-         "INTEGER;\nBEGIN\nRETURN 0\nEND f.\nBEGIN\nRETURN 0\nEND alpha.",
+         "INTEGER;\nBEGIN\nRETURN 0\nEND f;\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
@@ -142,7 +142,7 @@ TEST(Parser, Qualident) {
             END alpha.)",
          "MODULE alpha;\nIMPORT System;\nTYPE\nsys = System.Type;\nVAR\nx: "
          "System.error;\nPROCEDURE f*(y : System.Jones): "
-         "System.Jones;\nBEGIN\nRETURN y\nEND f.\nBEGIN\nSystem.x := "
+         "System.Jones;\nBEGIN\nRETURN y\nEND f;\nBEGIN\nSystem.x := "
          "System.y+1;\nRETURN System.error\nEND alpha.",
          ""},
 

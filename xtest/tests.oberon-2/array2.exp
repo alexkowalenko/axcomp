@@ -6,7 +6,7 @@ source_filename = "array2"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -84,13 +84,13 @@ afterloop16:                                      ; preds = %afterloop19
 
 loop18:                                           ; preds = %loop18, %loop15
   %i21 = load i64, i64* %i14
-  call void @Out_Int(i64 %i21)
+  call void @Out_Int(i64 %i21, i64 0)
   call void @Out_Char(i32 44)
   %j22 = load i64, i64* %j17
-  call void @Out_Int(i64 %j22)
+  call void @Out_Int(i64 %j22, i64 0)
   call void @Out_Char(i32 44)
   %k23 = load i64, i64* %k20
-  call void @Out_Int(i64 %k23)
+  call void @Out_Int(i64 %k23, i64 0)
   call void @Out_Char(i32 61)
   %x = load [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x
   %k24 = load i64, i64* %k20
@@ -98,7 +98,7 @@ loop18:                                           ; preds = %loop18, %loop15
   %i26 = load i64, i64* %i14
   %idx27 = getelementptr [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x, i64 0, i64 %k24, i64 %j25, i64 %i26
   %idx28 = load i64, i64* %idx27
-  call void @Out_Int(i64 %idx28)
+  call void @Out_Int(i64 %idx28, i64 0)
   call void @Out_Char(i32 32)
   %5 = load i64, i64* %k20
   %nextvar29 = add i64 %5, 1

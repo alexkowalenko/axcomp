@@ -5,9 +5,9 @@ CONST x = 12;
 
 BEGIN
     Out.Open;
-    Out.Int(x); Out.Ln;
-    Out.Int(0cafebabeH); Out.Ln;
-    Out.Hex(0cafebabeH); Out.Ln;
+    Out.Int(x, 0); Out.Ln;
+    Out.Int(0cafebabeH, 0); Out.Ln;
+    Out.Hex(0cafebabeH, 0); Out.Ln;
     Out.Bool(TRUE); Out.Ln;
     Out.Flush;
 END stdlib01.

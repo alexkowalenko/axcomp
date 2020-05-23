@@ -20,6 +20,6 @@ BEGIN
     END;  Out.Ln;
     (* Print the numbers of the open doors *)
     FOR i := 1 TO N DO 
-      IF ~closed[i] THEN Out.Int(i); Out.Char(' ') END
+      IF ~closed[i] THEN Out.Int(i, 0); Out.Char(' ') END
     END;  Out.Ln
 END Doors.

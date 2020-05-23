@@ -133,9 +133,11 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
     push();
     ast->decs->accept(this);
     pop();
-    os << indent() << "BEGIN\n";
-    print_stats(ast->stats);
-    os << indent() << std::string(llvm::formatv("END {0}.\n", ast->name->value));
+    if (!ast->stats.empty()) {
+        os << indent() << "BEGIN\n";
+        print_stats(ast->stats);
+    }
+    os << indent() << std::string(llvm::formatv("END {0};\n", ast->name->value));
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignmentPtr ast) {

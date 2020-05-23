@@ -809,8 +809,14 @@ Standard output.
 DEFINITION Out;
     PROCEDURE Open*;
     PROCEDURE Flush*;
-    PROCEDURE Int*(x : INTEGER);
-    PROCEDURE Hex*(x : INTEGER); 
+
+    (* Convert 'x' to a string of at least 'n' chars and write it to standard output. 
+    If 'n' is too small it will be extended. 
+    If 'n' is greater then necessary spaces will be added after the number, i.e.
+    it is left justified. *)
+    PROCEDURE Int*(x, n : INTEGER);
+    PROCEDURE Hex*(x, n : INTEGER);
+    
     PROCEDURE Bool*(x : BOOLEAN);
     PROCEDURE Real*(x : REAL);
     PROCEDURE Char*(x : CHAR);

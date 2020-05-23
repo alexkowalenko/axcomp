@@ -426,7 +426,7 @@ TEST(Inspector, Arrays) {
                 END alpha.)",
          "MODULE alpha;\nVAR\nx: ARRAY 5 OF BOOLEAN;\ny: ARRAY 5 OF ARRAY "
          "5 OF INTEGER;\nPROCEDURE sum(a : ARRAY 3 OF BOOLEAN): "
-         "INTEGER;\nBEGIN\nRETURN 0\nEND sum.\nBEGIN\nRETURN 0\nEND alpha."},
+         "INTEGER;\nBEGIN\nRETURN 0\nEND sum;\nBEGIN\nRETURN 0\nEND alpha."},
 
         // Errors
 
@@ -913,9 +913,9 @@ TEST(Inspector, RecordArrayProcedure) {
             END g11.)",
          "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : "
          "ARRAY 3 OF INTEGER): ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND "
-         "identity.\nPROCEDURE sum(a : ARRAY 3 OF INTEGER): "
+         "identity;\nPROCEDURE sum(a : ARRAY 3 OF INTEGER): "
          "INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
-         "total+a[i]\nEND;\nRETURN total\nEND sum.\nBEGIN\nFOR i := 0 TO 2 "
+         "total+a[i]\nEND;\nRETURN total\nEND sum;\nBEGIN\nFOR i := 0 TO 2 "
          "DO\npt[i] := i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
          ""},
 
@@ -941,9 +941,9 @@ TEST(Inspector, RecordArrayProcedure) {
             END g12.)",
          "MODULE g12;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE identity(a : "
          "RECORD\nx: INTEGER;\ny: INTEGER\nEND): RECORD\nx: INTEGER;\ny: "
-         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity.\nPROCEDURE sum(a : RECORD\nx: "
+         "INTEGER\nEND;\nBEGIN\nRETURN a\nEND identity;\nPROCEDURE sum(a : RECORD\nx: "
          "INTEGER;\ny: INTEGER\nEND): INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nRETURN a.x+a.y\nEND "
-         "sum.\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
+         "sum;\nBEGIN\npt.x := 12;\npt.y := 24;\nRETURN sum(identity(pt))\nEND g12.",
          ""},
 
         // Errors

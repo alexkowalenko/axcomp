@@ -10,7 +10,7 @@ source_filename = "string3"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -22,21 +22,21 @@ entry:
   call void @Out_String([0 x i32]* @STRING_2)
   call void @Out_Char(i32 32)
   %0 = call i64 @Strings_Length([0 x i32]* @STRING_3)
-  call void @Out_Int(i64 %0)
+  call void @Out_Int(i64 %0, i64 0)
   call void @Out_Ln()
   %x = load [0 x i32]*, [0 x i32]** @string3_x
   call void @Out_String([0 x i32]* %x)
   call void @Out_Char(i32 32)
   %x1 = load [0 x i32]*, [0 x i32]** @string3_x
   %1 = call i64 @Strings_Length([0 x i32]* %x1)
-  call void @Out_Int(i64 %1)
+  call void @Out_Int(i64 %1, i64 0)
   call void @Out_Ln()
   %a = load [0 x i32]*, [0 x i32]** @string3_a
   call void @Out_String([0 x i32]* %a)
   call void @Out_Char(i32 32)
   %a2 = load [0 x i32]*, [0 x i32]** @string3_a
   %2 = call i64 @Strings_Length([0 x i32]* %a2)
-  call void @Out_Int(i64 %2)
+  call void @Out_Int(i64 %2, i64 0)
   call void @Out_Ln()
   ret i64 0
 }

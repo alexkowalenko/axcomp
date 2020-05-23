@@ -25,7 +25,7 @@ TEST(Inspector, ReadOnly) {
                 END alpha.)",
          "MODULE alpha;\nCONST\na* = 10;\nTYPE\nsecond* = INTEGER;\nVAR\nx*: ARRAY 5 OF "
          "INTEGER;\npt: RECORD\nx*: INTEGER;\ny*: INTEGER\nEND;\nPROCEDURE f*(): "
-         "INTEGER;\nBEGIN\nRETURN 0\nEND f.\nBEGIN\nRETURN 0\nEND alpha.",
+         "INTEGER;\nBEGIN\nRETURN 0\nEND f;\nBEGIN\nRETURN 0\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;

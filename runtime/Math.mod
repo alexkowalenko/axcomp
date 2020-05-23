@@ -25,33 +25,21 @@ BEGIN
 END Equal;
 
 PROCEDURE sin*(x: REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END sin;
 
 PROCEDURE cos*(x: REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END cos;
 
 PROCEDURE arctan*(y:REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END arctan;
 
 PROCEDURE sqrt*(x: REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END sqrt;
 
 PROCEDURE ln*(x: REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END ln;
 
 PROCEDURE exp*(x: REAL): REAL;
-BEGIN
-    RETURN 0.0;
 END exp;
 
 END Math.

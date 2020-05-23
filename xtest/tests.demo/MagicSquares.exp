@@ -3,7 +3,7 @@ source_filename = "MagicSquares"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -107,7 +107,7 @@ repeat36:                                         ; preds = %repeat36, %repeat
   %j39 = load i64, i64* %j
   %idx40 = getelementptr [13 x [13 x i64]], [13 x [13 x i64]]* %M, i64 0, i64 %i38, i64 %j39
   %idx41 = load i64, i64* %idx40
-  call void @Out_Int(i64 %idx41)
+  call void @Out_Int(i64 %idx41, i64 0)
   call void @Out_Char(i32 32)
   %j42 = load i64, i64* %j
   %addtmp43 = add i64 %j42, 1

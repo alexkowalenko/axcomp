@@ -9,7 +9,7 @@ source_filename = "Doors"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
@@ -138,7 +138,7 @@ afterloop34:                                      ; preds = %ifcont42
 
 then40:                                           ; preds = %loop33
   %i41 = load i64, i64* %i35
-  call void @Out_Int(i64 %i41)
+  call void @Out_Int(i64 %i41, i64 0)
   call void @Out_Char(i32 32)
   br label %ifcont42
 

@@ -8,7 +8,7 @@ source_filename = "inc"
 
 declare void @Out_Ln()
 
-declare void @Out_Int(i64)
+declare void @Out_Int(i64, i64)
 
 declare void @Out_String([0 x i32]*)
 
@@ -21,13 +21,13 @@ entry:
   %inc = add i64 %0, 1
   store i64 %inc, i64* @inc_x
   %x1 = load i64, i64* @inc_x
-  call void @Out_Int(i64 %x1)
+  call void @Out_Int(i64 %x1, i64 0)
   call void @Out_Ln()
   %1 = load i64, i64* @inc_x
   %dec = sub i64 %1, 1
   store i64 %dec, i64* @inc_x
   %x2 = load i64, i64* @inc_x
-  call void @Out_Int(i64 %x2)
+  call void @Out_Int(i64 %x2, i64 0)
   call void @Out_Ln()
   %x3 = load i64, i64* @inc_x
   %y = load i64, i64* @inc_y

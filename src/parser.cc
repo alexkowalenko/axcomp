@@ -341,10 +341,12 @@ ASTProcedurePtr Parser::parse_procedure() {
     // Declarations
     proc->decs = parse_declaration();
 
-    get_token(TokenType::begin);
-
     // statement_seq
-    parse_statement_block(proc->stats, module_ends);
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::begin) {
+        get_token(TokenType::begin);
+        parse_statement_block(proc->stats, module_ends);
+    }
 
     // END
     get_token(TokenType::end);

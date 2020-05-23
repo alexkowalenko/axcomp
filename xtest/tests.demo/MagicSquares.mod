@@ -17,7 +17,7 @@ PROCEDURE Generate;  (*magic square of order 3, 5, 7, ... *)
       END ;
     i := 0;
     REPEAT j := 0;
-      REPEAT Out.Int(M[i][j]); Out.Char(' '); j := j+1 UNTIL j = n;
+      REPEAT Out.Int(M[i][j], 0); Out.Char(' '); j := j+1 UNTIL j = n;
       Out.Ln; i := i+1
     UNTIL i = n
   END Generate;
