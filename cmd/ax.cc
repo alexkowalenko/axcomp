@@ -76,6 +76,10 @@ Options do_args(int argc, char **argv) {
     cl::opt<bool> ll("ll", cl::desc("(-l) generate only the .ll file"), cl::cat(oberon));
     cl::alias     llA("l", cl::aliasopt(ll));
 
+    cl::opt<bool> opt1("O1", cl::desc("invoke optimizer level 1"), cl::cat(oberon));
+    cl::opt<bool> opt2("O2", cl::desc("invoke optimizer level 2"), cl::cat(oberon));
+    cl::opt<bool> opt3("O3", cl::desc("invoke optimizer level 3"), cl::cat(oberon));
+
     cl::opt<bool> symbols("symbols", cl::desc("(-s) dump the symbol table"), cl::cat(oberon));
     cl::alias     symbolsA("s", cl::aliasopt(symbols));
 
@@ -97,6 +101,16 @@ Options do_args(int argc, char **argv) {
     options.output_main = main;
     options.output_funct = output;
     options.only_ll = ll;
+    if (opt1) {
+        options.optimise = 1;
+    }
+    if (opt2) {
+        options.optimise = 2;
+    }
+    if (opt3) {
+        options.optimise = 3;
+    }
+
     options.print_symbols = symbols;
     options.file_name = file_name;
     options.axlib_path = axlib_path;
@@ -166,6 +180,10 @@ int main(int argc, char **argv) {
 
         ax::CodeGenerator code(options, symbols, types, importer);
         code.generate(ast);
+
+        if (options.optimise) {
+            code.optimize();
+        }
 
         code.generate_llcode();
         if (!options.only_ll) {

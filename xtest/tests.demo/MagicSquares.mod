@@ -1,4 +1,5 @@
 MODULE MagicSquares;   (*for Oberon-0 NW 25.1.2013*)
+IMPORT Out;
 
 PROCEDURE Generate;  (*magic square of order 3, 5, 7, ... *)
     VAR i, j, x, nx, nsq, n: INTEGER;
@@ -16,8 +17,8 @@ PROCEDURE Generate;  (*magic square of order 3, 5, 7, ... *)
       END ;
     i := 0;
     REPEAT j := 0;
-      REPEAT WriteInt(M[i][j]); j := j+1 UNTIL j = n;
-      WriteLn; i := i+1
+      REPEAT Out.Int(M[i][j]); Out.Char(' '); j := j+1 UNTIL j = n;
+      Out.Ln; i := i+1
     UNTIL i = n
   END Generate;
 

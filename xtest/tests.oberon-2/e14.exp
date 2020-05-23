@@ -1,0 +1,33 @@
+; ModuleID = 'e14'
+source_filename = "e14"
+
+@e14_x = internal global i64 0
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64)
+
+define i64 @output() {
+entry:
+  br label %loop
+
+loop:                                             ; preds = %ifcont, %entry
+  %x = load i64, i64* @e14_x
+  %addtmp = add i64 %x, 1
+  store i64 %addtmp, i64* @e14_x
+  %x1 = load i64, i64* @e14_x
+  call void @Out_Int(i64 %x1)
+  call void @Out_Ln()
+  %x2 = load i64, i64* @e14_x
+  %0 = icmp eq i64 %x2, 10
+  br i1 %0, label %then, label %ifcont
+
+then:                                             ; preds = %loop
+  br label %end
+
+ifcont:                                           ; preds = %loop
+  br label %loop
+
+end:                                              ; preds = %then
+  ret i64 0
+}

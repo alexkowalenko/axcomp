@@ -16,6 +16,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
@@ -1290,6 +1291,40 @@ void CodeGenerator::setup_builtins() {
 void CodeGenerator::init() {
     module = std::make_unique<Module>(module_name, context);
     module->setSourceFileName(module_name);
+}
+
+void CodeGenerator::optimize() {
+    llvm::PassBuilder passBuilder;
+
+    llvm::LoopAnalysisManager     loopAnalysisManager; // * add contructor true for debug info
+    llvm::FunctionAnalysisManager functionAnalysisManager;
+    llvm::CGSCCAnalysisManager    cGSCCAnalysisManager;
+    llvm::ModuleAnalysisManager   moduleAnalysisManager;
+
+    passBuilder.registerModuleAnalyses(moduleAnalysisManager);
+    passBuilder.registerCGSCCAnalyses(cGSCCAnalysisManager);
+    passBuilder.registerFunctionAnalyses(functionAnalysisManager);
+    passBuilder.registerLoopAnalyses(loopAnalysisManager);
+
+    passBuilder.crossRegisterProxies(loopAnalysisManager, functionAnalysisManager,
+                                     cGSCCAnalysisManager, moduleAnalysisManager);
+
+    llvm::PassBuilder::OptimizationLevel opt_level{llvm::PassBuilder::OptimizationLevel::O0};
+    switch (options.optimise) {
+    case 1:
+        opt_level = llvm::PassBuilder::OptimizationLevel::O1;
+        break;
+    case 2:
+        opt_level = llvm::PassBuilder::OptimizationLevel::O2;
+        break;
+    case 3:
+        opt_level = llvm::PassBuilder::OptimizationLevel::O3;
+        break;
+    }
+
+    llvm::ModulePassManager modulePassManager =
+        passBuilder.buildPerModuleDefaultPipeline(opt_level);
+    modulePassManager.run(*module, moduleAnalysisManager);
 }
 
 void CodeGenerator::generate_llcode() {

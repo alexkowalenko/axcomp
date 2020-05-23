@@ -34,6 +34,18 @@ class CodeGenerator : ASTVisitor {
     void generate_objectcode();
     void generate_llcode();
 
+    void optimize();
+
+    TypeTable &get_types() { return types; };
+
+    std::vector<Value *> do_arguments(ASTCallPtr ast);
+    Value *              call_function(std::string const &name, llvm::Type *ret,
+                                       std::vector<Value *> const &args);
+
+    IRBuilder<> &            get_builder() { return builder; };
+    std::unique_ptr<Module> &get_module() { return module; };
+
+  private:
     void visit_ASTModule(ASTModulePtr ast) override;
     void visit_ASTImport(ASTImportPtr ast) override;
     void doTopDecs(ASTDeclarationPtr const &ast);
@@ -50,9 +62,6 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTAssignment(ASTAssignmentPtr ast) override;
     void visit_ASTReturn(ASTReturnPtr ast) override;
     void visit_ASTExit(ASTExitPtr ast) override;
-
-    std::vector<Value *> do_arguments(ASTCallPtr ast);
-
     void visit_ASTCall(ASTCallPtr ast) override;
     void visit_ASTIf(ASTIfPtr ast) override;
     void visit_ASTCase(ASTCasePtr ast) override;
@@ -80,15 +89,6 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTBool(ASTBoolPtr ast) override;
     void visit_ASTNil(ASTNilPtr /*not used*/) override;
 
-    TypeTable &get_types() { return types; };
-
-    Value *call_function(std::string const &name, llvm::Type *ret,
-                         std::vector<Value *> const &args);
-
-    IRBuilder<> &            get_builder() { return builder; };
-    std::unique_ptr<Module> &get_module() { return module; };
-
-  private:
     void init();
 
     AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,

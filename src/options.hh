@@ -18,6 +18,7 @@ struct Options {
     bool only_ll{false};
     bool output_defs{false};
     bool print_symbols{false};
+    int  optimise{0};
 
     std::string axlib_path;
     std::string file_name;

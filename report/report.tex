@@ -1254,6 +1254,7 @@ The program \lstinline"ax" has the following options:
     \item \lstinline"-d" \lstinline"--defs" generate only the \lstinline".def" file.
     \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
     \item \lstinline"-m" \lstinline"--main" generate function \lstinline"main()" (the entry point) for the \BEGIN\ section of the module.
+    \item \lstinline"-O1 -O2 -O3" switch on optimizers: levels 1, 2, 3.
     \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function \lstinline"output()". Used in unit tests for the compiler.
     \item  \lstinline"-s" \lstinline"--symbols" print the symbol table.
     \item \lstinline"-L" \lstinline"--axlib_path" set the path to search for \lstinline".def" files for \IMPORT\ statements.

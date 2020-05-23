@@ -29,6 +29,8 @@ c_flags = ""
 
 compiler = f"{install_dir}/ax"
 linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
+optimize = False
+opt_flag = "-O1"
 
 red = fg('red_1')
 restore = attr('reset')
@@ -60,8 +62,12 @@ def do_test(t):
     stem = Path(t).stem
     fail = stem + ".fail"
 
+    o_flag = ""
+    if optimize:
+        o_flag = opt_flag
+
     # Compile file
-    cmd = f"{compiler} {c_flags} -L {axlib_dir} --output_funct {t} > result.txt"
+    cmd = f"{compiler} {c_flags} {o_flag} -L {axlib_dir} --output_funct {t} > result.txt"
     # print(cmd)
     ret = os.system(cmd)
     if ret:
@@ -72,18 +78,21 @@ def do_test(t):
     # Check llvm output
     exp = stem + ".exp"
     asm = stem + ".ll"
-    cmd = f"diff --strip-trailing-cr {exp} {asm} > result.diff.txt"
-    # print(cmd)
-    ret = os.system(cmd)
-    if(ret != 0):
-        os.system(f"mv {asm} {fail}")
-        os.system(f"rm -f {stem}.o {stem}.def")
+    if not optimize:
+        cmd = f"diff --strip-trailing-cr {exp} {asm} > result.diff.txt"
+        # print(cmd)
+        ret = os.system(cmd)
+        if(ret != 0):
+            os.system(f"mv {asm} {fail}")
+            os.system(f"rm -f {stem}.o {stem}.def")
+        else:
+            os.system(f"rm -f {fail} {asm}")
+        os.system("rm -f result.diff.txt")
+        if (ret != 0):
+            print(red + "llir " + restore, end="")
+            return 0
     else:
         os.system(f"rm -f {fail} {asm}")
-    os.system("rm -f result.diff.txt")
-    if (ret != 0):
-        print(red + "llir " + restore, end="")
-        return 0
     # compile
     return do_clang(stem)
 
@@ -192,11 +201,18 @@ def get_tests():
 
 
 def main():
+    global optimize
 
     argsParser = argparse.ArgumentParser()
     argsParser.add_argument(
         '-t', '--tests', help="run test on these directories")
+    argsParser.add_argument(
+        '-O', '--optimize', help="switch on the optimizer", action='store_true')
+
     args = argsParser.parse_args()
+    if args.optimize:
+        print("Optimize:")
+        optimize = True
 
     res = 0
     if args.tests:
