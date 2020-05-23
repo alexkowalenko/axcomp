@@ -1,17 +1,11 @@
 
 
 \usepackage{fontspec}
-\usepackage{fancyvrb}
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{xcolor}
-
-%\setmonofont[Scale=0.85]{Fira Code}
-\setromanfont{Minion Pro}
-
-
-\newcommand{\changefont}[3]{\fontfamily{#1}\fontseries{#2}\fontshape{#3}\selectfont}
-
 \usepackage{listings}
+
+\setromanfont{Minion Pro}
 
 \definecolor{darkgrey}{rgb}{0.4,0.4,0.4}
 
@@ -24,20 +18,17 @@ morestring=[b]',
 morestring=[b]",
 }
 
-\lstdefinelanguage{Oberon}[]{Pascal}%
-{morekeywords={elsif,exit,import,loop,module,return,by,string},%
-  sensitive=f,%
+\lstdefinelanguage{Oberon}%
+{morekeywords={ARRAY,BEGIN,BY,CASE,CONST,DEFINITION,DIV,DO,ELSE,ELSIF,END,EXIT,FOR,IF,IMPORT,LOOP,MOD,MODULE,NIL,OF,OR,POINTER,PROCEDURE,RECORD,REPEAT,RETURN,THEN,TO,TYPE,UNTIL,VAR,WHILE,ABS,ASH,BOOLEAN,CAP,CHAR,CHR,COPY,DEC,FALSE,FLOOR,FLT,HALT,INC,INTEGER,LEN,MAX,MIN,NEW,ODD,ORD,REAL,SIZE,STRING,TRUE,WriteInt,WriteBoolean,WriteLn},%
+  sensitive=true,%
   comment=[s]{(*}{*)},
-}[keywords]%
+}%
 
 
 \newcommand{\srcfont}{\fontspec{Fira Code}[Scale=0.9]}
 \newcommand{\codefont}{\fontspec{Fira Code}[Scale=0.8]}
 \newcommand{\codefontBold}{\fontspec{Fira Code-Bold}[Scale=0.8]}
 \newcommand{\codefontCommet}{\fontspec{Fira Code-Light}[Scale=0.8, FakeSlant=0.3, Color=darkgrey]}
-% font for verbatim envirnoment. Note: must be fixed width!
-\fvset{fontfamily=lmtt, fontseries=b%,formatcom=\color{fcb}
-}
   
 \lstset{language=Oberon,% was Oberon-2, but does not support small letter keywords
 tabsize = 2,

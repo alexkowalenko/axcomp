@@ -13,17 +13,17 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-declare void @Out_Real(double)
+declare void @Out_Real(double, i64)
 
 declare void @Out_String([0 x i32]*)
 
 define i64 @output() {
 entry:
   call void @Out_String([0 x i32]* @STRING_0)
-  call void @Out_Real(double 0x10000000000000)
+  call void @Out_Real(double 0x10000000000000, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_1)
-  call void @Out_Real(double 0x7FEFFFFFFFFFFFFF)
+  call void @Out_Real(double 0x7FEFFFFFFFFFFFFF, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_2)
   %0 = call i64 @ABS(i64 -1)
@@ -33,7 +33,7 @@ entry:
   call void @Out_String([0 x i32]* @STRING_3)
   %x = load double, double* @real03_x
   %1 = call double @llvm.fabs.f64(double %x)
-  call void @Out_Real(double %1)
+  call void @Out_Real(double %1, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_4)
   %x1 = load double, double* @real03_x
@@ -42,7 +42,7 @@ entry:
   call void @Out_Int(i64 %3, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_5)
-  call void @Out_Real(double 3.000000e+00)
+  call void @Out_Real(double 3.000000e+00, i64 0)
   call void @Out_Ln()
   ret i64 0
 }

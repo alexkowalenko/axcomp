@@ -17,7 +17,7 @@ source_filename = "real04"
 
 declare void @Out_Ln()
 
-declare void @Out_Real(double)
+declare void @Out_Real(double, i64)
 
 declare void @Out_String([0 x i32]*)
 
@@ -37,37 +37,37 @@ define i64 @output() {
 entry:
   call void @Out_String([0 x i32]* @STRING_0)
   %Math_pi = load double, double* @Math_pi
-  call void @Out_Real(double %Math_pi)
+  call void @Out_Real(double %Math_pi, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_1)
   %Math_e = load double, double* @Math_e
-  call void @Out_Real(double %Math_e)
+  call void @Out_Real(double %Math_e, i64 0)
   call void @Out_Ln()
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_2)
   %0 = call double @Math_sin(double 0.000000e+00)
-  call void @Out_Real(double %0)
+  call void @Out_Real(double %0, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_3)
   %1 = call double @Math_cos(double 0.000000e+00)
-  call void @Out_Real(double %1)
+  call void @Out_Real(double %1, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_4)
   %2 = call double @Math_arctan(double 1.000000e+00)
-  call void @Out_Real(double %2)
+  call void @Out_Real(double %2, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_5)
   %Math_e1 = load double, double* @Math_e
   %3 = call double @Math_ln(double %Math_e1)
-  call void @Out_Real(double %3)
+  call void @Out_Real(double %3, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_6)
   %4 = call double @Math_exp(double 1.000000e+00)
-  call void @Out_Real(double %4)
+  call void @Out_Real(double %4, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* @STRING_7)
   %5 = call double @Math_sqrt(double 2.000000e+00)
-  call void @Out_Real(double %5)
+  call void @Out_Real(double %5, i64 0)
   call void @Out_Ln()
   %Math_pi2 = load double, double* @Math_pi
   %Math_e3 = load double, double* @Math_e

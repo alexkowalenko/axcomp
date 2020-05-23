@@ -5,21 +5,21 @@ VAR x : REAL;
 
 BEGIN
     x := pi - 1;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
 
     x := pi + 1;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
 
     x := pi * pi;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
 
     x := pi / 2;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
 
     x := pi * 0;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
 
     x := pi / 0;
-    Out.Real(x); Out.Ln;
+    Out.Real(x, 0); Out.Ln;
     RETURN 0;
 END real02.

@@ -142,9 +142,12 @@ The following identifiers are predefined; their meaning is defined in the indica
     \BOOLEAN \> (\ref{types-basic}) \\
     \CAP \> (\ref{predefined}) \\
     \CHAR \> (\ref{types-basic}) \\
+    \CHR \> (\ref{predefined}) \\
     \COPY \> (\ref{predefined}) \\
     \DEC \> (\ref{predefined}) \\
     \FALSE \> (\ref{bool-consts}) \\
+    \FLOOR \> (\ref{predefined}) \\
+    \FLT \> (\ref{predefined}) \\
     \HALT \> (\ref{predefined}) \\
     \INC \> (\ref{predefined}) \\
     \INTEGER \> (\ref{types-basic}) \\
@@ -816,9 +819,9 @@ DEFINITION Out;
     it is left justified. *)
     PROCEDURE Int*(x, n : INTEGER);
     PROCEDURE Hex*(x, n : INTEGER);
+    PROCEDURE Real*(x : REAL;  n : INTEGER);
     
     PROCEDURE Bool*(x : BOOLEAN);
-    PROCEDURE Real*(x : REAL);
     PROCEDURE Char*(x : CHAR);
     PROCEDURE String*(x : STRING);
     PROCEDURE Ln*;

@@ -32,8 +32,12 @@ extern "C" void Out_Bool(Bool x) {
     std::printf(x ? "1" : "0");
 }
 
-extern "C" void Out_Real(Real x) {
-    std::printf("%G", x);
+extern "C" void Out_Real(Real x, Int n) {
+    if (n == 0) {
+        std::printf("%G", x);
+    } else {
+        std::printf("%.*G", int(n), x);
+    }
 }
 
 extern "C" void Out_Char(Char x) {

@@ -23,7 +23,7 @@ END Hex;
 PROCEDURE Bool*(x : BOOLEAN);
 END Bool;
 
-PROCEDURE Real*(x : REAL);
+PROCEDURE Real*(x : REAL; n: INTEGER);
 END Real;
 
 PROCEDURE Char*(x : CHAR);
