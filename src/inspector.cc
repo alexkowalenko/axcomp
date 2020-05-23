@@ -111,14 +111,16 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
 
     // Post process all pointer defintions
     for (auto &ptr_type : pointer_types) {
-        debug("Inspector::visit_ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
-        auto ref = types.resolve(ptr_type->get_ref_name());
-        if (!ref) {
-            auto e = TypeError(llvm::formatv("TYPE {0} not found", ptr_type->get_ref_name()),
-                               ast->get_location());
-            errors.add(e);
+        if (!ptr_type->get_reference()) {
+            debug("Inspector::visit_ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
+            auto ref = types.resolve(ptr_type->get_ref_name());
+            if (!ref) {
+                auto e = TypeError(llvm::formatv("TYPE {0} not found", ptr_type->get_ref_name()),
+                                   ast->get_location());
+                errors.add(e);
+            }
+            ptr_type->set_reference(*ref);
         }
-        ptr_type->set_reference(*ref);
     };
     pointer_types.clear();
 }
@@ -692,8 +694,8 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             }
             auto ptr_type = std::dynamic_pointer_cast<PointerType>(b_type);
             debug("Inspector::visit_ASTDesignator ptr {0} ref: {1}", ptr_type->get_name(),
-                  ptr_type->get_ref_name());
-            last_type = *types.resolve(ptr_type->get_ref_name());
+                  ptr_type->get_reference()->get_name());
+            last_type = ptr_type->get_reference();
             debug("Inspector::visit_ASTDesignator {0} ", last_type->get_name());
             ast->set_type(last_type);
         }
@@ -783,11 +785,16 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
 void Inspector::visit_ASTPointerType(ASTPointerTypePtr ast) {
     auto ref_name = std::string(*ast->reference);
     debug("Inspector::visit_ASTPointerType {0}", ref_name);
-    // ast->reference->accept(this);
-    auto ptr_type = std::make_shared<ax::PointerType>(ref_name);
+    std::shared_ptr<ax::PointerType> ptr_type;
+    try {
+        ast->reference->accept(this);
+        ptr_type = std::make_shared<ax::PointerType>(last_type);
+    } catch (TypeError const &) {
+        // Not found
+        ptr_type = std::make_shared<ax::PointerType>(ref_name);
+    }
     ast->set_type(ptr_type);
     last_type = ptr_type;
-
     // Put into type table
     types.put(last_type->get_name(), ptr_type);
     pointer_types.push_back(ptr_type);
@@ -853,7 +860,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
             return;
         }
     }
-    // debug("find type: {0} for {1}", res->type->get_name(), ast->value);
+    debug("find type: {0} for {1}", res->type->get_name(), ast->value);
     auto resType = types.resolve(res->type->get_name());
     if (!resType) {
         auto e = TypeError(llvm::formatv("Unknown type: {0} for identifier {1}",

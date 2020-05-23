@@ -187,15 +187,15 @@ TEST(Inspector, Reference) {
          "y+x^;\nRETURN 0\nEND alpha.",
          ""},
 
-        // {R"(MODULE alpha; (* pointers *)
-        //     VAR x : POINTER TO POINTER TO INTEGER;
-        //     BEGIN
-        //         x^^ := 5;
-        //         RETURN  x^^;
-        //     END alpha.)",
-        // "MODULE alpha;\nVAR\nx: POINTER TO POINTER TO INTEGER;\nBEGIN\nx^^ := "
-        // "5;\nRETURN x^^\nEND alpha.",
-        // ""},
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO POINTER TO INTEGER;
+            BEGIN
+                x^^ := 5;
+                RETURN  x^^;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO POINTER TO INTEGER;\nBEGIN\nx^^ := "
+         "5;\nRETURN x^^\nEND alpha.",
+         ""},
 
         // Errors
         {R"(MODULE alpha; (* pointers *)
@@ -206,13 +206,33 @@ TEST(Inspector, Reference) {
             END alpha.)",
          "", "4,17: variable x is not an indexable type"},
 
-        // {R"(MODULE alpha; (* pointers *)
-        //     VAR x : POINTER TO POINTER TO INTEGER;
-        //     BEGIN
-        //         x^ := 5;
-        //         RETURN  x^^;
-        //     END alpha.)",
-        //  "", "4,17: value not indexable"},
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO POINTER TO INTEGER;
+            BEGIN
+                x^ := 5;
+                RETURN  x^^;
+            END alpha.)",
+         "", "4,21: Can't assign expression of type INTEGER to x^"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, ForwardPointers) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE pointer03; (* pointers *)
+            TYPE 
+                ListPtr = POINTER TO List;
+                List = RECORD
+                    value : INTEGER;
+                END;
+            VAR start : ListPtr;
+            BEGIN
+                RETURN 0;
+            END pointer03.)",
+         "MODULE pointer03;\nTYPE\nListPtr = POINTER TO List;\nList = RECORD\nvalue: "
+         "INTEGER\nEND;\nVAR\nstart: ListPtr;\nBEGIN\nRETURN 0\nEND pointer03.",
+         ""},
+
     };
     do_inspect_tests(tests);
 }

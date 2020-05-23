@@ -225,6 +225,8 @@ class TypeAlias : public Type {
 class PointerType : public Type {
   public:
     PointerType(std::string r) : Type(TypeId::pointer), ref_name{std::move(r)} {};
+    PointerType(TypePtr r) : Type(TypeId::pointer), reference{r} { ref_name = r->get_name(); };
+
     ~PointerType() override = default;
 
     explicit     operator std::string() override { return '^' + ref_name; };
@@ -241,7 +243,7 @@ class PointerType : public Type {
     std::string &get_ref_name() { return ref_name; };
 
   private:
-    TypePtr     reference;
+    TypePtr     reference = nullptr;
     std::string ref_name;
 };
 
