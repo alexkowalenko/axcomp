@@ -129,7 +129,16 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
-    debug("Inspector::visit_ASTProcedure");
+    debug("Inspector::visit_ASTProcedure: {0}", ast->name->value);
+
+    // Check name if not defined;
+    if (auto name_check = symboltable.find(ast->name->value); name_check) {
+        auto e = TypeError(
+            llvm::formatv("PROCEDURE {0}, identifier is already defined", ast->name->value),
+            ast->get_location());
+        errors.add(e);
+    }
+
     // Check return type
     auto retType = TypeTable::VoidType;
     if (ast->return_type != nullptr) {
@@ -148,7 +157,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     debug("Inspector::visit_ASTProcedure check parameter types");
     ProcedureType::ParamsList argTypes;
     std::for_each(ast->params.begin(), ast->params.end(), [this, &argTypes](auto const &p) {
-        p.second->accept(this);
+        p.second->accept(this); // type
         auto attr = Attr::null;
         if (p.first->is(Attr::var)) {
             attr = Attr::var;
@@ -161,10 +170,10 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     last_proc = ast;
 
-    debug("Inspector::visit_ASTProcedure new symbol table");
     // new symbol table
     symboltable.push_frame(ast->name->value);
-    std::for_each(ast->params.begin(), ast->params.end(), [this](auto const &p) {
+    int count = 0;
+    std::for_each(ast->params.begin(), ast->params.end(), [this, &count, argTypes](auto const &p) {
         std::visit(
             overloaded{
                 [this](auto arg) { arg->accept(this); }, // lambda arg can't be reference here
@@ -175,8 +184,9 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
                                     mkSym(type, p.first->is(Attr::var) ? Attr::var : Attr::null));
                 }},
             p.second->type);
-        symboltable.put(p.first->value,
-                        mkSym(last_type, p.first->is(Attr::var) ? Attr::var : Attr::null));
+        symboltable.put(p.first->value, mkSym(argTypes[count].first,
+                                              p.first->is(Attr::var) ? Attr::var : Attr::null));
+        count++;
     });
     if (ast->decs) {
         ast->decs->accept(this);

@@ -67,7 +67,7 @@ def do_test(t):
         o_flag = opt_flag
 
     # Compile file
-    cmd = f"{compiler} {c_flags} {o_flag} -L {axlib_dir} --output_funct {t} > result.txt"
+    cmd = f"{compiler} {c_flags} {o_flag} -L {axlib_dir} --output_funct {t}  > result.txt 2>&1 "
     # print(cmd)
     ret = os.system(cmd)
     if ret:

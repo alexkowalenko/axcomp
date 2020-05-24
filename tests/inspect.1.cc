@@ -44,6 +44,36 @@ TEST(Inspector, Return) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ProcedureDefined) {
+    std::vector<ParseTests> tests = {
+
+        // Error
+        {R"(MODULE alpha;
+            PROCEDURE f;
+            END f;
+
+            PROCEDURE f;
+            END f;
+
+            BEGIN
+                f;
+            END alpha.)",
+         "", "5,21: PROCEDURE f, identifier is already defined"},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR f: INTEGER;
+
+            PROCEDURE f;
+            END f;
+
+            BEGIN
+                f;
+            END alpha.)",
+         "", "4,21: PROCEDURE f, identifier is already defined"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, ReturnType) {
     std::vector<ParseTests> tests = {
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN 0 END f; BEGIN "
@@ -203,6 +233,25 @@ TEST(Inspector, CallType) {
          "\nEND f;\nBEGIN\nf(1, 2)\nEND y.",
          ""},
 
+        {R"(MODULE alpha;
+            PROCEDURE f(x : INTEGER);
+            END f;
+            PROCEDURE g(x: CHAR);
+            END g;
+            PROCEDURE h(x: INTEGER; y:CHAR);
+            BEGIN
+                f(x);
+                g(y);
+            END h;
+
+            BEGIN
+                h(1, 'x');
+            END alpha.)",
+         "MODULE alpha;\nPROCEDURE f(x : INTEGER);\nEND f;\nPROCEDURE g(x : CHAR);\nEND "
+         "g;\nPROCEDURE h(x : INTEGER; y : CHAR);\nBEGIN\nf(x);\ng(y)\nEND h;\nBEGIN\nh(1, "
+         "'x')\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE y; 
         PROCEDURE f(x: INTEGER); 
@@ -239,6 +288,33 @@ TEST(Inspector, CallType) {
          "",
          "7,14: procedure call f has incorrect type BOOLEAN for parameter "
          "INTEGER"},
+
+        {R"(MODULE alpha;
+            PROCEDURE g(x: CHAR);
+            END g;
+            PROCEDURE h(x: INTEGER; y:CHAR);
+            BEGIN
+                g(x);
+            END h;
+
+            BEGIN
+                h(1, 'x');
+            END alpha.)",
+         "", "6,18: procedure call g has incorrect type INTEGER for parameter CHAR"},
+
+        {R"(MODULE alpha;
+            PROCEDURE f(x : INTEGER);
+            END f;
+            PROCEDURE h(x: INTEGER; y:CHAR);
+            BEGIN
+                f(y);
+            END h;
+
+            BEGIN
+                h(1, 'x');
+            END alpha.)",
+         "", "6,18: procedure call f has incorrect type CHAR for parameter INTEGER"},
+
     };
     do_inspect_tests(tests);
 }
