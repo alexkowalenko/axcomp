@@ -23,8 +23,8 @@ Oberon-07 seems to be a refinement of Oberon-2 with some features taken out. We 
 
 Also we extend the definition of Oberon to include the following updates:
 \begin{itemize}
-    \item Source files can be UTF-8 files. Identifiers, characters and strings can be valid UTF-8 characters.
-    \item \STRING\ type which is equivalent to \ARRAY\ of \CHAR.
+    \item Source files can be UTF-8 files. Identifiers, characters and strings can be composed of valid UTF-8 characters.
+    \item \STRING\ type which is equivalent to \ARRAY\ \OF\ \CHAR.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -843,6 +843,67 @@ END Strings.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
+\section{Type Rules}
+
+\subsection{Numeric Types}
+
+\begin{itemize}
+    \item Integer types: \INTEGER.
+    \item Real types: \REAL.
+    \item Numeric types: Integer types, Real Types. 
+\end{itemize}
+
+\subsection {Same types}
+
+Two variables a and b with types Ta and Tb are of the same type if
+\begin{itemize}
+    \item $T_a$ and $T_b$ are both denoted by the same type identifier, or
+    \item  $T_a$ is declared to equal$T_b$ in a type declaration of the form $T_b$ = $T_b$, or
+    \item a and b appear in the same identifier list in a variable (\VAR), record field, or formal parameter declaration and are not open arrays.
+\end{itemize}
+
+\subsection{Type inclusion}
+
+Numeric types include (the values of) smaller numeric types according to the following hierarchy: \REAL $\supseteq$ \INTEGER.
+
+
+\subsection{Assignment compatible}
+
+An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of type $T_v$ if one of the following conditions hold:
+\begin{itemize}
+    \item $T_e$ and $T_v$ are the same type;
+    % 2. Te and Tv are numeric types and Tv includes Te;
+    % 3. Te and Tv are record types and Te is an extension of Tv and the dynamic type of v is Tv ;
+    % 4. Te and Tv are pointer types and Te is an extension of Tv;
+    \item  $T_v$ is a pointer % or a procedure type  
+    and $e$ is \NIL;
+    % 6. Tv is ARRAY n OF CHAR, e is a string constant with m characters, and m < n;
+    % 7. Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
+\end{itemize}
+
+\subsection{Expression compatible}
+
+For a given operator, the types of its operands are expression compatible if they conform to the following table (which shows also the result type of the expression). \STRING s that are to be compared must contain \lstinline!0X! as a terminator.
+\vspace{2mm} 
+
+\begin{tabular}{l|l|l|l}
+    operator & first operand & second operand & result type \\
+    \hline
+    + - * & numeric & numeric & smallest that has both operands\\
+    / & numeric & numeric & smallest that has both operands\\
+    \DIV\ \MOD & \INTEGER & \INTEGER & \INTEGER \\
+    \OR\ \&\ \~{} & \BOOLEAN & \BOOLEAN & \BOOLEAN \\
+    = \# < <= > >= & numeric & numeric & \BOOLEAN \\
+        & \CHAR & \CHAR & \BOOLEAN \\
+    = \# &  \BOOLEAN & \BOOLEAN & \BOOLEAN \\
+        & \NIL, pointer type & \NIL, pointer type & \BOOLEAN \\
+    \hline
+\end{tabular}
+
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Syntax of AX Oberon}
 
 What is currently implemented.
@@ -1263,7 +1324,7 @@ The program \lstinline"ax" has the following options:
     \item \lstinline"-d" \lstinline"--defs" generate only the \lstinline".def" file.
     \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
     \item \lstinline"-m" \lstinline"--main" generate function \lstinline"main()" (the entry point) for the \BEGIN\ section of the module.
-    \item \lstinline"-O1 -O2 -O3" switch on optimizers: levels 1, 2, 3.
+    \item \lstinline"-O1",  \lstinline"-O2", \lstinline"-O3" switch on optimizers: levels 1, 2 or 3.
     \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function \lstinline"output()". Used in unit tests for the compiler.
     \item  \lstinline"-s" \lstinline"--symbols" print the symbol table.
     \item \lstinline"-L" \lstinline"--axlib_path" set the path to search for \lstinline".def" files for \IMPORT\ statements.
@@ -1274,8 +1335,8 @@ The environment variable \lstinline"AXLIB_PATH" can be used to set the path to s
 
 \subsection{Implementation limitations}
 \begin{itemize}
-    \item \PROCEDURE s don't have nested procedures.
-    \item \ARRAY\ sizes must be integers.
+    \item \PROCEDURE s can not have nested procedures.
+    \item \ARRAY\ sizes must be \INTEGER s, not expressions.
     \item Open \ARRAY s only work with 1 dimensional open arrays.
 \end{itemize}
 

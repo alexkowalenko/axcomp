@@ -838,30 +838,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
         auto *L = last_value;
         (*ast->relation_expr)->accept(this);
         auto *R = last_value;
-        if (L->getType() == TypeTable::RealType->get_llvm()) {
-            // do float equivalent
-            switch (*ast->relation) {
-            case TokenType::equals:
-                last_value = builder.CreateFCmpOEQ(L, R);
-                break;
-            case TokenType::hash:
-                last_value = builder.CreateFCmpONE(L, R);
-                break;
-            case TokenType::less:
-                last_value = builder.CreateFCmpOLT(L, R);
-                break;
-            case TokenType::leq:
-                last_value = builder.CreateFCmpOLE(L, R);
-                break;
-            case TokenType::greater:
-                last_value = builder.CreateFCmpOGT(L, R);
-                break;
-            case TokenType::gteq:
-                last_value = builder.CreateFCmpOGE(L, R);
-                break;
-            default:;
-            }
-        } else {
+        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
             // Do integer versions
             switch (*ast->relation) {
             case TokenType::equals:
@@ -881,6 +858,36 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
                 break;
             case TokenType::gteq:
                 last_value = builder.CreateICmpSGE(L, R);
+                break;
+            default:;
+            }
+        } else {
+            // Promote any integers to floats
+            if (L->getType() == TypeTable::IntType->get_llvm()) {
+                L = builder.CreateSIToFP(L, TypeTable::RealType->get_llvm());
+            }
+            if (R->getType() == TypeTable::IntType->get_llvm()) {
+                R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
+            }
+            // do float equivalent
+            switch (*ast->relation) {
+            case TokenType::equals:
+                last_value = builder.CreateFCmpOEQ(L, R);
+                break;
+            case TokenType::hash:
+                last_value = builder.CreateFCmpONE(L, R);
+                break;
+            case TokenType::less:
+                last_value = builder.CreateFCmpOLT(L, R);
+                break;
+            case TokenType::leq:
+                last_value = builder.CreateFCmpOLE(L, R);
+                break;
+            case TokenType::greater:
+                last_value = builder.CreateFCmpOGT(L, R);
+                break;
+            case TokenType::gteq:
+                last_value = builder.CreateFCmpOGE(L, R);
                 break;
             default:;
             }

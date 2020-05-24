@@ -1,0 +1,25 @@
+; ModuleID = 'expr1'
+source_filename = "expr1"
+
+@Math_pi = external global double
+@Math_ln2 = external global double
+@Math_e = external global double
+
+declare void @Out_Ln()
+
+declare void @Out_Bool(i1)
+
+define i64 @output() {
+entry:
+  call void @Out_Bool(i1 true)
+  call void @Out_Ln()
+  call void @Out_Bool(i1 false)
+  call void @Out_Ln()
+  %Math_pi = load double, double* @Math_pi
+  %0 = fcmp olt double 1.000000e+00, %Math_pi
+  call void @Out_Bool(i1 %0)
+  call void @Out_Ln()
+  call void @Out_Bool(i1 false)
+  call void @Out_Ln()
+  ret i64 0
+}

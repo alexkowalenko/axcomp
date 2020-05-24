@@ -482,6 +482,40 @@ TEST(Inspector, ExprCompare) {
             END xxx.)",
          "MODULE xxx;\nBEGIN\nRETURN TRUE = FALSE\nEND xxx.", ""},
 
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 1 < 2
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN 1 < 2\nEND xxx.", ""},
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 1.0 < 2.0
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN 1.0 < 2.0\nEND xxx.", ""},
+
+        // CHAR
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 'a' = 'b'
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN 'a' = 'b'\nEND xxx.", ""},
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 'a' >= 'b'
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN 'a' >= 'b'\nEND xxx.", ""},
+
+        // Mixed types
+
+        {R"(MODULE xxx;
+            BEGIN
+            RETURN 1.0 < 2
+            END xxx.)",
+         "MODULE xxx;\nBEGIN\nRETURN 1.0 < 2\nEND xxx.", ""},
+
         // Errors
         {R"(MODULE xxx;
             BEGIN
