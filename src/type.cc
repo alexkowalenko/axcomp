@@ -163,8 +163,10 @@ llvm::Type *RecordType::get_llvm() {
 
 llvm::Constant *RecordType::get_init() {
     std::vector<llvm::Constant *> fs;
-    std::for_each(begin(index), end(index),
-                  [&fs, this](auto const &name) { fs.push_back(fields[name]->get_init()); });
+    std::for_each(begin(index), end(index), [&fs, this](auto const &name) {
+        auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
+        fs.push_back((*res)->get_init());
+    });
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 }
 

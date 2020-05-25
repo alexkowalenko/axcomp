@@ -101,18 +101,18 @@ BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
 
 BIFunctor min = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto name = std::string(*ast->args[0]);
-    auto type = codegen->get_types().find(name);
+    auto type = codegen->get_types().resolve(name);
     assert(type);
 
-    return type->min();
+    return (*type)->min();
 };
 
 BIFunctor max = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto name = std::string(*ast->args[0]);
-    auto type = codegen->get_types().find(name);
+    auto type = codegen->get_types().resolve(name);
     assert(type);
 
-    return type->max();
+    return (*type)->max();
 };
 
 BIFunctor inc = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
@@ -145,7 +145,12 @@ BIFunctor flt = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
 };
 
-void Builtin::initialise(SymbolFrameTable &symbols) {
+void set_type_alias(TypeTable &types, char const *name, TypePtr const &t) {
+    auto type = std::make_shared<TypeAlias>(name, t);
+    types.put(name, type);
+}
+
+void Builtin::initialise(SymbolFrameTable &symbols, TypeTable &types) {
 
     global_functions = {
 
@@ -269,6 +274,13 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("FLOOR", floor);
     compile_functions.try_emplace("FLT", flt);
     compile_functions.try_emplace("NEW", newfunct);
+
+    // Type aliases for compatiblity
+    set_type_alias(types, "SHORTINT", TypeTable::IntType);
+    set_type_alias(types, "LONGINT", TypeTable::IntType);
+    set_type_alias(types, "HUGEINT", TypeTable::IntType);
+
+    set_type_alias(types, "LONGREAL", TypeTable::RealType);
 }
 
 } // namespace ax

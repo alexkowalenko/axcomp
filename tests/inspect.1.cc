@@ -633,6 +633,34 @@ TEST(Inspector, TypeDef) {
          "time;\norientation: spin;\nBEGIN\nRETURN seconds\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                PROCEDURE T(): time;
+                BEGIN
+                    RETURN 0;
+                END T;
+                BEGIN
+                    RETURN 0;
+                END alpha.)",
+         "MODULE alpha;\nTYPE\ntime = INTEGER;\nPROCEDURE T(): time;\nBEGIN\nRETURN 0\nEND "
+         "T;\nBEGIN\nRETURN 0\nEND alpha.",
+         ""},
+
+        {R"(MODULE C1;
+            PROCEDURE Sub(a, b: LONGINT): LONGINT;
+            BEGIN
+                RETURN a-b;
+            END Sub;
+            PROCEDURE f*(a, b: LONGINT): LONGINT;
+            BEGIN
+                RETURN Sub(a, b);
+            END f;
+            END C1.)",
+         "MODULE C1;\nPROCEDURE Sub(a : LONGINT; b : LONGINT): LONGINT;\nBEGIN\nRETURN a-b\nEND "
+         "Sub;\nPROCEDURE f*(a : LONGINT; b : LONGINT): LONGINT;\nBEGIN\nRETURN Sub(a, b)\nEND "
+         "f;\nEND C1.",
+         ""},
+
         // Errors
 
         {R"(MODULE alpha;
@@ -644,6 +672,23 @@ TEST(Inspector, TypeDef) {
                     RETURN seconds
                 END alpha.)",
          "", "4,29: Unknown type: complex"},
+
+        {R"(MODULE alpha;
+                TYPE CHAR = CHAR;
+            END alpha.)",
+         "", "2,20: TYPE CHAR already defined"},
+
+        {R"(MODULE alpha;
+                TYPE time = INTEGER;
+                PROCEDURE T(): time;
+                BEGIN
+                    RETURN 'x';
+                END T;
+                BEGIN
+                    RETURN 0;
+                END alpha.)",
+         "", "5,26: RETURN does not match return type for function T"},
+
     };
     do_inspect_tests(tests);
 }
@@ -676,6 +721,55 @@ TEST(Inspector, TypeAssign) {
                     RETURN seconds
                 END alpha.)",
          "", "5,30: Can't assign expression of type BOOLEAN to seconds"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, TypeCompatible) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* compatibity *)
+            TYPE I = INTEGER;
+            VAR x : SHORTINT;
+                xx : I;
+                y : LONGINT;
+                z : HUGEINT;
+                f : LONGREAL;
+                
+            BEGIN
+                x := 1;
+                x := xx + 1;
+                y := x + 2;
+                z := y - 4;
+                f := 1.0 + z;
+                RETURN x;
+            END alpha.)",
+         "MODULE alpha;\nTYPE\nI = INTEGER;\nVAR\nx: SHORTINT;\nxx: I;\ny: LONGINT;\nz: "
+         "HUGEINT;\nf: LONGREAL;\nBEGIN\nx := 1;\nx := xx+1;\ny := x+2;\nz := y-4;\nf := "
+         "1.0+z;\nRETURN x\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+            VAR x : SHORTINT;
+                f : LONGREAL;
+                
+            BEGIN
+                x := f;
+                RETURN x;
+            END alpha.)",
+         "", "6,20: Can't assign expression of type REAL to x"},
+
+        {R"(MODULE alpha; (* compatibity *)
+            TYPE I = INTEGER;
+            VAR x : I;
+                f : LONGREAL;
+            BEGIN
+                f := x;
+                RETURN x;
+            END alpha.)",
+         "", "6,20: Can't assign expression of type INTEGER to f"},
+
     };
     do_inspect_tests(tests);
 }

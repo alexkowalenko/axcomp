@@ -190,8 +190,10 @@ std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &type) {
     return {};
 }
 
-std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &L, TypePtr const &R) {
+std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr const &Rt) {
     auto range = rules2.equal_range(op);
+    auto L = *resolve(Lt->get_name());
+    auto R = *resolve(Rt->get_name());
     for (auto i = range.first; i != range.second; ++i) {
         if (i->second.L == L && i->second.R == R) {
             return i->second.result;

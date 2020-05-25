@@ -1,0 +1,51 @@
+; ModuleID = 'shortint'
+source_filename = "shortint"
+
+@Math_pi = external global double
+@Math_ln2 = external global double
+@Math_e = external global double
+@shortint_x = internal global i64 0
+@shortint_xx = internal global i64 0
+@shortint_y = internal global i64 0
+@shortint_z = internal global i64 0
+@shortint_f = internal global double 0.000000e+00
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_Real(double, i64)
+
+define i64 @output() {
+entry:
+  store i64 1, i64* @shortint_x
+  store i64 2, i64* @shortint_xx
+  %xx = load i64, i64* @shortint_xx
+  %addtmp = add i64 %xx, 1
+  store i64 %addtmp, i64* @shortint_x
+  %x = load i64, i64* @shortint_x
+  %subtmp = sub i64 %x, 2
+  store i64 %subtmp, i64* @shortint_y
+  %y = load i64, i64* @shortint_y
+  %xx1 = load i64, i64* @shortint_xx
+  %multmp = mul i64 %y, %xx1
+  %x2 = load i64, i64* @shortint_x
+  %multmp3 = mul i64 %multmp, %x2
+  store i64 %multmp3, i64* @shortint_z
+  %Math_e = load double, double* @Math_e
+  %xx4 = load i64, i64* @shortint_xx
+  %0 = sitofp i64 %xx4 to double
+  %addtmp5 = fadd double %Math_e, %0
+  store double %addtmp5, double* @shortint_f
+  %y6 = load i64, i64* @shortint_y
+  call void @Out_Int(i64 %y6, i64 0)
+  call void @Out_Ln()
+  %y7 = load i64, i64* @shortint_y
+  call void @Out_Int(i64 %y7, i64 0)
+  call void @Out_Ln()
+  %f = load double, double* @shortint_f
+  call void @Out_Real(double %f, i64 0)
+  call void @Out_Ln()
+  %x8 = load i64, i64* @shortint_x
+  ret i64 %x8
+}

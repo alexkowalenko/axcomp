@@ -19,8 +19,7 @@ class EOFException : std::exception {};
 Char LexerUTF8::get() {
     Char c = 0;
     if (last_char != 0) {
-        c = last_char;
-        last_char = 0;
+        std::swap(c, last_char);
         return c;
     }
     try {

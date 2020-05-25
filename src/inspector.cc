@@ -84,11 +84,18 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
 
 void Inspector::visit_ASTTypeDec(ASTTypeDecPtr ast) {
     debug("Inspector::visit_ASTTypeDec");
-    std::for_each(begin(ast->types), end(ast->types), [this, ast](auto const &t) {
+    for (auto const &t : ast->types) {
+        if (types.find(t.first->value)) {
+            auto e = TypeError(llvm::formatv("TYPE {0} already defined", t.first->value),
+                               ast->get_location());
+            errors.add(e);
+            continue;
+        }
         if (t.first->is(Attr::read_only)) {
             auto e = TypeError(llvm::formatv("TYPE {0} is always read only", t.first->value),
                                ast->get_location());
             errors.add(e);
+            continue;
         }
         t.second->accept(this);
         if (last_type->id == TypeId::record) {
@@ -97,7 +104,7 @@ void Inspector::visit_ASTTypeDec(ASTTypeDecPtr ast) {
         auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
         debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
         types.put(t.first->value, type);
-    });
+    };
 }
 
 void Inspector::visit_ASTVar(ASTVarPtr ast) {
@@ -241,7 +248,7 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
     TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);
-        expr_type = last_type;
+        expr_type = *types.resolve(last_type->get_name());
     }
 
     // check return type
@@ -255,7 +262,7 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
                                retType = last_type;
                            },
                            [this, &retType](ASTQualidentPtr const &type) {
-                               if (auto t = types.find(type->id->value); t) {
+                               if (auto t = *types.resolve(type->id->value); t) {
                                    retType = t;
                                };
                            },
