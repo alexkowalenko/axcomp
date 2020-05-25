@@ -18,6 +18,11 @@ class EOFException : std::exception {};
 
 Char LexerUTF8::get() {
     Char c = 0;
+    if (last_char != 0) {
+        c = last_char;
+        last_char = 0;
+        return c;
+    }
     try {
         while (ptr == buf.end()) {
             get_line();

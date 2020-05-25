@@ -432,9 +432,9 @@ TEST(Parser, CASE) {
 
             BEGIN
                 CASE x OF
-                    1 .. 2 : Out.String("A"); Out.Ln;
-                |   5, 6 .. 8, 9 : Out.String("B,C"); Out.Ln;
-                |   10 .. 11, 12 .. 15, 16 : Out.String("D-F"); Out.Ln;
+                    1..2 : Out.String("A"); Out.Ln;
+                |   5, 6..8, 9 : Out.String("B,C"); Out.Ln;
+                |   10..11, 12..15, 16 : Out.String("D-F"); Out.Ln;
                 ELSE
                     Out.String('D-Z'); Out.Ln;
                 END
@@ -455,7 +455,7 @@ TEST(Parser, CASE) {
                 CASE c OF
                     'A' : Out.String("A"); Out.Ln;
                 |   'B', 'C' : Out.String("B,C"); Out.Ln;
-                |   'D' .. 'F' : Out.String("D-F"); Out.Ln;
+                |   'D'..'F' : Out.String("D-F"); Out.Ln;
                 ELSE
                     Out.String('D-Z'); Out.Ln;
                 END
@@ -546,7 +546,7 @@ TEST(Parser, CASE) {
             IMPORT Out;
             BEGIN
                 CASE i OF
-                    1 .. : Out.String('One');
+                    1.. : Out.String('One');
                 END
                 Out.Ln;
                 RETURN 0;
@@ -557,7 +557,7 @@ TEST(Parser, CASE) {
             IMPORT Out;
             BEGIN
                 CASE i OF
-                    .. 3 : Out.String('One');
+                    ..3 : Out.String('One');
                 END
                 Out.Ln;
                 RETURN 0;

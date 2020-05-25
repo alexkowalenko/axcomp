@@ -72,6 +72,9 @@ template <typename C, class CharClass> class LexerImplementation : public LexerI
 
     std::istream &is;
 
+    void push(C c) { last_char = c; }
+    C    last_char{0};
+
   private:
     Token scan_digit(C c);
     Token scan_ident(C c);
@@ -103,6 +106,11 @@ class Lexer : public LexerImplementation<char, Character8> {
 
   private:
     char get() override {
+        if (last_char != 0) {
+            auto tmp = last_char;
+            last_char = 0;
+            return tmp;
+        }
         charpos++;
         return is.get();
     };
@@ -213,10 +221,18 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         return Token(TokenType::hexinteger, digit);
     }
     if (c == '.') {
-        // float
+        // may be float
         get();
-        digit += c;
+
         c = peek();
+        // has to follow by a digit to be a real, else int.
+        if (!CharClass::isdigit(c)) {
+            // put back '.'
+            push('.');
+            // is integer
+            return Token(TokenType::integer, digit);
+        }
+        digit += '.';
         while (CharClass::isdigit(c)) {
             get();
             digit += c;

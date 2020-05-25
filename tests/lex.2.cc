@@ -172,18 +172,17 @@ TEST(Lexer, REAL) {
 
         // integer
         {"1", TokenType::integer, "1"},
+        {"1.", TokenType::integer, "1"},
 
         // float
-        {"1.", TokenType::real, "1."},
-        {"12.", TokenType::real, "12."},
         {"12.0", TokenType::real, "12.0"},
         {"1.2", TokenType::real, "1.2"},
         {"1.23", TokenType::real, "1.23"},
         {"0.123", TokenType::real, "0.123"},
 
         // exponentials
-        {"1.E1", TokenType::real, "1.E1"},
-        {"12.E+2", TokenType::real, "12.E+2"},
+        {"1.0E1", TokenType::real, "1.0E1"},
+        {"12.0E+2", TokenType::real, "12.0E+2"},
         {"1.2D-3", TokenType::real, "1.2D-3"},
         {"1.23E+45", TokenType::real, "1.23E+45"},
         {"0.123D-12", TokenType::real, "0.123D-12"},
