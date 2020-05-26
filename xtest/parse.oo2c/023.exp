@@ -1,0 +1,6 @@
+MODULE M;
+
+    PROCEDURE P(a : INTEGER; b : INTEGER; c : BOOLEAN; d : BOOLEAN): CHAR;
+    END P;
+
+END M.

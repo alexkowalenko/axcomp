@@ -1,0 +1,16 @@
+; ModuleID = 'Abs3'
+source_filename = "Abs3"
+
+define void @Abs3_Test() {
+entry:
+  %0 = call i64 @ABS(i64 -1)
+  ret void
+}
+
+declare i64 @ABS(i64)
+
+define i64 @output() {
+entry:
+  call void @Abs3_Test()
+  ret i64 0
+}

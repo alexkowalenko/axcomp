@@ -1,0 +1,44 @@
+; ModuleID = 'Alloc1'
+source_filename = "Alloc1"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define internal void @Alloc1_F(i64 %a) {
+entry:
+  %a1 = alloca i64
+  store i64 %a, i64* %a1
+  %a2 = load i64, i64* %a1
+  %0 = icmp slt i64 %a2, 0
+  br i1 %0, label %then, label %else
+
+then:                                             ; preds = %entry
+  %a3 = load i64, i64* %a1
+  %addtmp = add i64 %a3, 1
+  call void @Out_Int(i64 %addtmp, i64 0)
+  br label %ifcont
+
+else:                                             ; preds = %entry
+  %a4 = load i64, i64* %a1
+  %subtmp = sub i64 %a4, 1
+  call void @Out_Int(i64 %subtmp, i64 0)
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Alloc1_Test() {
+entry:
+  call void @Alloc1_F(i64 -1)
+  call void @Alloc1_F(i64 1)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Alloc1_Test()
+  ret i64 0
+}

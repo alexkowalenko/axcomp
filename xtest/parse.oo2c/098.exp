@@ -1,0 +1,6 @@
+MODULE M;
+
+    PROCEDURE Furbie(a : INTEGER);
+    END Furbie;
+
+END M.

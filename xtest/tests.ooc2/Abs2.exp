@@ -1,0 +1,19 @@
+; ModuleID = 'Abs2'
+source_filename = "Abs2"
+
+define void @Abs2_Test() {
+entry:
+  %x = alloca i64
+  store i64 0, i64* %x
+  %0 = call i64 @ABS(i32 0)
+  store i64 %0, i64* %x
+  ret void
+}
+
+declare i64 @ABS(i32)
+
+define i64 @output() {
+entry:
+  call void @Abs2_Test()
+  ret i64 0
+}

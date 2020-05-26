@@ -1,0 +1,132 @@
+MODULE RISC;
+IMPORT SYSTEM,
+Texts,
+Oberon;
+    CONST
+        MOV = 0;
+        LSL = 1;
+        ASR = 2;
+        ROR = 3;
+        AND = 4;
+        ANN = 5;
+        IOR = 6;
+        XOR = 7;
+        ADD = 8;
+        SUB = 9;
+        MUL = 10;
+        Div = 11;
+    VAR
+        IR: LONGINT;
+        PC: LONGINT;
+        N: BOOLEAN;
+        Z: BOOLEAN;
+        R: ARRAY 16 OF LONGINT;
+        H: LONGINT;
+
+    PROCEDURE Execute*(VAR M : ARRAY OF LONGINT; pc : LONGINT; VAR S : Texts.Scanner; VAR W : Texts.Writer);
+        VAR
+            a: LONGINT;
+            b: LONGINT;
+            op: LONGINT;
+            im: LONGINT;
+            adr: LONGINT;
+            A: LONGINT;
+            B: LONGINT;
+            C: LONGINT;
+            n: LONGINT;
+            MemSize: LONGINT;
+    BEGIN
+        PC := 0;
+        R[13] := pc*4;
+        R[14] := LEN(M)*4;
+        n := 0;
+        REPEAT
+            IR := M[PC];
+            INC(PC);
+            INC(n);
+            a := IR DIV 01000000H MOD 010H;
+            b := IR DIV 0100000H MOD 010H;
+            op := IR DIV 010000H MOD 010H;
+            im := IR MOD 010000H;
+            IF ~ ODD(IR DIV 080000000H) THEN
+                B := R[b];
+                IF ~ ODD(IR DIV 040000000H) THEN
+                    C := R[IR MOD 010H]
+                ELSIF ~ ODD(IR DIV 010000000H) THEN
+                    C := im
+                ELSE
+                    C := im+0ffff0000H
+                END;
+                CASE op OF
+                    MOV : IF ~ ODD(IR DIV 020000000H) THEN
+                            A := C
+                        ELSE
+                            A := H
+                        END;
+                    | LSL : A := SYSTEM.LSH(B, C);
+                    | ASR : A := ASH(B, -C);
+                    | ROR : A := SYSTEM.ROT(B, -C);
+                    | AND : A := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, B)*SYSTEM.VAL(SET, C));
+                    | ANN : A := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, B)-SYSTEM.VAL(SET, C));
+                    | IOR : A := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, B)+SYSTEM.VAL(SET, C));
+                    | XOR : A := SYSTEM.VAL(LONGINT, SYSTEM.VAL(SET, B) / SYSTEM.VAL(SET, C));
+                    | ADD : A := B+C;
+                    | SUB : A := B-C;
+                    | MUL : A := B*C;
+                    | Div : A := B DIV C;
+                        H := B MOD C;
+                END;
+                R[a] := A;
+                N := A < 0;
+                Z := A = 0
+            ELSIF ~ ODD(IR DIV 040000000H) THEN
+                adr :=  (R[b]+IR MOD 0100000H)  DIV 4;
+                IF ~ ODD(IR DIV 020000000H) THEN
+                    IF adr >= 0 THEN
+                        R[a] := M[adr];
+                        N := A < 0;
+                        Z := A = 0
+                    ELSE
+                        IF adr = -1 THEN
+                            Texts.Scan(S);
+                            R[a] := S.i
+                        ELSIF adr = -2 THEN
+                            Z := S.class # Texts.Int
+                        END
+                    END
+                ELSE
+                    IF adr >= 0 THEN
+                        M[adr] := R[a]
+                    ELSE
+                        IF adr = -1 THEN
+                            Texts.WriteInt(W, R[a], 4)
+                        ELSIF adr = -2 THEN
+                            Texts.Write(W, CHR(R[a] MOD 080H))
+                        ELSIF adr = -3 THEN
+                            Texts.WriteLn(W);
+                            Texts.Append(Oberon.Log, W.buf)
+                        END
+                    END
+                END
+            ELSE
+                IF  (a = 0)  & N OR  (a = 1)  & Z OR  (a = 5)  & N OR  (a = 6)  &  (N OR Z)  OR  (a = 7)  OR  (a = 8)  & ~ N OR  (a = 9)  & ~ Z OR  (a = 13)  & ~ N OR  (a = 14)  & ~  (N OR Z)  THEN
+                    IF ODD(IR DIV 010000000H) THEN
+                        R[15] := PC*4
+                    END;
+                    IF ODD(IR DIV 020000000H) THEN
+                        PC :=  (PC+ (IR MOD 01000000H) )  MOD 040000H
+                    ELSE
+                        PC := R[IR MOD 010H] DIV 4
+                    END
+                END
+            END
+        UNTIL  (PC = 0)  OR  (n = 100000) ;
+        Texts.WriteInt(W, n, 8);
+        IF n = 100000 THEN
+            Texts.WriteString(W, " aborted")
+        END;
+        Texts.WriteLn(W);
+        Texts.Append(Oberon.Log, W.buf)
+    END Execute;
+
+END RISC.
