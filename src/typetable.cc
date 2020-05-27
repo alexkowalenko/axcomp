@@ -176,8 +176,15 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
 }
 
 std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
+
+    // All ARRAY OF CHAR are STRING types
+    if (n == "CHAR[]") {
+        return StrType;
+    }
+
     auto name = n;
     while (true) {
+        // debug("TypeTable::resolve {0}", name);
         auto res = find(name);
         if (!res) {
             // not found

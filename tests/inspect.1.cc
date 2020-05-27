@@ -106,11 +106,11 @@ TEST(Inspector, ReturnType) {
 
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN END f; BEGIN "
          "RETURN 333 END x.",
-         "", "1,46: RETURN does not match return type for function f"},
+         "", "1,46: RETURN type (INTEGER) does not match return type for function f: void"},
 
         {"MODULE x; PROCEDURE f; BEGIN RETURN 0 END f; BEGIN "
          "RETURN 333 END x.",
-         "", "1,35: RETURN does not match return type for function f"},
+         "", "1,35: RETURN type (void) does not match return type for function f: INTEGER"},
         {R"(MODULE xxx;
             PROCEDURE f : BOOLEAN;
             BEGIN
@@ -119,7 +119,7 @@ TEST(Inspector, ReturnType) {
             BEGIN
             RETURN 3
             END xxx.)",
-         "", "4,18: RETURN does not match return type for function f"},
+         "", "4,18: RETURN type (BOOLEAN) does not match return type for function f: INTEGER"},
     };
     do_inspect_tests(tests);
 }
@@ -687,7 +687,7 @@ TEST(Inspector, TypeDef) {
                 BEGIN
                     RETURN 0;
                 END alpha.)",
-         "", "5,26: RETURN does not match return type for function T"},
+         "", "5,26: RETURN type (INTEGER) does not match return type for function T: CHAR"},
 
     };
     do_inspect_tests(tests);

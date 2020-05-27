@@ -142,6 +142,42 @@ TEST(Inspector, String) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ArrayCHAR) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE string9; (* compatibity ARRAY OF CHAR *)
+            VAR x : ARRAY OF CHAR;
+                y : ARRAY OF CHAR;
+                z : STRING;
+            PROCEDURE id(s : ARRAY OF CHAR) : ARRAY OF CHAR;
+            BEGIN
+                RETURN s;
+            END id;
+            BEGIN
+                x := "Hello!";
+                NEW(y, 5);
+                z := x;
+                x := id(x);
+                RETURN 0;
+            END string9.)",
+         "MODULE string9;\nVAR\nx: ARRAY OF CHAR;\ny: ARRAY OF CHAR;\nz: STRING;\nPROCEDURE id(s "
+         ": ARRAY OF CHAR): ARRAY OF CHAR;\nBEGIN\nRETURN s\nEND id;\nBEGIN\nx := "
+         "\"Hello!\";\nNEW(y, 5);\nz := x;\nx := id(x);\nRETURN 0\nEND string9.",
+         ""},
+
+        // Errors
+        {R"(MODULE string9; (* compatibity ARRAY OF CHAR *)
+            VAR x : ARRAY OF CHAR;
+                y : INTEGER;
+            BEGIN
+                x := "Hello!";
+                y := x;
+                RETURN 0;
+            END string9.)",
+         "", "6,20: Can't assign expression of type STRING to y"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, NIL) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha; (* pointers *)

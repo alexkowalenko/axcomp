@@ -231,9 +231,9 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
         // error return;
         return;
     }
-    // debug("type of ident: {} ", last_type->get_name());
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
+    debug("type of ident: {0} -> {1}", last_type->get_name(), (*alias)->get_name());
     last_type = *alias;
     if (!(types.check(TokenType::assign, last_type, expr_type) || last_type->equiv(expr_type))) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
@@ -261,7 +261,7 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
             std::visit(overloaded{
                            [this, &retType](auto arg) {
                                arg->accept(this);
-                               retType = last_type;
+                               retType = *types.resolve(last_type->get_name());
                            },
                            [this, &retType](ASTQualidentPtr const &type) {
                                if (auto t = *types.resolve(type->id->value); t) {
@@ -273,12 +273,13 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
         }
 
         if (!expr_type->equiv(retType)) {
-            auto e = TypeError(llvm::formatv("RETURN does not match return type for function {0}",
-                                             last_proc->name->value),
-                               ast->get_location());
+            auto e = TypeError(
+                llvm::formatv("RETURN type ({1}) does not match return type for function {0}: {2}",
+                              last_proc->name->value, retType->get_name(), expr_type->get_name()),
+                ast->get_location());
             errors.add(e);
         }
-    } // namespace ax
+    }
 }
 
 void Inspector::visit_ASTCall(ASTCallPtr ast) {

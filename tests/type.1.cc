@@ -64,8 +64,5 @@ TEST(Type, Resolve) {
     EXPECT_EQ(types.resolve("HUGEINT"), TypeTable::IntType);
     EXPECT_EQ(types.resolve("LONGREAL"), TypeTable::RealType);
 
-    auto type = std::make_shared<TypeAlias>("CHAR[]", TypeTable::StrType);
-    types.put("CHAR[]", type);
-
     EXPECT_EQ(types.resolve("CHAR[]"), TypeTable::StrType);
 }

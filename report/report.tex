@@ -215,7 +215,7 @@ The following basic types are denoted by predeclared identifiers. The associated
     \item \INTEGER\ -- the integers of a 64-bit signed integer, between \MIN(\INTEGER)\ and \MAX(\INTEGER).
     \item \REAL\ -- double precision floating point type. Usually IEEE-754 64 bit floating point, numbers between \MIN(\REAL) and \MAX(\REAL).
     \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode), between \MIN(\CHAR)\ and \MAX(\CHAR).
-    \item \STRING\ -- character array type. Equivalent in implementation to \ARRAY\ of \CHAR, but with length unspecified.
+    \item \STRING\ -- character array type. \ARRAY\ \OF\ \CHAR\ is equivalent to \STRING.
 \end{enumerate}
 
 Types \INTEGER\ and \REAL\ together they are called numeric types. They form a hierarchy; the larger type includes (the values of) the smaller type:
