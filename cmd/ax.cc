@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
     types.initialise();
 
     SymbolFrameTable symbols;
-    Builtin::initialise(symbols, types);
+    Builtin::initialise(symbols);
     ax::Parser parser(lexer, symbols, types, errors);
 
     try {

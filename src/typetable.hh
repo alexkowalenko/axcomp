@@ -83,6 +83,8 @@ class TypeTable : public SymbolTable<TypePtr> {
     // Set singleton
     static void set_singleton(TypeTable *s) { singleton = s; };
 
+    void set_type_alias(char const *name, TypePtr const &t);
+
     void reg(TokenType op, TypePtr const &type, TypePtr const &result);
     void reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result);
 

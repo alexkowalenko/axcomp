@@ -248,7 +248,9 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
     TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);
-        expr_type = *types.resolve(last_type->get_name());
+        if (last_type) {
+            expr_type = *types.resolve(last_type->get_name());
+        }
     }
 
     // check return type

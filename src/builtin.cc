@@ -145,12 +145,7 @@ BIFunctor flt = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
 };
 
-void set_type_alias(TypeTable &types, char const *name, TypePtr const &t) {
-    auto type = std::make_shared<TypeAlias>(name, t);
-    types.put(name, type);
-}
-
-void Builtin::initialise(SymbolFrameTable &symbols, TypeTable &types) {
+void Builtin::initialise(SymbolFrameTable &symbols) {
 
     global_functions = {
 
@@ -274,13 +269,6 @@ void Builtin::initialise(SymbolFrameTable &symbols, TypeTable &types) {
     compile_functions.try_emplace("FLOOR", floor);
     compile_functions.try_emplace("FLT", flt);
     compile_functions.try_emplace("NEW", newfunct);
-
-    // Type aliases for compatiblity
-    set_type_alias(types, "SHORTINT", TypeTable::IntType);
-    set_type_alias(types, "LONGINT", TypeTable::IntType);
-    set_type_alias(types, "HUGEINT", TypeTable::IntType);
-
-    set_type_alias(types, "LONGREAL", TypeTable::RealType);
 }
 
 } // namespace ax

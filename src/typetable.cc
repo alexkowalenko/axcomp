@@ -31,6 +31,11 @@ std::shared_ptr<StringType>    TypeTable::StrType;
 TypePtr                        TypeTable::VoidType;
 TypePtr                        TypeTable::AnyType;
 
+void TypeTable::set_type_alias(char const *name, TypePtr const &t) {
+    auto type = std::make_shared<TypeAlias>(name, t);
+    put(name, type);
+}
+
 void TypeTable::initialise() {
 
     set_singleton(this);
@@ -53,6 +58,13 @@ void TypeTable::initialise() {
     put(std::string(*VoidType), VoidType);
     AnyType = std::make_shared<SimpleType>("any", TypeId::any);
     put(std::string(*AnyType), AnyType);
+
+    // Type aliases for compatiblity
+    set_type_alias("SHORTINT", TypeTable::IntType);
+    set_type_alias("LONGINT", TypeTable::IntType);
+    set_type_alias("HUGEINT", TypeTable::IntType);
+
+    set_type_alias("LONGREAL", TypeTable::RealType);
 
     // Type Rules
 

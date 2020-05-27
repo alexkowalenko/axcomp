@@ -21,7 +21,7 @@ using BIFunctor = std::function<Value *(CodeGenerator *, ASTCallPtr ast)>;
 
 class Builtin {
   public:
-    static void initialise(SymbolFrameTable &symbols, TypeTable &types);
+    static void initialise(SymbolFrameTable &symbols);
 
     static std::vector<std::pair<std::string, Symbol>> global_functions;
     static llvm::StringMap<BIFunctor>                  compile_functions;

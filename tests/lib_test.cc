@@ -126,7 +126,7 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Builtin::initialise(symbols, types);
+        Builtin::initialise(symbols);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -170,7 +170,7 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Builtin::initialise(symbols, types);
+        Builtin::initialise(symbols);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -214,7 +214,7 @@ void do_def_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Builtin::initialise(symbols, types);
+        Builtin::initialise(symbols);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;
@@ -257,7 +257,7 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
         types.initialise();
 
         SymbolFrameTable symbols;
-        Builtin::initialise(symbols, types);
+        Builtin::initialise(symbols);
         Parser parser(lex, symbols, types, errors);
 
         std::string result;

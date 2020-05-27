@@ -42,7 +42,7 @@ How to run the compiler is explained in the [_AX Oberon-2/07 Language Report_](r
 
 ## Known issues
 
-Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex). Bugs listed in the issue tracker [![github:alexkowalenko/axcomp/issues](https://img.shields.io/github/issues/alexkowalenko/axcomp.svg)](https://github.com/alexkowalenko/axcomp/issues).
+Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex). Bugs listed in the issue tracker [![https://github.com/alexkowalenko/axcomp/issues](https://img.shields.io/github/issues/alexkowalenko/axcomp.svg)](https://github.com/alexkowalenko/axcomp/issues). 
 
 ## Open Source Licensing information
 

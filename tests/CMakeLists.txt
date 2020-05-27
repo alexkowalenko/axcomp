@@ -60,3 +60,5 @@ package_add_test(inspect.3 inspect.3.cc)
 package_add_test(inspect.4 inspect.4.cc)
 
 package_add_test(definition.1 definition.cc)
+
+package_add_test(type.1 type.1.cc)
