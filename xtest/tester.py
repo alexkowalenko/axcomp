@@ -27,7 +27,7 @@ link_objs = ""
 exclude = ""
 c_flags = ""
 
-compiler = f"{install_dir}/ax"
+compiler = f"{install_dir}/axcomp"
 linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
 optimize = False
 opt_flag = "-O1"

@@ -1,0 +1,93 @@
+#!env python3
+#
+# AX compiler
+#
+# Copyright © 2020 Alex Kowalenko
+#
+
+import os
+import argparse
+from pathlib import Path
+
+
+compiler = "axcomp"
+linker = "clang++"
+
+lib_dir = os.environ['AXLIB_PATH']
+libs = " -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
+
+
+def main():
+    argsParser = argparse.ArgumentParser(
+        description='AX Oberon compiler', allow_abbrev=True)
+    argsParser.add_argument(
+        '-m', '--main', help="generate function main()", action='store_true')
+    argsParser.add_argument(
+        '-l', '--ll', help="generate only the .ll file", action='store_true')
+    argsParser.add_argument(
+        '-s', '--symbols', help="dump the symbol table", action='store_true')
+    argsParser.add_argument(
+        '-d', '--defs', help="generate only the .def file", action='store_true')
+    argsParser.add_argument('-p', help="parse only", action='store_true')
+    argsParser.add_argument(
+        '-O1', help="invoke optimizer level 1", action='store_true')
+    argsParser.add_argument(
+        '-O2', help="invoke optimizer level 2", action='store_true')
+    argsParser.add_argument(
+        '-O3', help="invoke optimizer level 3", action='store_true')
+
+    argsParser.add_argument(
+        '-debug', help="turn on debugging", action='store_true')
+
+    argsParser.add_argument(
+        '-v', '--verbose', help="show the compile steps", action='store_true')
+    argsParser.add_argument('file', help="<input file>")
+
+    args = argsParser.parse_args()
+
+    terminate = False
+    arguments = ""
+    if args.main:
+        arguments += "-m "
+    if args.symbols:
+        arguments += "-s "
+    if args.ll:
+        arguments += "-l "
+        terminate = True
+    if args.defs:
+        arguments += "-d "
+        terminate = True
+    if args.p:
+        arguments += "-p "
+        terminate = True
+
+    if args.O1:
+        arguments += "-O1 "
+    if args.O2:
+        arguments += "-O2 "
+    if args.O3:
+        arguments += "-O3 "
+
+    if args.debug:
+        arguments += "-debug "
+
+    cmd = f"{compiler} {arguments} {args.file}"
+    if args.verbose:
+        print(cmd)
+    ret = os.system(cmd)
+    if ret:
+        exit(ret)
+
+    if not ret and not terminate:
+        # link file
+        stem = Path(args.file).stem
+
+        cmd = f"{linker} {stem}.o -o {stem} -L{lib_dir} {libs}"
+        if args.verbose:
+            print(cmd)
+        ret = os.system(cmd)
+        exit(ret)
+
+
+if __name__ == '__main__':
+    main()

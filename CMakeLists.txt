@@ -105,12 +105,13 @@ add_library(libax STATIC
 include_directories(src)
 
 # ax compiler executable
-add_executable(ax cmd/ax.cc)
-target_link_libraries(ax PRIVATE project_options project_warnings libax ${llvm_libs} ${ICU_LIBRARIES})
+add_executable(axcomp cmd/axcomp.cc)
+target_link_libraries(axcomp PRIVATE project_options project_warnings libax ${llvm_libs} ${ICU_LIBRARIES})
 
 # ax runtime library
 add_subdirectory(runtime)
 
 # install
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
-install(TARGETS ax DESTINATION bin)
+install(TARGETS axcomp DESTINATION bin)
+install(FILES cmd/ax DESTINATION bin)
