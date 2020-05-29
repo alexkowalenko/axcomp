@@ -36,7 +36,7 @@ red = fg('red_1')
 restore = attr('reset')
 
 
-def do_clang(stem):
+def do_clang(stem: str) -> int:
     obj = stem + ".o"
     cmd = linker + f" {link_objs} {obj}"
     # print(cmd)
@@ -58,7 +58,7 @@ def do_clang(stem):
     return (ret == 0)
 
 
-def do_test(t):
+def do_test(t: str) -> int:
     stem = Path(t).stem
     fail = stem + ".fail"
 
@@ -97,7 +97,7 @@ def do_test(t):
     return do_clang(stem)
 
 
-def do_test_parse(t):
+def do_test_parse(t: str) -> int:
     stem = Path(t).stem
     fail = stem + ".fail"
 
@@ -128,7 +128,7 @@ def do_test_parse(t):
 
 
 # Perform tests on a list of filename
-def do_tests(l):
+def do_tests(l: list) -> int:
     global exclude
     global pre_test
 
@@ -166,7 +166,7 @@ def do_tests(l):
 
 
 # Perform tests on a list of directories
-def do_tests_dir(d):
+def do_tests_dir(d: list) -> int:
     global pre_test
     global post_test
     global link_objs
@@ -195,12 +195,12 @@ def do_tests_dir(d):
     return res
 
 
-def get_tests():
+def get_tests() -> list:
     tests = glob('tests.*')
     return tests
 
 
-def main():
+def main() -> int:
     global optimize
 
     argsParser = argparse.ArgumentParser()

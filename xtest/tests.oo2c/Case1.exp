@@ -1,0 +1,91 @@
+; ModuleID = 'Case1'
+source_filename = "Case1"
+
+@STRING_0 = private global [0 x i32] [i32 111, i32 110, i32 101, i32 0]
+@STRING_1 = private global [0 x i32] [i32 116, i32 119, i32 111, i32 0]
+@STRING_2 = private global [0 x i32] [i32 116, i32 104, i32 114, i32 101, i32 101, i32 0]
+@STRING_3 = private global [0 x i32] [i32 109, i32 97, i32 110, i32 121, i32 0]
+@STRING_4 = private global [0 x i32] [i32 116, i32 111, i32 111, i32 32, i32 109, i32 97, i32 110, i32 121, i32 0]
+@STRING_5 = private global [0 x i32] [i32 110, i32 111, i32 32, i32 109, i32 97, i32 116, i32 99, i32 104, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_String([0 x i32]*)
+
+define internal void @Case1_P(i64 %i) {
+entry:
+  %i1 = alloca i64
+  store i64 %i, i64* %i1
+  %i2 = load i64, i64* %i1
+  switch i64 %i2, label %range [
+    i64 1, label %case.element0
+    i64 2, label %case.element1
+    i64 3, label %case.element2
+    i64 4, label %case.element3
+    i64 5, label %case.element3
+  ]
+
+range:                                            ; preds = %entry
+  br label %case.range0
+
+case.range0:                                      ; preds = %range
+  %0 = icmp sle i64 6, %i2
+  %1 = icmp sle i64 %i2, 9
+  %2 = and i1 %0, %1
+  br i1 %2, label %case.element4, label %else
+
+case.element0:                                    ; preds = %entry
+  call void @Out_String([0 x i32]* @STRING_0)
+  br label %case_end
+
+case.element1:                                    ; preds = %entry
+  call void @Out_String([0 x i32]* @STRING_1)
+  br label %case_end
+
+case.element2:                                    ; preds = %entry
+  call void @Out_String([0 x i32]* @STRING_2)
+  br label %case_end
+
+case.element3:                                    ; preds = %entry, %entry
+  call void @Out_String([0 x i32]* @STRING_3)
+  br label %case_end
+
+case.element4:                                    ; preds = %case.range0
+  call void @Out_String([0 x i32]* @STRING_4)
+  br label %case_end
+
+else:                                             ; preds = %case.range0
+  call void @Out_String([0 x i32]* @STRING_5)
+  br label %case_end
+
+case_end:                                         ; preds = %else, %case.element4, %case.element3, %case.element2, %case.element1, %case.element0
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Case1_Test() {
+entry:
+  %i1 = alloca i64
+  %i = alloca i64
+  store i64 0, i64* %i
+  store i64 0, i64* %i1
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i2 = load i64, i64* %i1
+  call void @Case1_P(i64 %i2)
+  %0 = load i64, i64* %i1
+  %nextvar = add i64 %0, 1
+  store i64 %nextvar, i64* %i1
+  %loopcond = icmp sle i64 %nextvar, 10
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Case1_Test()
+  ret i64 0
+}

@@ -108,8 +108,6 @@ class CodeGenerator : ASTVisitor {
     TypeTable &       types;
     Importer &        importer;
 
-    using ValueSymbolTable = std::shared_ptr<SymbolTable<std::pair<Value *, Attr>>>;
-
     std::string             module_name;
     std::string             filename;
     LLVMContext             context;
@@ -120,7 +118,9 @@ class CodeGenerator : ASTVisitor {
     Value *     last_value{nullptr}; // holds last value of compilation
     BasicBlock *last_end{nullptr};   // last end block in loop, used for EXIT
     bool        has_return{false};
-    int         string_const{0}; // const_strings counter
+
+    int                               string_const{0}; // const_strings counter
+    llvm::StringMap<GlobalVariable *> global_strings;
 
     bool is_var{false}; // Do VAR change in IndentifierPtr
 };

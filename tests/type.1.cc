@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include <memory>
 
+#include "type.hh"
 #include "typetable.hh"
 
 using namespace ax;
@@ -65,4 +66,20 @@ TEST(Type, Resolve) {
     EXPECT_EQ(types.resolve("LONGREAL"), TypeTable::RealType);
 
     EXPECT_EQ(types.resolve("CHAR[]"), TypeTable::StrType);
+}
+
+TEST(Type, ResolveArrays) {
+
+    TypeTable types;
+    types.initialise();
+
+    EXPECT_EQ(types.resolve("INTEGER"), TypeTable::IntType);
+
+    auto type = std::make_shared<TypeAlias>("I", TypeTable::IntType);
+    types.put("I", type);
+    EXPECT_EQ(types.resolve("I"), TypeTable::IntType);
+
+    // Resolve ARRAY OF I to ARRAY OF INTEGER
+    auto t1 = std::make_shared<ArrayType>(TypeTable::IntType);
+    // EXPECT_EQ(types.resolve("I[]"), t1);
 }

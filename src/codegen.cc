@@ -1168,12 +1168,19 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
 
 void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
     debug("CodeGenerator::visit_ASTString {0}", ast->value);
-    std::string name = llvm::formatv("STRING_{0}", string_const++);
-    module->getOrInsertGlobal(name, TypeTable::StrType->make_type(ast->value));
 
-    GlobalVariable *var = module->getNamedGlobal(name);
-    var->setInitializer(TypeTable::StrType->make_value(ast->value));
-    var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
+    GlobalVariable *var = nullptr;
+    if (auto res = global_strings.find(ast->value); res != global_strings.end()) {
+        var = res->second;
+    } else {
+        std::string name = llvm::formatv("STRING_{0}", string_const++);
+        module->getOrInsertGlobal(name, TypeTable::StrType->make_type(ast->value));
+
+        var = module->getNamedGlobal(name);
+        var->setInitializer(TypeTable::StrType->make_value(ast->value));
+        var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
+        global_strings[ast->value] = var;
+    }
     last_value = var;
 }
 

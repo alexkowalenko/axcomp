@@ -1,0 +1,55 @@
+; ModuleID = 'ConstFold6'
+source_filename = "ConstFold6"
+
+@ConstFold6_maxShortInt = internal constant i64 127
+@ConstFold6_minShortInt = internal constant i64 -128
+@ConstFold6_maxInteger = internal constant i64 32767
+@ConstFold6_minInteger = internal constant i64 -32768
+@ConstFold6_maxLongInt = internal constant i64 2147483647
+@ConstFold6_minLongInt = internal constant i64 -2147483648
+@ConstFold6_offset = internal constant i64 1
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define void @ConstFold6_Test() {
+entry:
+  %minShortInt = load i64, i64* @ConstFold6_minShortInt
+  %offset = load i64, i64* @ConstFold6_offset
+  %subtmp = sub i64 %minShortInt, %offset
+  call void @Out_Int(i64 %subtmp, i64 0)
+  call void @Out_Ln()
+  %maxShortInt = load i64, i64* @ConstFold6_maxShortInt
+  %offset1 = load i64, i64* @ConstFold6_offset
+  %addtmp = add i64 %maxShortInt, %offset1
+  call void @Out_Int(i64 %addtmp, i64 0)
+  call void @Out_Ln()
+  %minInteger = load i64, i64* @ConstFold6_minInteger
+  %offset2 = load i64, i64* @ConstFold6_offset
+  %subtmp3 = sub i64 %minInteger, %offset2
+  call void @Out_Int(i64 %subtmp3, i64 0)
+  call void @Out_Ln()
+  %maxInteger = load i64, i64* @ConstFold6_maxInteger
+  %offset4 = load i64, i64* @ConstFold6_offset
+  %addtmp5 = add i64 %maxInteger, %offset4
+  call void @Out_Int(i64 %addtmp5, i64 0)
+  call void @Out_Ln()
+  %minLongInt = load i64, i64* @ConstFold6_minLongInt
+  %offset6 = load i64, i64* @ConstFold6_offset
+  %subtmp7 = sub i64 %minLongInt, %offset6
+  call void @Out_Int(i64 %subtmp7, i64 0)
+  call void @Out_Ln()
+  %maxLongInt = load i64, i64* @ConstFold6_maxLongInt
+  %offset8 = load i64, i64* @ConstFold6_offset
+  %addtmp9 = add i64 %maxLongInt, %offset8
+  call void @Out_Int(i64 %addtmp9, i64 0)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @ConstFold6_Test()
+  ret i64 0
+}

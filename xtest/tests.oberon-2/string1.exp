@@ -4,10 +4,9 @@ source_filename = "string1"
 @string1_a = internal constant [0 x i32]* @STRING_0
 @STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 @string1_x = internal global [0 x i32]* null
-@STRING_1 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 define i64 @output() {
 entry:
-  store [0 x i32]* @STRING_1, [0 x i32]** @string1_x
+  store [0 x i32]* @STRING_0, [0 x i32]** @string1_x
   ret i64 0
 }
