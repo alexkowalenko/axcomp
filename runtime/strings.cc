@@ -7,6 +7,7 @@
 #include "ax.hh"
 
 #include <cctype>
+#include <cstddef>
 #include <cstring>
 #include <cwchar>
 
@@ -27,52 +28,66 @@ extern "C" Int ORD(Char x) {
 }
 
 extern "C" Int Strings_Length(String x) {
-    Int len = 0;
-    while (*x++) {
-        len++;
-    }
-    return len;
+    return std::wcslen(x);
 }
 
 static bool init_gc{false};
 
-void gc_init() {
-    GC_init();
-    init_gc = true;
+void *my_malloc(size_t size) {
+    if (!init_gc) {
+        GC_init();
+        init_gc = true;
+    }
+    return GC_malloc(size);
 }
 
 extern "C" void NEW_String(String **ptr, Int x) {
-    if (!init_gc) {
-        gc_init();
-    }
-    *ptr = static_cast<String *>(GC_malloc(x));
+    *ptr = static_cast<String *>(my_malloc(x));
     memset(*ptr, 0, x);
 }
 
 extern "C" void NEW_ptr(void **ptr, Int x) {
-    if (!init_gc) {
-        gc_init();
-    }
-    *ptr = GC_malloc(x);
+    *ptr = my_malloc(x);
     memset(*ptr, 0, x);
 }
 
 extern "C" void COPY(String x, String **v) {
-    if (!init_gc) {
-        gc_init();
-    }
     auto len = std::wcslen(x) * sizeof(wchar_t);
-    *v = static_cast<String *>(GC_malloc(len));
+    *v = static_cast<String *>(my_malloc(len));
     // Opposite to Oberon
     std::wcscpy(*(String *)v, x);
 }
 
 extern "C" void NEW_Array(void **ptr, Int size) {
-    if (!init_gc) {
-        gc_init();
-    }
-    *ptr = static_cast<void *>(GC_malloc(size));
+    *ptr = static_cast<void *>(my_malloc(size));
     memset(*ptr, 0, size);
+}
+
+extern "C" String Strings_Concat(String s1, String s2) {
+    // printf("Strings_Concat :%S(%ld) :%S(%ld)\n", s1, std::wcslen(s1), s2, std::wcslen(s2));
+    Int   len = std::wcslen(s1) + std::wcslen(s2) + 1;
+    auto *res = static_cast<String>(my_malloc(len * sizeof(String &)));
+    std::wcscpy(res, s1);
+    std::wcscat(res, s2);
+    return res;
+}
+
+extern "C" String Strings_ConcatChar(String s, Char c) {
+    Int   len = std::wcslen(s);
+    auto *res = static_cast<String>(my_malloc((len + 2) * sizeof(String &)));
+    std::wcscpy(res, s);
+    res[len] = c;
+    res[len + 1] = 0;
+    return res;
+}
+
+extern "C" String Strings_AppendChar(Char c, String s) {
+    Int   len = std::wcslen(s);
+    auto *res = static_cast<String>(my_malloc((len + 2) * sizeof(String &)));
+    res[0] = c;
+    std::wcscpy(res + 1, s);
+    res[len + 1] = 0;
+    return res;
 }
 
 } // namespace ax

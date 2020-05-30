@@ -77,6 +77,10 @@ void TypeTable::initialise() {
     reg(TokenType::plus, RealType, IntType, RealType);
     reg(TokenType::plus, RealType, RealType, RealType);
 
+    reg(TokenType::plus, StrType, StrType, StrType);
+    reg(TokenType::plus, StrType, CharType, StrType);
+    reg(TokenType::plus, CharType, StrType, StrType);
+
     reg(TokenType::dash, IntType, IntType, IntType);
     reg(TokenType::dash, IntType, RealType, RealType);
     reg(TokenType::dash, RealType, IntType, RealType);

@@ -837,6 +837,9 @@ String routines.
 \begin{lstlisting}[style=oberon]
 DEFINITION Strings;
     PROCEDURE Length*(s : STRING): INTEGER;
+    PROCEDURE Concat*(s1 : STRING; s2 : STRING): STRING;
+    PROCEDURE ConcatChar*(s : STRING; c : CHAR): STRING;
+    PROCEDURE AppendChar*(c : CHAR; s : STRING): STRING;
 END Strings.
 \end{lstlisting} 
 
@@ -894,6 +897,7 @@ For a given operator, the types of its operands are expression compatible if the
     + - * & numeric & numeric & smallest that has both operands\\
     / & numeric & numeric & smallest that has both operands\\
     \DIV\ \MOD & \INTEGER & \INTEGER & \INTEGER \\
+    + & \STRING, \CHAR, & \STRING, \CHAR & \STRING \\ 
     \OR\ \&\ \~{} & \BOOLEAN & \BOOLEAN & \BOOLEAN \\
     = \# < <= > >= & numeric & numeric & \BOOLEAN \\
         & \CHAR & \CHAR & \BOOLEAN \\

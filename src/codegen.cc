@@ -911,7 +911,21 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
-        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
+        if (L->getType() == TypeTable::StrType->get_llvm() ||
+            R->getType() == TypeTable::StrType->get_llvm()) {
+            if (L->getType() == TypeTable::StrType->get_llvm() &&
+                R->getType() == TypeTable::StrType->get_llvm()) {
+                last_value =
+                    call_function("Strings_Concat", TypeTable::StrType->get_llvm(), {L, R});
+            } else if (R->getType() == TypeTable::CharType->get_llvm()) {
+                last_value =
+                    call_function("Strings_ConcatChar", TypeTable::StrType->get_llvm(), {L, R});
+            } else {
+                last_value =
+                    call_function("Strings_AppendChar", TypeTable::StrType->get_llvm(), {L, R});
+            }
+        } else if (TypeTable::is_int_instruct(L->getType()) &&
+                   TypeTable::is_int_instruct(R->getType())) {
             switch (t.first) {
             case TokenType::plus:
                 last_value = builder.CreateAdd(L, R, "addtmp");
