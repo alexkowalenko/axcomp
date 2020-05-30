@@ -2,7 +2,7 @@
 
 Compiler for the Oberon-0 language and progressing towards implementing Oberon-2, implemented in C++17, using the LLVM compiler infrastructure for code generation.
 
-[![Build Status](https://travis-ci.org/alexkowalenko/axcomp.svg?branch=master)](https://travis-ci.org/alexkowalenko/axcomp)
+![C/C++ CI](https://github.com/alexkowalenko/axcomp/workflows/C/C++%20CI/badge.svg)
 
 Supports at the moment:
 
