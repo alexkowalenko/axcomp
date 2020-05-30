@@ -13,8 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: llvm
-      run: brew install llvm; brew install icu4c; brew install bdw-gc
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@master
+    - name: homebrew
+      run: brew install bdw-gc
     - name: cmake
       run: mkdir build; cd build; cmake ..
     - name: make
