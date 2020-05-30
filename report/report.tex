@@ -840,6 +840,7 @@ DEFINITION Strings;
     PROCEDURE Concat*(s1 : STRING; s2 : STRING): STRING;
     PROCEDURE ConcatChar*(s : STRING; c : CHAR): STRING;
     PROCEDURE AppendChar*(c : CHAR; s : STRING): STRING;
+    PROCEDURE Compare*(s1 : STRING; s2 : STRING): INTEGER;
 END Strings.
 \end{lstlisting} 
 
@@ -901,6 +902,7 @@ For a given operator, the types of its operands are expression compatible if the
     \OR\ \&\ \~{} & \BOOLEAN & \BOOLEAN & \BOOLEAN \\
     = \# < <= > >= & numeric & numeric & \BOOLEAN \\
         & \CHAR & \CHAR & \BOOLEAN \\
+        & \STRING & \STRING & \BOOLEAN \\
     = \# &  \BOOLEAN & \BOOLEAN & \BOOLEAN \\
         & \NIL, pointer type & \NIL, pointer type & \BOOLEAN \\
     \hline

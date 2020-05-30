@@ -1,0 +1,85 @@
+; ModuleID = 'string11'
+source_filename = "string11"
+
+@string11_a = internal constant [0 x i32]* @STRING_0
+@STRING_0 = private global [0 x i32] [i32 97, i32 108, i32 112, i32 104, i32 97, i32 0]
+@string11_b = internal constant [0 x i32]* @STRING_1
+@STRING_1 = private global [0 x i32] [i32 98, i32 101, i32 116, i32 97, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Bool(i1)
+
+declare void @Out_Char(i32)
+
+declare void @Out_String([0 x i32]*)
+
+define internal void @string11_print([0 x i32]* %s1, [0 x i32]* %s2) {
+entry:
+  %s22 = alloca [0 x i32]*
+  %s11 = alloca [0 x i32]*
+  store [0 x i32]* %s1, [0 x i32]** %s11
+  store [0 x i32]* %s2, [0 x i32]** %s22
+  %s13 = load [0 x i32]*, [0 x i32]** %s11
+  call void @Out_String([0 x i32]* %s13)
+  call void @Out_Char(i32 32)
+  %s24 = load [0 x i32]*, [0 x i32]** %s22
+  call void @Out_String([0 x i32]* %s24)
+  call void @Out_Char(i32 32)
+  %s15 = load [0 x i32]*, [0 x i32]** %s11
+  %s26 = load [0 x i32]*, [0 x i32]** %s22
+  %0 = call i64 @Strings_Compare([0 x i32]* %s15, [0 x i32]* %s26)
+  %1 = xor i64 %0, -1
+  call void @Out_Bool(i64 %1)
+  call void @Out_Char(i32 32)
+  %s17 = load [0 x i32]*, [0 x i32]** %s11
+  %s28 = load [0 x i32]*, [0 x i32]** %s22
+  %2 = call i64 @Strings_Compare([0 x i32]* %s17, [0 x i32]* %s28)
+  call void @Out_Bool(i64 %2)
+  call void @Out_Char(i32 32)
+  %s19 = load [0 x i32]*, [0 x i32]** %s11
+  %s210 = load [0 x i32]*, [0 x i32]** %s22
+  %3 = call i64 @Strings_Compare([0 x i32]* %s19, [0 x i32]* %s210)
+  %4 = icmp slt i64 %3, 0
+  call void @Out_Bool(i1 %4)
+  call void @Out_Char(i32 32)
+  %s111 = load [0 x i32]*, [0 x i32]** %s11
+  %s212 = load [0 x i32]*, [0 x i32]** %s22
+  %5 = call i64 @Strings_Compare([0 x i32]* %s111, [0 x i32]* %s212)
+  %6 = icmp sle i64 %5, 0
+  call void @Out_Bool(i1 %6)
+  call void @Out_Char(i32 32)
+  %s113 = load [0 x i32]*, [0 x i32]** %s11
+  %s214 = load [0 x i32]*, [0 x i32]** %s22
+  %7 = call i64 @Strings_Compare([0 x i32]* %s113, [0 x i32]* %s214)
+  %8 = icmp sgt i64 %7, 0
+  call void @Out_Bool(i1 %8)
+  call void @Out_Char(i32 32)
+  %s115 = load [0 x i32]*, [0 x i32]** %s11
+  %s216 = load [0 x i32]*, [0 x i32]** %s22
+  %9 = call i64 @Strings_Compare([0 x i32]* %s115, [0 x i32]* %s216)
+  %10 = icmp sge i64 %9, 0
+  call void @Out_Bool(i1 %10)
+  call void @Out_Char(i32 32)
+  call void @Out_Ln()
+  ret void
+}
+
+declare i64 @Strings_Compare([0 x i32]*, [0 x i32]*)
+
+define i64 @output() {
+entry:
+  %a = load [0 x i32]*, [0 x i32]** @string11_a
+  %a1 = load [0 x i32]*, [0 x i32]** @string11_a
+  call void @string11_print([0 x i32]* %a, [0 x i32]* %a1)
+  %a2 = load [0 x i32]*, [0 x i32]** @string11_a
+  %b = load [0 x i32]*, [0 x i32]** @string11_b
+  call void @string11_print([0 x i32]* %a2, [0 x i32]* %b)
+  %b3 = load [0 x i32]*, [0 x i32]** @string11_b
+  %a4 = load [0 x i32]*, [0 x i32]** @string11_a
+  call void @string11_print([0 x i32]* %b3, [0 x i32]* %a4)
+  %b5 = load [0 x i32]*, [0 x i32]** @string11_b
+  %b6 = load [0 x i32]*, [0 x i32]** @string11_b
+  call void @string11_print([0 x i32]* %b5, [0 x i32]* %b6)
+  ret i64 0
+}

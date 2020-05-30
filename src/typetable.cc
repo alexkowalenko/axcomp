@@ -130,6 +130,14 @@ void TypeTable::initialise() {
     reg(TokenType::gteq, IntType, RealType, BoolType);
     reg(TokenType::gteq, RealType, RealType, BoolType);
 
+    // String comparsion operators
+    reg(TokenType::equals, StrType, StrType, BoolType);
+    reg(TokenType::hash, StrType, StrType, BoolType);
+    reg(TokenType::less, StrType, StrType, BoolType);
+    reg(TokenType::leq, StrType, StrType, BoolType);
+    reg(TokenType::greater, StrType, StrType, BoolType);
+    reg(TokenType::gteq, StrType, StrType, BoolType);
+
     reg(TokenType::ampersand, BoolType, BoolType, BoolType);
     reg(TokenType::or_k, BoolType, BoolType, BoolType);
     reg(TokenType::equals, BoolType, BoolType, BoolType);

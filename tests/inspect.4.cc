@@ -178,6 +178,80 @@ TEST(Inspector, ArrayCHAR) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, StringCat) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* STRING *)
+            VAR s1, s2, c: STRING;
+            BEGIN
+                c := s1 + s2;
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nVAR\ns1: STRING;\ns2: STRING;\nc: STRING;\nBEGIN\nc := s1+s2;\nRETURN "
+         "0\nEND alpha."},
+
+        {R"(MODULE alpha; (* STRING *)
+            VAR c: STRING;
+            BEGIN
+                c := "Hello " + "world!";
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nVAR\nc: STRING;\nBEGIN\nc := \"Hello \"+\"world!\";\nRETURN 0\nEND "
+         "alpha."},
+
+        {R"(MODULE alpha; (* STRING *)
+            VAR s: STRING;
+                c: CHAR;
+            BEGIN
+                s := "Hello " + c;
+                s := c + s;
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nVAR\ns: STRING;\nc: CHAR;\nBEGIN\ns := \"Hello \"+c;\ns := c+s;\nRETURN "
+         "0\nEND alpha."},
+
+        // Errors
+        {R"(MODULE alpha; (* STRING *)
+            VAR s1, c: STRING;
+            BEGIN
+                c := s1 + 1;
+                RETURN 0
+            END alpha.)",
+         "", "4,20: operator + doesn't takes types STRING and INTEGER"},
+    };
+    do_inspect_tests(tests);
+}
+TEST(Inspector, StringCompare) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* STRING *)
+            VAR s1, s2: STRING;
+                c: BOOLEAN;
+            BEGIN
+                c := s1 = s2;
+                c := s1 # s2;
+                c := s1 < s2;
+                c := s1 <= s2;
+                c := s1 > s2;
+                c := s1 >= s2;
+                RETURN 0
+            END alpha.)",
+         "MODULE alpha;\nVAR\ns1: STRING;\ns2: STRING;\nc: BOOLEAN;\nBEGIN\nc := s1 = s2;\nc := "
+         "s1 # s2;\nc := s1 < s2;\nc := s1 <= s2;\nc := s1 > s2;\nc := s1 >= s2;\nRETURN 0\nEND "
+         "alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* STRING *)
+            VAR s1, s2: STRING;
+                c: BOOLEAN;
+            BEGIN
+                c := c = s2;
+                RETURN 0
+            END alpha.)",
+         "", "5,20: operator = doesn't takes types BOOLEAN and STRING"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, NIL) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha; (* pointers *)

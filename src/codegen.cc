@@ -32,6 +32,7 @@
 #include "parser.hh"
 #include "symbol.hh"
 #include "symboltable.hh"
+#include "token.hh"
 #include "type.hh"
 #include "typetable.hh"
 
@@ -838,7 +839,34 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
         auto *L = last_value;
         (*ast->relation_expr)->accept(this);
         auto *R = last_value;
-        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
+        if (L->getType() == TypeTable::StrType->get_llvm() &&
+            R->getType() == TypeTable::StrType->get_llvm()) {
+            // String ops
+            last_value = call_function("Strings_Compare", TypeTable::IntType->get_llvm(), {L, R});
+            switch (*ast->relation) {
+            case TokenType::equals:
+                last_value = builder.CreateNot(last_value);
+                break;
+            case TokenType::hash:
+                // Correct
+                break;
+            case TokenType::less:
+                last_value = builder.CreateICmpSLT(
+                    last_value, TypeTable::IntType->get_init()); // last_value > 0
+                break;
+            case TokenType::leq:
+                last_value = builder.CreateICmpSLE(last_value, TypeTable::IntType->get_init());
+                break;
+            case TokenType::greater:
+                last_value = builder.CreateICmpSGT(last_value, TypeTable::IntType->get_init());
+                break;
+            case TokenType::gteq:
+                last_value = builder.CreateICmpSGE(last_value, TypeTable::IntType->get_init());
+                break;
+            default:;
+            }
+        } else if (TypeTable::is_int_instruct(L->getType()) &&
+                   TypeTable::is_int_instruct(R->getType())) {
             // Do integer versions
             switch (*ast->relation) {
             case TokenType::equals:

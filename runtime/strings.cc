@@ -90,4 +90,8 @@ extern "C" String Strings_AppendChar(Char c, String s) {
     return res;
 }
 
+extern "C" Int Strings_Compare(String s1, String s2) {
+    return std::wcscmp(s1, s2);
+}
+
 } // namespace ax
