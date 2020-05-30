@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
     - name: llvm
       run: brew install llvm; brew install icu4c; brew install bdw-gc
     - name: cmake
