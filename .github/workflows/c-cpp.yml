@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: macos-10.14
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: llvm
+      run: brew install llvm; brew install icu4c; brew install bdw-gc
+    - name: cmake
+      run: mkdir build; cd build; cmake ..
+    - name: make
+      run: cd build; make
+    - name: test
+      run: cd build; ctest
