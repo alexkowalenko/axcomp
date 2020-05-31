@@ -1,0 +1,33 @@
+; ModuleID = 'Case2'
+source_filename = "Case2"
+
+define internal void @Case2_P(i64 %i) {
+entry:
+  %i1 = alloca i64
+  store i64 %i, i64* %i1
+  %i2 = load i64, i64* %i1
+  switch i64 %i2, label %range [
+    i64 1, label %case.element0
+  ]
+
+range:                                            ; preds = %entry
+  br label %case_end
+
+case.element0:                                    ; preds = %entry
+  br label %case_end
+
+case_end:                                         ; preds = %case.element0, %range
+  ret void
+}
+
+define void @Case2_Test() {
+entry:
+  call void @Case2_P(i64 2)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Case2_Test()
+  ret i64 0
+}

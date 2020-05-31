@@ -1,0 +1,28 @@
+; ModuleID = 'Case8'
+source_filename = "Case8"
+
+define internal void @Case8_P(i32 %i) {
+entry:
+  %i1 = alloca i32
+  store i32 %i, i32* %i1
+  %i2 = load i32, i32* %i1
+  switch i32 %i2, label %range [
+    i32 1, label %case.element0
+    i32 1, label %case.element0
+  ]
+
+range:                                            ; preds = %entry
+  br label %case_end
+
+case.element0:                                    ; preds = %entry, %entry
+  br label %case_end
+
+case_end:                                         ; preds = %case.element0, %range
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Case8_P(i32 1)
+  ret i64 0
+}

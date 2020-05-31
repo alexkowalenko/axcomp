@@ -16,7 +16,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: homebrew
-      run: brew install bdw-gc graphviz
+      run: brew install bdw-gc graphviz doxygen
     - name: cmake
       run: mkdir build; cd build; cmake ..
     - name: make
