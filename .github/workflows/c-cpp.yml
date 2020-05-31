@@ -15,8 +15,8 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
-    - name: llvm
-      run: brew install llvm; brew install icu4c; brew install bdw-gc
+    - name: homebrew
+      run: brew install bdw-gc graphviz
     - name: cmake
       run: mkdir build; cd build; cmake ..
     - name: make

@@ -883,7 +883,7 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
     % 4. Te and Tv are pointer types and Te is an extension of Tv;
     \item  $T_v$ is a pointer % or a procedure type  
     and $e$ is \NIL;
-    % 6. Tv is ARRAY n OF CHAR, e is a string constant with m characters, and m < n;
+    \item. $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;
     % 7. Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
 \end{itemize}
 
@@ -904,7 +904,7 @@ For a given operator, the types of its operands are expression compatible if the
         & \CHAR & \CHAR & \BOOLEAN \\
         & \STRING & \STRING & \BOOLEAN \\
     = \# &  \BOOLEAN & \BOOLEAN & \BOOLEAN \\
-        & \NIL, pointer type & \NIL, pointer type & \BOOLEAN \\
+         & \POINTER\  \TO\ type & \NIL & \BOOLEAN \\
     \hline
 \end{tabular}
 

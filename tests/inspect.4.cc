@@ -283,6 +283,41 @@ TEST(Inspector, NIL) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, NILCompare) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO INTEGER;
+            BEGIN
+                RETURN x = NIL;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO INTEGER;\nBEGIN\nRETURN x = NIL\nEND alpha.", ""},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : POINTER TO INTEGER;
+            BEGIN
+                RETURN x # NIL;
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: POINTER TO INTEGER;\nBEGIN\nRETURN x # NIL\nEND alpha.", ""},
+
+        // Errors
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : INTEGER;
+            BEGIN
+                RETURN x = NIL;
+            END alpha.)",
+         "", "4,24: operator = doesn't takes types INTEGER and void"},
+
+        {R"(MODULE alpha; (* pointers *)
+            VAR x : INTEGER;
+            BEGIN
+                RETURN x # NIL;
+            END alpha.)",
+         "", "4,24: operator # doesn't takes types INTEGER and void"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Reference) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha; (* pointers *)

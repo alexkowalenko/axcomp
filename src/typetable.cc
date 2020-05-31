@@ -230,9 +230,14 @@ std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr
             return i->second.result;
         }
     }
-    // Deal with the assignment of NIL to pointers
+    // Deal with the assignment and comparison of NIL to pointers
+    // debug("TypeTable::check {0} {1} {2}", string(op), L->get_name(), R->get_name());
     if (op == TokenType::assign && L->id == TypeId::pointer && R->id == TypeId::null) {
         return TypeTable::VoidType;
+    }
+    if ((op == TokenType::equals || op == TokenType::hash) && L->id == TypeId::pointer &&
+        R->id == TypeId::null) {
+        return TypeTable::BoolType;
     }
     return {};
 }

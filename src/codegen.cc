@@ -865,6 +865,18 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
                 break;
             default:;
             }
+        } else if (ast->expr->get_type()->id == TypeId::pointer &&
+                   (*ast->relation_expr)->get_type()->id == TypeId::null) {
+            R = builder.CreateBitCast(R, L->getType());
+            switch (*ast->relation) {
+            case TokenType::equals:
+                last_value = builder.CreateICmpEQ(L, R);
+                break;
+            case TokenType::hash:
+                last_value = builder.CreateICmpNE(L, R);
+                break;
+            default:;
+            }
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
             // Do integer versions
@@ -921,7 +933,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         }
     }
-}
+} // namespace ax
 
 void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     ast->term->accept(this);
