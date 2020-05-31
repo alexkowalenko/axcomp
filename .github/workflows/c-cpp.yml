@@ -20,6 +20,6 @@ jobs:
     - name: cmake
       run: mkdir build; cd build; cmake ..
     - name: make
-      run: cd build; make
+      run: cd build; make -j 2
     - name: test
-      run: cd build; ctest
+      run: AXLIB_PATH=`pwd`/lib ; export AXLIB_PATH ; cd build ; ctest -j 2
