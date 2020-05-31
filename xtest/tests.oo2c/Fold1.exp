@@ -1,0 +1,37 @@
+; ModuleID = 'Fold1'
+source_filename = "Fold1"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define internal void @Fold1_Int(i64 %x) {
+entry:
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  %x2 = load i64, i64* %x1
+  call void @Out_Int(i64 %x2, i64 0)
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Fold1_Test() {
+entry:
+  call void @Fold1_Int(i64 123)
+  call void @Fold1_Int(i64 123)
+  call void @Fold1_Int(i64 -123)
+  call void @Fold1_Int(i64 3)
+  call void @Fold1_Int(i64 0)
+  call void @Fold1_Int(i64 0)
+  call void @Fold1_Int(i64 7)
+  call void @Fold1_Int(i64 26)
+  call void @Fold1_Int(i64 3)
+  call void @Fold1_Int(i64 1)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Fold1_Test()
+  ret i64 0
+}

@@ -1,0 +1,55 @@
+; ModuleID = 'Fold2'
+source_filename = "Fold2"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define internal void @Fold2_Int(i64 %x) {
+entry:
+  %x1 = alloca i64
+  store i64 %x, i64* %x1
+  %x2 = load i64, i64* %x1
+  call void @Out_Int(i64 %x2, i64 0)
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Fold2_Test() {
+entry:
+  %res = alloca i64
+  %s2 = alloca i64
+  %s1 = alloca i64
+  %i2 = alloca i64
+  %i1 = alloca i64
+  store i64 0, i64* %i1
+  store i64 0, i64* %i2
+  store i64 0, i64* %s1
+  store i64 0, i64* %s2
+  store i64 0, i64* %res
+  %i11 = load i64, i64* %i1
+  call void @Fold2_Int(i64 %i11)
+  %i12 = load i64, i64* %i1
+  %i23 = load i64, i64* %i2
+  %addtmp = add i64 %i12, %i23
+  call void @Fold2_Int(i64 %addtmp)
+  %s14 = load i64, i64* %s1
+  %i15 = load i64, i64* %i1
+  %addtmp6 = add i64 %s14, %i15
+  call void @Fold2_Int(i64 %addtmp6)
+  %i17 = load i64, i64* %i1
+  %s18 = load i64, i64* %s1
+  %addtmp9 = add i64 %i17, %s18
+  call void @Fold2_Int(i64 %addtmp9)
+  %s110 = load i64, i64* %s1
+  %s211 = load i64, i64* %s2
+  %addtmp12 = add i64 %s110, %s211
+  call void @Fold2_Int(i64 %addtmp12)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Fold2_Test()
+  ret i64 0
+}
