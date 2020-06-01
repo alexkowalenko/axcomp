@@ -23,8 +23,9 @@ loop:                                             ; preds = %while
 
 then:                                             ; preds = %loop
   ret i64 5
+  br label %ifcont
 
-ifcont:                                           ; preds = %loop
+ifcont:                                           ; preds = %then, %loop
   br label %while
 
 end:                                              ; preds = %while

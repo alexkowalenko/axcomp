@@ -481,7 +481,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
                   [this](auto const &s) { s->accept(this); });
 
     // check if last instruction is branch (EXIT)
-    if (!then_block->back().isTerminator()) {
+    if (ast->if_clause.stats.empty() || then_block->back().getOpcode() != llvm::Instruction::Br) {
         // not terminator (branch) put in EXIT
         debug("CodeGenerator::visit_ASTIf then not terminator");
         builder.CreateBr(merge_block);
@@ -514,7 +514,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         builder.SetInsertPoint(t_block);
         std::for_each(begin(e.stats), end(e.stats), [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
-        if (!t_block->back().isTerminator()) {
+        if (e.stats.empty() || t_block->back().getOpcode() != llvm::Instruction::Br) {
             debug("CodeGenerator::visit_ASTIf elsif not terminator");
             builder.CreateBr(merge_block);
         }
@@ -530,7 +530,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
-        if (!else_block->back().isTerminator()) {
+        if (elses.empty() || else_block->back().getOpcode() != llvm::Instruction::Br) {
             debug("CodeGenerator::visit_ASTIf then not terminator");
             builder.CreateBr(merge_block);
         }
@@ -538,7 +538,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     }
 
     // codegen of ELSE can change the current block, update else_block
-    // else_block = builder.GetInsertBlock();
+    else_block = builder.GetInsertBlock();
 
     // Emit merge block.
     funct->getBasicBlockList().push_back(merge_block);
@@ -645,7 +645,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
         std::for_each(begin(element->stats), end(element->stats),
                       [this](auto const &s) { s->accept(this); });
         // check if last instruction is branch (EXIT)
-        if (!element_blocks[i]->back().isTerminator()) {
+        if (element_blocks[i]->back().getOpcode() != llvm::Instruction::Br) {
             builder.CreateBr(end_block);
         }
         element_blocks[i] = builder.GetInsertBlock(); // necessary for correct generation of code
@@ -660,7 +660,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
                       [this](auto const &s) { s->accept(this); });
 
         // check if last instruction is branch (EXIT)
-        if (!else_block->back().isTerminator()) {
+        if (else_block->back().getOpcode() != llvm::Instruction::Br) {
             builder.CreateBr(end_block);
         }
         else_block = builder.GetInsertBlock(); // necessary for correct generation of code

@@ -18,8 +18,9 @@ entry:
 
 then:                                             ; preds = %entry
   ret i64 1
+  br label %ifcont
 
-ifcont:                                           ; preds = %entry
+ifcont:                                           ; preds = %then, %entry
   %x4 = load i64, i64* %x1
   %x5 = load i64, i64* %x1
   %subtmp = sub i64 %x5, 1
