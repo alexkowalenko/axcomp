@@ -1,0 +1,66 @@
+; ModuleID = 'Entier1'
+source_filename = "Entier1"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_Real(double, i64)
+
+define internal void @Entier1_EntierReal(double %x, i64 %i) {
+entry:
+  %i2 = alloca i64
+  %x1 = alloca double
+  store double %x, double* %x1
+  store i64 %i, i64* %i2
+  %x3 = load double, double* %x1
+  call void @Out_Real(double %x3, i64 4)
+  %i4 = load i64, i64* %i2
+  call void @Out_Int(i64 %i4, i64 4)
+  %x5 = load double, double* %x1
+  %0 = call double @llvm.floor.f64(double %x5)
+  %1 = fptosi double %0 to i64
+  call void @Out_Int(i64 %1, i64 4)
+  call void @Out_Ln()
+  ret void
+}
+
+; Function Attrs: nounwind readnone speculatable willreturn
+declare double @llvm.floor.f64(double) #0
+
+define internal void @Entier1_EntierLongReal(double %x, i64 %i) {
+entry:
+  %i2 = alloca i64
+  %x1 = alloca double
+  store double %x, double* %x1
+  store i64 %i, i64* %i2
+  %x3 = load double, double* %x1
+  call void @Out_Real(double %x3, i64 4)
+  %i4 = load i64, i64* %i2
+  call void @Out_Int(i64 %i4, i64 4)
+  %x5 = load double, double* %x1
+  %0 = call double @llvm.floor.f64(double %x5)
+  %1 = fptosi double %0 to i64
+  call void @Out_Int(i64 %1, i64 4)
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Entier1_Test() {
+entry:
+  call void @Entier1_EntierReal(double 0.000000e+00, i64 0)
+  call void @Entier1_EntierReal(double 9.000000e-01, i64 0)
+  call void @Entier1_EntierReal(double -1.000000e-01, i64 -1)
+  call void @Entier1_EntierLongReal(double 0.000000e+00, i64 0)
+  call void @Entier1_EntierLongReal(double 9.000000e-01, i64 0)
+  call void @Entier1_EntierLongReal(double -1.000000e-01, i64 -1)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Entier1_Test()
+  ret i64 0
+}
+
+attributes #0 = { nounwind readnone speculatable willreturn }

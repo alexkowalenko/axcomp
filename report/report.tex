@@ -726,8 +726,10 @@ Proper procedures:
 
 \vspace{2mm}
 \begin{tabular}{lp{4.5cm}p{4.5cm}}
-    Name & Argument types & Function \\
+    Name & Argument types & Function \\ 
     \hline
+    \ASSERT(x) & x: \BOOLEAN & terminate if not x \\
+    \ASSERT(x, n) & x: \BOOLEAN, n: \INTEGER & terminate if not x, return n to the OS. \\
     \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
     \DEC(v) & integer type & v := v - 1 \\ % Runtime
  %  \DEC(v, n) & integer type & v := v - n \\ % Runtime

@@ -44,6 +44,7 @@ class CodeGenerator : ASTVisitor {
 
     IRBuilder<> &            get_builder() { return builder; };
     std::unique_ptr<Module> &get_module() { return module; };
+    LLVMContext &            get_context() { return context; };
 
   private:
     void visit_ASTModule(ASTModulePtr ast) override;

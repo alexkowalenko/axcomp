@@ -1,0 +1,16 @@
+; ModuleID = 'Assert1'
+source_filename = "Assert1"
+
+define i64 @output() {
+entry:
+  br i32 -2, label %assert, label %merge
+
+assert:                                           ; preds = %entry
+  %0 = call i64 @HALT(i64 1)
+  br label %merge
+
+merge:                                            ; preds = %assert, %entry
+  ret i64 0
+}
+
+declare i64 @HALT(i64)

@@ -17,6 +17,8 @@ jobs:
         submodules: 'recursive'
     - name: homebrew
       run: brew install bdw-gc graphviz doxygen
+    - name: python
+      run: pip3 install colored
     - name: cmake
       run: mkdir build; cd build; cmake ..
     - name: make

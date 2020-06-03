@@ -145,6 +145,31 @@ BIFunctor flt = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
 };
 
+BIFunctor assert = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    debug("builtin ASSERT");
+    auto  args = codegen->do_arguments(ast);
+    auto *arg = args[0];
+
+    auto *      funct = codegen->get_builder().GetInsertBlock()->getParent();
+    BasicBlock *assert_block = BasicBlock::Create(codegen->get_context(), "assert", funct);
+    BasicBlock *merge_block = BasicBlock::Create(codegen->get_context(), "merge");
+
+    auto val = codegen->get_builder().CreateNot(arg);
+    codegen->get_builder().CreateCondBr(val, assert_block, merge_block);
+
+    codegen->get_builder().SetInsertPoint(assert_block);
+    Value *ret = TypeTable::IntType->make_value(1);
+    if (ast->args.size() > 1) {
+        ret = args[1];
+    }
+    codegen->call_function("HALT", TypeTable::IntType->get_llvm(), {ret});
+    codegen->get_builder().CreateBr(merge_block);
+
+    funct->getBasicBlockList().push_back(merge_block);
+    codegen->get_builder().SetInsertPoint(merge_block);
+    return val;
+};
+
 void Builtin::initialise(SymbolFrameTable &symbols) {
 
     global_functions = {
@@ -170,6 +195,12 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                                                              {TypeTable::RealType, Attr::null},
                                                          }),
                          Attr::compile_function}},
+        {"ENTIER", Symbol{std::make_shared<ProcedureType>(TypeTable::IntType,
+                                                          ProcedureType::ParamsList{
+                                                              {TypeTable::RealType, Attr::null},
+                                                          }),
+                          Attr::compile_function}},
+
         {"FLT", Symbol{std::make_shared<ProcedureType>(TypeTable::RealType,
                                                        ProcedureType::ParamsList{
                                                            {TypeTable::IntType, Attr::null},
@@ -220,6 +251,11 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                             ProcedureType::ParamsList{{TypeTable::IntType, Attr::null}}),
                         Attr::global_function}},
 
+        {"ASSERT", Symbol{std::make_shared<ProcedureType>(
+                              TypeTable::VoidType,
+                              ProcedureType::ParamsList{{TypeTable::AnyType, Attr::null}}),
+                          Attr::compile_function}},
+
         {"NEW", Symbol{std::make_shared<ProcedureType>(TypeTable::VoidType,
                                                        ProcedureType::ParamsList{
                                                            {TypeTable::AnyType, Attr::var},
@@ -267,8 +303,10 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("DEC", dec);
     compile_functions.try_emplace("ABS", abs);
     compile_functions.try_emplace("FLOOR", floor);
+    compile_functions.try_emplace("ENTIER", floor);
     compile_functions.try_emplace("FLT", flt);
     compile_functions.try_emplace("NEW", newfunct);
+    compile_functions.try_emplace("ASSERT", assert);
 }
 
 } // namespace ax

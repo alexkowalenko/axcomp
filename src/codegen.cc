@@ -430,15 +430,17 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
 }
 
 void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
-    debug("CodeGenerator::visit_ASTCall");
     auto name = ast->name->ident->make_coded_id();
+    debug("CodeGenerator::visit_ASTCall: {0}", name);
     auto res = symboltable.find(name);
 
     if (res->is(Attr::compile_function)) {
+        debug("CodeGenerator::visit_ASTCall: compile {0}", name);
         auto &f = Builtin::compile_functions[name];
         last_value = f(this, ast);
         return;
     }
+    debug("CodeGenerator::visit_ASTCall: global {0}", name);
     auto args = do_arguments(ast);
     assert(res->value);
     auto *callee = llvm::dyn_cast<Function>(res->value);
