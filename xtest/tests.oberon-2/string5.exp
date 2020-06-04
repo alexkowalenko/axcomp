@@ -16,7 +16,7 @@ entry:
   store i64 0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load [0 x i32]*, [0 x i32]** @string5_x
   %i1 = load i64, i64* %i
   %0 = load [0 x i32]*, [0 x i32]** @string5_x
@@ -30,10 +30,17 @@ loop:                                             ; preds = %loop, %entry
   %x3 = load [0 x i32]*, [0 x i32]** @string5_x
   %2 = call i64 @Strings_Length([0 x i32]* %x3)
   %subtmp = sub i64 %2, 1
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, %subtmp
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
+forneg:                                           ; preds = %loop
+  %loopcond4 = icmp sge i64 %nextvar, %subtmp
+  br i1 %loopcond4, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()
   ret i64 0
 }

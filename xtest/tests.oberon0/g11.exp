@@ -24,7 +24,7 @@ entry:
   store i64 0, i64* %i2
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %total3 = load i64, i64* %total
   %a4 = load [3 x i64], [3 x i64]* %a1
   %i5 = load i64, i64* %i2
@@ -35,12 +35,19 @@ loop:                                             ; preds = %loop, %entry
   %0 = load i64, i64* %i2
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i2
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 2
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
-  %total7 = load i64, i64* %total
-  ret i64 %total7
+forneg:                                           ; preds = %loop
+  %loopcond7 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond7, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
+  %total8 = load i64, i64* %total
+  ret i64 %total8
 }
 
 define i64 @output() {
@@ -49,7 +56,7 @@ entry:
   store i64 0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   %i2 = load i64, i64* %i
   %multmp = mul i64 %i1, %i2
@@ -62,10 +69,17 @@ loop:                                             ; preds = %loop, %entry
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 2
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
+forneg:                                           ; preds = %loop
+  %loopcond6 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond6, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   %pt = load [3 x i64], [3 x i64]* @g11_pt
   %1 = call [3 x i64] @g11_identity([3 x i64] %pt)
   %2 = call i64 @g11_sum([3 x i64] %1)

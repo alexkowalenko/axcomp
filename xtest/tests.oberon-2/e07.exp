@@ -16,7 +16,7 @@ entry:
   store i64 0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load i64, i64* @e07_x
   %i1 = load i64, i64* %i
   %addtmp = add i64 %x, %i1
@@ -25,10 +25,17 @@ loop:                                             ; preds = %loop, %entry
   %nextvar = add i64 %0, 2
   store i64 %nextvar, i64* %i
   %1 = call i64 @e07_f()
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, %1
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
-  %x2 = load i64, i64* @e07_x
-  ret i64 %x2
+forneg:                                           ; preds = %loop
+  %loopcond2 = icmp sge i64 %nextvar, %1
+  br i1 %loopcond2, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
+  %x3 = load i64, i64* @e07_x
+  ret i64 %x3
 }

@@ -16,7 +16,7 @@ entry:
   store i64 1, i64* %i
   br label %loop
 
-loop:                                             ; preds = %case_end, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   switch i64 %i1, label %range [
     i64 1, label %case.element0
@@ -24,7 +24,15 @@ loop:                                             ; preds = %case_end, %entry
     i64 3, label %case.element2
   ]
 
-afterloop:                                        ; preds = %case_end
+forpos:                                           ; preds = %case_end
+  %loopcond = icmp sle i64 %nextvar, 4
+  br i1 %loopcond, label %loop, label %afterloop
+
+forneg:                                           ; preds = %case_end
+  %loopcond2 = icmp sge i64 %nextvar, 4
+  br i1 %loopcond2, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   ret i64 0
 
 range:                                            ; preds = %loop
@@ -49,6 +57,5 @@ case_end:                                         ; preds = %case.element2, %cas
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
-  %loopcond = icmp sle i64 %nextvar, 4
-  br i1 %loopcond, label %loop, label %afterloop
+  br i1 true, label %forpos, label %forneg
 }

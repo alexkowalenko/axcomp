@@ -22,7 +22,7 @@ entry:
   store i64 1, i64* %i
   br label %loop
 
-loop:                                             ; preds = %case_end, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   call void @Out_Int(i64 %i1, i64 0)
   call void @Out_Char(i32 32)
@@ -34,7 +34,15 @@ loop:                                             ; preds = %case_end, %entry
     i64 10, label %case.element3
   ]
 
-afterloop:                                        ; preds = %case_end
+forpos:                                           ; preds = %case_end
+  %loopcond = icmp sle i64 %nextvar, 15
+  br i1 %loopcond, label %loop, label %afterloop
+
+forneg:                                           ; preds = %case_end
+  %loopcond3 = icmp sge i64 %nextvar, 15
+  br i1 %loopcond3, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   ret i64 0
 
 range:                                            ; preds = %loop
@@ -81,6 +89,5 @@ case_end:                                         ; preds = %else, %case.element
   %6 = load i64, i64* %i
   %nextvar = add i64 %6, 1
   store i64 %nextvar, i64* %i
-  %loopcond = icmp sle i64 %nextvar, 15
-  br i1 %loopcond, label %loop, label %afterloop
+  br i1 true, label %forpos, label %forneg
 }

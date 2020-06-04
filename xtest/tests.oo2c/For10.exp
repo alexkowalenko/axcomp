@@ -1,27 +1,34 @@
-; ModuleID = 'For4'
-source_filename = "For4"
+; ModuleID = 'For10'
+source_filename = "For10"
 
-define void @For4_Test() {
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define void @For10_Test() {
 entry:
   %x1 = alloca i64
   %x = alloca i64
   store i64 0, i64* %x
-  store i64 128, i64* %x1
+  store i64 8, i64* %x1
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
+  %x2 = load i64, i64* %x1
+  call void @Out_Int(i64 %x2, i64 0)
+  call void @Out_Ln()
   %0 = load i64, i64* %x1
-  %nextvar = add i64 %0, 1
+  %nextvar = add i64 %0, -2
   store i64 %nextvar, i64* %x1
-  br i1 true, label %forpos, label %forneg
+  br i1 false, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
-  %loopcond = icmp sle i64 %nextvar, 127
+  %loopcond = icmp sle i64 %nextvar, 1
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 127
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond3 = icmp sge i64 %nextvar, 1
+  br i1 %loopcond3, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret void
@@ -29,6 +36,6 @@ afterloop:                                        ; preds = %forneg, %forpos
 
 define i64 @output() {
 entry:
-  call void @For4_Test()
+  call void @For10_Test()
   ret i64 0
 }

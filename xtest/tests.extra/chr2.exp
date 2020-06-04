@@ -18,7 +18,7 @@ entry:
   store i64 %0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   %1 = call i32 @CHR(i64 %i1)
   call void @Out_Char(i32 %1)
@@ -28,10 +28,17 @@ loop:                                             ; preds = %loop, %entry
   store i64 %nextvar, i64* %i
   %3 = call i64 @ORD(i32 128126)
   %addtmp = add i64 %3, 9
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, %addtmp
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
+forneg:                                           ; preds = %loop
+  %loopcond2 = icmp sge i64 %nextvar, %addtmp
+  br i1 %loopcond2, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()
   ret i64 0
 }

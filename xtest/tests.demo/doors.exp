@@ -15,14 +15,14 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %i35 = alloca i64
-  %i19 = alloca i64
-  %i4 = alloca i64
+  %i44 = alloca i64
+  %i25 = alloca i64
+  %i7 = alloca i64
   %i = alloca i64
   store i64 1, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   %idx = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %i1
   store i1 true, i1* %idx
@@ -30,123 +30,151 @@ loop:                                             ; preds = %loop, %entry
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
   %N = load i64, i64* @Doors_N
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, %N
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
-  store i64 1, i64* %i4
-  br label %loop2
+forneg:                                           ; preds = %loop
+  %loopcond2 = icmp sge i64 %nextvar, %N
+  br i1 %loopcond2, label %loop, label %afterloop
 
-loop2:                                            ; preds = %end, %afterloop
+afterloop:                                        ; preds = %forneg, %forpos
+  store i64 1, i64* %i7
+  br label %loop3
+
+loop3:                                            ; preds = %forneg5, %forpos4, %afterloop
   store i64 1, i64* @Doors_j
   br label %while
 
-afterloop3:                                       ; preds = %end
-  store i64 1, i64* %i19
-  br label %loop17
+forpos4:                                          ; preds = %end
+  %loopcond19 = icmp sle i64 %nextvar17, %N18
+  br i1 %loopcond19, label %loop3, label %afterloop6
 
-while:                                            ; preds = %ifcont, %loop2
+forneg5:                                          ; preds = %end
+  %loopcond20 = icmp sge i64 %nextvar17, %N18
+  br i1 %loopcond20, label %loop3, label %afterloop6
+
+afterloop6:                                       ; preds = %forneg5, %forpos4
+  store i64 1, i64* %i25
+  br label %loop21
+
+while:                                            ; preds = %ifcont, %loop3
   %j = load i64, i64* @Doors_j
   %len = load i64, i64* @Doors_len
   %1 = icmp slt i64 %j, %len
-  br i1 %1, label %loop5, label %end
+  br i1 %1, label %loop8, label %end
 
-loop5:                                            ; preds = %while
-  %j6 = load i64, i64* @Doors_j
-  %i7 = load i64, i64* %i4
-  %modtmp = srem i64 %j6, %i7
+loop8:                                            ; preds = %while
+  %j9 = load i64, i64* @Doors_j
+  %i10 = load i64, i64* %i7
+  %modtmp = srem i64 %j9, %i10
   %2 = icmp eq i64 %modtmp, 0
   br i1 %2, label %then, label %ifcont
 
-then:                                             ; preds = %loop5
+then:                                             ; preds = %loop8
   %closed = load [101 x i1], [101 x i1]* @Doors_closed
-  %j8 = load i64, i64* @Doors_j
-  %idx9 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %j8
-  %idx10 = load i1, i1* %idx9
-  %3 = xor i1 %idx10, true
   %j11 = load i64, i64* @Doors_j
   %idx12 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %j11
-  store i1 %3, i1* %idx12
+  %idx13 = load i1, i1* %idx12
+  %3 = xor i1 %idx13, true
+  %j14 = load i64, i64* @Doors_j
+  %idx15 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %j14
+  store i1 %3, i1* %idx15
   br label %ifcont
 
-ifcont:                                           ; preds = %then, %loop5
-  %j13 = load i64, i64* @Doors_j
-  %addtmp = add i64 %j13, 1
+ifcont:                                           ; preds = %then, %loop8
+  %j16 = load i64, i64* @Doors_j
+  %addtmp = add i64 %j16, 1
   store i64 %addtmp, i64* @Doors_j
   br label %while
 
 end:                                              ; preds = %while
-  %4 = load i64, i64* %i4
-  %nextvar14 = add i64 %4, 1
-  store i64 %nextvar14, i64* %i4
-  %N15 = load i64, i64* @Doors_N
-  %loopcond16 = icmp sle i64 %nextvar14, %N15
-  br i1 %loopcond16, label %loop2, label %afterloop3
+  %4 = load i64, i64* %i7
+  %nextvar17 = add i64 %4, 1
+  store i64 %nextvar17, i64* %i7
+  %N18 = load i64, i64* @Doors_N
+  br i1 true, label %forpos4, label %forneg5
 
-loop17:                                           ; preds = %ifcont29, %afterloop3
-  %i20 = load i64, i64* %i19
-  %subtmp = sub i64 %i20, 1
-  %modtmp21 = srem i64 %subtmp, 10
-  %5 = icmp eq i64 %modtmp21, 0
-  br i1 %5, label %then22, label %ifcont23
+loop21:                                           ; preds = %forneg23, %forpos22, %afterloop6
+  %i26 = load i64, i64* %i25
+  %subtmp = sub i64 %i26, 1
+  %modtmp27 = srem i64 %subtmp, 10
+  %5 = icmp eq i64 %modtmp27, 0
+  br i1 %5, label %then28, label %ifcont29
 
-afterloop18:                                      ; preds = %ifcont29
+forpos22:                                         ; preds = %ifcont35
+  %loopcond38 = icmp sle i64 %nextvar36, %N37
+  br i1 %loopcond38, label %loop21, label %afterloop24
+
+forneg23:                                         ; preds = %ifcont35
+  %loopcond39 = icmp sge i64 %nextvar36, %N37
+  br i1 %loopcond39, label %loop21, label %afterloop24
+
+afterloop24:                                      ; preds = %forneg23, %forpos22
   call void @Out_Ln()
-  store i64 1, i64* %i35
-  br label %loop33
+  store i64 1, i64* %i44
+  br label %loop40
 
-then22:                                           ; preds = %loop17
+then28:                                           ; preds = %loop21
   call void @Out_Ln()
-  br label %ifcont23
+  br label %ifcont29
 
-ifcont23:                                         ; preds = %then22, %loop17
-  %closed24 = load [101 x i1], [101 x i1]* @Doors_closed
-  %i25 = load i64, i64* %i19
-  %idx26 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %i25
-  %idx27 = load i1, i1* %idx26
-  br i1 %idx27, label %then28, label %else
+ifcont29:                                         ; preds = %then28, %loop21
+  %closed30 = load [101 x i1], [101 x i1]* @Doors_closed
+  %i31 = load i64, i64* %i25
+  %idx32 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %i31
+  %idx33 = load i1, i1* %idx32
+  br i1 %idx33, label %then34, label %else
 
-then28:                                           ; preds = %ifcont23
+then34:                                           ; preds = %ifcont29
   call void @Out_Char(i32 45)
   call void @Out_Char(i32 32)
-  br label %ifcont29
+  br label %ifcont35
 
-else:                                             ; preds = %ifcont23
+else:                                             ; preds = %ifcont29
   call void @Out_Char(i32 43)
   call void @Out_Char(i32 32)
-  br label %ifcont29
+  br label %ifcont35
 
-ifcont29:                                         ; preds = %else, %then28
-  %6 = load i64, i64* %i19
-  %nextvar30 = add i64 %6, 1
-  store i64 %nextvar30, i64* %i19
-  %N31 = load i64, i64* @Doors_N
-  %loopcond32 = icmp sle i64 %nextvar30, %N31
-  br i1 %loopcond32, label %loop17, label %afterloop18
+ifcont35:                                         ; preds = %else, %then34
+  %6 = load i64, i64* %i25
+  %nextvar36 = add i64 %6, 1
+  store i64 %nextvar36, i64* %i25
+  %N37 = load i64, i64* @Doors_N
+  br i1 true, label %forpos22, label %forneg23
 
-loop33:                                           ; preds = %ifcont42, %afterloop18
-  %closed36 = load [101 x i1], [101 x i1]* @Doors_closed
-  %i37 = load i64, i64* %i35
-  %idx38 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %i37
-  %idx39 = load i1, i1* %idx38
-  %7 = xor i1 %idx39, true
-  br i1 %7, label %then40, label %ifcont42
+loop40:                                           ; preds = %forneg42, %forpos41, %afterloop24
+  %closed45 = load [101 x i1], [101 x i1]* @Doors_closed
+  %i46 = load i64, i64* %i44
+  %idx47 = getelementptr [101 x i1], [101 x i1]* @Doors_closed, i64 0, i64 %i46
+  %idx48 = load i1, i1* %idx47
+  %7 = xor i1 %idx48, true
+  br i1 %7, label %then49, label %ifcont51
 
-afterloop34:                                      ; preds = %ifcont42
+forpos41:                                         ; preds = %ifcont51
+  %loopcond54 = icmp sle i64 %nextvar52, %N53
+  br i1 %loopcond54, label %loop40, label %afterloop43
+
+forneg42:                                         ; preds = %ifcont51
+  %loopcond55 = icmp sge i64 %nextvar52, %N53
+  br i1 %loopcond55, label %loop40, label %afterloop43
+
+afterloop43:                                      ; preds = %forneg42, %forpos41
   call void @Out_Ln()
   ret i64 0
 
-then40:                                           ; preds = %loop33
-  %i41 = load i64, i64* %i35
-  call void @Out_Int(i64 %i41, i64 0)
+then49:                                           ; preds = %loop40
+  %i50 = load i64, i64* %i44
+  call void @Out_Int(i64 %i50, i64 0)
   call void @Out_Char(i32 32)
-  br label %ifcont42
+  br label %ifcont51
 
-ifcont42:                                         ; preds = %then40, %loop33
-  %8 = load i64, i64* %i35
-  %nextvar43 = add i64 %8, 1
-  store i64 %nextvar43, i64* %i35
-  %N44 = load i64, i64* @Doors_N
-  %loopcond45 = icmp sle i64 %nextvar43, %N44
-  br i1 %loopcond45, label %loop33, label %afterloop34
+ifcont51:                                         ; preds = %then49, %loop40
+  %8 = load i64, i64* %i44
+  %nextvar52 = add i64 %8, 1
+  store i64 %nextvar52, i64* %i44
+  %N53 = load i64, i64* @Doors_N
+  br i1 true, label %forpos41, label %forneg42
 }

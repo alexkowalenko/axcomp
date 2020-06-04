@@ -9,14 +9,21 @@ entry:
   store i64 0, i64* %x1
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %0 = load i64, i64* %x1
   %nextvar = add i64 %0, 128
   store i64 %nextvar, i64* %x1
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 127
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
+forneg:                                           ; preds = %loop
+  %loopcond2 = icmp sge i64 %nextvar, 127
+  br i1 %loopcond2, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   ret void
 }
 

@@ -18,32 +18,46 @@ entry:
   store i64 65, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   %0 = call i32 @CHR(i64 %i1)
   call void @Out_Char(i32 %0)
   %1 = load i64, i64* %i
   %nextvar = add i64 %1, 1
   store i64 %nextvar, i64* %i
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 90
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
+forneg:                                           ; preds = %loop
+  %loopcond2 = icmp sge i64 %nextvar, 90
+  br i1 %loopcond2, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()
   store i64 97, i64* %c
-  br label %loop2
+  br label %loop3
 
-loop2:                                            ; preds = %loop2, %afterloop
-  %c4 = load i64, i64* %c
-  %2 = call i32 @CHR(i64 %c4)
+loop3:                                            ; preds = %forneg5, %forpos4, %afterloop
+  %c7 = load i64, i64* %c
+  %2 = call i32 @CHR(i64 %c7)
   call void @Out_Char(i32 %2)
   %3 = load i64, i64* %c
-  %nextvar5 = add i64 %3, 1
-  store i64 %nextvar5, i64* %c
-  %loopcond6 = icmp sle i64 %nextvar5, 122
-  br i1 %loopcond6, label %loop2, label %afterloop3
+  %nextvar8 = add i64 %3, 1
+  store i64 %nextvar8, i64* %c
+  br i1 true, label %forpos4, label %forneg5
 
-afterloop3:                                       ; preds = %loop2
+forpos4:                                          ; preds = %loop3
+  %loopcond9 = icmp sle i64 %nextvar8, 122
+  br i1 %loopcond9, label %loop3, label %afterloop6
+
+forneg5:                                          ; preds = %loop3
+  %loopcond10 = icmp sge i64 %nextvar8, 122
+  br i1 %loopcond10, label %loop3, label %afterloop6
+
+afterloop6:                                       ; preds = %forneg5, %forpos4
   call void @Out_Ln()
   ret i64 0
 }

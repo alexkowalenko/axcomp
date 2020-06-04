@@ -694,17 +694,20 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
 
     // do start expr
     ast->start->accept(this);
+    auto *start_value = last_value;
 
     // Make the new basic block for the loop header, inserting after current
     // block.
     auto *      funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
+    BasicBlock *forpos = BasicBlock::Create(context, "forpos", funct);
+    BasicBlock *forneg = BasicBlock::Create(context, "forneg", funct);
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
     last_end = after;
 
     symboltable.push_frame(ast->get_id());
     auto *index = createEntryBlockAlloca(funct, ast->ident->value, TypeTable::IntType->get_llvm());
-    builder.CreateStore(last_value, index);
+    builder.CreateStore(start_value, index);
     symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
     symboltable.set_value(ast->ident->value, index);
 
@@ -732,12 +735,25 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     ast->end->accept(this);
     auto *end_value = last_value;
 
+    // If step positive
+    auto *cond = builder.CreateICmpSGE(step, TypeTable::IntType->get_init());
+    builder.CreateCondBr(cond, forpos, forneg);
+
+    // Step is positive
+    builder.SetInsertPoint(forpos);
     // Convert condition to a bool
     Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
 
     // Insert the conditional branch into the end of Loop.
     builder.CreateCondBr(endCond, loop, after);
-    loop = builder.GetInsertBlock(); // necessary for correct generation of code
+
+    // Step is negative
+    builder.SetInsertPoint(forneg);
+    // Convert condition to a bool
+    endCond = builder.CreateICmpSGE(nextVar, end_value, "loopcond");
+
+    // Insert the conditional branch into the end of Loop.
+    builder.CreateCondBr(endCond, loop, after);
 
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);

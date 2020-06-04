@@ -10,7 +10,7 @@ declare void @Out_Int(i64, i64)
 
 define i64 @output() {
 entry:
-  %i7 = alloca i64
+  %i10 = alloca i64
   %i = alloca i64
   %y = load [7 x i64], [7 x i64]* @len_y
   call void @Out_Int(i64 7, i64 0)
@@ -18,7 +18,7 @@ entry:
   store i64 0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %i1 = load i64, i64* %i
   %i2 = load i64, i64* %i
   %multmp = mul i64 %i1, %i2
@@ -29,27 +29,41 @@ loop:                                             ; preds = %loop, %entry
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
   %y4 = load [7 x i64], [7 x i64]* @len_y
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 6
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
-  store i64 0, i64* %i7
-  br label %loop5
+forneg:                                           ; preds = %loop
+  %loopcond5 = icmp sge i64 %nextvar, 6
+  br i1 %loopcond5, label %loop, label %afterloop
 
-loop5:                                            ; preds = %loop5, %afterloop
-  %y8 = load [7 x i64], [7 x i64]* @len_y
-  %i9 = load i64, i64* %i7
-  %idx10 = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i9
-  %idx11 = load i64, i64* %idx10
-  call void @Out_Int(i64 %idx11, i64 0)
+afterloop:                                        ; preds = %forneg, %forpos
+  store i64 0, i64* %i10
+  br label %loop6
+
+loop6:                                            ; preds = %forneg8, %forpos7, %afterloop
+  %y11 = load [7 x i64], [7 x i64]* @len_y
+  %i12 = load i64, i64* %i10
+  %idx13 = getelementptr [7 x i64], [7 x i64]* @len_y, i64 0, i64 %i12
+  %idx14 = load i64, i64* %idx13
+  call void @Out_Int(i64 %idx14, i64 0)
   call void @Out_Ln()
-  %1 = load i64, i64* %i7
-  %nextvar12 = add i64 %1, 1
-  store i64 %nextvar12, i64* %i7
-  %y13 = load [7 x i64], [7 x i64]* @len_y
-  %loopcond14 = icmp sle i64 %nextvar12, 6
-  br i1 %loopcond14, label %loop5, label %afterloop6
+  %1 = load i64, i64* %i10
+  %nextvar15 = add i64 %1, 1
+  store i64 %nextvar15, i64* %i10
+  %y16 = load [7 x i64], [7 x i64]* @len_y
+  br i1 true, label %forpos7, label %forneg8
 
-afterloop6:                                       ; preds = %loop5
+forpos7:                                          ; preds = %loop6
+  %loopcond17 = icmp sle i64 %nextvar15, 6
+  br i1 %loopcond17, label %loop6, label %afterloop9
+
+forneg8:                                          ; preds = %loop6
+  %loopcond18 = icmp sge i64 %nextvar15, 6
+  br i1 %loopcond18, label %loop6, label %afterloop9
+
+afterloop9:                                       ; preds = %forneg8, %forpos7
   ret i64 0
 }

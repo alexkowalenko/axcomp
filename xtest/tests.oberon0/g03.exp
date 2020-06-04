@@ -17,7 +17,7 @@ entry:
   store i64 0, i64* %i
   br label %loop
 
-loop:                                             ; preds = %loop, %entry
+loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load [3 x i64], [3 x i64]* @g03_x
   %i1 = load i64, i64* %i
   %idx = getelementptr [3 x i64], [3 x i64]* @g03_x, i64 0, i64 %i1
@@ -27,17 +27,24 @@ loop:                                             ; preds = %loop, %entry
   %0 = load i64, i64* %i
   %nextvar = add i64 %0, 1
   store i64 %nextvar, i64* %i
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
   %loopcond = icmp sle i64 %nextvar, 2
   br i1 %loopcond, label %loop, label %afterloop
 
-afterloop:                                        ; preds = %loop
-  %x3 = load [3 x i64], [3 x i64]* @g03_x
-  %idx4 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 0)
-  %x5 = load [3 x i64], [3 x i64]* @g03_x
-  %idx6 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 1)
-  %addtmp = add i64 %idx4, %idx6
-  %x7 = load [3 x i64], [3 x i64]* @g03_x
-  %idx8 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 2)
-  %addtmp9 = add i64 %addtmp, %idx8
-  ret i64 %addtmp9
+forneg:                                           ; preds = %loop
+  %loopcond3 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond3, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
+  %x4 = load [3 x i64], [3 x i64]* @g03_x
+  %idx5 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 0)
+  %x6 = load [3 x i64], [3 x i64]* @g03_x
+  %idx7 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 1)
+  %addtmp = add i64 %idx5, %idx7
+  %x8 = load [3 x i64], [3 x i64]* @g03_x
+  %idx9 = load i64, i64* getelementptr inbounds ([3 x i64], [3 x i64]* @g03_x, i64 0, i64 2)
+  %addtmp10 = add i64 %addtmp, %idx9
+  ret i64 %addtmp10
 }
