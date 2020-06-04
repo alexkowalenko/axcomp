@@ -15,7 +15,9 @@
 #include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
+#include "astvisitor.hh"
 #include "error.hh"
+#include "symbol.hh"
 #include "token.hh"
 #include "type.hh"
 #include "typetable.hh"
@@ -87,7 +89,13 @@ ASTModulePtr Parser::parse_module() {
     // Procedures
     tok = lexer.peek_token();
     while (tok.type == TokenType::procedure) {
-        module->procedures.push_back(parse_procedure());
+        lexer.get_token(); // PROCEDURE
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::caret) {
+            module->procedures.push_back(parse_procedureForward());
+        } else {
+            module->procedures.push_back(parse_procedure());
+        }
         tok = lexer.peek_token();
     }
 
@@ -309,6 +317,26 @@ ASTVarPtr Parser::parse_var() {
     return var;
 }
 
+void Parser::parse_proc(ASTProc &proc) {
+    proc.name = parse_identifier();
+    set_attrs(proc.name);
+
+    // Parameters
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::l_paren) {
+        parse_parameters(proc.params);
+    }
+
+    tok = lexer.peek_token();
+    if (tok.type == TokenType::colon) {
+        // Do return type
+        lexer.get_token();
+        proc.return_type = parse_type();
+    }
+
+    get_token(TokenType::semicolon);
+}
+
 /**
  * @brief "PROCEDURE" IdentDef [formalParameters] [ ":" type ]
  *         declarations ["BEGIN" statement_seq] "END" ident ";"
@@ -319,30 +347,13 @@ ASTProcedurePtr Parser::parse_procedure() {
     debug("Parser::parse_procedure");
     auto proc = makeAST<ASTProcedure>(lexer);
 
-    lexer.get_token(); // PROCEDURE
-    proc->name = parse_identifier();
-    set_attrs(proc->name);
-
-    // Parameters
-    auto tok = lexer.peek_token();
-    if (tok.type == TokenType::l_paren) {
-        parse_parameters(proc->params);
-    }
-
-    tok = lexer.peek_token();
-    if (tok.type == TokenType::colon) {
-        // Do return type
-        lexer.get_token();
-        proc->return_type = parse_type();
-    }
-
-    get_token(TokenType::semicolon);
+    parse_proc(*proc);
 
     // Declarations
     proc->decs = parse_declaration();
 
     // statement_seq
-    tok = lexer.peek_token();
+    auto tok = lexer.peek_token();
     if (tok.type == TokenType::begin) {
         get_token(TokenType::begin);
         parse_statement_block(proc->stats, module_ends);
@@ -357,6 +368,23 @@ ASTProcedurePtr Parser::parse_procedure() {
                              lexer.get_location());
     }
     get_token(TokenType::semicolon);
+
+    // Put into symbol table as a procedure
+    auto forward = std::make_shared<ProcedureFwdType>();
+    symbols.put(proc->name->value, mkSym(forward));
+    return proc;
+}
+
+ASTProcedureForwardPtr Parser::parse_procedureForward() {
+    debug("Parser::parse_procedure");
+    auto proc = makeAST<ASTProcedureForward>(lexer);
+
+    lexer.get_token(); // ^
+    parse_proc(*proc);
+
+    // Put into symbol table as a procedure
+    auto forward = std::make_shared<ProcedureFwdType>();
+    symbols.put(proc->name->value, mkSym(forward));
     return proc;
 }
 
@@ -932,8 +960,11 @@ ASTFactorPtr Parser::parse_factor() {
 
         auto d = parse_designator();
         auto nexttok = lexer.peek_token();
-        debug("factor nexttok: {0}", std::string(nexttok));
-        if (nexttok.type == TokenType::l_paren) {
+        auto res = symbols.find(std::string(*d));
+        debug("Parser::parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok),
+              std::string(*d));
+        if (nexttok.type == TokenType::l_paren || (res && res->type->id == TypeId::procedureFwd)) {
+            debug("Parser::parse_factor call: {0}");
             ast->factor = parse_call(d);
             return ast;
         }

@@ -156,5 +156,5 @@ Oberon;
 
 BEGIN
     Texts.OpenWriter(W);
-    T := Oberon.NewTask(Task, 0)
+    T := Oberon.NewTask(Task(), 0)
 END PCLink1.

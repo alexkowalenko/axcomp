@@ -23,5 +23,5 @@ Oberon;
 
 BEGIN
     z := 0;
-    T := Oberon.NewTask(Tick, 500)
+    T := Oberon.NewTask(Tick(), 500)
 END Blink.

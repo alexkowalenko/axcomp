@@ -215,8 +215,8 @@ void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
     }
 }
 
-void CodeGenerator::doProcedures(std::vector<ASTProcedurePtr> const &procs) {
-    std::for_each(procs.begin(), procs.end(), [this](auto const &x) { x->accept(this); });
+void CodeGenerator::doProcedures(std::vector<ASTProcPtr> const &procs) {
+    std::for_each(procs.begin(), procs.end(), [this](auto const &proc) { proc->accept(this); });
 }
 
 void CodeGenerator::visit_ASTDeclaration(ASTDeclarationPtr ast) {
@@ -293,7 +293,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     if (ast->name->is(Attr::global)) {
         linkage = Function::ExternalLinkage;
     }
-    Function *f = Function::Create(ft, linkage, proc_name, module.get());
+    Function *f = module->getFunction(proc_name);
+    if (!f) {
+        f = Function::Create(ft, linkage, proc_name, module.get());
+    }
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
@@ -345,6 +348,18 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     symboltable.pop_frame();
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
+}
+
+void CodeGenerator::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
+
+    auto  res = symboltable.find(ast->name->value);
+    auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
+
+    auto  proc_name = gen_module_id(ast->name->value);
+    auto *func = Function::Create(funcType, Function::LinkageTypes::InternalLinkage, proc_name,
+                                  module.get());
+    verifyFunction(*func);
+    symboltable.set_value(ast->name->value, func);
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {

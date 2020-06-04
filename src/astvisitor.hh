@@ -23,6 +23,8 @@ class ASTVar;
 using ASTVarPtr = std::shared_ptr<ASTVar>;
 class ASTProcedure;
 using ASTProcedurePtr = std::shared_ptr<ASTProcedure>;
+class ASTProcedureForward;
+using ASTProcedureForwardPtr = std::shared_ptr<ASTProcedureForward>;
 class ASTAssignment;
 using ASTAssignmentPtr = std::shared_ptr<ASTAssignment>;
 class ASTReturn;
@@ -96,6 +98,7 @@ class ASTVisitor {
     virtual void visit_ASTTypeDec(ASTTypeDecPtr ast);
     virtual void visit_ASTVar(ASTVarPtr ast);
     virtual void visit_ASTProcedure(ASTProcedurePtr ast);
+    virtual void visit_ASTProcedureForward(ASTProcedureForwardPtr ast);
 
     virtual void visit_ASTAssignment(ASTAssignmentPtr ast);
     virtual void visit_ASTReturn(ASTReturnPtr ast);

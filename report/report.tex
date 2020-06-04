@@ -664,7 +664,12 @@ ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END.
 DeclarationSequence = {CONST {ConstantDeclaration ";"} 
                     | TYPE {TypeDeclaration ";"} 
                     | VAR {VariableDeclaration ";"}}.
+                    { ProcedureDeclaration ";" | ForwardDeclaration ";"}.
+
+ForwardDeclaration = PROCEDURE "^" IdentDef [FormalParameters].
 \end{lstlisting} 
+
+A forward declaration serves to allow forward references to a procedure whose actual declaration appears later in the text. The formal parameter lists of the forward declaration and the actual declaration must be identical.
 
 \subsection{Formal parameters}
 \label{parameters}
@@ -930,7 +935,7 @@ ImportList = IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
 DeclSeq = { CONST {ConstDecl ";" } 
             | TYPE {TypeDecl ";"} 
             | VAR {VarDecl ";"}} 
-            {ProcDecl ";"}.
+            {ProcDecl ";" | ForwardDecl ";"}.
 
 ConstDecl = IdentDef "=" ConstExpr.
 
@@ -940,6 +945,8 @@ VarDecl = IdentList ":" Type.
 
 ProcDecl = PROCEDURE IdentDef [FormalPars] ";" DeclSeq 
            [BEGIN StatementSeq] END ident.
+
+ForwardDecl = PROCEDURE "^" IdentDef [FormalPars].
 
 FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Type].
 

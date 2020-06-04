@@ -28,6 +28,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTTypeDec(ASTTypeDecPtr ast) override;
     void visit_ASTVar(ASTVarPtr ast) override;
     void visit_ASTProcedure(ASTProcedurePtr ast) override;
+    void visit_ASTProcedureForward(ASTProcedureForwardPtr ast) override;
     void visit_ASTAssignment(ASTAssignmentPtr ast) override;
     void visit_ASTReturn(ASTReturnPtr ast) override;
     void visit_ASTExit(ASTExitPtr ast) override;

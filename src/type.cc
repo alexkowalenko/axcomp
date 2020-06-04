@@ -102,6 +102,22 @@ llvm::Type *ProcedureType::get_llvm() {
     return FunctionType::get(ret->get_llvm(), proto, false);
 }
 
+ProcedureFwdType::operator std::string() {
+    std::string res{"^("};
+    for (auto &t : params) {
+        if (t.second == Attr::var) {
+            res += " VAR ";
+        }
+        res += std::string(*t.first);
+        if (t != *(params.end() - 1)) {
+            res += ",";
+        }
+    }
+    res += "):";
+    res += std::string(*ret);
+    return res;
+}
+
 ArrayType::operator std::string() {
     std::string result = llvm::formatv("{0}[", std::string(*base_type));
     for (auto iter = dimensions.begin(); iter != dimensions.end(); iter++) {

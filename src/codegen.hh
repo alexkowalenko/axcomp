@@ -57,9 +57,11 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTConst(ASTConstPtr ast) override;
     void visit_ASTVar(ASTVarPtr ast) override;
 
-    void doProcedures(std::vector<ASTProcedurePtr> const &procs);
+    void doProcedures(std::vector<ASTProcPtr> const &procs);
 
     void visit_ASTProcedure(ASTProcedurePtr ast) override;
+    void visit_ASTProcedureForward(ASTProcedureForwardPtr ast) override;
+
     void visit_ASTAssignment(ASTAssignmentPtr ast) override;
     void visit_ASTReturn(ASTReturnPtr ast) override;
     void visit_ASTExit(ASTExitPtr ast) override;

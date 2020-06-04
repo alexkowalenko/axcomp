@@ -135,35 +135,34 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
     pointer_types.clear();
 }
 
-void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
-    debug("Inspector::visit_ASTProcedure: {0}", ast->name->value);
-
+std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
     // Check name if not defined;
-    if (auto name_check = symboltable.find(ast->name->value); name_check) {
+    if (auto name_check = symboltable.find(ast.name->value);
+        name_check && name_check->type->id != TypeId::procedureFwd) {
         auto e = TypeError(
-            llvm::formatv("PROCEDURE {0}, identifier is already defined", ast->name->value),
-            ast->get_location());
+            llvm::formatv("PROCEDURE {0}, identifier is already defined", ast.name->value),
+            ast.get_location());
         errors.add(e);
     }
 
     // Check return type
     auto retType = TypeTable::VoidType;
-    if (ast->return_type != nullptr) {
-        ast->return_type->accept(this);
+    if (ast.return_type != nullptr) {
+        ast.return_type->accept(this);
         retType = last_type;
     }
 
     // Check global modifiers
-    if (ast->name->is(Attr::read_only)) {
-        auto e = TypeError(llvm::formatv("PROCEDURE {0} is always read only", ast->name->value),
-                           ast->get_location());
+    if (ast.name->is(Attr::read_only)) {
+        auto e = TypeError(llvm::formatv("PROCEDURE {0} is always read only", ast.name->value),
+                           ast.get_location());
         errors.add(e);
     }
 
     // Check parameter types
     debug("Inspector::visit_ASTProcedure check parameter types");
     ProcedureType::ParamsList argTypes;
-    std::for_each(ast->params.begin(), ast->params.end(), [this, &argTypes](auto const &p) {
+    std::for_each(ast.params.begin(), ast.params.end(), [this, &argTypes](auto const &p) {
         p.second->accept(this); // type
         auto attr = Attr::null;
         if (p.first->is(Attr::var)) {
@@ -171,6 +170,13 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
         }
         argTypes.push_back({last_type, attr});
     });
+    return {retType, argTypes};
+}
+
+void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
+    debug("Inspector::visit_ASTProcedure: {0}", ast->name->value);
+
+    auto [retType, argTypes] = do_proc(*ast);
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
     symboltable.put(ast->name->value, mkSym(proc_type));
@@ -180,7 +186,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     // new symbol table
     symboltable.push_frame(ast->name->value);
     int count = 0;
-    std::for_each(ast->params.begin(), ast->params.end(), [this, &count, argTypes](auto const &p) {
+    for (auto const &p : ast->params) {
         std::visit(
             overloaded{
                 [this](auto arg) { arg->accept(this); }, // lambda arg can't be reference here
@@ -194,7 +200,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
         symboltable.put(p.first->value, mkSym(argTypes[count].first,
                                               p.first->is(Attr::var) ? Attr::var : Attr::null));
         count++;
-    });
+    };
     if (ast->decs) {
         ast->decs->accept(this);
     }
@@ -202,6 +208,16 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
                   [this, ast](auto const &x) { x->accept(this); });
     symboltable.pop_frame();
 }
+
+void Inspector::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
+    debug("Inspector::visit_ASTProcedureForward: {0}", ast->name->value);
+    auto [retType, argTypes] = do_proc(*ast);
+
+    auto proc_type = std::make_shared<ProcedureFwdType>();
+    proc_type->ret = retType;
+    proc_type->params = argTypes;
+    symboltable.put(ast->name->value, mkSym(proc_type));
+};
 
 void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     debug("Inspector::visit_ASTAssignment");

@@ -61,6 +61,8 @@ void ASTVisitor::visit_ASTProcedure(ASTProcedurePtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
 
+void ASTVisitor::visit_ASTProcedureForward(ASTProcedureForwardPtr /*not used*/) {}
+
 void ASTVisitor::visit_ASTAssignment(ASTAssignmentPtr ast) {
     ast->ident->accept(this);
     ast->expr->accept(this);

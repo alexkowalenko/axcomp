@@ -569,15 +569,31 @@ using ASTBlockPtr = std::shared_ptr<ASTBlock>;
 //////////////////////
 // Declaration objects
 
-class ASTProcedure : public ASTBase, public std::enable_shared_from_this<ASTProcedure> {
+class ASTProc : public ASTBase {
+  public:
+    ASTIdentifierPtr    name;
+    ASTTypePtr          return_type{nullptr};
+    std::vector<VarDec> params;
+};
+using ASTProcPtr = std::shared_ptr<ASTProc>;
+
+class ASTProcedureForward : public ASTProc,
+                            public std::enable_shared_from_this<ASTProcedureForward> {
+  public:
+    ~ASTProcedureForward() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTProcedureForward(shared_from_this()); };
+};
+using ASTProcedureForwardPtr = std::shared_ptr<ASTProcedureForward>;
+
+class ASTProcedure : public ASTProc, public std::enable_shared_from_this<ASTProcedure> {
   public:
     ~ASTProcedure() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTProcedure(shared_from_this()); };
+    void accept(ASTVisitor *v) override {
+        v->visit_ASTProcedure(ASTProcedure::shared_from_this());
+    };
 
-    ASTIdentifierPtr             name;
-    ASTTypePtr                   return_type{nullptr};
-    std::vector<VarDec>          params;
     ASTDeclarationPtr            decs;
     std::vector<ASTStatementPtr> stats;
 };
@@ -670,7 +686,7 @@ class ASTModule : public ASTBase, public std::enable_shared_from_this<ASTModule>
     std::string                  name;
     ASTImportPtr                 import;
     ASTDeclarationPtr            decs;
-    std::vector<ASTProcedurePtr> procedures;
+    std::vector<ASTProcPtr>      procedures;
     std::vector<ASTStatementPtr> stats;
 };
 using ASTModulePtr = std::shared_ptr<ASTModule>;

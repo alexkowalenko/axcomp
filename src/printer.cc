@@ -140,6 +140,31 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
     os << indent() << std::string(llvm::formatv("END {0};\n", ast->name->value));
 }
 
+void ASTPrinter::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
+    os << indent() << std::string(llvm::formatv("PROCEDURE ^{0}", ast->name->value))
+       << std::string(ast->name->attrs);
+    if (!ast->params.empty() || ast->return_type != nullptr) {
+        os << "(";
+        std::for_each(ast->params.begin(), ast->params.end(), [this, ast](auto const &p) {
+            if (p.first->is(Attr::var)) {
+                os << "VAR ";
+            }
+            p.first->accept(this);
+            os << " : ";
+            p.second->accept(this);
+            if (p != *(ast->params.end() - 1)) {
+                os << "; ";
+            }
+        });
+        os << ")";
+    }
+    if (ast->return_type != nullptr) {
+        os << ": ";
+        ast->return_type->accept(this);
+    }
+    os << ";\n";
+}
+
 void ASTPrinter::visit_ASTAssignment(ASTAssignmentPtr ast) {
     ast->ident->accept(this);
     os << " := ";

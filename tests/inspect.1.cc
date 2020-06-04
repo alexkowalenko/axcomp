@@ -58,7 +58,7 @@ TEST(Inspector, ProcedureDefined) {
             BEGIN
                 f;
             END alpha.)",
-         "", "5,21: PROCEDURE f, identifier is already defined"},
+         "", "5,23: PROCEDURE f, identifier is already defined"},
 
         {R"(MODULE alpha; (* pointers *)
             VAR f: INTEGER;
@@ -69,7 +69,7 @@ TEST(Inspector, ProcedureDefined) {
             BEGIN
                 f;
             END alpha.)",
-         "", "4,21: PROCEDURE f, identifier is already defined"},
+         "", "4,23: PROCEDURE f, identifier is already defined"},
     };
     do_inspect_tests(tests);
 }
@@ -709,6 +709,29 @@ TEST(Inspector, TypeAssign) {
          "MODULE alpha;\nTYPE\ntime = INTEGER;\nspin = BOOLEAN;\nVAR\nseconds: "
          "time;\norientation: spin;\nBEGIN\nseconds := 0;\norientation := "
          "FALSE;\nRETURN seconds\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+            TYPE I = INTEGER;
+            VAR x : ARRAY 3 OF I;
+            BEGIN
+                x[0] := 1;
+                RETURN x;
+            END alpha.)",
+         "MODULE alpha;\nTYPE\nI = INTEGER;\nVAR\nx: ARRAY 3 OF I;\nBEGIN\nx[0] := 1;\nRETURN "
+         "x\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                TYPE I = INTEGER;
+                VAR pt : RECORD
+                        x,y : I
+                    END;
+                BEGIN
+                    RETURN pt.x + pt.y
+                END alpha.)",
+         "MODULE alpha;\nTYPE\nI = INTEGER;\nVAR\npt: RECORD\nx: I;\ny: I\nEND;\nBEGIN\nRETURN "
+         "pt.x+pt.y\nEND alpha.",
          ""},
 
         // Errors

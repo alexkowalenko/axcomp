@@ -83,7 +83,7 @@ TEST(Inspector, ReadOnly) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "", "7,25: PROCEDURE f is always read only"},
+         "", "7,27: PROCEDURE f is always read only"},
     };
     do_inspect_tests(tests);
 }

@@ -33,6 +33,7 @@ enum class TypeId {
     boolean,
     chr,
     procedure,
+    procedureFwd,
     array,
     string,
     record,
@@ -157,6 +158,14 @@ class ProcedureType : public Type {
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
     ParamsList params{};
+};
+
+class ProcedureFwdType : public ProcedureType {
+  public:
+    explicit ProcedureFwdType() { id = TypeId::procedureFwd; };
+    ~ProcedureFwdType() override = default;
+
+    explicit operator std::string() override;
 };
 
 class ArrayType : public Type {

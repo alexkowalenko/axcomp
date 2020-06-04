@@ -33,8 +33,11 @@ class Parser {
     ASTTypeDecPtr     parse_typedec();
     void              parse_identList(std::vector<ASTIdentifierPtr> &list);
     ASTVarPtr         parse_var();
-    ASTProcedurePtr   parse_procedure();
-    void              parse_parameters(std::vector<VarDec> &params);
+
+    void                   parse_proc(ASTProc &proc);
+    ASTProcedurePtr        parse_procedure();
+    ASTProcedureForwardPtr parse_procedureForward();
+    void                   parse_parameters(std::vector<VarDec> &params);
 
     ASTStatementPtr parse_statement();
     void            parse_statement_block(std::vector<ASTStatementPtr> &stats,
