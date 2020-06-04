@@ -1,6 +1,6 @@
 MODULE len; (* LEN function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR i: INTEGER;
     y : ARRAY 7 OF INTEGER;
 
 BEGIN

@@ -2,6 +2,8 @@
 source_filename = "chr"
 
 @chr_x = internal global i64 0
+@chr_i = internal global i64 0
+@chr_c = internal global i64 0
 
 declare i32 @CHR(i64)
 
@@ -11,7 +13,7 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %i4 = alloca i64
+  %c = alloca i64
   %i = alloca i64
   store i64 65, i64* %i
   br label %loop
@@ -28,18 +30,18 @@ loop:                                             ; preds = %loop, %entry
 
 afterloop:                                        ; preds = %loop
   call void @Out_Ln()
-  store i64 97, i64* %i4
+  store i64 97, i64* %c
   br label %loop2
 
 loop2:                                            ; preds = %loop2, %afterloop
-  %i5 = load i64, i64* %i4
-  %2 = call i32 @CHR(i64 %i5)
+  %c4 = load i64, i64* %c
+  %2 = call i32 @CHR(i64 %c4)
   call void @Out_Char(i32 %2)
-  %3 = load i64, i64* %i4
-  %nextvar6 = add i64 %3, 1
-  store i64 %nextvar6, i64* %i4
-  %loopcond7 = icmp sle i64 %nextvar6, 122
-  br i1 %loopcond7, label %loop2, label %afterloop3
+  %3 = load i64, i64* %c
+  %nextvar5 = add i64 %3, 1
+  store i64 %nextvar5, i64* %c
+  %loopcond6 = icmp sle i64 %nextvar5, 122
+  br i1 %loopcond6, label %loop2, label %afterloop3
 
 afterloop3:                                       ; preds = %loop2
   call void @Out_Ln()

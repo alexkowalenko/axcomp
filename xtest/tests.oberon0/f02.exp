@@ -1,6 +1,8 @@
 ; ModuleID = 'f02'
 source_filename = "f02"
 
+@f02_i = internal global i64 0
+
 declare void @WriteInt(i64)
 
 declare void @WriteLn()

@@ -5,6 +5,7 @@ source_filename = "g10"
 %1 = type { i64, i64 }
 
 @g10_pt = internal global [3 x %0] zeroinitializer
+@g10_i = internal global i64 0
 
 define i64 @output() {
 entry:

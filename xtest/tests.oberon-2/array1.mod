@@ -1,7 +1,7 @@
 MODULE array1; (* Multi-dimension arrays *)
 IMPORT Out;
 VAR x : ARRAY 3, 4 OF INTEGER;
-    sum : INTEGER;
+    sum, i, j : INTEGER;
 BEGIN
     FOR i := 0 TO 2 DO
         FOR j := 0 TO 3 DO

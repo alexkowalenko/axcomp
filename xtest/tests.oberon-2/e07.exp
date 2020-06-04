@@ -2,6 +2,7 @@
 source_filename = "e07"
 
 @e07_x = internal global i64 0
+@e07_i = internal global i64 0
 
 define internal i64 @e07_f() {
 entry:

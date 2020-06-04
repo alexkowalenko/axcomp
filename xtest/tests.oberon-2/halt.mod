@@ -1,6 +1,6 @@
 MODULE halt; (* HALT function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR x, i: INTEGER;
 
 BEGIN
        FOR i := 1 TO 3 DO

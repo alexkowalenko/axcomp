@@ -1,6 +1,6 @@
 MODULE chr2; (* CHR function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR i: INTEGER;
 
 BEGIN
        FOR i := ORD('👾') TO ORD('👾') + 9 DO

@@ -3,6 +3,8 @@ source_filename = "g05"
 
 @g05_a = internal global [3 x [3 x i64]] zeroinitializer
 @g05_sum = internal global i64 0
+@g05_x = internal global i64 0
+@g05_y = internal global i64 0
 
 declare void @WriteInt(i64)
 

@@ -2,6 +2,7 @@
 source_filename = "g03"
 
 @g03_x = internal global [3 x i64] zeroinitializer
+@g03_i = internal global i64 0
 
 declare void @WriteInt(i64)
 

@@ -1,6 +1,6 @@
 MODULE ord; (* ORD function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR i: INTEGER;
 
 BEGIN
        FOR i := 65 TO 90 DO

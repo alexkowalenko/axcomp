@@ -1,7 +1,7 @@
 ; ModuleID = 'ord'
 source_filename = "ord"
 
-@ord_x = internal global i64 0
+@ord_i = internal global i64 0
 
 declare i32 @CHR(i64)
 

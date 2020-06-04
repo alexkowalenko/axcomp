@@ -1,5 +1,5 @@
 MODULE e06; (* FOR statement *)
-VAR x : INTEGER;
+VAR x, i: INTEGER;
 BEGIN
     x := 0;
     FOR i := 0 TO 9 DO

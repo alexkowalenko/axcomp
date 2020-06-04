@@ -3,6 +3,9 @@ source_filename = "array2"
 
 @array2_x = internal global [5 x [4 x [3 x i64]]] zeroinitializer
 @array2_sum = internal global i64 0
+@array2_i = internal global i64 0
+@array2_j = internal global i64 0
+@array2_k = internal global i64 0
 
 declare void @Out_Ln()
 

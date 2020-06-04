@@ -1,6 +1,6 @@
 MODULE e07; (* FOR statement *)
 
-VAR x : INTEGER;
+VAR x, i: INTEGER;
 
 PROCEDURE f : INTEGER;
 BEGIN

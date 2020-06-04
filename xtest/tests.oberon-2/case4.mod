@@ -1,6 +1,7 @@
 MODULE case4; (* CASE *)
 IMPORT Out;
-VAR c : CHAR;
+VAR c: CHAR;
+    i: INTEGER;
 
 BEGIN
     FOR i := 1 TO 4 DO

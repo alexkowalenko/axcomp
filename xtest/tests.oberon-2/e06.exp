@@ -2,6 +2,7 @@
 source_filename = "e06"
 
 @e06_x = internal global i64 0
+@e06_i = internal global i64 0
 
 define i64 @output() {
 entry:

@@ -1,6 +1,7 @@
 MODULE g04; (* Arrays *)
 
-VAR x : ARRAY 3 OF BOOLEAN;
+VAR x: ARRAY 3 OF BOOLEAN;
+    i: INTEGER;
 
 BEGIN
     x[0] := FALSE;

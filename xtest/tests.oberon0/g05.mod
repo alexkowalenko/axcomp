@@ -1,7 +1,7 @@
 MODULE g05; (* Arrays *)
 
 VAR a : ARRAY 3 OF ARRAY 3 OF INTEGER;
-    sum : INTEGER;
+    sum, x, y: INTEGER;
 
 BEGIN
     FOR y := 0 TO 2 DO

@@ -2,6 +2,7 @@
 source_filename = "halt"
 
 @halt_x = internal global i64 0
+@halt_i = internal global i64 0
 
 declare void @HALT(i64)
 

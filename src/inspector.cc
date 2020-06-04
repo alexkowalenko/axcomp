@@ -479,6 +479,21 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
         }
     }
 
+    auto res = symboltable.find(ast->ident->value);
+    if (!res) {
+        auto e = TypeError(llvm::formatv("FOR index variable {0} not defined", ast->ident->value),
+                           ast->get_location());
+        errors.add(e);
+    } else {
+        auto resType = types.resolve(res->type->get_name());
+        if (!resType || !ast->start->get_type()->equiv(*resType)) {
+            auto e =
+                TypeError(llvm::formatv("FOR index variable {0} wrong type", ast->ident->value),
+                          ast->get_location());
+            errors.add(e);
+        }
+    }
+
     // new frame
     symboltable.push_frame(ast->get_id());
     symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));

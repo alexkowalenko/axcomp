@@ -2,6 +2,7 @@
 source_filename = "g04"
 
 @g04_x = internal global [3 x i1] zeroinitializer
+@g04_i = internal global i64 0
 
 declare void @WriteBoolean(i1)
 

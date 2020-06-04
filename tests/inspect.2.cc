@@ -107,8 +107,41 @@ TEST(Inspector, IF) {
     do_inspect_tests(tests);
 }
 
-TEST(Inspector, For) {
+TEST(Inspector, FOR) {
     std::vector<ParseTests> tests = {
+        {R"(MODULE e06;
+            VAR i: INTEGER;
+            BEGIN 
+            FOR i := 0 TO 9 DO
+                RETURN i
+            END;
+            RETURN
+            END e06.)",
+         "MODULE e06;\nVAR\ni: INTEGER;\nBEGIN\nFOR i := 0 TO 9 DO\nRETURN i\nEND;\nRETURN \nEND "
+         "e06.",
+         ""},
+
+        // Errors
+        {R"(MODULE e06;
+            VAR i: INTEGER;
+            BEGIN 
+            FOR i := 0 TO TRUE DO 
+                RETURN i
+            END;
+            RETURN
+            END e06.)",
+         "", "4,15: FOR end expression must be numeric type"},
+
+        {R"(MODULE e06;
+            VAR i: INTEGER;
+            BEGIN 
+            FOR i := FALSE TO TRUE DO 
+                RETURN i
+            END;
+            RETURN
+            END e06.)",
+         "", "4,15: FOR start expression must be numeric type"},
+
         {R"(MODULE e06;
             BEGIN 
             FOR i := 0 TO 9 DO
@@ -116,27 +149,16 @@ TEST(Inspector, For) {
             END;
             RETURN
             END e06.)",
-         "MODULE e06;\nBEGIN\nFOR i := 0 TO 9 DO\nRETURN i\nEND;\nRETURN \nEND "
-         "e06.",
-         ""},
+         "", "3,15: FOR index variable i not defined"},
 
-        // Errors
-        {R"(MODULE e06;
-            BEGIN 
-            FOR i := 0 TO TRUE DO 
-                RETURN i
-            END;
-            RETURN
-            END e06.)",
-         "", "3,15: FOR end expression must be numeric type"},
-        {R"(MODULE e06;
-            BEGIN 
-            FOR i := FALSE TO TRUE DO 
-                RETURN i
-            END;
-            RETURN
-            END e06.)",
-         "", "3,15: FOR start expression must be numeric type"},
+        {R"(MODULE For2;
+            TYPE
+                T = INTEGER;
+            BEGIN
+                FOR T := 1 TO 8 DO
+                END;
+            END For2.)",
+         "", "5,19: FOR index variable T not defined"},
     };
     do_inspect_tests(tests);
 }
@@ -624,6 +646,7 @@ TEST(Inspector, ArrayIndex_Dimension) {
 
         {R"(MODULE alpha;
             VAR tensor : ARRAY 5, 5 OF INTEGER;
+                i,j : INTEGER;
             BEGIN
                 FOR i := 0 TO 4 DO
                     FOR j := 0 TO 4 DO
@@ -632,12 +655,14 @@ TEST(Inspector, ArrayIndex_Dimension) {
                 END
                 RETURN tensor[4, 4]
             END alpha.)",
-         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j := "
-         "0 TO 4 DO\ntensor[i,j] := i*i+j\nEND\nEND;\nRETURN tensor[4,4]\nEND alpha.",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5 OF INTEGER;\ni: INTEGER;\nj: "
+         "INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j := 0 TO 4 DO\ntensor[i,j] := "
+         "i*i+j\nEND\nEND;\nRETURN tensor[4,4]\nEND alpha.",
          ""},
 
         {R"(MODULE alpha;
             VAR tensor : ARRAY 5, 5, 5 OF INTEGER;
+                i,j,k : INTEGER;
             BEGIN
                 FOR i := 0 TO 4 DO
                     FOR j := 0 TO 4 DO
@@ -648,9 +673,9 @@ TEST(Inspector, ArrayIndex_Dimension) {
                 END
                 RETURN tensor[4,4,4]
             END alpha.)",
-         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5, 5 OF INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j "
-         ":= 0 TO 4 DO\nFOR k := 0 TO 4 DO\ntensor[i,j,k] := i*i*i+j*j+k\nEND\nEND\nEND;\nRETURN "
-         "tensor[4,4,4]\nEND alpha.",
+         "MODULE alpha;\nVAR\ntensor: ARRAY 5, 5, 5 OF INTEGER;\ni: INTEGER;\nj: INTEGER;\nk: "
+         "INTEGER;\nBEGIN\nFOR i := 0 TO 4 DO\nFOR j := 0 TO 4 DO\nFOR k := 0 TO 4 "
+         "DO\ntensor[i,j,k] := i*i*i+j*j+k\nEND\nEND\nEND;\nRETURN tensor[4,4,4]\nEND alpha.",
          ""},
 
         // Errors
@@ -890,6 +915,7 @@ TEST(Inspector, RecordArrayProcedure) {
         {R"(MODULE g11; (* Mix ARRAY and RECORD *)
         
             VAR pt : ARRAY 3 OF INTEGER;
+                i: INTEGER;
 
             PROCEDURE identity(a : ARRAY 3 OF INTEGER) : ARRAY 3 OF INTEGER;
             BEGIN
@@ -897,7 +923,7 @@ TEST(Inspector, RecordArrayProcedure) {
             END identity;
 
             PROCEDURE sum(a : ARRAY 3 OF INTEGER) : INTEGER;
-            VAR total : INTEGER;
+            VAR total, i : INTEGER;
             BEGIN
                 FOR i := 0 TO 2 DO
                     total := total + a[i]
@@ -911,11 +937,10 @@ TEST(Inspector, RecordArrayProcedure) {
                 END;
                 RETURN sum(identity(pt))
             END g11.)",
-         "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\nPROCEDURE identity(a : "
-         "ARRAY 3 OF INTEGER): ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND "
-         "identity;\nPROCEDURE sum(a : ARRAY 3 OF INTEGER): "
-         "INTEGER;\nVAR\ntotal: INTEGER;\nBEGIN\nFOR i := 0 TO 2 DO\ntotal := "
-         "total+a[i]\nEND;\nRETURN total\nEND sum;\nBEGIN\nFOR i := 0 TO 2 "
+         "MODULE g11;\nVAR\npt: ARRAY 3 OF INTEGER;\ni: INTEGER;\nPROCEDURE identity(a : ARRAY 3 "
+         "OF INTEGER): ARRAY 3 OF INTEGER;\nBEGIN\nRETURN a\nEND identity;\nPROCEDURE sum(a : "
+         "ARRAY 3 OF INTEGER): INTEGER;\nVAR\ntotal: INTEGER;\ni: INTEGER;\nBEGIN\nFOR i := 0 TO "
+         "2 DO\ntotal := total+a[i]\nEND;\nRETURN total\nEND sum;\nBEGIN\nFOR i := 0 TO 2 "
          "DO\npt[i] := i*i+i+1\nEND;\nRETURN sum(identity(pt))\nEND g11.",
          ""},
 

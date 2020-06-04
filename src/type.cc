@@ -131,26 +131,26 @@ ArrayType::operator std::string() {
 }
 
 llvm::Type *ArrayType::get_llvm() {
-    if (dimensions.size() == 0) {
+    if (dimensions.empty()) {
         return llvm::ArrayType::get(base_type->get_llvm(), 0);
-    } else {
-        llvm::Type *array_type = base_type->get_llvm();
-        for (auto d : dimensions) {
-            array_type = llvm::ArrayType::get(array_type, d);
-        }
-        return array_type;
     }
+
+    llvm::Type *array_type = base_type->get_llvm();
+    for (auto d : dimensions) {
+        array_type = llvm::ArrayType::get(array_type, d);
+    }
+    return array_type;
 }
 
 llvm::Constant *ArrayType::get_init() {
-    if (dimensions.size() == 0) {
+    if (dimensions.empty()) {
         auto const_array = std::vector<Constant *>(0, base_type->get_init());
         return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
-    } else {
-        std::vector<Constant *> const_array =
-            std::vector<Constant *>(dimensions[0], base_type->get_init());
-        return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
     }
+
+    std::vector<Constant *> const_array =
+        std::vector<Constant *>(dimensions[0], base_type->get_init());
+    return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
 }
 
 RecordType::operator std::string() {

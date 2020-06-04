@@ -1,7 +1,7 @@
 ; ModuleID = 'chr2'
 source_filename = "chr2"
 
-@chr2_x = internal global i64 0
+@chr2_i = internal global i64 0
 
 declare i32 @CHR(i64)
 

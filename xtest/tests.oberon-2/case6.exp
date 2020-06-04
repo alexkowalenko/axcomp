@@ -1,6 +1,7 @@
 ; ModuleID = 'case6'
 source_filename = "case6"
 
+@case6_i = internal global i64 0
 @STRING_0 = private global [0 x i32] [i32 120, i32 32, i32 49, i32 0]
 @STRING_1 = private global [0 x i32] [i32 120, i32 32, i32 50, i32 46, i32 46, i32 52, i32 0]
 @STRING_2 = private global [0 x i32] [i32 120, i32 32, i32 53, i32 44, i32 32, i32 56, i32 0]

@@ -170,7 +170,7 @@ class ProcedureFwdType : public ProcedureType {
 
 class ArrayType : public Type {
   public:
-    ArrayType(TypePtr b) : Type(TypeId::array), base_type(std::move(b)){};
+    explicit ArrayType(TypePtr b) : Type(TypeId::array), base_type(std::move(b)){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
@@ -237,8 +237,10 @@ class TypeAlias : public Type {
 
 class PointerType : public Type {
   public:
-    PointerType(std::string r) : Type(TypeId::pointer), ref_name{std::move(r)} {};
-    PointerType(TypePtr r) : Type(TypeId::pointer), reference{r} { ref_name = r->get_name(); };
+    explicit PointerType(std::string r) : Type(TypeId::pointer), ref_name{std::move(r)} {};
+    explicit PointerType(TypePtr const &r) : Type(TypeId::pointer), reference{r} {
+        ref_name = r->get_name();
+    };
 
     ~PointerType() override = default;
 

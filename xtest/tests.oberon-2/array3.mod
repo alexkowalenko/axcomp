@@ -1,7 +1,7 @@
 MODULE array3; (* open arrays *)
 IMPORT Out;
 VAR x : ARRAY OF INTEGER;
-    sum : INTEGER;
+    sum, i: INTEGER;
 BEGIN
     NEW(x, 10);
     FOR i := 0 TO 9 DO

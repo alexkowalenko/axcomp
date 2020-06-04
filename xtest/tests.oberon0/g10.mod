@@ -3,6 +3,7 @@ MODULE g10; (* Mix ARRAY and RECORD *)
 VAR pt : ARRAY 3 OF RECORD
         x, y: INTEGER;
     END;
+    i: INTEGER;
 
 BEGIN
     FOR i := 0 TO 2 DO

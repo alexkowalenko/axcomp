@@ -1,6 +1,7 @@
 MODULE string5; (* STRING type *)
 IMPORT Out;
 VAR   x: STRING;
+   i: INTEGER;
 
 BEGIN
    x := 'Hello';

@@ -1,5 +1,6 @@
 MODULE case6;
 IMPORT Out;
+VAR i: INTEGER;
 
 BEGIN
     FOR i := 1 TO 15 DO

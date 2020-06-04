@@ -1,6 +1,6 @@
 MODULE odd; (* ODD function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR i: INTEGER;
 
 BEGIN
        FOR i := 0 TO 7 DO

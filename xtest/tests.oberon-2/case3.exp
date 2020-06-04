@@ -2,6 +2,7 @@
 source_filename = "case3"
 
 @case3_c = internal global i32 0
+@case3_i = internal global i64 0
 @STRING_0 = private global [0 x i32] [i32 65, i32 0]
 @STRING_1 = private global [0 x i32] [i32 66, i32 0]
 @STRING_2 = private global [0 x i32] [i32 67, i32 0]

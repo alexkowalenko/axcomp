@@ -1,0 +1,27 @@
+; ModuleID = 'For5'
+source_filename = "For5"
+
+define void @For5_Test() {
+entry:
+  %x1 = alloca i64
+  %x = alloca i64
+  store i64 0, i64* %x
+  store i64 127, i64* %x1
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %0 = load i64, i64* %x1
+  %nextvar = add i64 %0, 1
+  store i64 %nextvar, i64* %x1
+  %loopcond = icmp sle i64 %nextvar, 128
+  br i1 %loopcond, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @For5_Test()
+  ret i64 0
+}

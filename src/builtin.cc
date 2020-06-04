@@ -36,7 +36,7 @@ BIFunctor abs = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     if (arg->getType()->isFloatingPointTy()) {
         debug("builtin abs fabs");
         std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
-        auto                      fun =
+        auto *                    fun =
             Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::fabs, type_args);
         return codegen->get_builder().CreateCall(fun, args);
     }

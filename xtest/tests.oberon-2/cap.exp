@@ -1,7 +1,7 @@
 ; ModuleID = 'cap'
 source_filename = "cap"
 
-@cap_x = internal global i64 0
+@cap_i = internal global i64 0
 
 declare i32 @CAP(i32)
 

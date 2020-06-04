@@ -1,6 +1,7 @@
 MODULE g11; (* ARRAY parameters and return values *)
         
-VAR pt : ARRAY 3 OF INTEGER;
+VAR pt: ARRAY 3 OF INTEGER;
+    i: INTEGER;
 
 PROCEDURE identity(a : ARRAY 3 OF INTEGER) : ARRAY 3 OF INTEGER;
 BEGIN
@@ -8,7 +9,7 @@ BEGIN
 END identity;
 
 PROCEDURE sum(a : ARRAY 3 OF INTEGER) : INTEGER;
-VAR total : INTEGER;
+VAR total,i : INTEGER;
 BEGIN
     FOR i := 0 TO 2 DO
         total := total + a[i]

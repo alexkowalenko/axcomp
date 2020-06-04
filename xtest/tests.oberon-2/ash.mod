@@ -1,6 +1,6 @@
 MODULE ash; (* ASH function*)
 IMPORT Out;
-VAR x : INTEGER;
+VAR i, x: INTEGER;
 
 BEGIN
        FOR i := 0 TO 7 DO

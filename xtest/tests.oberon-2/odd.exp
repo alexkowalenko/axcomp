@@ -1,7 +1,7 @@
 ; ModuleID = 'odd'
 source_filename = "odd"
 
-@odd_x = internal global i64 0
+@odd_i = internal global i64 0
 
 declare i1 @ODD(i64)
 

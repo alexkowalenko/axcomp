@@ -498,7 +498,7 @@ IfStatement = IF expression THEN StatementSequence
               END.
 \end{lstlisting} 
 
-If statements specify the conditional execution of guarded statements. The boolean expression preceding a statement is called its guard. The guards are evaluated in sequence of occurrence, until one evaluates to \TRUE, whereafter its associated statement sequence is executed. If no guard is satisfied, the statement sequence following the symbol \ELSE\ is executed, if there is one.
+\IF\ statements specify the conditional execution of guarded statements. The boolean expression preceding a statement is called its guard. The guards are evaluated in sequence of occurrence, until one evaluates to \TRUE, whereafter its associated statement sequence is executed. If no guard is satisfied, the statement sequence following the symbol \ELSE\ is executed, if there is one.
 
 \begin{lstlisting}[style=example]
     IF (ch >= "A") & (ch <= "Z") THEN ReadIdentifier 
@@ -509,7 +509,7 @@ If statements specify the conditional execution of guarded statements. The boole
 
 \subsection{\CASE\ statement}
 
-Case statements specify the selection and execution of a statement sequence according to the value of an expression. 
+\CASE\ statements specify the selection and execution of a statement sequence according to the value of an expression. 
 First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. 
 The case expression must either be of an integer type that includes the types of all case labels, or both the case expression and the case labels must be of type \CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol \ELSE\ is selected, if there is one, otherwise the program is aborted.
 
@@ -538,7 +538,7 @@ END
 
 \subsection{\WHILE\ statements}
 
-While statements specify repetition. If the Boolean expression (guard) yields \TRUE, the statement sequence is executed. The expression evaluation and the statement execution are repeated as long as the Boolean expression yields \TRUE.
+\WHILE\ statements specify repetition. If the Boolean expression (guard) yields \TRUE, the statement sequence is executed. The expression evaluation and the statement execution are repeated as long as the Boolean expression yields \TRUE.
 
 \begin{lstlisting}[style=ebnf]
 WhileStatement = WHILE expression DO StatementSequence END.
@@ -554,7 +554,7 @@ END
 
 \subsection{\REPEAT\ statments}
 
-A repeat statement specifies the repeated execution of a statement sequence until a condition specified by a Boolean expression is satisfied. The statement sequence is executed at least once.
+A \REPEAT\ statement specifies the repeated execution of a statement sequence until a condition specified by a Boolean expression is satisfied. The statement sequence is executed at least once.
 
 \begin{lstlisting}[style=ebnf]
 RepeatStatement = REPEAT StatementSequence UNTIL Expression.
@@ -562,7 +562,7 @@ RepeatStatement = REPEAT StatementSequence UNTIL Expression.
 
 \subsection{\FOR\ statements}
 
-A for statement specifies the repeated execution of a statement sequence for a fixed number of times while a progression of values is assigned to an integer variable called the control variable of the for statement.
+A \FOR\ statement specifies the repeated execution of a statement sequence for a fixed number of times while a progression of values is assigned to an numeric integer or \CHAR\ variable called the control variable of the for statement. The variable should be pre-defined earlier in the program. 
 
 \begin{lstlisting}[style=ebnf]
 ForStatement = FOR ident ":=" Expression TO Expression 
@@ -596,7 +596,7 @@ FOR i := 79 TO 1 BY -1 DO a[i] := a[i-1] END
 
 \subsection{\LOOP\ statements}
 
-A loop statement specifies the repeated execution of a statement sequence. It is terminated upon execution of an exit statement within that sequence (see \ref{return}).
+A \LOOP\ statement specifies the repeated execution of a statement sequence. It is terminated upon execution of an exit statement within that sequence (see \ref{return}).
 
 \begin{lstlisting}[style=example]
 LoopStatement = LOOP StatementSequence END.

@@ -38,8 +38,8 @@ class ASTBase {
     void            set_location(Location const &l) { location = l; };
     Location const &get_location() { return location; };
 
-    TypePtr get_type() const { return type_info; };
-    void    set_type(TypePtr const &t) { type_info = t; }
+    [[nodiscard]] TypePtr get_type() const { return type_info; };
+    void                  set_type(TypePtr const &t) { type_info = t; }
 
     explicit operator std::string();
 

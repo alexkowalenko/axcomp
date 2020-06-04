@@ -230,7 +230,7 @@ void ASTPrinter::visit_ASTCaseElement(ASTCaseElementPtr ast) {
         if (std::holds_alternative<ASTSimpleExprPtr>(e)) {
             std::get<ASTSimpleExprPtr>(e)->accept(this);
         } else if (std::holds_alternative<ASTRangePtr>(e)) {
-            auto casexpr = std::get<ASTRangePtr>(e);
+            auto const &casexpr = std::get<ASTRangePtr>(e);
             casexpr->first->accept(this);
             os << "..";
             casexpr->last->accept(this);
