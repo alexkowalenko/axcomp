@@ -284,7 +284,7 @@ void ASTPrinter::visit_ASTFor(ASTForPtr ast) {
     ast->end->accept(this);
     if (ast->by) {
         os << " BY ";
-        (*ast->by)->accept(this);
+        ast->by->accept(this);
     }
     os << " DO\n";
     print_stats(ast->stats);
@@ -322,7 +322,7 @@ void ASTPrinter::visit_ASTExpr(ASTExprPtr ast) {
     ast->expr->accept(this);
     if (ast->relation) {
         os << std::string(llvm::formatv(" {0} ", string(*ast->relation)));
-        (*ast->relation_expr)->accept(this);
+        ast->relation_expr->accept(this);
     }
 }
 
@@ -410,7 +410,13 @@ void ASTPrinter::visit_ASTArray(ASTArrayPtr ast) {
 }
 
 void ASTPrinter::visit_ASTRecord(ASTRecordPtr ast) {
-    os << "RECORD\n";
+    os << "RECORD";
+    if (ast->base) {
+        os << " (";
+        ast->base->accept(this);
+        os << ')';
+    }
+    os << '\n';
     push();
     std::for_each(begin(ast->fields), end(ast->fields), [this, ast](auto const &s) {
         os << indent();

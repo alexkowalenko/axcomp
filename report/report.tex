@@ -255,7 +255,9 @@ ARRAY OF CHAR
 A record type is a structure consisting of a fixed number of elements of possibly different types. The record type declaration specifies for each element, called field, its type and an identifier which denotes the field. The scope of these field identifiers is the record definition itself, but they are also visible within field designators (see \ref{operands}) referring to elements of record variables.
 
 \begin{lstlisting}[style=ebnf]
-RecordType = RECORD FieldListSequence END.
+RecordType = RECORD  ["("BaseType")"] FieldListSequence END.
+
+BaseType = Qualident
 
 FieldListSequence = FieldList {";" FieldList}.
 
@@ -266,9 +268,27 @@ IdentList = IdentDef {"," IdentDef}.
 
 Examples of record types:
 \begin{lstlisting}[style=example]
-RECORD day, month, year: INTEGER 
+RECORD 
+    day, month, year: INTEGER 
+END
+
+RECORD
+    name, firstname: ARRAY 32 OF CHAR; 
+    age: INTEGER;
+    salary: REAL
 END
 \end{lstlisting}
+
+Record types are extensible, i.e. a record type can be declared as an extension of another record type. In the example:
+
+\begin{lstlisting}[style=example]
+T0 = RECORD x: INTEGER END 
+T1 = RECORD (T0) y: REAL END
+\end{lstlisting}
+
+T1 is a (direct) extension of T0 and T0 is the (direct) base type of T1 (see Appendix \ref{type-rule}). 
+An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. Identifiers declared in the extension must be different from the identifiers declared in its base type(s).
+
 
 \subsection{Pointer types}
 \label{pointers}
@@ -857,6 +877,7 @@ END Strings.
 \appendix
 
 \section{Type Rules}
+\label{type-rule}
 
 \subsection{Numeric Types}
 
@@ -866,7 +887,7 @@ END Strings.
     \item Numeric types: Integer types, Real Types. 
 \end{itemize}
 
-\subsection {Same types}
+\subsection{Same types}
 
 Two variables a and b with types Ta and Tb are of the same type if
 \begin{itemize}
@@ -877,8 +898,18 @@ Two variables a and b with types Ta and Tb are of the same type if
 
 \subsection{Type inclusion}
 
-Numeric types include (the values of) smaller numeric types according to the following hierarchy: \REAL $\supseteq$ \INTEGER.
+Numeric types include (the values of) smaller numeric types according to the following hierarchy: \REAL\ $\supseteq$ \INTEGER.
 
+\subsection{Type extension (base type)}
+Given a type declaration $T_b$ = \RECORD\ ($T_a$) ... \END, $T_b$ is a direct extension of $T_a$, and $T_a$ is a direct base type of $T_b$. 
+
+A type $T_b$ is an extension of a type $T_a$ ($T_a$ is a base type of $T_b$) if
+\begin{itemize}
+    \item $T_a$ and $T_b$ are the same types, or
+    \item $T_b$ is a direct extension of an extension of $T_a$
+\end{itemize}
+
+If $P_a$ = \POINTER\ \TO\ $T_a$ and $P_b$ = \POINTER\ \TO\ $T_b$, $P_b$ is an extension of $P_a$ ($P_a$ is a base type of $P_b$) if $T_b$ is an extension of $T_a$.
 
 \subsection{Assignment compatible}
 
@@ -886,8 +917,8 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
 \begin{itemize}
     \item $T_e$ and $T_v$ are the same type;
     % 2. Te and Tv are numeric types and Tv includes Te;
-    % 3. Te and Tv are record types and Te is an extension of Tv and the dynamic type of v is Tv ;
-    % 4. Te and Tv are pointer types and Te is an extension of Tv;
+    \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
+    \item $T_e$ and $T_v$ are pointer types and $T_e$ is an extension of $T_v$;
     \item  $T_v$ is a pointer % or a procedure type  
     and $e$ is \NIL;
     \item. $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;

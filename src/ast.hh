@@ -211,7 +211,7 @@ class ASTArray : public ASTBase, public std::enable_shared_from_this<ASTArray> {
 using ASTArrayPtr = std::shared_ptr<ASTArray>;
 
 /**
- * @brief "RECORD" fieldList ( ";" fieldList )* "END"
+ * @brief "RECORD" "(" qualident ")" fieldList ( ";" fieldList )* "END"
  *
  */
 
@@ -223,6 +223,7 @@ class ASTRecord : public ASTBase, public std::enable_shared_from_this<ASTRecord>
 
     void accept(ASTVisitor *v) override { v->visit_ASTRecord(shared_from_this()); };
 
+    ASTQualidentPtr     base = nullptr;
     std::vector<VarDec> fields;
 };
 using ASTRecordPtr = std::shared_ptr<ASTRecord>;
@@ -356,9 +357,9 @@ class ASTExpr : public ASTBase, public std::enable_shared_from_this<ASTExpr> {
 
     void accept(ASTVisitor *v) override { v->visit_ASTExpr(shared_from_this()); };
 
-    ASTSimpleExprPtr                expr;
-    std::optional<TokenType>        relation;
-    std::optional<ASTSimpleExprPtr> relation_expr;
+    ASTSimpleExprPtr         expr;
+    std::optional<TokenType> relation;
+    ASTSimpleExprPtr         relation_expr{nullptr};
 };
 using ASTExprPtr = std::shared_ptr<ASTExpr>;
 
@@ -497,7 +498,7 @@ class ASTFor : public ASTStatement, public std::enable_shared_from_this<ASTFor> 
     ASTIdentifierPtr             ident;
     ASTExprPtr                   start;
     ASTExprPtr                   end;
-    std::optional<ASTExprPtr>    by{std::nullopt};
+    ASTExprPtr                   by{nullptr};
     std::vector<ASTStatementPtr> stats;
 
     static int  ids;

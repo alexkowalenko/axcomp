@@ -722,7 +722,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     // Emit the step value.
     Value *step = nullptr;
     if (ast->by) {
-        (*ast->by)->accept(this);
+        ast->by->accept(this);
         step = last_value;
     } else {
         step = TypeTable::IntType->make_value(1);
@@ -741,7 +741,6 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
 
     // Step is positive
     builder.SetInsertPoint(forpos);
-    // Convert condition to a bool
     Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
 
     // Insert the conditional branch into the end of Loop.
@@ -749,7 +748,6 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
 
     // Step is negative
     builder.SetInsertPoint(forneg);
-    // Convert condition to a bool
     endCond = builder.CreateICmpSGE(nextVar, end_value, "loopcond");
 
     // Insert the conditional branch into the end of Loop.
@@ -870,7 +868,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
 
     if (ast->relation) {
         auto *L = last_value;
-        (*ast->relation_expr)->accept(this);
+        ast->relation_expr->accept(this);
         auto *R = last_value;
         if (L->getType() == TypeTable::StrType->get_llvm() &&
             R->getType() == TypeTable::StrType->get_llvm()) {
@@ -899,7 +897,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             default:;
             }
         } else if (ast->expr->get_type()->id == TypeId::pointer &&
-                   (*ast->relation_expr)->get_type()->id == TypeId::null) {
+                   ast->relation_expr->get_type()->id == TypeId::null) {
             R = builder.CreateBitCast(R, L->getType());
             switch (*ast->relation) {
             case TokenType::equals:

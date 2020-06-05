@@ -1,0 +1,81 @@
+; ModuleID = 'record01'
+source_filename = "record01"
+
+%pt3 = type { i64, i64, i64 }
+%pt3.0 = type { i64, i64, i64 }
+%pt = type { i64, i64 }
+%pt.1 = type { i64, i64 }
+
+@record01_a = internal global %pt3 zeroinitializer
+@record01_b = internal global %pt zeroinitializer
+@STRING_0 = private global [0 x i32] [i32 97, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
+@STRING_1 = private global [0 x i32] [i32 98, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
+@STRING_2 = private global [0 x i32] [i32 115, i32 117, i32 109, i32 32, i32 97, i32 32, i32 61, i32 32, i32 0]
+@STRING_3 = private global [0 x i32] [i32 115, i32 117, i32 109, i32 32, i32 98, i32 32, i32 61, i32 32, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_Char(i32)
+
+declare void @Out_String([0 x i32]*)
+
+define i64 @output() {
+entry:
+  store i64 1, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
+  store i64 2, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 1)
+  store i64 3, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 2)
+  %a = load %pt3, %pt3* @record01_a
+  %idx = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
+  store i64 %idx, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 0)
+  %a1 = load %pt3, %pt3* @record01_a
+  %idx2 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 1)
+  store i64 %idx2, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 1)
+  call void @Out_String([0 x i32]* @STRING_0)
+  %a3 = load %pt3, %pt3* @record01_a
+  %idx4 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
+  call void @Out_Int(i64 %idx4, i64 0)
+  call void @Out_Char(i32 44)
+  %a5 = load %pt3, %pt3* @record01_a
+  %idx6 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 1)
+  call void @Out_Int(i64 %idx6, i64 0)
+  call void @Out_Char(i32 44)
+  %a7 = load %pt3, %pt3* @record01_a
+  %idx8 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 2)
+  call void @Out_Int(i64 %idx8, i64 0)
+  call void @Out_Char(i32 125)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* @STRING_1)
+  %b = load %pt, %pt* @record01_b
+  %idx9 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 0)
+  call void @Out_Int(i64 %idx9, i64 0)
+  call void @Out_Char(i32 44)
+  %b10 = load %pt, %pt* @record01_b
+  %idx11 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 1)
+  call void @Out_Int(i64 %idx11, i64 0)
+  call void @Out_Char(i32 125)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* @STRING_2)
+  %a12 = load %pt3, %pt3* @record01_a
+  %idx13 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
+  %a14 = load %pt3, %pt3* @record01_a
+  %idx15 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 1)
+  %addtmp = add i64 %idx13, %idx15
+  %a16 = load %pt3, %pt3* @record01_a
+  %idx17 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 2)
+  %addtmp18 = add i64 %addtmp, %idx17
+  call void @Out_Int(i64 %addtmp18, i64 0)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* @STRING_3)
+  %b19 = load %pt, %pt* @record01_b
+  %idx20 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 0)
+  %b21 = load %pt, %pt* @record01_b
+  %idx22 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 1)
+  %addtmp23 = add i64 %idx20, %idx22
+  call void @Out_Int(i64 %addtmp23, i64 0)
+  call void @Out_Ln()
+  %a24 = load %pt3, %pt3* @record01_a
+  %idx25 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
+  ret i64 %idx25
+}

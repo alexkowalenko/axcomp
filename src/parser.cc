@@ -846,7 +846,7 @@ ASTExprPtr Parser::parse_expr() {
     if (relationOps.find(tok.type) != relationOps.end()) {
         lexer.get_token(); // get token;
         ast->relation = std::optional<TokenType>(tok.type);
-        ast->relation_expr = std::optional<ASTSimpleExprPtr>(parse_simpleexpr());
+        ast->relation_expr = parse_simpleexpr();
     }
     return ast;
 }
@@ -1084,7 +1084,7 @@ ASTArrayPtr Parser::parse_array() {
 }
 
 /**
- * @brief "RECORD" fieldList ( ";" fieldList )* "END"
+ * @brief "RECORD" "(" qualident ")" fieldList ( ";" fieldList )* "END"
  *
  * @return ASTRecordPtr
  */
@@ -1094,6 +1094,12 @@ ASTRecordPtr Parser::parse_record() {
 
     get_token(TokenType::record);
     auto tok = lexer.peek_token();
+    if (tok.type == TokenType::l_paren) {
+        lexer.get_token();
+        ast->base = parse_qualident();
+        get_token(TokenType::r_paren);
+        tok = lexer.peek_token();
+    }
     while (tok.type == TokenType::ident) {
         std::vector<ASTIdentifierPtr> ids;
         parse_identList(ids);

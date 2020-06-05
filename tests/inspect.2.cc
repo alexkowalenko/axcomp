@@ -737,6 +737,52 @@ TEST(Inspector, Record) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, RecordBase) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE pt = RECORD
+                        x: INTEGER;
+                        y: INTEGER
+                    END;
+                    pt3 = RECORD (pt)
+                        z: INTEGER;
+                    END; 
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD (pt)\nz: "
+         "INTEGER\nEND;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                TYPE pt3 = RECORD (pt)
+                        z: INTEGER;
+                    END; 
+                END alpha.)",
+         "", "2,38: undefined identifier pt"},
+
+        {R"(MODULE alpha;
+                TYPE pt3 = RECORD (INTEGER)
+                        z: INTEGER;
+                    END; 
+                END alpha.)",
+         "", "2,35: RECORD base type INTEGER is not a record"},
+
+        {R"(MODULE alpha;
+                TYPE pt = RECORD
+                        x: INTEGER;
+                        y: INTEGER
+                    END;
+                    pt3 = RECORD (pt)
+                        x: INTEGER;
+                    END; 
+                END alpha.)",
+         "", "7,25: RECORD already has field x"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, RecordFields) {
     std::vector<ParseTests> tests = {
 
@@ -785,6 +831,22 @@ TEST(Inspector, RecordFields) {
          "MODULE alpha;\nVAR\npt: RECORD\nx: INTEGER;\ny: INTEGER;\nz: RECORD\nx: INTEGER;\ny: "
          "INTEGER\nEND\nEND;\nBEGIN\npt.x := 1;\npt.y := 2;\npt.z.x := 1;\npt.z.y := 1;\nRETURN "
          "pt.z.x*pt.z.y\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha;
+                TYPE pt = RECORD
+                        x: INTEGER;
+                        y: INTEGER
+                    END;
+                    pt3 = RECORD (pt)
+                        z: INTEGER;
+                    END;
+                VAR a : pt3;
+                BEGIN
+                    RETURN a.x;
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD (pt)\nz: "
+         "INTEGER\nEND;\nVAR\na: pt3;\nBEGIN\nRETURN a.x\nEND alpha.",
          ""},
 
         // Errors
@@ -850,6 +912,20 @@ TEST(Inspector, RecordFields) {
                     RETURN 0
                 END alpha.)",
          "", "10,24: undefined identifier gt"},
+
+        {R"(MODULE alpha;
+                TYPE pt = RECORD
+                        x: INTEGER;
+                        y: INTEGER
+                    END;
+                    pt3 = RECORD (pt)
+                        z: INTEGER;
+                    END;
+                VAR a : pt3;
+                BEGIN
+                    RETURN a.d;
+                END alpha.)",
+         "", "11,28: no field <d> in RECORD"},
     };
     do_inspect_tests(tests);
 }

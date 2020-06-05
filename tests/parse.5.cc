@@ -314,6 +314,34 @@ TEST(Parser, RECORD) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, RecordBase) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha;
+                TYPE pt = RECORD
+                        x: INTEGER;
+                        y: INTEGER
+                    END;
+                    pt3 = RECORD (pt)
+                        z: INTEGER;
+                    END; 
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD (pt)\nz: "
+         "INTEGER\nEND;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha;
+                    pt3 = RECORD pt
+                        z: INTEGER;
+                    END; 
+                END alpha.)",
+         "", "2,23: Unexpected token: pt3 - expecting END"},
+
+    };
+    do_parse_tests(tests);
+}
+
 TEST(Parser, RecordFields) {
     std::vector<ParseTests> tests = {
 

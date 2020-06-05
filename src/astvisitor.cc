@@ -104,7 +104,7 @@ void ASTVisitor::visit_ASTFor(ASTForPtr ast) {
     ast->start->accept(this);
     ast->end->accept(this);
     if (ast->by) {
-        (*ast->by)->accept(this);
+        ast->by->accept(this);
     }
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
 }
@@ -129,8 +129,8 @@ void ASTVisitor::visit_ASTBlock(ASTBlockPtr ast) {
 
 void ASTVisitor::visit_ASTExpr(ASTExprPtr ast) {
     ast->expr->accept(this);
-    if (*ast->relation_expr) {
-        (*ast->relation_expr)->accept(this);
+    if (ast->relation_expr) {
+        ast->relation_expr->accept(this);
     }
 }
 

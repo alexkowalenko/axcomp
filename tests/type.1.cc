@@ -83,3 +83,28 @@ TEST(Type, ResolveArrays) {
     auto t1 = std::make_shared<ArrayType>(TypeTable::IntType);
     // EXPECT_EQ(types.resolve("I[]"), t1);
 }
+
+TEST(Type, Records) {
+    TypeTable types;
+    types.initialise();
+
+    auto rec_type = std::make_shared<ax::RecordType>();
+    rec_type->insert("a", TypeTable::IntType);
+    rec_type->insert("b", TypeTable::IntType);
+
+    EXPECT_EQ(rec_type->get_index("a"), 0);
+    EXPECT_EQ(rec_type->get_index("b"), 1);
+    EXPECT_EQ(rec_type->get_index("x"), -1);
+
+    auto rec1 = std::make_shared<ax::RecordType>();
+    rec1->insert("x", TypeTable::IntType);
+    rec1->insert("y", TypeTable::IntType);
+
+    auto rec2 = std::make_shared<ax::RecordType>();
+    rec2->set_baseType(rec1);
+    rec2->insert("z", TypeTable::IntType);
+
+    EXPECT_EQ(rec2->get_index("x"), 0);
+    EXPECT_EQ(rec2->get_index("y"), 1);
+    EXPECT_EQ(rec2->get_index("z"), 2);
+}

@@ -472,7 +472,7 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
         errors.add(e);
     }
     if (ast->by) {
-        (*ast->by)->accept(this);
+        ast->by->accept(this);
         if (!last_type->is_numeric()) {
             auto e = TypeError("FOR BY expression must be numeric type", ast->get_location());
             errors.add(e);
@@ -535,7 +535,7 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
     if (ast->relation) {
         is_lvalue = false;
         auto t1 = last_type;
-        (*ast->relation_expr)->accept(this);
+        ast->relation_expr->accept(this);
         auto result_type = types.check(*ast->relation, t1, last_type);
         if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
@@ -818,7 +818,28 @@ void Inspector::visit_ASTArray(ASTArrayPtr ast) {
 
 void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
     debug("Inspector::visit_ASTRecord");
+
     auto rec_type = std::make_shared<ax::RecordType>();
+    if (ast->base) {
+        ast->base->accept(this);
+        auto baseType_name = std::string(*ast->base);
+        debug("Inspector::visit_ASTRecord base {0}", baseType_name);
+        auto baseType = types.resolve(baseType_name);
+        if (!baseType) {
+            auto e = TypeError(llvm::formatv("RECORD base type {0} not found", baseType_name),
+                               ast->base->get_location());
+            errors.add(e);
+        } else if ((*baseType)->id != TypeId::record) {
+            auto e =
+                TypeError(llvm::formatv("RECORD base type {0} is not a record", baseType_name),
+                          ast->base->get_location());
+            errors.add(e);
+        } else {
+            auto base_rec = std::dynamic_pointer_cast<RecordType>(*baseType);
+            rec_type->set_baseType(base_rec);
+        }
+    }
+
     std::for_each(begin(ast->fields), end(ast->fields), [this, rec_type, ast](auto const &v) {
         // check types
         v.second->accept(this);
@@ -828,8 +849,9 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
             auto e = TypeError(llvm::formatv("RECORD already has field {0}", v.first->value),
                                v.first->get_location());
             errors.add(e);
+        } else {
+            rec_type->insert(v.first->value, last_type);
         }
-        rec_type->insert(v.first->value, last_type);
     });
     last_type = rec_type;
     ast->set_type(last_type);

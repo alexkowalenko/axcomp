@@ -1,0 +1,51 @@
+; ModuleID = 'Record1'
+source_filename = "Record1"
+
+%R = type { i64, i64 }
+%R.0 = type { i64, i64 }
+
+@Record1_r = internal global %R zeroinitializer
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define internal void @Record1_Set(i64 %a, i64 %b) {
+entry:
+  %b2 = alloca i64
+  %a1 = alloca i64
+  store i64 %a, i64* %a1
+  store i64 %b, i64* %b2
+  %a3 = load i64, i64* %a1
+  store i64 %a3, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 0)
+  %b4 = load i64, i64* %b2
+  store i64 %b4, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 1)
+  ret void
+}
+
+define void @Record1_Test() {
+entry:
+  call void @Record1_Set(i64 1, i64 2)
+  %r = load %R, %R* @Record1_r
+  %idx = load i64, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 0)
+  call void @Out_Int(i64 %idx, i64 2)
+  %r1 = load %R, %R* @Record1_r
+  %idx2 = load i64, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 1)
+  call void @Out_Int(i64 %idx2, i64 2)
+  call void @Out_Ln()
+  call void @Record1_Set(i64 3, i64 4)
+  %r3 = load %R, %R* @Record1_r
+  %idx4 = load i64, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 0)
+  call void @Out_Int(i64 %idx4, i64 2)
+  %r5 = load %R, %R* @Record1_r
+  %idx6 = load i64, i64* getelementptr inbounds (%R, %R* @Record1_r, i64 0, i32 1)
+  call void @Out_Int(i64 %idx6, i64 2)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Record1_Test()
+  ret i64 0
+}

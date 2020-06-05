@@ -200,11 +200,19 @@ class RecordType : public Type {
 
     explicit operator std::string() override;
 
+    std::vector<llvm::Type *>     get_fieldTypes();
+    std::vector<llvm::Constant *> get_fieldInit();
+
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    void                   insert(std::string const &field, TypePtr type);
-    bool                   has_field(std::string const &field);
+    void insert(std::string const &field, TypePtr type);
+    bool has_field(std::string const &field);
+    int  count() { return index.size(); };
+
+    void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
+    std::shared_ptr<RecordType> baseType() { return base; };
+
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
 
@@ -214,9 +222,10 @@ class RecordType : public Type {
     std::string get_identified() { return identified; };
 
   private:
-    std::string              identified{}; // identified records
-    llvm::StringMap<TypePtr> fields;
-    std::vector<std::string> index;
+    std::string                 identified{}; // identified records
+    std::shared_ptr<RecordType> base{nullptr};
+    llvm::StringMap<TypePtr>    fields;
+    std::vector<std::string>    index;
 };
 
 class TypeAlias : public Type {
