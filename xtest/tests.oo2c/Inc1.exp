@@ -1,0 +1,29 @@
+; ModuleID = 'Inc1'
+source_filename = "Inc1"
+
+@Inc1_x = internal global i64 0
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define void @Inc1_Test() {
+entry:
+  store i64 1, i64* @Inc1_x
+  %x = load i64, i64* @Inc1_x
+  call void @Out_Int(i64 %x, i64 2)
+  call void @Out_Ln()
+  %0 = load i64, i64* @Inc1_x
+  %inc = add i64 %0, 1
+  store i64 %inc, i64* @Inc1_x
+  %x1 = load i64, i64* @Inc1_x
+  call void @Out_Int(i64 %x1, i64 2)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Inc1_Test()
+  ret i64 0
+}

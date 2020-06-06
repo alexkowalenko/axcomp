@@ -1,0 +1,18 @@
+; ModuleID = 'Short2'
+source_filename = "Short2"
+
+define void @Short2_Test() {
+entry:
+  %i8 = alloca i64
+  store i64 0, i64* %i8
+  store i64 1, i64* %i8
+  %i81 = load i64, i64* %i8
+  store i64 %i81, i64* %i8
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Short2_Test()
+  ret i64 0
+}

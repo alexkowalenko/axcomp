@@ -115,19 +115,42 @@ BIFunctor max = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return (*type)->max();
 };
 
+std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallPtr ast,
+                                                std::string const &name) {
+    debug("builtin INC/DEC");
+    auto  args = codegen->do_arguments(ast);
+    auto *arg = args[0];
+    if (arg->getType()->isPointerTy() && arg->getType()->getPointerElementType()->isIntegerTy()) {
+        debug("builtin INC/DEC 2");
+        Value *val = codegen->get_builder().CreateLoad(arg);
+        Value *inc;
+        if (args.size() == 1) {
+            inc = TypeTable::IntType->make_value(1);
+        } else {
+            if (args[1]->getType()->isIntegerTy()) {
+                inc = args[1];
+            } else {
+                throw CodeGenException(llvm::formatv("Type {0} passed to INC as increment",
+                                                     ast->args[1]->get_type()->get_name()),
+                                       ast->get_location());
+            }
+        }
+        return {arg, val, inc};
+    }
+    throw CodeGenException(
+        llvm::formatv("Type {0} passed to {1}", ast->args[0]->get_type()->get_name(), name),
+        ast->get_location());
+}
+
 BIFunctor inc = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    auto   args = codegen->do_arguments(ast);
-    auto * arg = args[0];
-    Value *val = codegen->get_builder().CreateLoad(arg);
-    val = codegen->get_builder().CreateAdd(val, TypeTable::IntType->make_value(1), "inc");
+    auto [arg, val, inc] = do_incdec(codegen, ast, "INC");
+    val = codegen->get_builder().CreateAdd(val, inc, "inc");
     return codegen->get_builder().CreateStore(val, arg);
 };
 
 BIFunctor dec = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    auto   args = codegen->do_arguments(ast);
-    auto * arg = args[0];
-    Value *val = codegen->get_builder().CreateLoad(arg);
-    val = codegen->get_builder().CreateSub(val, TypeTable::IntType->make_value(1), "dec");
+    auto [arg, val, inc] = do_incdec(codegen, ast, "DEC");
+    val = codegen->get_builder().CreateSub(val, inc, "dec");
     return codegen->get_builder().CreateStore(val, arg);
 };
 
@@ -170,6 +193,17 @@ BIFunctor assert = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return val;
 };
 
+BIFunctor long_func = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto  args = codegen->do_arguments(ast);
+    auto *arg = args[0];
+    if (arg->getType()->isIntegerTy() || arg->getType()->isFloatingPointTy()) {
+        return args[0];
+    }
+    throw CodeGenException(
+        llvm::formatv("Type {0} passed to LONG", ast->args[0]->get_type()->get_name()),
+        ast->get_location());
+};
+
 void Builtin::initialise(SymbolFrameTable &symbols) {
 
     global_functions = {
@@ -209,12 +243,22 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
         {"INC", Symbol{std::make_shared<ProcedureType>(
                            TypeTable::VoidType,
-                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::var}}),
+                           ProcedureType::ParamsList{{TypeTable::AnyType, Attr::var}}),
                        Attr::compile_function}},
         {"DEC", Symbol{std::make_shared<ProcedureType>(
                            TypeTable::VoidType,
-                           ProcedureType::ParamsList{{TypeTable::IntType, Attr::var}}),
+                           ProcedureType::ParamsList{{TypeTable::AnyType, Attr::var}}),
                        Attr::compile_function}},
+
+        {"LONG", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::AnyType,
+                            ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                        Attr::compile_function}},
+
+        {"SHORT", Symbol{std::make_shared<ProcedureType>(
+                             TypeTable::AnyType,
+                             ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
+                         Attr::compile_function}},
 
         // CHARs
         {"CAP", Symbol{std::make_shared<ProcedureType>(
@@ -307,6 +351,8 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("FLT", flt);
     compile_functions.try_emplace("NEW", newfunct);
     compile_functions.try_emplace("ASSERT", assert);
+    compile_functions.try_emplace("LONG", long_func);
+    compile_functions.try_emplace("SHORT", long_func);
 }
 
 } // namespace ax

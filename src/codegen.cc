@@ -439,7 +439,8 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
 
             // Check for STRING1 to CHAR conversion
             do_strchar_conv = a->get_type()->id == TypeId::str1 &&
-                              typeFunction->params[i].first->id == TypeId::chr;
+                              (typeFunction->params[i].first &&
+                               typeFunction->params[i].first->id == TypeId::chr);
             a->accept(this);
         }
         args.push_back(last_value);

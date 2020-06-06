@@ -1,0 +1,32 @@
+; ModuleID = 'Long1'
+source_filename = "Long1"
+
+define void @Long1_Test() {
+entry:
+  %r32 = alloca double
+  %r64 = alloca double
+  %i32 = alloca i64
+  %i16 = alloca i64
+  %i8 = alloca i64
+  store i64 0, i64* %i8
+  store i64 0, i64* %i16
+  store i64 0, i64* %i32
+  store double 0.000000e+00, double* %r64
+  store double 0.000000e+00, double* %r32
+  store i64 1, i64* %i8
+  %i81 = load i64, i64* %i8
+  store i64 %i81, i64* %i16
+  %i162 = load i64, i64* %i16
+  store i64 %i162, i64* %i32
+  store double 1.000000e+00, double* %r32
+  %r323 = load double, double* %r32
+  store double %r323, double* %r64
+  store i64 9223372036854775807, i64* %i32
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Long1_Test()
+  ret i64 0
+}

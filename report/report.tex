@@ -738,11 +738,15 @@ Function procedures:
     \FLOOR(x) & \REAL & \INTEGER & round down \\ % Runtime
     \FLT(x) & \INTEGER & \REAL & identity \\ % Runtime
     \LEN(v) & \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
+    \LONG(x) & any integer type & \INTEGER & identity \\% Compile time
+        & any real type & \REAL &  \\% Compile time
     \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
     \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
     \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
     \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
     \SIZE(T) & T or v & \INTEGER & size of type T or variable v \\ % Compiletime
+    \SHORT(x) & any integer type & \INTEGER & identity \\% Compile time
+        & any real type & \REAL &  \\% Compile time
     \hline
 \end{tabular}
 \vspace{5mm}
@@ -757,10 +761,10 @@ Proper procedures:
     \ASSERT(x, n) & x: \BOOLEAN, n: \INTEGER & terminate if not x, return n to the OS. \\
     \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
     \DEC(v) & integer type & v := v - 1 \\ % Runtime
- %  \DEC(v, n) & integer type & v := v - n \\ % Runtime
+    \DEC(v, n) & v, n: integer type & v := v - n \\ % Runtime
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
     \INC(v) & integer type & v := v + 1 \\  % Runtime
- %  \INC(v, n) & integer type & v := v + n \\  % Runtime
+    \INC(v, n) & v, n: integer type & v := v + n \\  % Runtime
     \NEW(v) & pointer to record or array type & allocate v\^{} \\  % Runtime
     \NEW(v, $x_0$, ... $x_n$) & v: pointer to open array, $x_i$: integer type & allocate v with lengths $x_0$, ... $x_n$ \\
     \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
