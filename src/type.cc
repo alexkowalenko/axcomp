@@ -9,6 +9,7 @@
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <memory>
 
 #include "utf8.h"
 
@@ -28,8 +29,34 @@ std::string string(TypeId const t) {
     return mapping[t];
 }
 
-bool Type::equiv(TypePtr const &t) const {
-    return id == t->id;
+bool Type::equiv(TypePtr const &t) {
+    if (id != t->id) {
+        return false;
+    }
+    if (id == TypeId::record) {
+        auto *rthis = dynamic_cast<RecordType *>(this);
+        return rthis->equiv(std::dynamic_pointer_cast<RecordType>(t)) || rthis->is_base(t);
+    }
+    if (id == TypeId::pointer) {
+        auto *pthis = dynamic_cast<PointerType *>(this);
+        auto  pt = std::dynamic_pointer_cast<PointerType>(t);
+        if (pthis->get_reference()->id == TypeId::record &&
+            pt->get_reference()->id == TypeId::record) {
+            auto pthisr = std::dynamic_pointer_cast<RecordType>(pthis->get_reference());
+            auto ptr = std::dynamic_pointer_cast<RecordType>(pt->get_reference());
+            if (pthisr->is_base(ptr)) {
+                return true;
+            }
+            if (pthisr->equiv(ptr)) {
+                return true;
+            }
+            return false;
+        }
+        if (pthis->get_reference()->equiv(pt)) {
+            return true;
+        }
+    }
+    return true;
 }
 
 llvm::Value *Type::min() {
@@ -252,6 +279,32 @@ int RecordType::get_index(std::string const &field) {
         return -1;
     }
     return base_count + std::distance(cbegin(index), it);
+}
+
+bool RecordType::is_base(TypePtr t) {
+    if (!t || !base) {
+        return false;
+    }
+    if (t->id != TypeId::record) {
+        return false;
+    }
+    return t->equiv(base);
+}
+
+bool RecordType::equiv(std::shared_ptr<RecordType> r) {
+
+    if ((base != nullptr) != (r->base != nullptr)) { // xor
+        return false;
+    }
+    if (fields.size() != r->fields.size()) {
+        return false;
+    }
+    for (int i = 0; i < fields.size(); i++) {
+        if (!fields[index[i]]->equiv(r->fields[r->index[i]])) {
+            return false;
+        }
+    }
+    return true;
 }
 
 llvm::Type *PointerType::get_llvm() {

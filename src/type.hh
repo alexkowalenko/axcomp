@@ -55,7 +55,7 @@ class Type {
 
     TypeId id = TypeId::null;
 
-    [[nodiscard]] bool equiv(TypePtr const &t) const;
+    [[nodiscard]] bool equiv(TypePtr const &t);
 
     virtual explicit operator std::string() = 0;
 
@@ -212,6 +212,7 @@ class RecordType : public Type {
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
+    bool                        is_base(TypePtr);
 
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
@@ -220,6 +221,8 @@ class RecordType : public Type {
 
     void        set_identified(std::string const &s) { identified = s; };
     std::string get_identified() { return identified; };
+
+    bool equiv(std::shared_ptr<RecordType> r);
 
   private:
     std::string                 identified{}; // identified records

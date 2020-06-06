@@ -107,4 +107,21 @@ TEST(Type, Records) {
     EXPECT_EQ(rec2->get_index("x"), 0);
     EXPECT_EQ(rec2->get_index("y"), 1);
     EXPECT_EQ(rec2->get_index("z"), 2);
+
+    EXPECT_EQ(rec2->is_base(rec1), true);
+    EXPECT_EQ(rec1->is_base(rec2), false);
+
+    EXPECT_EQ(rec1->equiv(rec1), true);
+    EXPECT_EQ(rec2->equiv(rec2), true);
+    EXPECT_EQ(rec2->equiv(rec1), false);
+    EXPECT_EQ(rec1->equiv(rec2), false);
+
+    // Pointers to RECORD
+    TypePtr pr1 = std::make_shared<PointerType>(rec1);
+    TypePtr pr2 = std::make_shared<PointerType>(rec2);
+
+    EXPECT_EQ(pr1->equiv(pr1), true);
+    EXPECT_EQ(pr2->equiv(pr2), true);
+    EXPECT_EQ(pr1->equiv(pr2), false);
+    EXPECT_EQ(pr2->equiv(pr1), true);
 }

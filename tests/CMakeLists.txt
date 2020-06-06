@@ -58,6 +58,7 @@ package_add_test(inspect.1 inspect.1.cc)
 package_add_test(inspect.2 inspect.2.cc)
 package_add_test(inspect.3 inspect.3.cc)
 package_add_test(inspect.4 inspect.4.cc)
+package_add_test(inspect.5 inspect.5.cc)
 
 package_add_test(definition.1 definition.cc)
 
