@@ -121,6 +121,7 @@ class CodeGenerator : ASTVisitor {
     Value *     last_value{nullptr}; // holds last value of compilation
     BasicBlock *last_end{nullptr};   // last end block in loop, used for EXIT
     bool        has_return{false};
+    bool        do_strchar_conv{false}; // Convert STRING1 to CHAR
 
     int                               string_const{0}; // const_strings counter
     llvm::StringMap<GlobalVariable *> global_strings;

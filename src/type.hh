@@ -36,6 +36,7 @@ enum class TypeId {
     procedureFwd,
     array,
     string,
+    str1, // One char STRING which can be a CHAR
     record,
     alias,
     pointer,

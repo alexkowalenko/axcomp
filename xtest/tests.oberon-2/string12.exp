@@ -1,0 +1,38 @@
+; ModuleID = 'string12'
+source_filename = "string12"
+
+@STRING_0 = private global [0 x i32] [i32 67, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Char(i32)
+
+declare void @Out_String([0 x i32]*)
+
+define internal void @string12_print(i32 %a) {
+entry:
+  %a1 = alloca i32
+  store i32 %a, i32* %a1
+  %a2 = load i32, i32* %a1
+  call void @Out_Char(i32 %a2)
+  call void @Out_Ln()
+  ret void
+}
+
+define internal void @string12_print2([0 x i32]* %a) {
+entry:
+  %a1 = alloca [0 x i32]*
+  store [0 x i32]* %a, [0 x i32]** %a1
+  %a2 = load [0 x i32]*, [0 x i32]** %a1
+  call void @Out_String([0 x i32]* %a2)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @string12_print(i32 67)
+  call void @string12_print(i32 99)
+  call void @string12_print2([0 x i32]* @STRING_0)
+  ret i64 0
+}

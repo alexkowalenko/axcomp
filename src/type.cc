@@ -30,6 +30,10 @@ std::string string(TypeId const t) {
 }
 
 bool Type::equiv(TypePtr const &t) {
+    if (t->id == TypeId::str1) {
+        // String char strings are the same as STRING or CHAR
+        return id == TypeId::string || id == TypeId::chr;
+    }
     if (id != t->id) {
         return false;
     }

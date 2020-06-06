@@ -125,3 +125,13 @@ TEST(Type, Records) {
     EXPECT_EQ(pr1->equiv(pr2), false);
     EXPECT_EQ(pr2->equiv(pr1), true);
 }
+
+TEST(Type, String1) {
+    TypeTable types;
+    types.initialise();
+
+    auto str1 = std::make_shared<ax::SimpleType>("STRING1", TypeId::str1);
+
+    EXPECT_EQ(TypeTable::CharType->equiv(str1), true);
+    EXPECT_EQ(TypeTable::StrType->equiv(str1), true);
+}

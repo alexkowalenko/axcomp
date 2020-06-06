@@ -350,8 +350,11 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
             continue;
         }
 
-        if (!(*base_last)->equiv(*proc_base)) {
+        debug("check parameter {0}: {1} with {2}", name, (*base_last)->get_name(),
+              (*proc_base)->get_name());
+        if (!(*proc_base)->equiv(*base_last)) {
             std::replace(begin(name), end(name), '_', '.');
+            debug("incorrect parameter");
             auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "
                                              "type {1} for parameter {2}",
                                              name, last_type->get_name(),
@@ -974,8 +977,12 @@ void Inspector::visit_ASTChar(ASTCharPtr /* not used */) {
     is_lvalue = false;
 }
 
-void Inspector::visit_ASTString(ASTStringPtr /* not used */) {
-    last_type = TypeTable::StrType;
+void Inspector::visit_ASTString(ASTStringPtr ast) {
+    if (ast->value.size() == 1) {
+        last_type = TypeTable::Str1Type;
+    } else {
+        last_type = TypeTable::StrType;
+    }
     is_const = true;
     is_lvalue = false;
 };

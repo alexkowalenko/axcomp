@@ -28,6 +28,7 @@ std::shared_ptr<BooleanType>   TypeTable::BoolType;
 std::shared_ptr<RealCType>     TypeTable::RealType;
 std::shared_ptr<CharacterType> TypeTable::CharType;
 std::shared_ptr<StringType>    TypeTable::StrType;
+std::shared_ptr<StringType>    TypeTable::Str1Type;
 TypePtr                        TypeTable::VoidType;
 TypePtr                        TypeTable::AnyType;
 
@@ -53,6 +54,11 @@ void TypeTable::initialise() {
 
     StrType = std::make_shared<StringType>();
     put(std::string(*StrType), StrType);
+
+    Str1Type = std::make_shared<StringType>();
+    Str1Type->id = TypeId::str1;
+    Str1Type->name = "STRING1";
+    put(std::string(*Str1Type), Str1Type);
 
     VoidType = std::make_shared<SimpleType>("void", TypeId::null);
     put(std::string(*VoidType), VoidType);

@@ -436,6 +436,10 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
             visit_ASTIdentifierPtr(p2->id);
         } else {
             // Reference Parameter
+
+            // Check for STRING1 to CHAR conversion
+            do_strchar_conv = a->get_type()->id == TypeId::str1 &&
+                              typeFunction->params[i].first->id == TypeId::chr;
             a->accept(this);
         }
         args.push_back(last_value);
@@ -964,7 +968,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         }
     }
-} // namespace ax
+}
 
 void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     ast->term->accept(this);
@@ -1153,7 +1157,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     }
     debug("GEP number of indices: {0}", index.size());
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
-} // namespace ax
+}
 
 /**
  * @brief Used to fetch values
@@ -1253,6 +1257,12 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
 
 void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
     debug("CodeGenerator::visit_ASTString {0}", ast->value);
+
+    if (do_strchar_conv) {
+        auto char_val = ast->value[0];
+        last_value = TypeTable::CharType->make_value(char_val);
+        return;
+    }
 
     GlobalVariable *var = nullptr;
     if (auto res = global_strings.find(ast->value); res != global_strings.end()) {

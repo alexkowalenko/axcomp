@@ -1,0 +1,45 @@
+; ModuleID = 'Cap1'
+source_filename = "Cap1"
+
+declare i32 @CAP(i32)
+
+declare void @Out_Ln()
+
+declare void @Out_Char(i32)
+
+define internal void @Cap1_Cap(i32 %ch, i32 %cap) {
+entry:
+  %cap2 = alloca i32
+  %ch1 = alloca i32
+  store i32 %ch, i32* %ch1
+  store i32 %cap, i32* %cap2
+  %ch3 = load i32, i32* %ch1
+  call void @Out_Char(i32 %ch3)
+  %cap4 = load i32, i32* %cap2
+  call void @Out_Char(i32 %cap4)
+  %ch5 = load i32, i32* %ch1
+  %0 = call i32 @CAP(i32 %ch5)
+  call void @Out_Char(i32 %0)
+  %cap6 = load i32, i32* %cap2
+  %1 = call i32 @CAP(i32 %cap6)
+  call void @Out_Char(i32 %1)
+  call void @Out_Ln()
+  ret void
+}
+
+define void @Cap1_Test() {
+entry:
+  %0 = call i32 @CAP(i32 97)
+  call void @Cap1_Cap(i32 97, i32 %0)
+  %1 = call i32 @CAP(i32 122)
+  call void @Cap1_Cap(i32 122, i32 %1)
+  %2 = call i32 @CAP(i32 48)
+  call void @Cap1_Cap(i32 48, i32 %2)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Cap1_Test()
+  ret i64 0
+}

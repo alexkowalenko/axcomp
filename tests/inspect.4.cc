@@ -220,6 +220,7 @@ TEST(Inspector, StringCat) {
     };
     do_inspect_tests(tests);
 }
+
 TEST(Inspector, StringCompare) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha; (* STRING *)
@@ -248,6 +249,38 @@ TEST(Inspector, StringCompare) {
                 RETURN 0
             END alpha.)",
          "", "5,20: operator = doesn't takes types BOOLEAN and STRING"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, String1) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* 1 char strings function as CHAR *)
+                PROCEDURE print(a : CHAR);
+                END print;
+
+                PROCEDURE print2(a : STRING);
+                END print2;
+                
+                BEGIN
+                print("C"); print('c');  print2("C");
+                END alpha.)",
+         "MODULE alpha;\nPROCEDURE print(a : CHAR);\nEND print;\nPROCEDURE print2(a : "
+         "STRING);\nEND print2;\nBEGIN\nprint(\"C\");\nprint('c');\nprint2(\"C\")\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* 1 char strings function as CHAR *)
+                PROCEDURE print(a : CHAR);
+                END print;
+
+                PROCEDURE print2(a : STRING);
+                END print2;
+                
+                BEGIN
+                print2('c');
+                END alpha.)",
+         "", "9,23: procedure call print2 has incorrect type CHAR for parameter STRING"},
     };
     do_inspect_tests(tests);
 }
