@@ -253,3 +253,55 @@ TEST(Parser, String) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, Set) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {};
+                x := {1};
+                x := {1,2};
+                END alpha.)",
+         "MODULE alpha;\nBEGIN\nx := {};\nx := {1};\nx := {1,2}\nEND alpha.", ""},
+
+        // Errors
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {;
+                END alpha.)",
+         "", "3,23: Unexpected token: semicolon"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {1;
+                END alpha.)",
+         "", "3,24: Unexpected token: semicolon - expecting ,"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {1,;
+                END alpha.)",
+         "", "3,25: Unexpected token: semicolon"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {,;
+                END alpha.)",
+         "", "3,23: Unexpected token: ,"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := };
+                END alpha.)",
+         "", "3,22: Unexpected token: }"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := ,};
+                END alpha.)",
+         "", "3,22: Unexpected token: ,"},
+    };
+    do_parse_tests(tests);
+}

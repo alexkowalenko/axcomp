@@ -1244,6 +1244,17 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
     throw CodeGenException(formatv("identifier {0} unknown", ast->value), ast->get_location());
 }
 
+void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
+    Value *set_value = TypeTable::SetType->get_init();
+    auto   one = TypeTable::IntType->make_value(1);
+    for (auto const &exp : ast->values) {
+        exp->accept(this);
+        auto *index = builder.CreateShl(one, last_value);
+        set_value = builder.CreateOr(set_value, index);
+    }
+    last_value = set_value;
+}
+
 void CodeGenerator::visit_ASTInteger(ASTIntegerPtr ast) {
     last_value = TypeTable::IntType->make_value(ast->value);
 }
@@ -1354,16 +1365,13 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
     debug("CodeGenerator::resolve_type {0}", std::string(*t));
     TypePtr result;
     std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
-                              auto res = types.resolve(type->id->value);
-                              if (!res) {
-                                  // should be a resloved type this far down
-                                  assert(!res);
-                              };
-                              result = *res;
+                              result = types.resolve(type->id->value);
+
+                              // should be a resloved type this far down
+                              assert(result);
                           },
                           [t, &result, this](auto /* not used*/) {
-                              auto res = types.resolve(t->get_type()->get_name());
-                              result = *res;
+                              result = types.resolve(t->get_type()->get_name());
                           }},
                t->type);
     debug("CodeGenerator::resolve_type to {0}", std::string(*result));

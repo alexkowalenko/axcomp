@@ -951,6 +951,9 @@ ASTFactorPtr Parser::parse_factor() {
     case TokenType::nil:
         ast->factor = parse_nil();
         return ast;
+    case TokenType::l_brace:
+        ast->factor = parse_set();
+        return ast;
     case TokenType::tilde:
         lexer.get_token(); // get ~
         ast->is_not = true;
@@ -1189,6 +1192,32 @@ ASTIdentifierPtr Parser::parse_identifier() {
 
     auto tok = get_token(TokenType::ident);
     ast->value = tok.val;
+    return ast;
+}
+
+/**
+ * @brief "{"" [ element {, element}] "}""
+ *
+ * element = expr [".." expr]
+ *
+ */
+
+ASTSetPtr Parser::parse_set() {
+    debug("Parser::parse_set");
+    auto ast = makeAST<ASTSet>(lexer);
+
+    lexer.get_token(); // {
+    auto tok = lexer.peek_token();
+    while (tok.type != TokenType::r_brace) {
+        ast->values.push_back(parse_simpleexpr());
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::r_brace) {
+            break;
+        }
+        get_token(TokenType::comma);
+        tok = lexer.peek_token();
+    }
+    lexer.get_token(); // }
     return ast;
 }
 

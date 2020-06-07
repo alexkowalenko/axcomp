@@ -1,0 +1,25 @@
+; ModuleID = 'set1'
+source_filename = "set1"
+
+@set1_x = internal global i64 0
+@set1_y = internal global i64 0
+@set1_z = internal global i64 0
+@STRING_0 = private global [0 x i32] [i32 32, i32 45, i32 32, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_String([0 x i32]*)
+
+define i64 @output() {
+entry:
+  store i64 7, i64* @set1_x
+  store i64 16, i64* @set1_y
+  store i64 0, i64* @set1_z
+  call void @Out_Int(i64 0, i64 0)
+  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_Int(i64 63, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

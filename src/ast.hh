@@ -130,6 +130,23 @@ class ASTString : public ASTBase, public std::enable_shared_from_this<ASTString>
 };
 using ASTStringPtr = std::shared_ptr<ASTString>;
 
+/**
+ * @brief "{"" [ element {, element}] "}""
+ *
+ * element = expr [".." expr]
+ *
+ */
+
+class ASTSet : public ASTBase, public std::enable_shared_from_this<ASTSet> {
+  public:
+    ~ASTSet() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit_ASTSet(shared_from_this()); };
+
+    std::vector<ASTSimpleExprPtr> values;
+};
+using ASTSetPtr = std::shared_ptr<ASTSet>;
+
 class ASTIdentifier : public ASTBase, public std::enable_shared_from_this<ASTIdentifier> {
   public:
     ASTIdentifier() = default;
@@ -289,7 +306,7 @@ class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor>
     void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
 
     std::variant<ASTDesignatorPtr, ASTIntegerPtr, ASTRealPtr, ASTExprPtr, ASTCallPtr, ASTBoolPtr,
-                 ASTCharPtr, ASTStringPtr, ASTNilPtr, ASTFactorPtr>
+                 ASTCharPtr, ASTStringPtr, ASTSetPtr, ASTNilPtr, ASTFactorPtr>
          factor;
     bool is_not = false;
 };

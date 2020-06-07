@@ -25,7 +25,7 @@ template <typename... T> static void debug(const T &... msg) {
     LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
 }
 
-BIFunctor abs = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor abs{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     debug("builtin ABS");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
@@ -41,9 +41,9 @@ BIFunctor abs = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
         return codegen->get_builder().CreateCall(fun, args);
     }
     return TypeTable::IntType->make_value(1);
-};
+}};
 
-BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor len{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isArrayTy()) {
@@ -54,9 +54,9 @@ BIFunctor len = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
         return codegen->call_function("Strings_Length", TypeTable::IntType->get_llvm(), {arg});
     }
     return TypeTable::IntType->make_value(1);
-};
+}};
 
-BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor size{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto name = std::string(*ast->args[0]);
     debug("builtin SIZE {0}", name);
     auto type = codegen->get_types().find(name);
@@ -65,9 +65,9 @@ BIFunctor size = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     }
     auto ty = ast->args[0]->get_type();
     return TypeTable::IntType->make_value(ty->get_size());
-};
+}};
 
-BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     debug("builtin NEW");
     auto args = codegen->do_arguments(ast);
     if (ast->args.size() > 1 && ast->args[0]->get_type() == TypeTable::StrType) {
@@ -97,23 +97,25 @@ BIFunctor newfunct = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     throw CodeGenException(llvm::formatv("Variable with type {0} passed to NEW",
                                          ast->args[0]->get_type()->get_name()),
                            ast->get_location());
-};
+}};
 
-BIFunctor min = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+TypePtr getType(CodeGenerator *codegen, ASTCallPtr const &ast, std::string const &function) {
     auto name = std::string(*ast->args[0]);
     auto type = codegen->get_types().resolve(name);
-    assert(type);
+    if (!type) {
+        throw CodeGenException(llvm::formatv("{0}: {1} is not a type name", function, name),
+                               ast->get_location());
+    }
+    return type;
+}
 
-    return (*type)->min();
-};
+BIFunctor min{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
+    return getType(codegen, ast, "MIN")->min();
+}};
 
-BIFunctor max = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    auto name = std::string(*ast->args[0]);
-    auto type = codegen->get_types().resolve(name);
-    assert(type);
-
-    return (*type)->max();
-};
+BIFunctor max{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
+    return getType(codegen, ast, "MAX")->max();
+}};
 
 std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallPtr ast,
                                                 std::string const &name) {
@@ -123,7 +125,7 @@ std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallP
     if (arg->getType()->isPointerTy() && arg->getType()->getPointerElementType()->isIntegerTy()) {
         debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg);
-        Value *inc;
+        Value *inc = nullptr;
         if (args.size() == 1) {
             inc = TypeTable::IntType->make_value(1);
         } else {
@@ -142,33 +144,34 @@ std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallP
         ast->get_location());
 }
 
-BIFunctor inc = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto [arg, val, inc] = do_incdec(codegen, ast, "INC");
     val = codegen->get_builder().CreateAdd(val, inc, "inc");
     return codegen->get_builder().CreateStore(val, arg);
-};
+}};
 
-BIFunctor dec = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor dec{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto [arg, val, inc] = do_incdec(codegen, ast, "DEC");
     val = codegen->get_builder().CreateSub(val, inc, "dec");
     return codegen->get_builder().CreateStore(val, arg);
-};
+}};
 
-BIFunctor floor = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor floor{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     debug("builtin FLOOR");
     auto                      args = codegen->do_arguments(ast);
     std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
-    auto fun = Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
-    auto value = codegen->get_builder().CreateCall(fun, args);
+    auto *                    fun =
+        Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
+    auto *value = codegen->get_builder().CreateCall(fun, args);
     return codegen->get_builder().CreateFPToSI(value, TypeTable::IntType->get_llvm());
-};
+}};
 
-BIFunctor flt = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor flt{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto args = codegen->do_arguments(ast);
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
-};
+}};
 
-BIFunctor assert = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor assert{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     debug("builtin ASSERT");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
@@ -177,7 +180,7 @@ BIFunctor assert = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     BasicBlock *assert_block = BasicBlock::Create(codegen->get_context(), "assert", funct);
     BasicBlock *merge_block = BasicBlock::Create(codegen->get_context(), "merge");
 
-    auto val = codegen->get_builder().CreateNot(arg);
+    auto *val = codegen->get_builder().CreateNot(arg);
     codegen->get_builder().CreateCondBr(val, assert_block, merge_block);
 
     codegen->get_builder().SetInsertPoint(assert_block);
@@ -191,9 +194,9 @@ BIFunctor assert = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     funct->getBasicBlockList().push_back(merge_block);
     codegen->get_builder().SetInsertPoint(merge_block);
     return val;
-};
+}};
 
-BIFunctor long_func = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor long_func{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isIntegerTy() || arg->getType()->isFloatingPointTy()) {
@@ -202,7 +205,7 @@ BIFunctor long_func = [](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     throw CodeGenException(
         llvm::formatv("Type {0} passed to LONG", ast->args[0]->get_type()->get_name()),
         ast->get_location());
-};
+}};
 
 void Builtin::initialise(SymbolFrameTable &symbols) {
 

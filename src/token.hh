@@ -39,6 +39,8 @@ enum class TokenType {
     bar,
     slash,
     caret,
+    l_brace,
+    r_brace,
 
     integer,
     hexinteger,
@@ -81,7 +83,8 @@ enum class TokenType {
     import,
     cse,
     pointer,
-    nil
+    nil,
+    in
 };
 
 std::string string(TokenType t);

@@ -129,7 +129,7 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
                                    ast->get_location());
                 errors.add(e);
             }
-            ptr_type->set_reference(*ref);
+            ptr_type->set_reference(ref);
         }
     };
     pointer_types.clear();
@@ -249,8 +249,8 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     }
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
-    debug("type of ident: {0} -> {1}", last_type->get_name(), (*alias)->get_name());
-    last_type = *alias;
+    debug("type of ident: {0} -> {1}", last_type->get_name(), alias->get_name());
+    last_type = alias;
     if (!(types.check(TokenType::assign, last_type, expr_type) || last_type->equiv(expr_type))) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
                                          std::string(*expr_type), std::string(*ast->ident)),
@@ -265,7 +265,7 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
     if (ast->expr) {
         ast->expr->accept(this);
         if (last_type) {
-            expr_type = *types.resolve(last_type->get_name());
+            expr_type = types.resolve(last_type->get_name());
         }
     }
 
@@ -277,10 +277,10 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
             std::visit(overloaded{
                            [this, &retType](auto arg) {
                                arg->accept(this);
-                               retType = *types.resolve(last_type->get_name());
+                               retType = types.resolve(last_type->get_name());
                            },
                            [this, &retType](ASTQualidentPtr const &type) {
-                               if (auto t = *types.resolve(type->id->value); t) {
+                               if (auto t = types.resolve(type->id->value); t) {
                                    retType = t;
                                };
                            },
@@ -345,14 +345,14 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
-        if ((*proc_base)->id == TypeId::null || (*base_last)->id == TypeId::any) {
+        if (proc_base->id == TypeId::null || base_last->id == TypeId::any) {
             // Void type - accepts any type, used for builtin compile time functions
             continue;
         }
 
-        debug("check parameter {0}: {1} with {2}", name, (*base_last)->get_name(),
-              (*proc_base)->get_name());
-        if (!(*proc_base)->equiv(*base_last)) {
+        debug("check parameter {0}: {1} with {2}", name, base_last->get_name(),
+              proc_base->get_name());
+        if (!proc_base->equiv(base_last)) {
             std::replace(begin(name), end(name), '_', '.');
             debug("incorrect parameter");
             auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "
@@ -489,7 +489,7 @@ void Inspector::visit_ASTFor(ASTForPtr ast) {
         errors.add(e);
     } else {
         auto resType = types.resolve(res->type->get_name());
-        if (!resType || !ast->start->get_type()->equiv(*resType)) {
+        if (!resType || !ast->start->get_type()->equiv(resType)) {
             auto e =
                 TypeError(llvm::formatv("FOR index variable {0} wrong type", ast->ident->value),
                           ast->get_location());
@@ -548,7 +548,7 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
             errors.add(e);
             return;
         }
-        last_type = *result_type;
+        last_type = result_type;
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
     }
@@ -571,7 +571,7 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
             errors.add(e);
             return;
         }
-        t1 = *result_type;
+        t1 = result_type;
         last_type = t1;
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
@@ -599,7 +599,7 @@ void Inspector::visit_ASTTerm(ASTTermPtr ast) {
         c1 = c1 && is_const; // if both are const
         is_const = c1;       // return the const value
 
-        t1 = *result_type;
+        t1 = result_type;
         last_type = t1;
     };
     ast->set_type(last_type);
@@ -627,7 +627,7 @@ void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
                                errors.add(e);
                                return;
                            }
-                           last_type = *result_type;
+                           last_type = result_type;
                            ast->set_type(last_type);
                            is_lvalue = false;
                        }
@@ -756,7 +756,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             debug("Inspector::visit_ASTDesignator {0} ", last_type->get_name());
             ast->set_type(last_type);
         }
-        b_type = *types.resolve(last_type->get_name());
+        b_type = types.resolve(last_type->get_name());
         is_array = b_type->id == TypeId::array;
         is_record = b_type->id == TypeId::record;
         is_string = b_type->id == TypeId::string;
@@ -832,13 +832,13 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
             auto e = TypeError(llvm::formatv("RECORD base type {0} not found", baseType_name),
                                ast->base->get_location());
             errors.add(e);
-        } else if ((*baseType)->id != TypeId::record) {
+        } else if (baseType->id != TypeId::record) {
             auto e =
                 TypeError(llvm::formatv("RECORD base type {0} is not a record", baseType_name),
                           ast->base->get_location());
             errors.add(e);
         } else {
-            auto base_rec = std::dynamic_pointer_cast<RecordType>(*baseType);
+            auto base_rec = std::dynamic_pointer_cast<RecordType>(baseType);
             rec_type->set_baseType(base_rec);
         }
     }
@@ -948,7 +948,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
         errors.add(e);
         return;
     }
-    last_type = *resType;
+    last_type = resType;
     ast->set_type(last_type);
     is_const = res->is(Attr::cnst);
     if (last_type->id == TypeId::string) {
@@ -958,6 +958,23 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
 }
 
 // Constant literals
+
+void Inspector::visit_ASTSet(ASTSetPtr ast) {
+    bool set_const = true;
+    std::for_each(cbegin(ast->values), cend(ast->values), [this, &set_const, ast](auto &exp) {
+        exp->accept(this);
+        if (!TypeTable::IntType->equiv(last_type)) {
+            auto e =
+                TypeError(llvm::formatv("Expression {0} is not a integer type", std::string(*exp)),
+                          ast->get_location());
+            errors.add(e);
+        }
+        set_const &= is_const;
+    });
+    is_const = set_const;
+    last_type = TypeTable::SetType;
+    is_lvalue = false;
+}
 
 void Inspector::visit_ASTInteger(ASTIntegerPtr /* not used */) {
     last_type = TypeTable::IntType;

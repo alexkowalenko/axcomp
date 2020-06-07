@@ -207,7 +207,7 @@ std::vector<llvm::Type *> RecordType::get_fieldTypes() {
     }
     std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
         auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
-        fs.push_back((*res)->get_llvm());
+        fs.push_back(res->get_llvm());
     });
     return fs;
 }
@@ -228,7 +228,7 @@ std::vector<llvm::Constant *> RecordType::get_fieldInit() {
     }
     std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
         auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
-        fs.push_back((*res)->get_init());
+        fs.push_back(res->get_init());
     });
     return fs;
 }
@@ -318,5 +318,21 @@ llvm::Type *PointerType::get_llvm() {
 llvm::Constant *PointerType::get_init() {
     return Constant::getNullValue(get_llvm());
 }
+
+llvm::Type *SetCType::get_llvm() {
+    return TypeTable::IntType->get_llvm(); // 64-bit set
+};
+
+llvm::Constant *SetCType::get_init() {
+    return TypeTable::IntType->get_init(); // 64-bit set
+};
+
+llvm::Value *SetCType::min() {
+    return TypeTable::IntType->get_init();
+};
+
+llvm::Value *SetCType::max() {
+    return TypeTable::IntType->make_value(SET_MAX);
+};
 
 } // namespace ax

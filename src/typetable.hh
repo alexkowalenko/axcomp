@@ -8,7 +8,6 @@
 
 #include <map>
 #include <memory>
-#include <optional>
 #include <utility>
 
 #include <llvm/IR/LLVMContext.h>
@@ -38,7 +37,7 @@ class TypeTable : public SymbolTable<TypePtr> {
     void        initialise();
     static void setTypes(llvm::LLVMContext &context);
 
-    std::optional<TypePtr> resolve(std::string const &name);
+    TypePtr resolve(std::string const &name);
 
     /**
      * @brief Check one argument operator with a type
@@ -48,7 +47,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return true - operator accepts the this type
      * @return false
      */
-    std::optional<TypePtr> check(TokenType op, TypePtr const &type);
+    TypePtr check(TokenType op, TypePtr const &type);
 
     /**
      * @brief  Check two argument operator with types
@@ -60,7 +59,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return false
      */
 
-    std::optional<TypePtr> check(TokenType op, TypePtr const &L, TypePtr const &R);
+    TypePtr check(TokenType op, TypePtr const &L, TypePtr const &R);
 
     static bool is_int_instruct(llvm::Type *t) {
         return t == IntType->get_llvm() || t == BoolType->get_llvm() || t == CharType->get_llvm();
@@ -73,6 +72,8 @@ class TypeTable : public SymbolTable<TypePtr> {
     static std::shared_ptr<CharacterType> CharType;
     static std::shared_ptr<StringType>    StrType;
     static std::shared_ptr<StringType>    Str1Type;
+    static std::shared_ptr<SetCType>      SetType;
+
     static TypePtr VoidType; // For procedures which don't return anything, also arguments which
                              // can any type (internal for built-ins)
     static TypePtr AnyType;  // For procedures which can return any time (built-ins), also for

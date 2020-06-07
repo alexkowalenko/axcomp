@@ -449,6 +449,17 @@ void ASTPrinter::visit_ASTIdentifier(ASTIdentifierPtr ast) {
     os << ast->value;
 }
 
+void ASTPrinter::visit_ASTSet(ASTSetPtr ast) {
+    os << '{';
+    std::for_each(cbegin(ast->values), cend(ast->values), [this, ast](auto const &e) {
+        e->accept(this);
+        if (e != *(ast->values.end() - 1)) {
+            os << ',';
+        };
+    });
+    os << '}';
+}
+
 void ASTPrinter::visit_ASTInteger(ASTIntegerPtr ast) {
     if (ast->hex) {
         os << std::hex << '0';

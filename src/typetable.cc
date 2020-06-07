@@ -29,6 +29,7 @@ std::shared_ptr<RealCType>     TypeTable::RealType;
 std::shared_ptr<CharacterType> TypeTable::CharType;
 std::shared_ptr<StringType>    TypeTable::StrType;
 std::shared_ptr<StringType>    TypeTable::Str1Type;
+std::shared_ptr<SetCType>      TypeTable::SetType;
 TypePtr                        TypeTable::VoidType;
 TypePtr                        TypeTable::AnyType;
 
@@ -59,6 +60,9 @@ void TypeTable::initialise() {
     Str1Type->id = TypeId::str1;
     Str1Type->name = "STRING1";
     put(std::string(*Str1Type), Str1Type);
+
+    SetType = std::make_shared<SetCType>();
+    put(std::string(*SetType), SetType);
 
     VoidType = std::make_shared<SimpleType>("void", TypeId::null);
     put(std::string(*VoidType), VoidType);
@@ -193,7 +197,7 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
         llvm::ConstantPointerNull::get(llvm::Type::getVoidTy(context)->getPointerTo()));
 }
 
-std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
+TypePtr TypeTable::resolve(std::string const &n) {
 
     // All ARRAY OF CHAR are STRING types
     if (n == "CHAR[]") {
@@ -217,20 +221,20 @@ std::optional<TypePtr> TypeTable::resolve(std::string const &n) {
     }
 }
 
-std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &type) {
+TypePtr TypeTable::check(TokenType op, TypePtr const &type) {
     auto range = rules1.equal_range(op);
     for (auto i = range.first; i != range.second; ++i) {
         if (i->second.value == type) {
             return i->second.result;
         }
     }
-    return {};
+    return nullptr;
 }
 
-std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr const &Rt) {
+TypePtr TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr const &Rt) {
     auto range = rules2.equal_range(op);
-    auto L = *resolve(Lt->get_name());
-    auto R = *resolve(Rt->get_name());
+    auto L = resolve(Lt->get_name());
+    auto R = resolve(Rt->get_name());
     for (auto i = range.first; i != range.second; ++i) {
         if (i->second.L == L && i->second.R == R) {
             return i->second.result;
@@ -245,7 +249,7 @@ std::optional<TypePtr> TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr
         R->id == TypeId::null) {
         return TypeTable::BoolType;
     }
-    return {};
+    return nullptr;
 }
 
 void TypeTable::reg(TokenType op, TypePtr const &type, TypePtr const &result) {

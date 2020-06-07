@@ -59,6 +59,7 @@ class Inspector : ASTVisitor {
     void visit_ASTPointerType(ASTPointerTypePtr ast) override;
     void visit_ASTQualident(ASTQualidentPtr ast) override;
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
+    void visit_ASTSet(ASTSetPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTReal(ASTRealPtr ast) override;
     void visit_ASTChar(ASTCharPtr ast) override;

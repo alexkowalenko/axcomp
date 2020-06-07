@@ -98,9 +98,9 @@ string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 \item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
 
 \begin{lstlisting}[style=example]
-+ := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | .. ^
++ := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | .. ^ { }
     
-ARRAY BEGIN BY CASE CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT LOOP
+ARRAY BEGIN BY CASE CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT IN LOOP
 MOD MODULE NIL OF OR POINTER PROCEDURE RECORD REPEAT RETURN THEN TO TYPE
 UNTIL VAR WHILE
 \end{lstlisting}
@@ -139,26 +139,32 @@ The following identifiers are predefined; their meaning is defined in the indica
     XXXXXXXXXX \= \kill
     \ABS \> (\ref{predefined}) \\
     \ASH \> (\ref{predefined}) \\
+    \ASSERT \> (\ref{predefined}) \\
     \BOOLEAN \> (\ref{types-basic}) \\
     \CAP \> (\ref{predefined}) \\
     \CHAR \> (\ref{types-basic}) \\
     \CHR \> (\ref{predefined}) \\
     \COPY \> (\ref{predefined}) \\
     \DEC \> (\ref{predefined}) \\
+    \EXCL \> (\ref{predefined}) \\
     \FALSE \> (\ref{bool-consts}) \\
     \FLOOR \> (\ref{predefined}) \\
     \FLT \> (\ref{predefined}) \\
     \HALT \> (\ref{predefined}) \\
     \INC \> (\ref{predefined}) \\
+    \INCL \> (\ref{predefined}) \\
     \INTEGER \> (\ref{types-basic}) \\
     \LEN \> (\ref{predefined}) \\
+    \LONG \> (\ref{predefined}) \\
     \MAX \> (\ref{predefined}) \\
     \MIN \> (\ref{predefined}) \\
     \NEW \> (\ref{predefined}) \\
     \ODD \> (\ref{predefined}) \\
     \ORD \> (\ref{predefined}) \\
     \REAL \> (\ref{types-basic}) \\
+    \SET \> (\ref{types-basic}) \\
     \SIZE \> (\ref{predefined}) \\
+    \SHORT \> (\ref{predefined}) \\
     \STRING \> (\ref{types-basic}) \\
     \TRUE \>  (\ref{bool-consts}) \\
     \WriteInt \> (\ref{predefined}) \\
@@ -182,6 +188,7 @@ A constant expression is an expression based on constant values and constant var
 \begin{lstlisting}[style=example]
 N     =   100
 limit =   2 * N - 1
+fullSet = {MIN(SET) .. MAX(SET)}
 \end{lstlisting}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -216,6 +223,7 @@ The following basic types are denoted by predeclared identifiers. The associated
     \item \REAL\ -- double precision floating point type. Usually IEEE-754 64 bit floating point, numbers between \MIN(\REAL) and \MAX(\REAL).
     \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode), between \MIN(\CHAR)\ and \MAX(\CHAR).
     \item \STRING\ -- character array type. \ARRAY\ \OF\ \CHAR\ is equivalent to \STRING.
+    \item \SET\ -- the sets of integers between 0 and \MAX(\SET).
 \end{enumerate}
 
 Types \INTEGER\ and \REAL\ together they are called numeric types. They form a hierarchy; the larger type includes (the values of) the smaller type:
@@ -321,7 +329,9 @@ Variables whose identifiers appear in the same list are all of the same type. Ex
 
 \begin{lstlisting}[style=example]
 i, j, k: INTEGER
+x, y: REAL
 p, q: BOOLEAN
+s: SET
 a: ARRAY 100 OF INTEGER
 w: ARRAY 16 OF
     RECORD count: INTEGER
@@ -376,7 +386,7 @@ The syntax of expressions distinguishes between four classes of operators with d
 \begin{lstlisting}[style=ebnf]
 expression = SimpleExpression [relation SimpleExpression]. 
 
-relation = "=" | "#" | "<" | "<=" | ">" | ">=". 
+relation = "=" | "#" | "<" | "<=" | ">" | ">=" | IN. 
 
 SimpleExpression = [ "+" | "-" ] term {AddOperator term}.
 
@@ -386,10 +396,14 @@ term = factor {MulOperator factor}.
 
 MulOperator = "*" | "/" | DIV | MOD | "&".
 
-factor = number 
+factor = number | character | string | NIL | set 
         | designator [ experssion ] 
         | "(" expression ")" 
-        | "~" factor. 
+        | "~" factor.
+        
+set =  "{" [element {"," element}] "}".
+
+element = expression [ ".." expression]
 \end{lstlisting}
 
 The available operators are listed in the following tables. In some instances, several different operations are designated by the same operator symbol. In these cases, the actual operation is identified by the type of the operands.
@@ -416,7 +430,8 @@ The available operators are listed in the following tables. In some instances, s
     \DIV & integer quotient \\
     \MOD & modulus \\
 \end{tabular}   
-    
+\vspace{2mm}
+
 The operators +, -, *, and / apply to operands of numeric types. The type of the result is that
 operand's type which includes the other operand's type, except for division (/), where the result is the real type which includes both operand types. When used as operators with a single operand, - denotes sign inversion and + denotes the identity operation.
 
@@ -426,6 +441,23 @@ The operators \DIV\ and \MOD\ apply to integer operands only. They are related b
 x = (x DIV y) * y + (x MOD y)
 0 ≤ (x MOD y) < y
 \end{lstlisting}   
+
+\subsubsection{Set Operators}
+
+\begin{tabular}{l|l}
+    symbol & result \\
+    \hline
+    + & union \\
+    - & difference (x - y = x * (-y)) \\
+    \** & intersection \\
+    / & symmetric set difference (x / y = (x-y) + (y-x))\\
+\end{tabular}   
+\vspace{2mm}
+
+Set operators apply to operands of type \SET and yield a result of type \SET. 
+The monadic minus sign denotes the complement of x, i.e. -x denotes the set of integers between 0 and \MAX(\SET) which are not elements of x. Set operators are not associative ((a+b)-c \# a+(b-c)).
+
+A set constructor defines the value of a set by listing its elements between curly brackets. The elements must be integers in the range 0..\MAX(\SET). A range a..b denotes all integers in the interval [a, b].
 
 \subsubsection{Relations}
 
@@ -438,17 +470,23 @@ x = (x DIV y) * y + (x MOD y)
     <= & less or equal \\
     >= & greater \\
     > & greater or equal \\
+    \IN & set membership \\
 \end{tabular}
+\vspace{2mm}
 
-Relations are Boolean. The ordering relations <, <=, >, and >= apply to the numeric types. The relations = and \# also apply to the type \BOOLEAN.
+Relations yield \BOOLEAN results. The ordering relations <, <=, >, and >= apply to the numeric types, CHAR, strings and character arrays containing 0X as a terminator. The relations = and \# also apply to the type \BOOLEAN\ and \SET, as well as to pointer types (including the value \NIL). x \IN\ s stands for "x is an element of s". x must be of an integer type, and s of type \SET. 
+
+
+Examples of expressions:
 
 \begin{tabbing}
     XXXXXXXXXXX \= \kill
     1987 \> (\INTEGER) \\
-    i DIV 3 \> (\INTEGER) \\
-    ~p OR q \> (\BOOLEAN) \\
+    i \DIV\ 3 \> (\INTEGER) \\
+    ~p \OR\ q \> (\BOOLEAN) \\
     a[i+j] * a[i-j] \> (\INTEGER) \\
     (0<=i) \& (i<100) \> (\BOOLEAN) \\
+    k \IN\ {i..j-1} \> (\BOOLEAN) \\
     t.key = 0 \> (\BOOLEAN) \\
 \end{tabbing}
 
@@ -741,10 +779,12 @@ Function procedures:
     \LONG(x) & any integer type & \INTEGER & identity \\% Compile time
         & any real type & \REAL &  \\% Compile time
     \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
+      & T = \SET\ &  \INTEGER & maximum element of a set\\ % Compile time
     \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
+      & T = \SET\ &  \INTEGER & 0\\ % Compile time
     \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
     \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
-    \SIZE(T) & T or v & \INTEGER & size of type T or variable v \\ % Compiletime
+    \SIZE(T) & T or v & \INTEGER & size of type T or variable v \\ % Compile time
     \SHORT(x) & any integer type & \INTEGER & identity \\% Compile time
         & any real type & \REAL &  \\% Compile time
     \hline
@@ -762,9 +802,11 @@ Proper procedures:
     \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
     \DEC(v) & integer type & v := v - 1 \\ % Runtime
     \DEC(v, n) & v, n: integer type & v := v - n \\ % Runtime
+    \EXCL(v, x) & v:\SET\ x:\INTEGER & v := v - {x} \\ % Runtime
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
     \INC(v) & integer type & v := v + 1 \\  % Runtime
     \INC(v, n) & v, n: integer type & v := v + n \\  % Runtime
+    \INCL(v, x) & v:\SET\ x:\INTEGER & v := v + {x} \\ % Runtime
     \NEW(v) & pointer to record or array type & allocate v\^{} \\  % Runtime
     \NEW(v, $x_0$, ... $x_n$) & v: pointer to open array, $x_i$: integer type & allocate v with lengths $x_0$, ... $x_n$ \\
     \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
@@ -774,6 +816,10 @@ Proper procedures:
     \hline
 \end{tabular}
 \vspace{5mm}
+
+\COPY\ allows the assignment of a string or a character array containing a terminating 0X to another character array. If necessary, the assigned value is truncated to the target length minus one. The target will always contain a terminating 0X. 
+
+In \HALT(x), the interpretation of x is left to the underlying system implementation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modules}
@@ -940,13 +986,16 @@ For a given operator, the types of its operands are expression compatible if the
     + - * & numeric & numeric & smallest that has both operands\\
     / & numeric & numeric & smallest that has both operands\\
     \DIV\ \MOD & \INTEGER & \INTEGER & \INTEGER \\
-    + & \STRING, \CHAR, & \STRING, \CHAR & \STRING \\ 
+    + & \STRING, \CHAR, & \STRING, \CHAR & \STRING \\
+    + - * / & \SET & \SET & \SET\\
     \OR\ \&\ \~{} & \BOOLEAN & \BOOLEAN & \BOOLEAN \\
     = \# < <= > >= & numeric & numeric & \BOOLEAN \\
         & \CHAR & \CHAR & \BOOLEAN \\
         & \STRING & \STRING & \BOOLEAN \\
     = \# &  \BOOLEAN & \BOOLEAN & \BOOLEAN \\
+        & \SET & \SET & \BOOLEAN \\
          & \POINTER\  \TO\ type & \NIL & \BOOLEAN \\
+    \IN & integer & \SET & \BOOLEAN\\ 
     \hline
 \end{tabular}
 
@@ -1030,10 +1079,15 @@ Factor = Designator ["(" [ExprList] ")"]
          | character
          | string
          | NIL
+         | Set
          | "(" Expr ")" 
          | "~" Factor.
 
-Relation = "=" | "#" | "<" | "<=" | ">" | ">=".
+Set = "{" [Element {"," Element}] "}".
+
+Element = Expr [".." Expr]
+
+Relation = "=" | "#" | "<" | "<=" | ">" | ">=" | IN.
 
 AddOp = "+" | "-" | OR.
 

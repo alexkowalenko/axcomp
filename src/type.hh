@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cfloat>
+#include <climits>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -37,6 +38,7 @@ enum class TypeId {
     array,
     string,
     str1, // One char STRING which can be a CHAR
+    set,
     record,
     alias,
     pointer,
@@ -98,7 +100,7 @@ class IntegerType : public SimpleType {
 
     llvm::Constant *make_value(Int i);
     unsigned int    get_size() override {
-        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
     llvm::Value *min() override { return make_value(INT64_MIN); };
@@ -112,7 +114,7 @@ class BooleanType : public SimpleType {
 
     llvm::Constant *make_value(Bool b);
     unsigned int    get_size() override {
-        return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+        return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
     llvm::Value *min() override { return make_value(false); };
@@ -125,7 +127,7 @@ class RealCType : public SimpleType {
     ~RealCType() override = default;
 
     llvm::Constant *make_value(Real f) { return llvm::ConstantFP::get(get_llvm(), f); }
-    unsigned int    get_size() override { return 8; } // 64 bit floats;
+    unsigned int    get_size() override { return sizeof(Real); } // 64 bit floats;
 
     llvm::Value *min() override { return make_value(DBL_MIN); };
     llvm::Value *max() override { return make_value(DBL_MAX); };
@@ -138,7 +140,7 @@ class CharacterType : public SimpleType {
 
     llvm::Constant *make_value(Char c);
     unsigned int    get_size() override {
-        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / 8;
+        return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
     llvm::Value *min() override { return make_value(WCHAR_MIN); };
@@ -259,7 +261,7 @@ class PointerType : public Type {
 
     explicit     operator std::string() override { return '^' + ref_name; };
     unsigned int get_size() override {
-        return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / 8;
+        return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / CHAR_BIT;
     };
 
     llvm::Type *    get_llvm() override;
@@ -273,6 +275,18 @@ class PointerType : public Type {
   private:
     TypePtr     reference = nullptr;
     std::string ref_name;
+};
+
+class SetCType : public SimpleType {
+  public:
+    SetCType() : SimpleType("SET", TypeId::set){};
+    ~SetCType() override = default;
+
+    llvm::Type *    get_llvm() override;
+    llvm::Constant *get_init() override;
+
+    llvm::Value *min() override;
+    llvm::Value *max() override;
 };
 
 class ModuleType : public Type {

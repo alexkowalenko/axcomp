@@ -45,6 +45,8 @@ std::vector<LexTests> tests = {
     {"|", TokenType::bar, "|"},
     {"/", TokenType::slash, "/"},
     {"^", TokenType::caret, "^"},
+    {"{", TokenType::l_brace, "{"},
+    {"}", TokenType::r_brace, "}"},
 
     // comments
     {"(* hello *)1", TokenType::integer, "1"},
@@ -106,6 +108,7 @@ std::vector<LexTests> tests = {
     {"CASE", TokenType::cse, "CASE"},
     {"POINTER", TokenType::pointer, "POINTER"},
     {"NIL", TokenType::nil, "NIL"},
+    {"IN", TokenType::in, "IN"},
 
     // identifiers
     {"a", TokenType::ident, "a"},

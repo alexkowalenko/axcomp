@@ -85,6 +85,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTQualidentPtr(ASTQualidentPtr const &ast);
     void visit_ASTIdentifier(ASTIdentifierPtr ast) override;
     void visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast);
+    void visit_ASTSet(ASTSetPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTReal(ASTRealPtr ast) override;
     void visit_ASTString(ASTStringPtr ast) override;

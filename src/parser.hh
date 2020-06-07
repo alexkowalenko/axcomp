@@ -70,6 +70,7 @@ class Parser {
     ASTQualidentPtr   parse_qualident();
     ASTIdentifierPtr  parse_identifier();
     ASTIntegerPtr     parse_integer();
+    ASTSetPtr         parse_set();
     ASTRealPtr        parse_real();
     ASTCharPtr        parse_char();
     ASTStringPtr      parse_string();

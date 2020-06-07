@@ -414,3 +414,46 @@ TEST(Inspector, ForwardPointers) {
     };
     do_inspect_tests(tests);
 }
+
+TEST(Inspector, Set) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                BEGIN
+                x := {};
+                x := {1};
+                x := {1,2};
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: SET;\nBEGIN\nx := {};\nx := {1};\nx := {1,2}\nEND alpha.", ""},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                y: INTEGER;
+                BEGIN
+                x := {1+2};
+                x := {y};
+                x := {y+1, y+2};
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: SET;\ny: INTEGER;\nBEGIN\nx := {1+2};\nx := {y};\nx := "
+         "{y+1,y+2}\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                BEGIN
+                x := {'c'};
+                END alpha.)",
+         "", "4,22: Expression 'c' is not a integer type"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                y: REAL;
+                BEGIN
+                x := {y};
+                END alpha.)",
+         "", "5,22: Expression y is not a integer type"},
+
+    };
+    do_inspect_tests(tests);
+}
