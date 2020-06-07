@@ -43,6 +43,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTLoop(ASTLoopPtr ast) override;
     void visit_ASTBlock(ASTBlockPtr ast) override;
     void visit_ASTExpr(ASTExprPtr ast) override;
+    void visit_ASTRange(ASTRangePtr ast) override;
     void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
     void visit_ASTTerm(ASTTermPtr ast) override;
     void visit_ASTFactor(ASTFactorPtr ast) override;

@@ -326,6 +326,12 @@ void ASTPrinter::visit_ASTExpr(ASTExprPtr ast) {
     }
 }
 
+void ASTPrinter::visit_ASTRange(ASTRangePtr ast) {
+    ast->first->accept(this);
+    os << "..";
+    ast->last->accept(this);
+};
+
 void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());
@@ -452,7 +458,7 @@ void ASTPrinter::visit_ASTIdentifier(ASTIdentifierPtr ast) {
 void ASTPrinter::visit_ASTSet(ASTSetPtr ast) {
     os << '{';
     std::for_each(cbegin(ast->values), cend(ast->values), [this, ast](auto const &e) {
-        e->accept(this);
+        std::visit(overloaded{[this](auto e) { e->accept(this); }}, e);
         if (e != *(ast->values.end() - 1)) {
             os << ',';
         };

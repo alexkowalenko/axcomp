@@ -5,6 +5,7 @@
 //
 
 #include <cmath>
+#include <iostream>
 
 #include "ax.hh"
 
@@ -50,6 +51,18 @@ extern "C" Real Math_ln(Real x) {
 
 extern "C" Real Math_exp(Real x) {
     return exp(x);
+}
+
+extern "C" Set Set_range(Set s, Int first, Int last) {
+    // std::cerr << "Set_range: " << std::bitset<SET_MAX + 1>(s) << std::endl;
+    if (last < first) {
+        std::swap(last, first);
+    }
+    while (first <= last) {
+        s |= (1UL << first++);
+    }
+    // std::cerr << "Set_range: " << std::bitset<SET_MAX + 1>(s) << std::endl;
+    return s;
 }
 
 } // namespace ax

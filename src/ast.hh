@@ -143,7 +143,7 @@ class ASTSet : public ASTBase, public std::enable_shared_from_this<ASTSet> {
 
     void accept(ASTVisitor *v) override { v->visit_ASTSet(shared_from_this()); };
 
-    std::vector<ASTSimpleExprPtr> values;
+    std::vector<std::variant<ASTSimpleExprPtr, ASTRangePtr>> values;
 };
 using ASTSetPtr = std::shared_ptr<ASTSet>;
 

@@ -99,31 +99,25 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
                            ast->get_location());
 }};
 
-TypePtr getType(CodeGenerator *codegen, ASTCallPtr const &ast, std::string const &function) {
+template <bool max_f>
+BIFunctor max{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto name = std::string(*ast->args[0]);
     auto type = codegen->get_types().resolve(name);
     if (!type) {
-        throw CodeGenException(llvm::formatv("{0}: {1} is not a type name", function, name),
-                               ast->get_location());
+        throw CodeGenException(
+            llvm::formatv("{0}: {1} is not a type name", max_f ? "MAX" : "MIN", name),
+            ast->get_location());
     }
-    return type;
-}
-
-BIFunctor min{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
-    return getType(codegen, ast, "MIN")->min();
+    return max_f ? type->max() : type->min();
 }};
 
-BIFunctor max{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
-    return getType(codegen, ast, "MAX")->max();
-}};
-
-std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallPtr ast,
-                                                std::string const &name) {
+template <bool inc_f>
+BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     debug("builtin INC/DEC");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isPointerTy() && arg->getType()->getPointerElementType()->isIntegerTy()) {
-        debug("builtin INC/DEC 2");
+        // debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg);
         Value *inc = nullptr;
         if (args.size() == 1) {
@@ -132,28 +126,23 @@ std::tuple<Value *, Value *, Value *> do_incdec(CodeGenerator *codegen, ASTCallP
             if (args[1]->getType()->isIntegerTy()) {
                 inc = args[1];
             } else {
-                throw CodeGenException(llvm::formatv("Type {0} passed to INC as increment",
-                                                     ast->args[1]->get_type()->get_name()),
+                throw CodeGenException(llvm::formatv("Type {0} passed to {1} as increment",
+                                                     ast->args[1]->get_type()->get_name(),
+                                                     inc_f ? "INC" : "DEC"),
                                        ast->get_location());
             }
         }
-        return {arg, val, inc};
+        if (inc_f) {
+            val = codegen->get_builder().CreateAdd(val, inc, "inc");
+        } else {
+            val = codegen->get_builder().CreateSub(val, inc, "dec");
+        }
+        return codegen->get_builder().CreateStore(val, arg);
     }
-    throw CodeGenException(
-        llvm::formatv("Type {0} passed to {1}", ast->args[0]->get_type()->get_name(), name),
-        ast->get_location());
-}
-
-BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    auto [arg, val, inc] = do_incdec(codegen, ast, "INC");
-    val = codegen->get_builder().CreateAdd(val, inc, "inc");
-    return codegen->get_builder().CreateStore(val, arg);
-}};
-
-BIFunctor dec{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
-    auto [arg, val, inc] = do_incdec(codegen, ast, "DEC");
-    val = codegen->get_builder().CreateSub(val, inc, "dec");
-    return codegen->get_builder().CreateStore(val, arg);
+    throw CodeGenException(llvm::formatv("Type {0} passed to {1}",
+                                         ast->args[0]->get_type()->get_name(),
+                                         inc_f ? "INC" : "DEC"),
+                           ast->get_location());
 }};
 
 BIFunctor floor{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
@@ -205,6 +194,21 @@ BIFunctor long_func{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     throw CodeGenException(
         llvm::formatv("Type {0} passed to LONG", ast->args[0]->get_type()->get_name()),
         ast->get_location());
+}};
+
+template <bool inc>
+BIFunctor incl{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+    auto   args = codegen->do_arguments(ast);
+    auto * set = args[0];
+    auto * index = codegen->get_builder().CreateShl(TypeTable::IntType->make_value(1), args[1]);
+    Value *val = codegen->get_builder().CreateLoad(set);
+    if (inc) {
+        val = codegen->get_builder().CreateOr(val, index);
+    } else {
+        index = codegen->get_builder().CreateNot(index);
+        val = codegen->get_builder().CreateAnd(val, index);
+    }
+    return codegen->get_builder().CreateStore(val, set);
 }};
 
 void Builtin::initialise(SymbolFrameTable &symbols) {
@@ -277,6 +281,18 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                            ProcedureType::ParamsList{{TypeTable::CharType, Attr::null}}),
                        Attr::global_function}},
 
+        // SET
+        {"INCL", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::VoidType,
+                            ProcedureType::ParamsList{{TypeTable::SetType, Attr::var},
+                                                      {TypeTable::IntType, Attr::null}}),
+                        Attr::compile_function}},
+        {"EXCL", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::VoidType,
+                            ProcedureType::ParamsList{{TypeTable::SetType, Attr::var},
+                                                      {TypeTable::IntType, Attr::null}}),
+                        Attr::compile_function}},
+
         // I/O
         {"WriteInt", Symbol{std::make_shared<ProcedureType>(
                                 TypeTable::VoidType,
@@ -344,10 +360,10 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
     compile_functions.try_emplace("LEN", len);
     compile_functions.try_emplace("SIZE", size);
-    compile_functions.try_emplace("MIN", min);
-    compile_functions.try_emplace("MAX", max);
-    compile_functions.try_emplace("INC", inc);
-    compile_functions.try_emplace("DEC", dec);
+    compile_functions.try_emplace("MAX", max<true>);
+    compile_functions.try_emplace("MIN", max<false>);
+    compile_functions.try_emplace("INC", inc<true>);
+    compile_functions.try_emplace("DEC", inc<false>);
     compile_functions.try_emplace("ABS", abs);
     compile_functions.try_emplace("FLOOR", floor);
     compile_functions.try_emplace("ENTIER", floor);
@@ -356,6 +372,8 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("ASSERT", assert);
     compile_functions.try_emplace("LONG", long_func);
     compile_functions.try_emplace("SHORT", long_func);
+    compile_functions.try_emplace("INCL", incl<true>);
+    compile_functions.try_emplace("EXCL", incl<false>);
 }
 
 } // namespace ax

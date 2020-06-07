@@ -305,3 +305,39 @@ TEST(Parser, Set) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, Set2) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {1..6};
+                x := {1..3,4..5,6..7};
+                x := {1,2..5,33..44};
+                END alpha.)",
+         "MODULE alpha;\nBEGIN\nx := {1..6};\nx := {1..3,4..5,6..7};\nx := {1,2..5,33..44}\nEND "
+         "alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {1..};
+                END alpha.)",
+         "", "3,26: Unexpected token: }"},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {..6};
+                END alpha.)",
+         "", "3,24: Unexpected token: .."},
+
+        {R"(MODULE alpha; (* SET *)
+                BEGIN
+                x := {1 6};
+                END alpha.)",
+         "", ",25: Unexpected token: integer(6) - expecting ,"},
+    };
+    do_parse_tests(tests);
+}

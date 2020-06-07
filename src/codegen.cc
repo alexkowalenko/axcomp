@@ -869,6 +869,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
+    debug("CodeGenerator::visit_ASTExpr");
     ast->expr->accept(this);
 
     if (ast->relation) {
@@ -877,7 +878,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
         auto *R = last_value;
         if (L->getType() == TypeTable::StrType->get_llvm() &&
             R->getType() == TypeTable::StrType->get_llvm()) {
-            // String ops
+            // String comparisons
             last_value = call_function("Strings_Compare", TypeTable::IntType->get_llvm(), {L, R});
             switch (*ast->relation) {
             case TokenType::equals:
@@ -903,6 +904,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         } else if (ast->expr->get_type()->id == TypeId::pointer &&
                    ast->relation_expr->get_type()->id == TypeId::null) {
+            // Pointer comparisons
             R = builder.CreateBitCast(R, L->getType());
             switch (*ast->relation) {
             case TokenType::equals:
@@ -913,6 +915,25 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
                 break;
             default:;
             }
+        } else if (ast->relation_expr->get_type() == TypeTable::SetType) {
+            // SET comparisons
+            debug("CodeGenerator::visit_ASTExpr set comprisons");
+            switch (*ast->relation) {
+            case TokenType::in: {
+                auto *index = builder.CreateShl(TypeTable::IntType->make_value(1), L);
+                last_value = builder.CreateAnd(R, index);
+                last_value = builder.CreateICmpUGT(last_value, TypeTable::IntType->get_init());
+                break;
+            }
+            case TokenType::equals:
+                last_value = builder.CreateICmpEQ(L, R);
+                break;
+            case TokenType::hash:
+                last_value = builder.CreateICmpNE(L, R);
+                break;
+            default:;
+            }
+
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
             // Do integer versions
@@ -969,7 +990,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         }
     }
-}
+} // namespace ax
 
 void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     ast->term->accept(this);
@@ -987,8 +1008,20 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
-        if (L->getType() == TypeTable::StrType->get_llvm() ||
-            R->getType() == TypeTable::StrType->get_llvm()) {
+        if (t.second->get_type() == TypeTable::SetType) {
+            // SET operations
+            switch (t.first) {
+            case TokenType::plus:
+                last_value = builder.CreateOr(L, R, "setunion");
+                break;
+            case TokenType::dash:
+                last_value = builder.CreateNot(R, "setdiff");
+                last_value = builder.CreateAnd(L, last_value, "setdiff");
+                break;
+            }
+        } else if (L->getType() == TypeTable::StrType->get_llvm() ||
+                   R->getType() == TypeTable::StrType->get_llvm()) {
+            // STRING operations
             if (L->getType() == TypeTable::StrType->get_llvm() &&
                 R->getType() == TypeTable::StrType->get_llvm()) {
                 last_value =
@@ -1002,6 +1035,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
             }
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
+            // INTEGER operations
             switch (t.first) {
             case TokenType::plus:
                 last_value = builder.CreateAdd(L, R, "addtmp");
@@ -1048,7 +1082,26 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
     for (auto const &t : ast->rest) {
         t.second->accept(this);
         Value *R = last_value;
-        if (TypeTable::is_int_instruct(L->getType()) && TypeTable::is_int_instruct(R->getType())) {
+        if (t.second->get_type() == TypeTable::SetType) {
+            // SET operations
+            switch (t.first) {
+            case TokenType::asterisk:
+                last_value = builder.CreateAnd(L, R, "setintersect");
+                break;
+            case TokenType::slash: {
+                // (x-y) + (y-x)
+                auto *a = builder.CreateNot(R, "setsdiff");
+                a = builder.CreateAnd(L, a, "setsdiff");
+                auto *b = builder.CreateNot(L, "setsdiff");
+                b = builder.CreateAnd(R, b, "setsdiff");
+                last_value = builder.CreateOr(a, b, "setsdiff");
+                break;
+            }
+            default:
+                throw CodeGenException("ASTTerm with sign" + string(t.first), ast->get_location());
+            }
+        } else if (TypeTable::is_int_instruct(L->getType()) &&
+                   TypeTable::is_int_instruct(R->getType())) {
             // Do integer calculations
             switch (t.first) {
             case TokenType::asterisk:
@@ -1246,11 +1299,25 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
 
 void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
     Value *set_value = TypeTable::SetType->get_init();
-    auto   one = TypeTable::IntType->make_value(1);
+    auto * one = TypeTable::IntType->make_value(1);
     for (auto const &exp : ast->values) {
-        exp->accept(this);
-        auto *index = builder.CreateShl(one, last_value);
-        set_value = builder.CreateOr(set_value, index);
+        std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExprPtr const &exp) {
+                                  debug("CodeGenerator::visit_ASTSet exp");
+                                  exp->accept(this);
+                                  auto *index = builder.CreateShl(one, last_value);
+                                  set_value = builder.CreateOr(set_value, index);
+                              },
+                              [this, &set_value, ast, one](ASTRangePtr const &exp) {
+                                  debug("CodeGenerator::visit_ASTSet range");
+                                  exp->first->accept(this);
+                                  auto *first = last_value;
+                                  exp->last->accept(this);
+                                  auto *last = last_value;
+                                  set_value =
+                                      call_function("Set_range", TypeTable::SetType->get_llvm(),
+                                                    {set_value, first, last});
+                              }},
+                   exp);
     }
     last_value = set_value;
 }

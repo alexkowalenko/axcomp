@@ -962,14 +962,39 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
 void Inspector::visit_ASTSet(ASTSetPtr ast) {
     bool set_const = true;
     std::for_each(cbegin(ast->values), cend(ast->values), [this, &set_const, ast](auto &exp) {
-        exp->accept(this);
-        if (!TypeTable::IntType->equiv(last_type)) {
-            auto e =
-                TypeError(llvm::formatv("Expression {0} is not a integer type", std::string(*exp)),
-                          ast->get_location());
-            errors.add(e);
-        }
-        set_const &= is_const;
+        std::visit(
+            overloaded{
+                [this, &set_const, ast](ASTSimpleExprPtr const &exp) {
+                    debug("Inspector::visit_ASTSet exp");
+                    exp->accept(this);
+                    if (!TypeTable::IntType->equiv(last_type)) {
+                        auto e = TypeError(llvm::formatv("Expression {0} is not a integer type",
+                                                         std::string(*exp)),
+                                           exp->get_location());
+                        errors.add(e);
+                    }
+                    set_const &= is_const;
+                },
+                [this, &set_const, ast](ASTRangePtr const &exp) {
+                    debug("Inspector::visit_ASTSet range");
+                    exp->first->accept(this);
+                    if (!TypeTable::IntType->equiv(last_type)) {
+                        auto e = TypeError(llvm::formatv("Expression {0} is not a integer type",
+                                                         std::string(*exp->first)),
+                                           exp->first->get_location());
+                        errors.add(e);
+                    }
+                    set_const &= is_const;
+                    exp->last->accept(this);
+                    if (!TypeTable::IntType->equiv(last_type)) {
+                        auto e = TypeError(llvm::formatv("Expression {0} is not a integer type",
+                                                         std::string(*exp->last)),
+                                           exp->last->get_location());
+                        errors.add(e);
+                    }
+                    set_const &= is_const;
+                }},
+            exp);
     });
     is_const = set_const;
     last_type = TypeTable::SetType;

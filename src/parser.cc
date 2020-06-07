@@ -652,8 +652,11 @@ std::variant<ASTSimpleExprPtr, ASTRangePtr> Parser::parse_caseLabel() {
         auto range = makeAST<ASTRange>(lexer);
         range->first = e;
         range->last = parse_simpleexpr();
+        debug("Parser::parse_caseLabel range {0}..{1}", std::string(*e),
+              std::string(*(range->last)));
         return std::variant<ASTSimpleExprPtr, ASTRangePtr>(range);
     } else {
+        debug("Parser::parse_caseLabel {0}", std::string(*e));
         return std::variant<ASTSimpleExprPtr, ASTRangePtr>(e);
     }
 }
@@ -833,9 +836,9 @@ ASTBlockPtr Parser::parse_block() {
  * @return ASTExprPtr
  */
 
-inline const std::set<TokenType> relationOps = {TokenType::equals,  TokenType::hash,
-                                                TokenType::less,    TokenType::leq,
-                                                TokenType::greater, TokenType::gteq};
+inline const std::set<TokenType> relationOps = {
+    TokenType::equals,  TokenType::hash, TokenType::less, TokenType::leq,
+    TokenType::greater, TokenType::gteq, TokenType::in};
 
 ASTExprPtr Parser::parse_expr() {
     debug("Parser::parse_expr");
@@ -1209,11 +1212,12 @@ ASTSetPtr Parser::parse_set() {
     lexer.get_token(); // {
     auto tok = lexer.peek_token();
     while (tok.type != TokenType::r_brace) {
-        ast->values.push_back(parse_simpleexpr());
+        ast->values.push_back(parse_caseLabel());
         tok = lexer.peek_token();
         if (tok.type == TokenType::r_brace) {
             break;
         }
+
         get_token(TokenType::comma);
         tok = lexer.peek_token();
     }

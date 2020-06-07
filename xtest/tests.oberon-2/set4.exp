@@ -1,0 +1,55 @@
+; ModuleID = 'set4'
+source_filename = "set4"
+
+@set4_y = internal global i64 0
+@set4_z = internal global i64 0
+@set4_a = internal global i64 0
+@STRING_0 = private global [0 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 121, i32 0]
+@STRING_1 = private global [0 x i32] [i32 70, i32 105, i32 110, i32 105, i32 115, i32 104, i32 33, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_String([0 x i32]*)
+
+define i64 @output() {
+entry:
+  store i64 3, i64* @set4_a
+  %a = load i64, i64* @set4_a
+  %0 = shl i64 1, %a
+  %1 = or i64 0, %0
+  store i64 %1, i64* @set4_z
+  %2 = load i64, i64* @set4_z
+  %3 = or i64 %2, 16
+  store i64 %3, i64* @set4_z
+  %z = load i64, i64* @set4_z
+  store i64 %z, i64* @set4_y
+  %y = load i64, i64* @set4_y
+  %4 = and i64 %y, 8
+  %5 = icmp ugt i64 %4, 0
+  br i1 %5, label %then, label %ifcont
+
+then:                                             ; preds = %entry
+  call void @Out_Int(i64 3, i64 0)
+  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_Ln()
+  br label %ifcont
+
+ifcont:                                           ; preds = %then, %entry
+  %y1 = load i64, i64* @set4_y
+  %6 = and i64 %y1, 16
+  %7 = icmp ugt i64 %6, 0
+  br i1 %7, label %then2, label %ifcont3
+
+then2:                                            ; preds = %ifcont
+  call void @Out_Int(i64 4, i64 0)
+  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_Ln()
+  br label %ifcont3
+
+ifcont3:                                          ; preds = %then2, %ifcont
+  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_Ln()
+  ret i64 0
+}

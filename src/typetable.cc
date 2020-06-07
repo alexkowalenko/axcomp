@@ -160,6 +160,16 @@ void TypeTable::initialise() {
     reg(TokenType::greater, CharType, CharType, BoolType);
     reg(TokenType::gteq, CharType, CharType, BoolType);
 
+    // Set operations
+    reg(TokenType::equals, SetType, SetType, BoolType);
+    reg(TokenType::hash, SetType, SetType, BoolType);
+    reg(TokenType::in, IntType, SetType, BoolType);
+
+    reg(TokenType::plus, SetType, SetType, SetType);
+    reg(TokenType::dash, SetType, SetType, SetType);
+    reg(TokenType::asterisk, SetType, SetType, SetType);
+    reg(TokenType::slash, SetType, SetType, SetType);
+
     // assignment
     reg(TokenType::assign, IntType, IntType, VoidType);
     reg(TokenType::assign, BoolType, BoolType, VoidType);

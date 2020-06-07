@@ -438,13 +438,33 @@ TEST(Inspector, Set) {
          "{y+1,y+2}\nEND alpha.",
          ""},
 
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+            BEGIN
+                x := {1..6};
+                x := {1..3,4..5,6..7};
+                x := {1,2..5,33..44};
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: SET;\nBEGIN\nx := {1..6};\nx := {1..3,4..5,6..7};\nx := "
+         "{1,2..5,33..44}\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                a,b: INTEGER;
+            BEGIN
+                x := {a..b};
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: SET;\na: INTEGER;\nb: INTEGER;\nBEGIN\nx := {a..b}\nEND alpha.",
+         ""},
+
         // Errors
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
                 BEGIN
                 x := {'c'};
                 END alpha.)",
-         "", "4,22: Expression 'c' is not a integer type"},
+         "", "4,25: Expression 'c' is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
@@ -452,7 +472,127 @@ TEST(Inspector, Set) {
                 BEGIN
                 x := {y};
                 END alpha.)",
-         "", "5,22: Expression y is not a integer type"},
+         "", "5,23: Expression y is not a integer type"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+            BEGIN
+                x := {"hello"..6};
+            END alpha.)",
+         "", "4,29: Expression \"hello\" is not a integer type"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+            BEGIN
+                x := {1..'!'};
+            END alpha.)",
+         "", "4,25: Expression '!' is not a integer type"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                a: INTEGER;
+                b: CHAR;
+            BEGIN
+                x := {a..b};
+            END alpha.)",
+         "", "6,25: Expression b is not a integer type"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR x: SET;
+                a: INTEGER;
+                b: CHAR;
+            BEGIN
+                x := {b..a};
+            END alpha.)",
+         "", "6,23: Expression b is not a integer type"},
+
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, SetOps) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                b: BOOLEAN;
+                x: INTEGER;
+                BEGIN
+                b := x IN s;
+                b := (1 IN s) & (x IN s);
+                b := s = t;
+                b := s # t; 
+                END alpha.)",
+         "MODULE alpha;\nVAR\ns: SET;\nt: SET;\nb: BOOLEAN;\nx: INTEGER;\nBEGIN\nb := x IN s;\nb "
+         ":=  (1 IN s)  &  (x IN s) ;\nb := s = t;\nb := s # t\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                b: BOOLEAN;
+                BEGIN
+                b := 1.2 IN s;
+                END alpha.)",
+         "", "5,20: operator IN doesn't takes types REAL and SET"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                b: BOOLEAN;
+                BEGIN
+                b := s IN s;
+                END alpha.)",
+         "", "5,20: operator IN doesn't takes types SET and SET"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                b: BOOLEAN;
+                BEGIN
+                b := b = s;
+                END alpha.)",
+         "", "5,20: operator = doesn't takes types BOOLEAN and SET"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                b: BOOLEAN;
+                BEGIN
+                b := 1 # s;
+                END alpha.)",
+         "", "5,20: operator # doesn't takes types INTEGER and SET"},
+
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, SetOps2) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t, u: SET;
+                BEGIN
+                u := s + t;
+                u := s - t;
+                u := s * t;
+                u := s / t;
+                END alpha.)",
+         "MODULE alpha;\nVAR\ns: SET;\nt: SET;\nu: SET;\nBEGIN\nu := s+t;\nu := s-t;\nu := "
+         "s*t;\nu := s / t\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                u: INTEGER;
+                BEGIN
+                t := s + u;
+                END alpha.)",
+         "", "5,20: operator + doesn't takes types SET and INTEGER"},
+
+        {R"(MODULE alpha; (* SET *)
+            VAR s, t: SET;
+                u: INTEGER;
+                BEGIN
+                u := s + t;
+                END alpha.)",
+         "", "5,20: Can't assign expression of type SET to u"},
 
     };
     do_inspect_tests(tests);
