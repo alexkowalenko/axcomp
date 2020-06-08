@@ -3,22 +3,21 @@ source_filename = "Dead1"
 
 define internal void @Dead1_P() {
 entry:
-  %i1 = alloca i64
   %j = alloca i64
   %i = alloca i64
   store i64 0, i64* %i
   store i64 0, i64* %j
   store i64 123, i64* %j
-  store i64 0, i64* %i1
+  store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
   %0 = load i64, i64* %j
   %inc = add i64 %0, 1
   store i64 %inc, i64* %j
-  %1 = load i64, i64* %i1
-  %nextvar = add i64 %1, 1
-  store i64 %nextvar, i64* %i1
+  %index = load i64, i64* %i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* %i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -26,8 +25,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 9
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 9
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret void

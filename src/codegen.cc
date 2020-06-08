@@ -710,11 +710,8 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
     last_end = after;
 
-    symboltable.push_frame(ast->get_id());
-    auto *index = createEntryBlockAlloca(funct, ast->ident->value, TypeTable::IntType->get_llvm());
+    auto *index = symboltable.find(ast->ident->value)->value;
     builder.CreateStore(start_value, index);
-    symboltable.put(ast->ident->value, mkSym(TypeTable::IntType));
-    symboltable.set_value(ast->ident->value, index);
 
     // Insert an explicit fall through from the current block to the Loop.
     // Start insertion in LoopBB.
@@ -732,7 +729,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     } else {
         step = TypeTable::IntType->make_value(1);
     }
-    auto * tmp = builder.CreateLoad(index);
+    auto * tmp = builder.CreateLoad(index, "index");
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
 
@@ -740,7 +737,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     ast->end->accept(this);
     auto *end_value = last_value;
 
-    // If step positive
+    // check step
     auto *cond = builder.CreateICmpSGE(step, TypeTable::IntType->get_init());
     builder.CreateCondBr(cond, forpos, forneg);
 
@@ -762,7 +759,6 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     builder.SetInsertPoint(after);
 
     debug("CodeGenerator::visit_ASTFor after:{0}", last_end);
-    symboltable.pop_frame();
 }
 
 void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
@@ -1018,6 +1014,9 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
                 last_value = builder.CreateNot(R, "setdiff");
                 last_value = builder.CreateAnd(L, last_value, "setdiff");
                 break;
+            default:
+                throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
+                                       ast->get_location());
             }
         } else if (L->getType() == TypeTable::StrType->get_llvm() ||
                    R->getType() == TypeTable::StrType->get_llvm()) {

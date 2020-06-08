@@ -10,23 +10,22 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  %i = alloca i64
   store i1 false, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 0)
   store i1 true, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 1)
   store i1 false, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 2)
-  store i64 0, i64* %i
+  store i64 0, i64* @g04_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load [3 x i1], [3 x i1]* @g04_x
-  %i1 = load i64, i64* %i
-  %idx = getelementptr [3 x i1], [3 x i1]* @g04_x, i64 0, i64 %i1
-  %idx2 = load i1, i1* %idx
-  call void @WriteBoolean(i1 %idx2)
+  %i = load i64, i64* @g04_i
+  %idx = getelementptr [3 x i1], [3 x i1]* @g04_x, i64 0, i64 %i
+  %idx1 = load i1, i1* %idx
+  call void @WriteBoolean(i1 %idx1)
   call void @WriteLn()
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @g04_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @g04_i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -34,18 +33,18 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond3 = icmp sge i64 %nextvar, 2
-  br i1 %loopcond3, label %loop, label %afterloop
+  %loopcond2 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond2, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
-  %x4 = load [3 x i1], [3 x i1]* @g04_x
-  %idx5 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 0)
-  %x6 = load [3 x i1], [3 x i1]* @g04_x
-  %idx7 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 1)
-  %subtmp = or i1 %idx5, %idx7
-  %x8 = load [3 x i1], [3 x i1]* @g04_x
-  %idx9 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 2)
-  %subtmp10 = or i1 %subtmp, %idx9
-  %1 = zext i1 %subtmp10 to i64
-  ret i64 %1
+  %x3 = load [3 x i1], [3 x i1]* @g04_x
+  %idx4 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 0)
+  %x5 = load [3 x i1], [3 x i1]* @g04_x
+  %idx6 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 1)
+  %subtmp = or i1 %idx4, %idx6
+  %x7 = load [3 x i1], [3 x i1]* @g04_x
+  %idx8 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 2)
+  %subtmp9 = or i1 %subtmp, %idx8
+  %0 = zext i1 %subtmp9 to i64
+  ret i64 %0
 }

@@ -507,7 +507,6 @@ using ASTCasePtr = std::shared_ptr<ASTCase>;
  */
 class ASTFor : public ASTStatement, public std::enable_shared_from_this<ASTFor> {
   public:
-    ASTFor() { unique_id = ++ids; }
     ~ASTFor() override = default;
 
     void accept(ASTVisitor *v) override { v->visit_ASTFor(shared_from_this()); };
@@ -517,14 +516,8 @@ class ASTFor : public ASTStatement, public std::enable_shared_from_this<ASTFor> 
     ASTExprPtr                   end;
     ASTExprPtr                   by{nullptr};
     std::vector<ASTStatementPtr> stats;
-
-    static int  ids;
-    int         unique_id;
-    std::string get_id() { return llvm::formatv("for-{0}", unique_id); };
 };
 using ASTForPtr = std::shared_ptr<ASTFor>;
-
-inline int ASTFor::ids = 0;
 
 /**
  * @brief "WHILE" expr "DO" statement_seq "END"

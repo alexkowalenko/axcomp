@@ -65,18 +65,17 @@ case_end:                                         ; preds = %else, %case.element
 
 define void @Case1_Test() {
 entry:
-  %i1 = alloca i64
   %i = alloca i64
   store i64 0, i64* %i
-  store i64 0, i64* %i1
+  store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i2 = load i64, i64* %i1
-  call void @Case1_P(i64 %i2)
-  %0 = load i64, i64* %i1
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %i1
+  %i1 = load i64, i64* %i
+  call void @Case1_P(i64 %i1)
+  %index = load i64, i64* %i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* %i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -84,8 +83,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond3 = icmp sge i64 %nextvar, 10
-  br i1 %loopcond3, label %loop, label %afterloop
+  %loopcond2 = icmp sge i64 %nextvar, 10
+  br i1 %loopcond2, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret void

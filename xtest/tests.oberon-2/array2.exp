@@ -15,62 +15,56 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %k33 = alloca i64
-  %j28 = alloca i64
-  %i23 = alloca i64
-  %k = alloca i64
-  %j = alloca i64
-  %i = alloca i64
-  store i64 0, i64* %i
+  store i64 0, i64* @array2_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  store i64 0, i64* %j
+  store i64 0, i64* @array2_j
   br label %loop1
 
 forpos:                                           ; preds = %afterloop4
-  %loopcond17 = icmp sle i64 %nextvar16, 2
-  br i1 %loopcond17, label %loop, label %afterloop
+  %loopcond16 = icmp sle i64 %nextvar15, 2
+  br i1 %loopcond16, label %loop, label %afterloop
 
 forneg:                                           ; preds = %afterloop4
-  %loopcond18 = icmp sge i64 %nextvar16, 2
-  br i1 %loopcond18, label %loop, label %afterloop
+  %loopcond17 = icmp sge i64 %nextvar15, 2
+  br i1 %loopcond17, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
-  store i64 0, i64* %i23
-  br label %loop19
+  store i64 0, i64* @array2_i
+  br label %loop18
 
 loop1:                                            ; preds = %forneg3, %forpos2, %loop
-  store i64 0, i64* %k
+  store i64 0, i64* @array2_k
   br label %loop5
 
 forpos2:                                          ; preds = %afterloop8
-  %loopcond14 = icmp sle i64 %nextvar13, 3
-  br i1 %loopcond14, label %loop1, label %afterloop4
+  %loopcond12 = icmp sle i64 %nextvar11, 3
+  br i1 %loopcond12, label %loop1, label %afterloop4
 
 forneg3:                                          ; preds = %afterloop8
-  %loopcond15 = icmp sge i64 %nextvar13, 3
-  br i1 %loopcond15, label %loop1, label %afterloop4
+  %loopcond13 = icmp sge i64 %nextvar11, 3
+  br i1 %loopcond13, label %loop1, label %afterloop4
 
 afterloop4:                                       ; preds = %forneg3, %forpos2
-  %0 = load i64, i64* %i
-  %nextvar16 = add i64 %0, 1
-  store i64 %nextvar16, i64* %i
+  %index14 = load i64, i64* @array2_i
+  %nextvar15 = add i64 %index14, 1
+  store i64 %nextvar15, i64* @array2_i
   br i1 true, label %forpos, label %forneg
 
 loop5:                                            ; preds = %forneg7, %forpos6, %loop1
   %sum = load i64, i64* @array2_sum
-  %k9 = load i64, i64* %k
-  %j10 = load i64, i64* %j
-  %i11 = load i64, i64* %i
-  %idx = getelementptr [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x, i64 0, i64 %k9, i64 %j10, i64 %i11
+  %k = load i64, i64* @array2_k
+  %j = load i64, i64* @array2_j
+  %i = load i64, i64* @array2_i
+  %idx = getelementptr [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x, i64 0, i64 %k, i64 %j, i64 %i
   store i64 %sum, i64* %idx
-  %1 = load i64, i64* @array2_sum
-  %inc = add i64 %1, 1
+  %0 = load i64, i64* @array2_sum
+  %inc = add i64 %0, 1
   store i64 %inc, i64* @array2_sum
-  %2 = load i64, i64* %k
-  %nextvar = add i64 %2, 1
-  store i64 %nextvar, i64* %k
+  %index = load i64, i64* @array2_k
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @array2_k
   br i1 true, label %forpos6, label %forneg7
 
 forpos6:                                          ; preds = %loop5
@@ -78,84 +72,84 @@ forpos6:                                          ; preds = %loop5
   br i1 %loopcond, label %loop5, label %afterloop8
 
 forneg7:                                          ; preds = %loop5
-  %loopcond12 = icmp sge i64 %nextvar, 4
-  br i1 %loopcond12, label %loop5, label %afterloop8
+  %loopcond9 = icmp sge i64 %nextvar, 4
+  br i1 %loopcond9, label %loop5, label %afterloop8
 
 afterloop8:                                       ; preds = %forneg7, %forpos6
-  %3 = load i64, i64* %j
-  %nextvar13 = add i64 %3, 1
-  store i64 %nextvar13, i64* %j
+  %index10 = load i64, i64* @array2_j
+  %nextvar11 = add i64 %index10, 1
+  store i64 %nextvar11, i64* @array2_j
   br i1 true, label %forpos2, label %forneg3
 
-loop19:                                           ; preds = %forneg21, %forpos20, %afterloop
-  store i64 0, i64* %j28
-  br label %loop24
+loop18:                                           ; preds = %forneg20, %forpos19, %afterloop
+  store i64 0, i64* @array2_j
+  br label %loop22
 
-forpos20:                                         ; preds = %afterloop27
-  %loopcond49 = icmp sle i64 %nextvar48, 2
-  br i1 %loopcond49, label %loop19, label %afterloop22
+forpos19:                                         ; preds = %afterloop25
+  %loopcond48 = icmp sle i64 %nextvar47, 2
+  br i1 %loopcond48, label %loop18, label %afterloop21
 
-forneg21:                                         ; preds = %afterloop27
-  %loopcond50 = icmp sge i64 %nextvar48, 2
-  br i1 %loopcond50, label %loop19, label %afterloop22
+forneg20:                                         ; preds = %afterloop25
+  %loopcond49 = icmp sge i64 %nextvar47, 2
+  br i1 %loopcond49, label %loop18, label %afterloop21
 
-afterloop22:                                      ; preds = %forneg21, %forpos20
+afterloop21:                                      ; preds = %forneg20, %forpos19
   ret i64 0
 
-loop24:                                           ; preds = %forneg26, %forpos25, %loop19
-  store i64 0, i64* %k33
-  br label %loop29
+loop22:                                           ; preds = %forneg24, %forpos23, %loop18
+  store i64 0, i64* @array2_k
+  br label %loop26
 
-forpos25:                                         ; preds = %afterloop32
-  %loopcond46 = icmp sle i64 %nextvar45, 3
-  br i1 %loopcond46, label %loop24, label %afterloop27
+forpos23:                                         ; preds = %afterloop29
+  %loopcond44 = icmp sle i64 %nextvar43, 3
+  br i1 %loopcond44, label %loop22, label %afterloop25
 
-forneg26:                                         ; preds = %afterloop32
-  %loopcond47 = icmp sge i64 %nextvar45, 3
-  br i1 %loopcond47, label %loop24, label %afterloop27
+forneg24:                                         ; preds = %afterloop29
+  %loopcond45 = icmp sge i64 %nextvar43, 3
+  br i1 %loopcond45, label %loop22, label %afterloop25
 
-afterloop27:                                      ; preds = %forneg26, %forpos25
+afterloop25:                                      ; preds = %forneg24, %forpos23
   call void @Out_Ln()
-  %4 = load i64, i64* %i23
-  %nextvar48 = add i64 %4, 1
-  store i64 %nextvar48, i64* %i23
-  br i1 true, label %forpos20, label %forneg21
+  %index46 = load i64, i64* @array2_i
+  %nextvar47 = add i64 %index46, 1
+  store i64 %nextvar47, i64* @array2_i
+  br i1 true, label %forpos19, label %forneg20
 
-loop29:                                           ; preds = %forneg31, %forpos30, %loop24
-  %i34 = load i64, i64* %i23
-  call void @Out_Int(i64 %i34, i64 0)
+loop26:                                           ; preds = %forneg28, %forpos27, %loop22
+  %i30 = load i64, i64* @array2_i
+  call void @Out_Int(i64 %i30, i64 0)
   call void @Out_Char(i32 44)
-  %j35 = load i64, i64* %j28
-  call void @Out_Int(i64 %j35, i64 0)
+  %j31 = load i64, i64* @array2_j
+  call void @Out_Int(i64 %j31, i64 0)
   call void @Out_Char(i32 44)
-  %k36 = load i64, i64* %k33
-  call void @Out_Int(i64 %k36, i64 0)
+  %k32 = load i64, i64* @array2_k
+  call void @Out_Int(i64 %k32, i64 0)
   call void @Out_Char(i32 61)
   %x = load [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x
-  %k37 = load i64, i64* %k33
-  %j38 = load i64, i64* %j28
-  %i39 = load i64, i64* %i23
-  %idx40 = getelementptr [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x, i64 0, i64 %k37, i64 %j38, i64 %i39
-  %idx41 = load i64, i64* %idx40
-  call void @Out_Int(i64 %idx41, i64 0)
+  %k33 = load i64, i64* @array2_k
+  %j34 = load i64, i64* @array2_j
+  %i35 = load i64, i64* @array2_i
+  %idx36 = getelementptr [5 x [4 x [3 x i64]]], [5 x [4 x [3 x i64]]]* @array2_x, i64 0, i64 %k33, i64 %j34, i64 %i35
+  %idx37 = load i64, i64* %idx36
+  call void @Out_Int(i64 %idx37, i64 0)
   call void @Out_Char(i32 32)
-  %5 = load i64, i64* %k33
-  %nextvar42 = add i64 %5, 1
-  store i64 %nextvar42, i64* %k33
-  br i1 true, label %forpos30, label %forneg31
+  %index38 = load i64, i64* @array2_k
+  %nextvar39 = add i64 %index38, 1
+  store i64 %nextvar39, i64* @array2_k
+  br i1 true, label %forpos27, label %forneg28
 
-forpos30:                                         ; preds = %loop29
-  %loopcond43 = icmp sle i64 %nextvar42, 4
-  br i1 %loopcond43, label %loop29, label %afterloop32
+forpos27:                                         ; preds = %loop26
+  %loopcond40 = icmp sle i64 %nextvar39, 4
+  br i1 %loopcond40, label %loop26, label %afterloop29
 
-forneg31:                                         ; preds = %loop29
-  %loopcond44 = icmp sge i64 %nextvar42, 4
-  br i1 %loopcond44, label %loop29, label %afterloop32
+forneg28:                                         ; preds = %loop26
+  %loopcond41 = icmp sge i64 %nextvar39, 4
+  br i1 %loopcond41, label %loop26, label %afterloop29
 
-afterloop32:                                      ; preds = %forneg31, %forpos30
+afterloop29:                                      ; preds = %forneg28, %forpos27
   call void @Out_Ln()
-  %6 = load i64, i64* %j28
-  %nextvar45 = add i64 %6, 1
-  store i64 %nextvar45, i64* %j28
-  br i1 true, label %forpos25, label %forneg26
+  %index42 = load i64, i64* @array2_j
+  %nextvar43 = add i64 %index42, 1
+  store i64 %nextvar43, i64* @array2_j
+  br i1 true, label %forpos23, label %forneg24
 }

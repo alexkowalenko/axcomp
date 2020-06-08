@@ -8,15 +8,14 @@ declare void @HALT(i64)
 
 define i64 @output() {
 entry:
-  %i = alloca i64
-  store i64 1, i64* %i
+  store i64 1, i64* @halt_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
   call void @HALT(i64 3)
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @halt_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @halt_i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop

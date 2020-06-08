@@ -3,8 +3,6 @@ source_filename = "For11"
 
 define void @For11_Test() {
 entry:
-  %j6 = alloca i64
-  %i1 = alloca i64
   %j = alloca i64
   %i = alloca i64
   %c = alloca i64
@@ -12,53 +10,53 @@ entry:
   store i64 0, i64* %i
   store i64 0, i64* %j
   store i64 0, i64* %c
-  store i64 0, i64* %i1
+  store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  store i64 0, i64* %j6
-  br label %loop2
+  store i64 0, i64* %j
+  br label %loop1
 
-forpos:                                           ; preds = %afterloop5
-  %loopcond10 = icmp sle i64 %nextvar9, 1
+forpos:                                           ; preds = %afterloop4
+  %loopcond9 = icmp sle i64 %nextvar8, 1
+  br i1 %loopcond9, label %loop, label %afterloop
+
+forneg:                                           ; preds = %afterloop4
+  %loopcond10 = icmp sge i64 %nextvar8, 1
   br i1 %loopcond10, label %loop, label %afterloop
 
-forneg:                                           ; preds = %afterloop5
-  %loopcond11 = icmp sge i64 %nextvar9, 1
-  br i1 %loopcond11, label %loop, label %afterloop
-
 afterloop:                                        ; preds = %forneg, %forpos
-  %c12 = load i64, i64* %c
-  %0 = icmp eq i64 %c12, 3
+  %c11 = load i64, i64* %c
+  %0 = icmp eq i64 %c11, 3
   %1 = xor i1 %0, true
   br i1 %1, label %assert, label %merge
 
-loop2:                                            ; preds = %forneg4, %forpos3, %loop
+loop1:                                            ; preds = %forneg3, %forpos2, %loop
   %2 = load i64, i64* %c
   %inc = add i64 %2, 1
   store i64 %inc, i64* %c
-  %3 = load i64, i64* %j6
-  %nextvar = add i64 %3, 1
-  store i64 %nextvar, i64* %j6
-  %i7 = load i64, i64* %i1
-  br i1 true, label %forpos3, label %forneg4
+  %index = load i64, i64* %j
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* %j
+  %i5 = load i64, i64* %i
+  br i1 true, label %forpos2, label %forneg3
 
-forpos3:                                          ; preds = %loop2
-  %loopcond = icmp sle i64 %nextvar, %i7
-  br i1 %loopcond, label %loop2, label %afterloop5
+forpos2:                                          ; preds = %loop1
+  %loopcond = icmp sle i64 %nextvar, %i5
+  br i1 %loopcond, label %loop1, label %afterloop4
 
-forneg4:                                          ; preds = %loop2
-  %loopcond8 = icmp sge i64 %nextvar, %i7
-  br i1 %loopcond8, label %loop2, label %afterloop5
+forneg3:                                          ; preds = %loop1
+  %loopcond6 = icmp sge i64 %nextvar, %i5
+  br i1 %loopcond6, label %loop1, label %afterloop4
 
-afterloop5:                                       ; preds = %forneg4, %forpos3
-  %4 = load i64, i64* %i1
-  %nextvar9 = add i64 %4, 1
-  store i64 %nextvar9, i64* %i1
+afterloop4:                                       ; preds = %forneg3, %forpos2
+  %index7 = load i64, i64* %i
+  %nextvar8 = add i64 %index7, 1
+  store i64 %nextvar8, i64* %i
   br i1 true, label %forpos, label %forneg
 
 assert:                                           ; preds = %afterloop
-  %5 = call i64 @HALT(i64 1)
+  %3 = call i64 @HALT(i64 1)
   br label %merge
 
 merge:                                            ; preds = %assert, %afterloop

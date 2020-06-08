@@ -3,16 +3,15 @@ source_filename = "For5"
 
 define void @For5_Test() {
 entry:
-  %x1 = alloca i64
   %x = alloca i64
   store i64 0, i64* %x
-  store i64 127, i64* %x1
+  store i64 127, i64* %x
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %0 = load i64, i64* %x1
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %x1
+  %index = load i64, i64* %x
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* %x
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -20,8 +19,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 128
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 128
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret void

@@ -15,13 +15,12 @@ declare void @Out_String([0 x i32]*)
 
 define i64 @output() {
 entry:
-  %i = alloca i64
-  store i64 1, i64* %i
+  store i64 1, i64* @case4_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i1 = load i64, i64* %i
-  %addtmp = add i64 64, %i1
+  %i = load i64, i64* @case4_i
+  %addtmp = add i64 64, %i
   %0 = call i32 @CHR(i64 %addtmp)
   store i32 %0, i32* @case4_c
   %c = load i32, i32* @case4_c
@@ -36,8 +35,8 @@ forpos:                                           ; preds = %case_end
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %case_end
-  %loopcond2 = icmp sge i64 %nextvar, 4
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 4
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret i64 0
@@ -61,8 +60,8 @@ else:                                             ; preds = %range
   br label %case_end
 
 case_end:                                         ; preds = %else, %case.element1, %case.element0
-  %1 = load i64, i64* %i
-  %nextvar = add i64 %1, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @case4_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @case4_i
   br i1 true, label %forpos, label %forneg
 }

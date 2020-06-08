@@ -13,21 +13,20 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %i = alloca i64
   %0 = call i64 @ORD(i32 128126)
-  store i64 %0, i64* %i
+  store i64 %0, i64* @chr2_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i1 = load i64, i64* %i
-  %1 = call i32 @CHR(i64 %i1)
+  %i = load i64, i64* @chr2_i
+  %1 = call i32 @CHR(i64 %i)
   call void @Out_Char(i32 %1)
   call void @Out_Char(i32 32)
-  %2 = load i64, i64* %i
-  %nextvar = add i64 %2, 1
-  store i64 %nextvar, i64* %i
-  %3 = call i64 @ORD(i32 128126)
-  %addtmp = add i64 %3, 9
+  %index = load i64, i64* @chr2_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @chr2_i
+  %2 = call i64 @ORD(i32 128126)
+  %addtmp = add i64 %2, 9
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -35,8 +34,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, %addtmp
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, %addtmp
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()

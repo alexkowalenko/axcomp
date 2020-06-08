@@ -9,19 +9,18 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  %i = alloca i64
-  store i64 1, i64* %i
+  store i64 1, i64* @f03_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i1 = load i64, i64* %i
-  %modtmp = srem i64 %i1, 2
+  %i = load i64, i64* @f03_i
+  %modtmp = srem i64 %i, 2
   %0 = icmp eq i64 %modtmp, 0
   call void @WriteBoolean(i1 %0)
   call void @WriteLn()
-  %1 = load i64, i64* %i
-  %nextvar = add i64 %1, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @f03_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @f03_i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -29,8 +28,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 12
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 12
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret i64 0

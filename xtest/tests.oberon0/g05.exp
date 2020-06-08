@@ -12,40 +12,36 @@ declare void @WriteLn()
 
 define i64 @output() {
 entry:
-  %x22 = alloca i64
-  %y17 = alloca i64
-  %x = alloca i64
-  %y = alloca i64
-  store i64 0, i64* %y
+  store i64 0, i64* @g05_y
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  store i64 0, i64* %x
+  store i64 0, i64* @g05_x
   br label %loop1
 
 forpos:                                           ; preds = %afterloop4
-  %loopcond11 = icmp sle i64 %nextvar10, 2
-  br i1 %loopcond11, label %loop, label %afterloop
+  %loopcond10 = icmp sle i64 %nextvar9, 2
+  br i1 %loopcond10, label %loop, label %afterloop
 
 forneg:                                           ; preds = %afterloop4
-  %loopcond12 = icmp sge i64 %nextvar10, 2
-  br i1 %loopcond12, label %loop, label %afterloop
+  %loopcond11 = icmp sge i64 %nextvar9, 2
+  br i1 %loopcond11, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
-  store i64 0, i64* %y17
-  br label %loop13
+  store i64 0, i64* @g05_y
+  br label %loop12
 
 loop1:                                            ; preds = %forneg3, %forpos2, %loop
-  %x5 = load i64, i64* %x
-  %y6 = load i64, i64* %y
-  %addtmp = add i64 %x5, %y6
-  %x7 = load i64, i64* %x
-  %y8 = load i64, i64* %y
-  %idx = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x7, i64 %y8
+  %x = load i64, i64* @g05_x
+  %y = load i64, i64* @g05_y
+  %addtmp = add i64 %x, %y
+  %x5 = load i64, i64* @g05_x
+  %y6 = load i64, i64* @g05_y
+  %idx = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x5, i64 %y6
   store i64 %addtmp, i64* %idx
-  %0 = load i64, i64* %x
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %x
+  %index = load i64, i64* @g05_x
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @g05_x
   br i1 true, label %forpos2, label %forneg3
 
 forpos2:                                          ; preds = %loop1
@@ -53,60 +49,60 @@ forpos2:                                          ; preds = %loop1
   br i1 %loopcond, label %loop1, label %afterloop4
 
 forneg3:                                          ; preds = %loop1
-  %loopcond9 = icmp sge i64 %nextvar, 2
-  br i1 %loopcond9, label %loop1, label %afterloop4
+  %loopcond7 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond7, label %loop1, label %afterloop4
 
 afterloop4:                                       ; preds = %forneg3, %forpos2
-  %1 = load i64, i64* %y
-  %nextvar10 = add i64 %1, 1
-  store i64 %nextvar10, i64* %y
+  %index8 = load i64, i64* @g05_y
+  %nextvar9 = add i64 %index8, 1
+  store i64 %nextvar9, i64* @g05_y
   br i1 true, label %forpos, label %forneg
 
-loop13:                                           ; preds = %forneg15, %forpos14, %afterloop
-  store i64 0, i64* %x22
-  br label %loop18
+loop12:                                           ; preds = %forneg14, %forpos13, %afterloop
+  store i64 0, i64* @g05_x
+  br label %loop16
 
-forpos14:                                         ; preds = %afterloop21
-  %loopcond32 = icmp sle i64 %nextvar31, 2
-  br i1 %loopcond32, label %loop13, label %afterloop16
+forpos13:                                         ; preds = %afterloop19
+  %loopcond31 = icmp sle i64 %nextvar30, 2
+  br i1 %loopcond31, label %loop12, label %afterloop15
 
-forneg15:                                         ; preds = %afterloop21
-  %loopcond33 = icmp sge i64 %nextvar31, 2
-  br i1 %loopcond33, label %loop13, label %afterloop16
+forneg14:                                         ; preds = %afterloop19
+  %loopcond32 = icmp sge i64 %nextvar30, 2
+  br i1 %loopcond32, label %loop12, label %afterloop15
 
-afterloop16:                                      ; preds = %forneg15, %forpos14
-  %sum34 = load i64, i64* @g05_sum
-  call void @WriteInt(i64 %sum34)
+afterloop15:                                      ; preds = %forneg14, %forpos13
+  %sum33 = load i64, i64* @g05_sum
+  call void @WriteInt(i64 %sum33)
   call void @WriteLn()
   ret i64 0
 
-loop18:                                           ; preds = %forneg20, %forpos19, %loop13
+loop16:                                           ; preds = %forneg18, %forpos17, %loop12
   %a = load [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a
-  %x23 = load i64, i64* %x22
-  %y24 = load i64, i64* %y17
-  %idx25 = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x23, i64 %y24
-  %idx26 = load i64, i64* %idx25
-  call void @WriteInt(i64 %idx26)
+  %x20 = load i64, i64* @g05_x
+  %y21 = load i64, i64* @g05_y
+  %idx22 = getelementptr [3 x [3 x i64]], [3 x [3 x i64]]* @g05_a, i64 0, i64 %x20, i64 %y21
+  %idx23 = load i64, i64* %idx22
+  call void @WriteInt(i64 %idx23)
   %sum = load i64, i64* @g05_sum
-  %addtmp27 = add i64 %sum, 1
-  store i64 %addtmp27, i64* @g05_sum
-  %2 = load i64, i64* %x22
-  %nextvar28 = add i64 %2, 1
-  store i64 %nextvar28, i64* %x22
-  br i1 true, label %forpos19, label %forneg20
+  %addtmp24 = add i64 %sum, 1
+  store i64 %addtmp24, i64* @g05_sum
+  %index25 = load i64, i64* @g05_x
+  %nextvar26 = add i64 %index25, 1
+  store i64 %nextvar26, i64* @g05_x
+  br i1 true, label %forpos17, label %forneg18
 
-forpos19:                                         ; preds = %loop18
-  %loopcond29 = icmp sle i64 %nextvar28, 2
-  br i1 %loopcond29, label %loop18, label %afterloop21
+forpos17:                                         ; preds = %loop16
+  %loopcond27 = icmp sle i64 %nextvar26, 2
+  br i1 %loopcond27, label %loop16, label %afterloop19
 
-forneg20:                                         ; preds = %loop18
-  %loopcond30 = icmp sge i64 %nextvar28, 2
-  br i1 %loopcond30, label %loop18, label %afterloop21
+forneg18:                                         ; preds = %loop16
+  %loopcond28 = icmp sge i64 %nextvar26, 2
+  br i1 %loopcond28, label %loop16, label %afterloop19
 
-afterloop21:                                      ; preds = %forneg20, %forpos19
+afterloop19:                                      ; preds = %forneg18, %forpos17
   call void @WriteLn()
-  %3 = load i64, i64* %y17
-  %nextvar31 = add i64 %3, 1
-  store i64 %nextvar31, i64* %y17
-  br i1 true, label %forpos14, label %forneg15
+  %index29 = load i64, i64* @g05_y
+  %nextvar30 = add i64 %index29, 1
+  store i64 %nextvar30, i64* @g05_y
+  br i1 true, label %forpos13, label %forneg14
 }

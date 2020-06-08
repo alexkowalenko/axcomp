@@ -6,19 +6,18 @@ source_filename = "e06"
 
 define i64 @output() {
 entry:
-  %i = alloca i64
   store i64 0, i64* @e06_x
-  store i64 0, i64* %i
+  store i64 0, i64* @e06_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load i64, i64* @e06_x
-  %i1 = load i64, i64* %i
-  %addtmp = add i64 %x, %i1
+  %i = load i64, i64* @e06_i
+  %addtmp = add i64 %x, %i
   store i64 %addtmp, i64* @e06_x
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @e06_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @e06_i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -26,10 +25,10 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 9
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 9
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
-  %x3 = load i64, i64* @e06_x
-  ret i64 %x3
+  %x2 = load i64, i64* @e06_x
+  ret i64 %x2
 }

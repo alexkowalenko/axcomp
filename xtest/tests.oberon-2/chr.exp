@@ -13,18 +13,16 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %c = alloca i64
-  %i = alloca i64
-  store i64 65, i64* %i
+  store i64 65, i64* @chr_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i1 = load i64, i64* %i
-  %0 = call i32 @CHR(i64 %i1)
+  %i = load i64, i64* @chr_i
+  %0 = call i32 @CHR(i64 %i)
   call void @Out_Char(i32 %0)
-  %1 = load i64, i64* %i
-  %nextvar = add i64 %1, 1
-  store i64 %nextvar, i64* %i
+  %index = load i64, i64* @chr_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @chr_i
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -32,32 +30,32 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond2 = icmp sge i64 %nextvar, 90
-  br i1 %loopcond2, label %loop, label %afterloop
+  %loopcond1 = icmp sge i64 %nextvar, 90
+  br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()
-  store i64 97, i64* %c
-  br label %loop3
+  store i64 97, i64* @chr_c
+  br label %loop2
 
-loop3:                                            ; preds = %forneg5, %forpos4, %afterloop
-  %c7 = load i64, i64* %c
-  %2 = call i32 @CHR(i64 %c7)
-  call void @Out_Char(i32 %2)
-  %3 = load i64, i64* %c
-  %nextvar8 = add i64 %3, 1
-  store i64 %nextvar8, i64* %c
-  br i1 true, label %forpos4, label %forneg5
+loop2:                                            ; preds = %forneg4, %forpos3, %afterloop
+  %c = load i64, i64* @chr_c
+  %1 = call i32 @CHR(i64 %c)
+  call void @Out_Char(i32 %1)
+  %index6 = load i64, i64* @chr_c
+  %nextvar7 = add i64 %index6, 1
+  store i64 %nextvar7, i64* @chr_c
+  br i1 true, label %forpos3, label %forneg4
 
-forpos4:                                          ; preds = %loop3
-  %loopcond9 = icmp sle i64 %nextvar8, 122
-  br i1 %loopcond9, label %loop3, label %afterloop6
+forpos3:                                          ; preds = %loop2
+  %loopcond8 = icmp sle i64 %nextvar7, 122
+  br i1 %loopcond8, label %loop2, label %afterloop5
 
-forneg5:                                          ; preds = %loop3
-  %loopcond10 = icmp sge i64 %nextvar8, 122
-  br i1 %loopcond10, label %loop3, label %afterloop6
+forneg4:                                          ; preds = %loop2
+  %loopcond9 = icmp sge i64 %nextvar7, 122
+  br i1 %loopcond9, label %loop2, label %afterloop5
 
-afterloop6:                                       ; preds = %forneg5, %forpos4
+afterloop5:                                       ; preds = %forneg4, %forpos3
   call void @Out_Ln()
   ret i64 0
 }

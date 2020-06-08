@@ -11,25 +11,24 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %i = alloca i64
   store [0 x i32]* @STRING_0, [0 x i32]** @string5_x
-  store i64 0, i64* %i
+  store i64 0, i64* @string5_i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
   %x = load [0 x i32]*, [0 x i32]** @string5_x
-  %i1 = load i64, i64* %i
+  %i = load i64, i64* @string5_i
   %0 = load [0 x i32]*, [0 x i32]** @string5_x
-  %idx = getelementptr [0 x i32], [0 x i32]* %0, i64 0, i64 %i1
-  %idx2 = load i32, i32* %idx
-  call void @Out_Char(i32 %idx2)
+  %idx = getelementptr [0 x i32], [0 x i32]* %0, i64 0, i64 %i
+  %idx1 = load i32, i32* %idx
+  call void @Out_Char(i32 %idx1)
   call void @Out_Char(i32 32)
-  %1 = load i64, i64* %i
-  %nextvar = add i64 %1, 1
-  store i64 %nextvar, i64* %i
-  %x3 = load [0 x i32]*, [0 x i32]** @string5_x
-  %2 = call i64 @Strings_Length([0 x i32]* %x3)
-  %subtmp = sub i64 %2, 1
+  %index = load i64, i64* @string5_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @string5_i
+  %x2 = load [0 x i32]*, [0 x i32]** @string5_x
+  %1 = call i64 @Strings_Length([0 x i32]* %x2)
+  %subtmp = sub i64 %1, 1
   br i1 true, label %forpos, label %forneg
 
 forpos:                                           ; preds = %loop
@@ -37,8 +36,8 @@ forpos:                                           ; preds = %loop
   br i1 %loopcond, label %loop, label %afterloop
 
 forneg:                                           ; preds = %loop
-  %loopcond4 = icmp sge i64 %nextvar, %subtmp
-  br i1 %loopcond4, label %loop, label %afterloop
+  %loopcond3 = icmp sge i64 %nextvar, %subtmp
+  br i1 %loopcond3, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   call void @Out_Ln()

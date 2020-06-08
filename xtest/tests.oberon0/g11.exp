@@ -14,60 +14,25 @@ entry:
 
 define internal i64 @g11_sum([3 x i64] %a) {
 entry:
-  %i2 = alloca i64
   %i = alloca i64
   %total = alloca i64
   %a1 = alloca [3 x i64]
   store [3 x i64] %a, [3 x i64]* %a1
   store i64 0, i64* %total
   store i64 0, i64* %i
-  store i64 0, i64* %i2
-  br label %loop
-
-loop:                                             ; preds = %forneg, %forpos, %entry
-  %total3 = load i64, i64* %total
-  %a4 = load [3 x i64], [3 x i64]* %a1
-  %i5 = load i64, i64* %i2
-  %idx = getelementptr [3 x i64], [3 x i64]* %a1, i64 0, i64 %i5
-  %idx6 = load i64, i64* %idx
-  %addtmp = add i64 %total3, %idx6
-  store i64 %addtmp, i64* %total
-  %0 = load i64, i64* %i2
-  %nextvar = add i64 %0, 1
-  store i64 %nextvar, i64* %i2
-  br i1 true, label %forpos, label %forneg
-
-forpos:                                           ; preds = %loop
-  %loopcond = icmp sle i64 %nextvar, 2
-  br i1 %loopcond, label %loop, label %afterloop
-
-forneg:                                           ; preds = %loop
-  %loopcond7 = icmp sge i64 %nextvar, 2
-  br i1 %loopcond7, label %loop, label %afterloop
-
-afterloop:                                        ; preds = %forneg, %forpos
-  %total8 = load i64, i64* %total
-  ret i64 %total8
-}
-
-define i64 @output() {
-entry:
-  %i = alloca i64
   store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %forneg, %forpos, %entry
-  %i1 = load i64, i64* %i
-  %i2 = load i64, i64* %i
-  %multmp = mul i64 %i1, %i2
-  %i3 = load i64, i64* %i
-  %addtmp = add i64 %multmp, %i3
-  %addtmp4 = add i64 %addtmp, 1
-  %i5 = load i64, i64* %i
-  %idx = getelementptr [3 x i64], [3 x i64]* @g11_pt, i64 0, i64 %i5
-  store i64 %addtmp4, i64* %idx
-  %0 = load i64, i64* %i
-  %nextvar = add i64 %0, 1
+  %total2 = load i64, i64* %total
+  %a3 = load [3 x i64], [3 x i64]* %a1
+  %i4 = load i64, i64* %i
+  %idx = getelementptr [3 x i64], [3 x i64]* %a1, i64 0, i64 %i4
+  %idx5 = load i64, i64* %idx
+  %addtmp = add i64 %total2, %idx5
+  store i64 %addtmp, i64* %total
+  %index = load i64, i64* %i
+  %nextvar = add i64 %index, 1
   store i64 %nextvar, i64* %i
   br i1 true, label %forpos, label %forneg
 
@@ -80,8 +45,41 @@ forneg:                                           ; preds = %loop
   br i1 %loopcond6, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
+  %total7 = load i64, i64* %total
+  ret i64 %total7
+}
+
+define i64 @output() {
+entry:
+  store i64 0, i64* @g11_i
+  br label %loop
+
+loop:                                             ; preds = %forneg, %forpos, %entry
+  %i = load i64, i64* @g11_i
+  %i1 = load i64, i64* @g11_i
+  %multmp = mul i64 %i, %i1
+  %i2 = load i64, i64* @g11_i
+  %addtmp = add i64 %multmp, %i2
+  %addtmp3 = add i64 %addtmp, 1
+  %i4 = load i64, i64* @g11_i
+  %idx = getelementptr [3 x i64], [3 x i64]* @g11_pt, i64 0, i64 %i4
+  store i64 %addtmp3, i64* %idx
+  %index = load i64, i64* @g11_i
+  %nextvar = add i64 %index, 1
+  store i64 %nextvar, i64* @g11_i
+  br i1 true, label %forpos, label %forneg
+
+forpos:                                           ; preds = %loop
+  %loopcond = icmp sle i64 %nextvar, 2
+  br i1 %loopcond, label %loop, label %afterloop
+
+forneg:                                           ; preds = %loop
+  %loopcond5 = icmp sge i64 %nextvar, 2
+  br i1 %loopcond5, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %forneg, %forpos
   %pt = load [3 x i64], [3 x i64]* @g11_pt
-  %1 = call [3 x i64] @g11_identity([3 x i64] %pt)
-  %2 = call i64 @g11_sum([3 x i64] %1)
-  ret i64 %2
+  %0 = call [3 x i64] @g11_identity([3 x i64] %pt)
+  %1 = call i64 @g11_sum([3 x i64] %0)
+  ret i64 %1
 }
