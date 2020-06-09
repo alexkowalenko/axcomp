@@ -1,0 +1,49 @@
+; ModuleID = 'HOTLoop5'
+source_filename = "HOTLoop5"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define void @HOTLoop5_Test() {
+entry:
+  %j = alloca i64
+  %i = alloca i64
+  store i64 0, i64* %i
+  store i64 0, i64* %j
+  store i64 1, i64* %i
+  br label %repeat
+
+repeat:                                           ; preds = %end, %entry
+  store i64 1, i64* %j
+  br label %repeat1
+
+repeat1:                                          ; preds = %repeat1, %repeat
+  %j2 = load i64, i64* %j
+  call void @Out_Int(i64 %j2, i64 2)
+  %0 = load i64, i64* %j
+  %inc = add i64 %0, 1
+  store i64 %inc, i64* %j
+  %j3 = load i64, i64* %j
+  %i4 = load i64, i64* %i
+  %1 = icmp sgt i64 %j3, %i4
+  br i1 %1, label %end, label %repeat1
+
+end:                                              ; preds = %repeat1
+  call void @Out_Ln()
+  %2 = load i64, i64* %i
+  %inc5 = add i64 %2, 1
+  store i64 %inc5, i64* %i
+  %i6 = load i64, i64* %i
+  %3 = icmp eq i64 %i6, 5
+  br i1 %3, label %end7, label %repeat
+
+end7:                                             ; preds = %end
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @HOTLoop5_Test()
+  ret i64 0
+}

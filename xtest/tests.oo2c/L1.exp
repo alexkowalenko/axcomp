@@ -1,0 +1,59 @@
+; ModuleID = 'L1'
+source_filename = "L1"
+
+@L1_x = internal global [0 x i32]* null
+@STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_Char(i32)
+
+declare void @Out_String([0 x i32]*)
+
+define i64 @L1_f([0 x i32]** %str) {
+entry:
+  %i = alloca i64
+  %str1 = alloca [0 x i32]**
+  store [0 x i32]** %str, [0 x i32]*** %str1
+  store i64 0, i64* %i
+  store i64 0, i64* %i
+  br label %loop
+
+loop:                                             ; preds = %ifcont, %entry
+  %str2 = load [0 x i32]**, [0 x i32]*** %str1
+  %str3 = load [0 x i32]*, [0 x i32]** %str2
+  %str4 = load [0 x i32]**, [0 x i32]*** %str1
+  %i5 = load i64, i64* %i
+  %0 = load [0 x i32]*, [0 x i32]** %str4
+  %idx = getelementptr [0 x i32], [0 x i32]* %0, i64 0, i64 %i5
+  %idx6 = load i32, i32* %idx
+  %1 = icmp eq i32 %idx6, 0
+  br i1 %1, label %then, label %ifcont
+
+then:                                             ; preds = %loop
+  br label %end
+
+ifcont:                                           ; preds = %loop
+  %i7 = load i64, i64* %i
+  %addtmp = add i64 %i7, 1
+  store i64 %addtmp, i64* %i
+  br label %loop
+
+end:                                              ; preds = %then
+  %i8 = load i64, i64* %i
+  ret i64 %i8
+}
+
+define i64 @output() {
+entry:
+  store [0 x i32]* @STRING_0, [0 x i32]** @L1_x
+  %x = load [0 x i32]*, [0 x i32]** @L1_x
+  call void @Out_String([0 x i32]* %x)
+  call void @Out_Char(i32 32)
+  %0 = call i64 @L1_f([0 x i32]** @L1_x)
+  call void @Out_Int(i64 %0, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

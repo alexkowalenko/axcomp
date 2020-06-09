@@ -501,14 +501,8 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
 
     std::for_each(begin(ast->if_clause.stats), end(ast->if_clause.stats),
                   [this](auto const &s) { s->accept(this); });
-
-    // check if last instruction is branch (EXIT)
-    if (ast->if_clause.stats.empty() || then_block->back().getOpcode() != llvm::Instruction::Br) {
-        // not terminator (branch) put in EXIT
-        debug("CodeGenerator::visit_ASTIf then not terminator");
-        builder.CreateBr(merge_block);
-    }
     then_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    ejectBranch(ast->if_clause.stats, then_block, merge_block);
 
     i = 0;
     for (auto const &e : ast->elsif_clause) {
@@ -535,12 +529,8 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         // THEN
         builder.SetInsertPoint(t_block);
         std::for_each(begin(e.stats), end(e.stats), [this](auto const &s) { s->accept(this); });
-        // check if last instruction is branch (EXIT)
-        if (e.stats.empty() || t_block->back().getOpcode() != llvm::Instruction::Br) {
-            debug("CodeGenerator::visit_ASTIf elsif not terminator");
-            builder.CreateBr(merge_block);
-        }
         t_block = builder.GetInsertBlock(); // necessary for correct generation of code
+        ejectBranch(e.stats, t_block, merge_block);
         i++;
     }
 
@@ -551,12 +541,8 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
         builder.SetInsertPoint(else_block);
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
-        // check if last instruction is branch (EXIT)
-        if (elses.empty() || else_block->back().getOpcode() != llvm::Instruction::Br) {
-            debug("CodeGenerator::visit_ASTIf then not terminator");
-            builder.CreateBr(merge_block);
-        }
         else_block = builder.GetInsertBlock(); // necessary for correct generation of code
+        ejectBranch(elses, else_block, merge_block);
     }
 
     // codegen of ELSE can change the current block, update else_block
@@ -777,6 +763,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
     // Expr
     ast->expr->accept(this);
     builder.CreateCondBr(last_value, loop, end_block);
+    while_block = builder.GetInsertBlock();
 
     // DO
     funct->getBasicBlockList().push_back(loop);
@@ -784,8 +771,8 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
 
-    builder.CreateBr(while_block);
     loop = builder.GetInsertBlock(); // necessary for correct generation of code
+    ejectBranch(ast->stats, loop, while_block);
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -837,7 +824,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
     // END
     funct->getBasicBlockList().push_back(end_block);
     builder.SetInsertPoint(end_block);
-    end_block = builder.GetInsertBlock();
+    // end_block = builder.GetInsertBlock();
 }
 
 void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
@@ -1469,6 +1456,22 @@ void CodeGenerator::setup_builtins() {
             verifyFunction(*func);
             symboltable.set_value(f.first, func);
         }
+    }
+}
+
+/**
+ * @brief eject a BR instruction in a block if the statements where empty, or the previous is not a
+ * BR or RET instruction
+ *
+ */
+void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, BasicBlock *block,
+                                BasicBlock *where) {
+    debug("CodeGenerator::ejectBranch");
+    if (stats.empty() || (block->back().getOpcode() != llvm::Instruction::Br &&
+                          block->back().getOpcode() != llvm::Instruction::Ret)) {
+        // not terminator (branch) put in EXIT
+        debug("CodeGenerator::ejectBranch BR");
+        builder.CreateBr(where);
     }
 }
 

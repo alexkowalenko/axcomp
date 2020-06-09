@@ -13,6 +13,7 @@
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
+#include "ast.hh"
 #include "astvisitor.hh"
 #include "importer.hh"
 #include "options.hh"
@@ -104,6 +105,9 @@ class CodeGenerator : ASTVisitor {
     TypePtr     resolve_type(ASTTypePtr const &t);
     llvm::Type *getType(ASTTypePtr const &type);
     Constant *  getType_init(ASTTypePtr const &type);
+
+    void ejectBranch(std::vector<ASTStatementPtr> const &stats, BasicBlock *block,
+                     BasicBlock *where);
 
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
 
