@@ -1,0 +1,2 @@
+bar
+output: 0

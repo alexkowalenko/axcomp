@@ -122,10 +122,9 @@ class CodeGenerator : ASTVisitor {
     IRBuilder<>             builder;
     std::unique_ptr<Module> module;
 
-    bool        top_level{true};     // am I in the top level of the module?
-    Value *     last_value{nullptr}; // holds last value of compilation
-    BasicBlock *last_end{nullptr};   // last end block in loop, used for EXIT
-    bool        has_return{false};
+    bool        top_level{true};        // am I in the top level of the module?
+    Value *     last_value{nullptr};    // holds last value of compilation
+    BasicBlock *last_end{nullptr};      // last end block in loop, used for EXIT
     bool        do_strchar_conv{false}; // Convert STRING1 to CHAR
 
     int                               string_const{0}; // const_strings counter

@@ -100,10 +100,10 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
     ast->decs->accept(this);
 
     // Go through the statements
-    has_return = false;
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
-    if (!has_return) {
+    block = builder.GetInsertBlock();
+    if (block->back().getOpcode() != llvm::Instruction::Ret) {
         builder.CreateRet(TypeTable::IntType->get_init());
     }
 
@@ -335,10 +335,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     symboltable.set_value(ast->name->value, f);
 
     // Go through the statements
-    has_return = false;
     std::for_each(ast->stats.begin(), ast->stats.end(),
                   [this](auto const &x) { x->accept(this); });
-    if (!has_return) {
+    block = builder.GetInsertBlock();
+    if (block->back().getOpcode() != llvm::Instruction::Ret) {
         if (ast->return_type == nullptr) {
             builder.CreateRetVoid();
         } else {
@@ -397,7 +397,6 @@ void CodeGenerator::visit_ASTReturn(ASTReturnPtr ast) {
     } else {
         builder.CreateRetVoid();
     }
-    has_return = true;
 }
 
 void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
@@ -1460,8 +1459,8 @@ void CodeGenerator::setup_builtins() {
 }
 
 /**
- * @brief eject a BR instruction in a block if the statements where empty, or the previous is not a
- * BR or RET instruction
+ * @brief eject a BR instruction in a block if the statements where empty, or the previous is
+ * not a BR or RET instruction
  *
  */
 void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, BasicBlock *block,

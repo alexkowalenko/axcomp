@@ -1,0 +1,29 @@
+; ModuleID = 'Const2'
+source_filename = "Const2"
+
+@STRING_0 = private global [0 x i32] [i32 102, i32 111, i32 111, i32 0]
+@STRING_1 = private global [0 x i32] [i32 98, i32 97, i32 114, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_String([0 x i32]*)
+
+define void @Const2_Test() {
+entry:
+  br i1 false, label %then, label %ifcont
+
+then:                                             ; preds = %entry
+  call void @Out_String([0 x i32]* @STRING_0)
+  ret void
+
+ifcont:                                           ; preds = %entry
+  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Const2_Test()
+  ret i64 0
+}

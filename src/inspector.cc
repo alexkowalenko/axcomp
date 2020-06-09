@@ -339,6 +339,17 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
 
         (*call_iter)->accept(this);
 
+        if ((*proc_iter).second == Attr::var && (!is_lvalue || is_const)) {
+            debug("Inspector::visit_ASTCall is_lvalue");
+            std::replace(begin(name), end(name), '_', '.');
+            auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
+                                             "reference for VAR parameter {2}",
+                                             name, last_type->get_name(),
+                                             (*proc_iter).first->get_name()),
+                               ast->get_location());
+            errors.add(e);
+        }
+
         if (skip_argument_typecheck) {
             continue;
         }
@@ -357,17 +368,6 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
             debug("incorrect parameter");
             auto e = TypeError(llvm::formatv("procedure call {0} has incorrect "
                                              "type {1} for parameter {2}",
-                                             name, last_type->get_name(),
-                                             (*proc_iter).first->get_name()),
-                               ast->get_location());
-            errors.add(e);
-        }
-
-        if ((*proc_iter).second == Attr::var && !is_lvalue) {
-            debug("Inspector::visit_ASTCall is_lvalue");
-            std::replace(begin(name), end(name), '_', '.');
-            auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
-                                             "reference for VAR parameter {2}",
                                              name, last_type->get_name(),
                                              (*proc_iter).first->get_name()),
                                ast->get_location());

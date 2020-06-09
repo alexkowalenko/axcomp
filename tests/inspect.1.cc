@@ -384,6 +384,33 @@ TEST(Inspector, CallVar) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, CallVarConst) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE alpha; (* SET *)
+            VAR y: INTEGER;
+            BEGIN
+            INC(y);
+            END alpha.)",
+         "MODULE alpha;\nVAR\ny: INTEGER;\nBEGIN\nINC(y)\nEND alpha.", ""},
+
+        // Errors
+        {R"(MODULE alpha; (* SET *)
+            CONST x = 1;
+            BEGIN
+            INC(x);
+            END alpha.)",
+         "", "4,16: procedure call INC does not have a variable reference for VAR parameter any"},
+
+        {R"(MODULE alpha; (* SET *)
+            BEGIN
+            INC(1);
+            END alpha.)",
+         "", "3,16: procedure call INC does not have a variable reference for VAR parameter any"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, FunctionParams) {
     std::vector<ParseTests> tests = {
 
