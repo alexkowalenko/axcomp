@@ -26,6 +26,12 @@ END Bool;
 PROCEDURE Real*(x : REAL; n: INTEGER);
 END Real;
 
+PROCEDURE LongReal*(x : REAL; n: INTEGER);
+END LongReal;
+
+PROCEDURE Set*(x: SET);
+END Set;
+
 PROCEDURE Char*(x : CHAR);
 END Char;
 

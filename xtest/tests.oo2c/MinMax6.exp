@@ -1,0 +1,23 @@
+; ModuleID = 'MinMax6'
+source_filename = "MinMax6"
+
+declare void @Out_Ln()
+
+declare void @Out_Bool(i1)
+
+define void @MinMax6_Test() {
+entry:
+  %x = alloca i1
+  store i1 false, i1* %x
+  store i1 true, i1* %x
+  %x1 = load i1, i1* %x
+  call void @Out_Bool(i1 %x1)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @MinMax6_Test()
+  ret i64 0
+}

@@ -7,6 +7,7 @@
 #include <codecvt>
 #include <cstdio>
 #include <locale>
+#include <sstream>
 
 #include "ax.hh"
 
@@ -38,6 +39,26 @@ extern "C" void Out_Real(Real x, Int n) {
     } else {
         std::printf("%.*G", int(n), x);
     }
+}
+
+extern "C" void Out_LongReal(Real x, Int n) {
+    Out_Real(x, n);
+}
+    
+extern "C" void Out_Set(Set x) {
+    std::stringstream result;
+    result << '{';
+    for (auto i = 0; i < SET_MAX; i++) {
+        if( x & (1UL << i)) {
+            result << i << ',';
+        }
+    }
+    auto str = result.str();
+    if(str.size() > 1) {
+        str.erase(str.end() -1);
+    }
+    str += '}';
+    std::printf("%s", str.c_str());
 }
 
 extern "C" void Out_Char(Char x) {

@@ -2,6 +2,8 @@
 source_filename = "stdlib01"
 
 @stdlib01_x = internal constant i64 12
+@stdlib01_s = internal global i64 0
+@stdlib01_f = internal global double 0.000000e+00
 
 declare void @Out_Ln()
 
@@ -9,11 +11,15 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_Bool(i1)
 
+declare void @Out_Set(i64)
+
 declare void @Out_Open()
 
 declare void @Out_Flush()
 
 declare void @Out_Hex(i64, i64)
+
+declare void @Out_LongReal(double, i64)
 
 define i64 @output() {
 entry:
@@ -26,6 +32,18 @@ entry:
   call void @Out_Hex(i64 3405691582, i64 0)
   call void @Out_Ln()
   call void @Out_Bool(i1 true)
+  call void @Out_Ln()
+  store i64 34359738384, i64* @stdlib01_s
+  %s = load i64, i64* @stdlib01_s
+  call void @Out_Set(i64 %s)
+  call void @Out_Ln()
+  store i64 0, i64* @stdlib01_s
+  %s1 = load i64, i64* @stdlib01_s
+  call void @Out_Set(i64 %s1)
+  call void @Out_Ln()
+  store double 3.141590e+00, double* @stdlib01_f
+  %f = load double, double* @stdlib01_f
+  call void @Out_LongReal(double %f, i64 3)
   call void @Out_Ln()
   call void @Out_Flush()
   ret i64 0
