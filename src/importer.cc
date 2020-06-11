@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <sstream>
 
@@ -56,15 +57,21 @@ bool ends_with(std::string const &s) {
 
 std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
     debug("Importer::read_module {0}", name);
+
+    struct DirCloser {
+        void operator()(DIR *dp) const { closedir(dp); }
+    };
+
     for (auto path : paths) {
 
-        auto *dir = opendir(path.c_str());
-        if (dir == nullptr) {
+        auto *dp = opendir(path.c_str());
+        if (dp == nullptr) {
             throw CodeGenException(llvm::formatv("Can't open {0}", path));
         }
+        std::unique_ptr<DIR, DirCloser> dir(dp);
 
         struct dirent *in_file = nullptr;
-        while ((in_file = readdir(dir))) {
+        while ((in_file = readdir(dir.get()))) {
             std::string fname(in_file->d_name);
             if (fname == "." || fname == "..") {
                 continue;

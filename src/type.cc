@@ -209,6 +209,10 @@ std::vector<llvm::Type *> RecordType::get_fieldTypes() {
         auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
         fs.push_back(res->get_llvm());
     });
+    if (fs.empty()) {
+        // Empty records will crash LLVM
+        fs.push_back(TypeTable::BoolType->get_llvm());
+    }
     return fs;
 }
 
@@ -230,6 +234,9 @@ std::vector<llvm::Constant *> RecordType::get_fieldInit() {
         auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
         fs.push_back(res->get_init());
     });
+    if (fs.empty()) {
+        fs.push_back(TypeTable::BoolType->get_init());
+    }
     return fs;
 }
 

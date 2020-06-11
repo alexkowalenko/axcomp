@@ -66,18 +66,18 @@ class TypeTable : public SymbolTable<TypePtr> {
     }
 
     // Standard types
-    static std::shared_ptr<IntegerType>   IntType;
-    static std::shared_ptr<BooleanType>   BoolType;
-    static std::shared_ptr<RealCType>     RealType;
-    static std::shared_ptr<CharacterType> CharType;
-    static std::shared_ptr<StringType>    StrType;
-    static std::shared_ptr<StringType>    Str1Type;
-    static std::shared_ptr<SetCType>      SetType;
+    inline static std::shared_ptr<IntegerType>   IntType;
+    inline static std::shared_ptr<BooleanType>   BoolType;
+    inline static std::shared_ptr<RealCType>     RealType;
+    inline static std::shared_ptr<CharacterType> CharType;
+    inline static std::shared_ptr<StringType>    StrType;
+    inline static std::shared_ptr<StringType>    Str1Type;
+    inline static std::shared_ptr<SetCType>      SetType;
 
-    static TypePtr VoidType; // For procedures which don't return anything, also arguments which
-                             // can any type (internal for built-ins)
-    static TypePtr AnyType;  // For procedures which can return any time (built-ins), also for
-                             // non-fixed length types arguments (built-ins).
+    inline static TypePtr VoidType; // For procedures which don't return anything, also arguments
+                                    // which can any type (internal for built-ins)
+    inline static TypePtr AnyType;  // For procedures which can return any time (built-ins), also
+                                    // for non-fixed length types arguments (built-ins).
 
     static TypeTable *sgl() { return singleton; };
 
@@ -93,7 +93,7 @@ class TypeTable : public SymbolTable<TypePtr> {
     std::multimap<TokenType, TypeRule1> rules1;
     std::multimap<TokenType, TypeRule2> rules2;
 
-    static TypeTable *singleton;
+    inline static TypeTable *singleton;
 };
 
 } // namespace ax

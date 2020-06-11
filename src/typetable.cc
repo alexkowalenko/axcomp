@@ -21,18 +21,6 @@ template <typename... T> static void debug(const T &... msg) {
     LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
 }
 
-TypeTable *TypeTable::singleton;
-
-std::shared_ptr<IntegerType>   TypeTable::IntType;
-std::shared_ptr<BooleanType>   TypeTable::BoolType;
-std::shared_ptr<RealCType>     TypeTable::RealType;
-std::shared_ptr<CharacterType> TypeTable::CharType;
-std::shared_ptr<StringType>    TypeTable::StrType;
-std::shared_ptr<StringType>    TypeTable::Str1Type;
-std::shared_ptr<SetCType>      TypeTable::SetType;
-TypePtr                        TypeTable::VoidType;
-TypePtr                        TypeTable::AnyType;
-
 void TypeTable::set_type_alias(char const *name, TypePtr const &t) {
     auto type = std::make_shared<TypeAlias>(name, t);
     put(name, type);
