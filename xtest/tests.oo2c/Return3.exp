@@ -1,0 +1,12 @@
+; ModuleID = 'Return3'
+source_filename = "Return3"
+
+define i64 @Return3_Test() {
+entry:
+  ret i64 128
+}
+
+define i64 @output() {
+entry:
+  ret i64 0
+}

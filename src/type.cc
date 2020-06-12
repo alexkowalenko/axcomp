@@ -9,7 +9,6 @@
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
-#include <memory>
 
 #include "utf8.h"
 
@@ -144,8 +143,10 @@ ProcedureFwdType::operator std::string() {
             res += ",";
         }
     }
-    res += "):";
-    res += std::string(*ret);
+    res += ")";
+    if (ret) {
+        res += ":" + std::string(*ret);
+    }
     return res;
 }
 

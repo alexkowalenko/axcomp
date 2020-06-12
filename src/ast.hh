@@ -606,6 +606,7 @@ class ASTProcedure : public ASTProc, public std::enable_shared_from_this<ASTProc
     };
 
     ASTDeclarationPtr            decs;
+    std::vector<ASTProcPtr>      procedures;
     std::vector<ASTStatementPtr> stats;
 };
 using ASTProcedurePtr = std::shared_ptr<ASTProcedure>;

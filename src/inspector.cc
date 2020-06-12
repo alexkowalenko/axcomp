@@ -204,7 +204,13 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     if (ast->decs) {
         ast->decs->accept(this);
     }
-    std::for_each(ast->stats.begin(), ast->stats.end(),
+
+    // check local procedures
+    std::for_each(cbegin(ast->procedures), cend(ast->procedures),
+                  [this](auto const &proc) { proc->accept(this); });
+
+    // check statements
+    std::for_each(cbegin(ast->stats), cend(ast->stats),
                   [this, ast](auto const &x) { x->accept(this); });
     symboltable.pop_frame();
 }

@@ -460,6 +460,80 @@ TEST(Inspector, FunctionParams) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, NestedProcs) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Nested Procedures *)
+            VAR x: INTEGER;
+
+            PROCEDURE f(): INTEGER;                
+                PROCEDURE g(): INTEGER;
+                BEGIN 
+                    RETURN 1;
+                END g;
+            BEGIN
+                RETURN g();
+            END f;
+
+            BEGIN
+                f();
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nPROCEDURE g(): "
+         "INTEGER;\nBEGIN\nRETURN 1\nEND g;\nBEGIN\nRETURN g()\nEND f;\nBEGIN\nf()\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* Nested Procedures *)
+            VAR x: INTEGER;
+            PROCEDURE f(): INTEGER;
+                CONST x = 2;
+                
+                PROCEDURE g(): INTEGER;
+                CONST x = 1;
+                BEGIN 
+                    RETURN x;
+                END g;
+            BEGIN
+                g();
+                RETURN x;
+            END f;
+
+            PROCEDURE g(x: INTEGER): INTEGER;
+                BEGIN 
+                    RETURN x;
+                END g;
+
+            BEGIN
+                f();
+                g(7);
+            END alpha.)",
+         "MODULE alpha;\nVAR\nx: INTEGER;\nPROCEDURE f(): INTEGER;\nCONST\nx = 2;\nPROCEDURE g(): "
+         "INTEGER;\nCONST\nx = 1;\nBEGIN\nRETURN x\nEND g;\nBEGIN\ng();\nRETURN x\nEND "
+         "f;\nPROCEDURE g(x : INTEGER): INTEGER;\nBEGIN\nRETURN x\nEND g;\nBEGIN\nf();\ng(7)\nEND "
+         "alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* Nested Procedures *)
+            VAR x: INTEGER;
+
+            PROCEDURE f(): INTEGER;
+                VAR g: INTEGER;             
+                PROCEDURE g(): INTEGER;
+                BEGIN 
+                    RETURN 1;
+                END g;
+            BEGIN
+                RETURN g();
+            END f;
+
+            BEGIN
+                f();
+            END alpha.)",
+         "", "6,27: PROCEDURE g, identifier is already defined"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Assignment) {
     std::vector<ParseTests> tests = {
 

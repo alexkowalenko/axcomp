@@ -352,8 +352,23 @@ ASTProcedurePtr Parser::parse_procedure() {
     // Declarations
     proc->decs = parse_declaration();
 
-    // statement_seq
+    // Procedures
+    symbols.push_frame(proc->name->value);
     auto tok = lexer.peek_token();
+    while (tok.type == TokenType::procedure) {
+        lexer.get_token(); // PROCEDURE
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::caret) {
+            proc->procedures.push_back(parse_procedureForward());
+        } else {
+            proc->procedures.push_back(parse_procedure());
+        }
+        tok = lexer.peek_token();
+    }
+    symbols.pop_frame();
+
+    // statement_seq
+    tok = lexer.peek_token();
     if (tok.type == TokenType::begin) {
         get_token(TokenType::begin);
         parse_statement_block(proc->stats, module_ends);

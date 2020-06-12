@@ -706,11 +706,10 @@ Procedure declarations consist of a procedure heading and a procedure body. The 
 
 There are two kinds of procedures, namely proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression, and yield a result that is an operand in the expression. Proper procedures are activated by a procedure call. The function procedure is distinguished in the declaration by indication of the type of its result following the parameter list. Its body must contain a \RETURN\ statement which defines the result of the function procedure.
 
-All constants, variables, types, and procedures declared within a procedure body are local to the procedure. The values of local variables are undefined upon entry to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested.
+All constants, variables, types, and procedures declared within a procedure body are local to the procedure. The values of local variables are undefined upon entry to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested. The call of a procedure within its declaration implies recursive activation.
 
-In addition to its formal parameters and locally declared objects, the objects declared in the environment of the procedure are also visible in the procedure (with the exception of those objects that have the same name as an object declared locally).
+Objects declared in the environment of the procedure are also visible in those parts of the procedure in which they are not concealed by a locally declared object with the same name.
 
-The use of the procedure identifier in a call within its declaration implies recursive activation of the procedure.
 
 \begin{lstlisting}[style=ebnf]
 ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
@@ -1442,7 +1441,6 @@ The environment variable \lstinline"AXLIB_PATH" can be used to set the path to s
 
 \subsection{Implementation limitations}
 \begin{itemize}
-    \item \PROCEDURE s can not have nested procedures.
     \item \ARRAY\ sizes must be \INTEGER s, not expressions.
     \item Open \ARRAY s only work with 1 dimensional open arrays.
 \end{itemize}

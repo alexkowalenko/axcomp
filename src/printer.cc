@@ -112,7 +112,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
        << std::string(ast->name->attrs);
     if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";
-        std::for_each(ast->params.begin(), ast->params.end(), [this, ast](auto const &p) {
+        std::for_each(cbegin(ast->params), cend(ast->params), [this, ast](auto const &p) {
             if (p.first->is(Attr::var)) {
                 os << "VAR ";
             }
@@ -132,6 +132,8 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
     os << ";\n";
     push();
     ast->decs->accept(this);
+    std::for_each(cbegin(ast->procedures), cend(ast->procedures),
+                  [this](auto const &p) { p->accept(this); });
     pop();
     if (!ast->stats.empty()) {
         os << indent() << "BEGIN\n";

@@ -110,11 +110,13 @@ class CodeGenerator : ASTVisitor {
                      BasicBlock *where);
 
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
+    std::string               get_nested_name();
 
-    Options &         options;
-    SymbolFrameTable &symboltable;
-    TypeTable &       types;
-    Importer &        importer;
+    Options &                options;
+    SymbolFrameTable &       symboltable;
+    TypeTable &              types;
+    Importer &               importer;
+    std::vector<std::string> nested_procs{};
 
     std::string             module_name;
     std::string             filename;

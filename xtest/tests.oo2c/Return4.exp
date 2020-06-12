@@ -1,0 +1,7 @@
+; ModuleID = 'Return4'
+source_filename = "Return4"
+
+define i64 @output() {
+entry:
+  ret i64 123
+}

@@ -1,0 +1,10 @@
+; ModuleID = 'OpExprCompat15'
+source_filename = "OpExprCompat15"
+
+@OpExprCompat15_i = internal global i64 0
+
+define i64 @output() {
+entry:
+  store i64 -9223372036854775808, i64* @OpExprCompat15_i
+  ret i64 0
+}

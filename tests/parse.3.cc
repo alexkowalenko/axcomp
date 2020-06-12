@@ -452,3 +452,52 @@ TEST(Parser, VarArgs) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, NestedProcs) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Nested Procedures *)
+                VAR x: SET;
+
+                PROCEDURE f(): INTEGER;
+                    CONST x = 1;
+                    
+                    PROCEDURE g(): INTEGER;
+                    CONST x = 2;
+                    BEGIN 
+                    END g;
+                BEGIN
+                    g();
+                END f;
+
+                BEGIN
+                    f();
+                END alpha.)",
+         "MODULE alpha;\nVAR\nx: SET;\nPROCEDURE f(): INTEGER;\nCONST\nx = 1;\nPROCEDURE g(): "
+         "INTEGER;\nCONST\nx = 2;\nEND g;\nBEGIN\ng()\nEND f;\nBEGIN\nf()\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha; (* Nested Procedures *)
+                VAR x: SET;
+
+                PROCEDURE f(): INTEGER;
+                    CONST x = 1;
+                    
+                    PROCEDURE g(): INTEGER;
+                    CONST x = 2;
+                    BEGIN 
+                    END;
+                BEGIN
+                    g();
+                END f;
+
+                BEGIN
+                    f();
+                END alpha.)",
+         "", "10,24: Unexpected token: semicolon - expecting indent"},
+
+    };
+    do_parse_tests(tests);
+}

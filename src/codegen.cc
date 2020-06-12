@@ -269,6 +269,9 @@ void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     debug("CodeGenerator::visit_ASTProcedure {0}", ast->name->value);
+
+    nested_procs.push_back(ast->name->value);
+
     // Make the function arguments
     std::vector<llvm::Type *> proto;
     std::for_each(ast->params.begin(), ast->params.end(), [this, ast, &proto](auto const &p) {
@@ -287,7 +290,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
         returnType = getType(ast->return_type);
     }
 
-    auto                      proc_name = gen_module_id(ast->name->value);
+    auto                      proc_name = gen_module_id(get_nested_name());
     FunctionType *            ft = FunctionType::get(returnType, proto, false);
     GlobalValue::LinkageTypes linkage = Function::InternalLinkage;
     if (ast->name->is(Attr::global)) {
@@ -303,8 +306,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     builder.SetInsertPoint(block);
 
     // Push new frame
+    debug("CodeGenerator::visit_ASTProcedure push frame {0}", get_nested_name());
     symboltable.push_frame(ast->name->value);
-
     // Set paramater names
     unsigned i = 0;
     for (auto &arg : f->args()) {
@@ -331,7 +334,14 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     // Do declarations
     ast->decs->accept(this);
 
+    // Do local procedures
+    std::for_each(cbegin(ast->procedures), cend(ast->procedures),
+                  [this](auto const &p) { p->accept(this); });
+
+    builder.SetInsertPoint(block);
+
     // for recursion
+    debug("CodeGenerator::visit_ASTProcedure set function {0}", ast->name->value);
     symboltable.set_value(ast->name->value, f);
 
     // Go through the statements
@@ -346,6 +356,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
         }
     }
     symboltable.pop_frame();
+    debug("CodeGenerator::visit_ASTProcedure pop frame {0}", get_nested_name());
+    // set function in outer scope, incase function name identical in outer and inner scope
+    symboltable.set_value(ast->name->value, f);
+    nested_procs.pop_back();
     // Validate the generated code, checking for consistency.
     verifyFunction(*f);
 }
@@ -1472,6 +1486,16 @@ void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, Basic
         debug("CodeGenerator::ejectBranch BR");
         builder.CreateBr(where);
     }
+}
+
+std::string CodeGenerator::get_nested_name() {
+    auto        insert{""};
+    std::string result{};
+    std::for_each(cbegin(nested_procs), cend(nested_procs), [&result, &insert](auto const &n) {
+        result += insert + n;
+        insert = "_";
+    });
+    return result;
 }
 
 void CodeGenerator::init() {
