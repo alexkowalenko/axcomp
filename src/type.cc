@@ -108,20 +108,26 @@ llvm::Type *StringType::make_type(std::string const & /* unused */) {
                                 0); // All strings are undetermined length
 }
 
-ProcedureType::operator std::string() {
-    std::string res{"("};
-    for (auto &t : params) {
-        if (t.second == Attr::var) {
+std::string ProcedureType::get_print(bool forward) {
+    std::string res = llvm::formatv("{0}(", forward ? "^" : "");
+    const auto *insert = "";
+    for (auto [name, attr] : params) {
+        res += insert;
+        if (attr == Attr::var) {
             res += " VAR ";
         }
-        res += std::string(*t.first);
-        if (t != *(params.end() - 1)) {
-            res += ",";
-        }
+        res += std::string(*name);
+        insert = ", ";
     }
-    res += "):";
-    res += std::string(*ret);
+    res += ")";
+    if (ret) {
+        res += ":" + std::string(*ret);
+    }
     return res;
+}
+
+ProcedureType::operator std::string() {
+    return get_print(false);
 }
 
 llvm::Type *ProcedureType::get_llvm() {
@@ -133,21 +139,7 @@ llvm::Type *ProcedureType::get_llvm() {
 }
 
 ProcedureFwdType::operator std::string() {
-    std::string res{"^("};
-    for (auto &t : params) {
-        if (t.second == Attr::var) {
-            res += " VAR ";
-        }
-        res += std::string(*t.first);
-        if (t != *(params.end() - 1)) {
-            res += ",";
-        }
-    }
-    res += ")";
-    if (ret) {
-        res += ":" + std::string(*ret);
-    }
-    return res;
+    return get_print(true);
 }
 
 ArrayType::operator std::string() {
@@ -278,7 +270,7 @@ std::optional<TypePtr> RecordType::get_type(std::string const &field) {
 }
 
 int RecordType::get_index(std::string const &field) {
-    int base_count{0};
+    long base_count{0};
     if (base) {
         auto d = base->get_index(field);
         if (d >= 0) {

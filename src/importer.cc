@@ -79,7 +79,8 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
             if (ends_with(fname)) {
                 auto dname = fname.substr(0, fname.find_last_of('.'));
                 if (dname == name) {
-                    auto             full_path = path + '/' + fname;
+                    auto full_path = path + '/';
+                    full_path += fname;
                     SymbolFrameTable module_symbols;
                     std::ifstream    is(full_path);
                     try {

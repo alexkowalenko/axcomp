@@ -39,7 +39,7 @@ class CodeGenerator : ASTVisitor {
 
     TypeTable &get_types() { return types; };
 
-    std::vector<Value *> do_arguments(ASTCallPtr ast);
+    std::vector<Value *> do_arguments(ASTCallPtr const &ast);
     Value *              call_function(std::string const &name, llvm::Type *ret,
                                        std::vector<Value *> const &args);
 
@@ -78,7 +78,7 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTSimpleExpr(ASTSimpleExprPtr ast) override;
     void visit_ASTTerm(ASTTermPtr ast) override;
     void visit_ASTFactor(ASTFactorPtr ast) override;
-    void visit_ASTRange_value(ASTRangePtr ast, Value *case_value);
+    void visit_ASTRange_value(ASTRangePtr const &ast, Value *case_value);
     void get_index(ASTDesignatorPtr const &ast);
     void visit_ASTDesignator(ASTDesignatorPtr ast) override;
     void visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast);

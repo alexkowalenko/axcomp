@@ -126,15 +126,15 @@ class ASTVisitor {
     virtual void visit_ASTArray(ASTArrayPtr ast);
     virtual void visit_ASTPointerType(ASTPointerTypePtr ast);
     virtual void visit_ASTRecord(ASTRecordPtr ast);
-    virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/){};
-    virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){};
-    virtual void visit_ASTSet(ASTSetPtr /*not used*/){};
-    virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};
-    virtual void visit_ASTReal(ASTRealPtr /*not used*/){};
-    virtual void visit_ASTChar(ASTCharPtr /*not used*/){};
-    virtual void visit_ASTString(ASTStringPtr /*not used*/){};
-    virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};
-    virtual void visit_ASTNil(ASTNilPtr /*not used*/){};
+    virtual void visit_ASTQualident(ASTQualidentPtr /*not used*/){};   // NOLINT
+    virtual void visit_ASTIdentifier(ASTIdentifierPtr /*not used*/){}; // NOLINT
+    virtual void visit_ASTSet(ASTSetPtr /*not used*/){};               // NOLINT
+    virtual void visit_ASTInteger(ASTIntegerPtr /*not used*/){};       // NOLINT
+    virtual void visit_ASTReal(ASTRealPtr /*not used*/){};             // NOLINT
+    virtual void visit_ASTChar(ASTCharPtr /*not used*/){};             // NOLINT
+    virtual void visit_ASTString(ASTStringPtr /*not used*/){};         // NOLINT
+    virtual void visit_ASTBool(ASTBoolPtr /*not used*/){};             // NOLINT
+    virtual void visit_ASTNil(ASTNilPtr /*not used*/){};               // NOLINT
 };
 
 } // namespace ax

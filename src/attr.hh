@@ -23,6 +23,11 @@ enum class Attr {
 
     global_function,  // global function defined in runtime
     compile_function, // compiler function
+
+    global_var, // global top level variable
+    free_var,   // non local variable
+    local_var,  // local variable
+    modified,   // variable is modified - assignment, var argument
 };
 
 constexpr auto attr_star{"*"};

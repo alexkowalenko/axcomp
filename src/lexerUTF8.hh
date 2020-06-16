@@ -22,18 +22,18 @@ inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
 // Custom emoji checker
 // This is a hack.
 inline constexpr bool is_emoji(Char c) {
-    return (0x1f600 <= c && c <= 0x1f64f) || // Emoticons
-           (0x1F300 <= c && c <= 0x1F5FF) || // Misc Symbols and Pictographs
-           (0x1F680 <= c && c <= 0x1F6FF) || // Transport and Map
-           (0x1F1E6 <= c && c <= 0x1F1FF) || // Regional country flags
-           (0x2600 <= c && c <= 0x26FF) ||   // Misc symbols
-           (0x2700 <= c && c <= 0x27BF) ||   // Dingbats
-           (0xE0020 <= c && c <= 0xE007F) || // Tags
-           (0xFE00 <= c && c <= 0xFE0F) ||   // Variation Selectors
-           (0x1F900 <= c && c <= 0x1F9FF) || // Supplemental Symbols and Pictographs
-           (0x1F018 <= c && c <= 0x1F270) || // Various asian characters
-           (0x238C <= c && c <= 0x2454) ||   // Misc items
-           (0x20D0 <= c && c <= 0x20FF);
+    return (0x1f600 <= c && c <= 0x1f64f) || // Emoticons NOLINT
+           (0x1F300 <= c && c <= 0x1F5FF) || // Misc Symbols and Pictographs NOLINT
+           (0x1F680 <= c && c <= 0x1F6FF) || // Transport and Map NOLINT
+           (0x1F1E6 <= c && c <= 0x1F1FF) || // Regional country flags NOLINT
+           (0x2600 <= c && c <= 0x26FF) ||   // Misc symbols NOLINT
+           (0x2700 <= c && c <= 0x27BF) ||   // Dingbats NOLINT
+           (0xE0020 <= c && c <= 0xE007F) || // Tags NOLINT
+           (0xFE00 <= c && c <= 0xFE0F) ||   // Variation Selectors NOLINT
+           (0x1F900 <= c && c <= 0x1F9FF) || // Supplemental Symbols and Pictographs NOLINT
+           (0x1F018 <= c && c <= 0x1F270) || // Various asian characters NOLINT
+           (0x238C <= c && c <= 0x2454) ||   // Misc items NOLINT
+           (0x20D0 <= c && c <= 0x20FF);     // NOLINT
 }
 
 class Character32 : CharacterClass<Char> {

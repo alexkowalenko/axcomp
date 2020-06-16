@@ -25,7 +25,7 @@ template <typename... T> static void debug(const T &... msg) {
     LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
 }
 
-BIFunctor abs{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor abs{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     debug("builtin ABS");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
@@ -43,7 +43,7 @@ BIFunctor abs{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return TypeTable::IntType->make_value(1);
 }};
 
-BIFunctor len{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor len{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isArrayTy()) {
@@ -56,7 +56,7 @@ BIFunctor len{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return TypeTable::IntType->make_value(1);
 }};
 
-BIFunctor size{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor size{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto name = std::string(*ast->args[0]);
     debug("builtin SIZE {0}", name);
     auto type = codegen->get_types().find(name);
@@ -67,7 +67,7 @@ BIFunctor size{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return TypeTable::IntType->make_value(ty->get_size());
 }};
 
-BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     debug("builtin NEW");
     auto args = codegen->do_arguments(ast);
     if (ast->args.size() > 1 && ast->args[0]->get_type() == TypeTable::StrType) {
@@ -112,7 +112,7 @@ BIFunctor max{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
 }};
 
 template <bool inc_f>
-BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     debug("builtin INC/DEC");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
@@ -145,7 +145,7 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
                            ast->get_location());
 }};
 
-BIFunctor floor{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor floor{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     debug("builtin FLOOR");
     auto                      args = codegen->do_arguments(ast);
     std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
@@ -155,12 +155,12 @@ BIFunctor floor{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return codegen->get_builder().CreateFPToSI(value, TypeTable::IntType->get_llvm());
 }};
 
-BIFunctor flt{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor flt{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto args = codegen->do_arguments(ast);
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
 }};
 
-BIFunctor assert{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor assert{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     debug("builtin ASSERT");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
@@ -185,7 +185,7 @@ BIFunctor assert{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
     return val;
 }};
 
-BIFunctor long_func{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor long_func{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
     if (arg->getType()->isIntegerTy() || arg->getType()->isFloatingPointTy()) {
@@ -197,7 +197,7 @@ BIFunctor long_func{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
 }};
 
 template <bool inc>
-BIFunctor incl{[](CodeGenerator *codegen, ASTCallPtr ast) -> Value * {
+BIFunctor incl{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto   args = codegen->do_arguments(ast);
     auto * set = args[0];
     auto * index = codegen->get_builder().CreateShl(TypeTable::IntType->make_value(1), args[1]);

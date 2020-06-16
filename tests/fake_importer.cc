@@ -12,7 +12,8 @@
 
 namespace ax {
 
-bool FakeImporter::find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &) {
+bool FakeImporter::find_module(std::string const &name, SymbolFrameTable &symbols,
+                               TypeTable & /* not used*/) {
 
     if (name != "beta" && name != "B") {
         return false;

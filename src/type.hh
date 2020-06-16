@@ -161,6 +161,9 @@ class ProcedureType : public Type {
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
     ParamsList params{};
+
+  protected:
+    std::string get_print(bool forward);
 };
 
 class ProcedureFwdType : public ProcedureType {
@@ -215,7 +218,7 @@ class RecordType : public Type {
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
-    bool                        is_base(TypePtr);
+    bool                        is_base(TypePtr t);
 
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);

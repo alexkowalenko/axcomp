@@ -38,7 +38,11 @@ void Inspector::visit_ASTModule(ASTModulePtr ast) {
     if (ast->import) {
         ast->import->accept(this);
     }
+
+    variable_type = Attr::global_var;
     ast->decs->accept(this);
+
+    variable_type = Attr::local_var;
     std::for_each(ast->procedures.begin(), ast->procedures.end(),
                   [this](auto const &proc) { proc->accept(this); });
 
@@ -78,7 +82,9 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
         c.type->set_type(last_type);
         c.type->type = make<ASTQualident>(last_type->get_name());
         debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
-        symboltable.put(c.ident->value, mkSym(last_type, Attr::cnst));
+        auto sym = mkSym(last_type, Attr::cnst);
+        sym->set(variable_type);
+        symboltable.put(c.ident->value, sym);
     });
 }
 
@@ -116,7 +122,7 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
         v.second->accept(this);
         // Update VAR declaration symbols with type
         debug("var type: {0}", last_type->get_name());
-        symboltable.put(v.first->value, mkSym(last_type));
+        symboltable.put(v.first->value, mkSym(last_type, variable_type));
     });
 
     // Post process all pointer defintions
@@ -210,8 +216,24 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
                   [this](auto const &proc) { proc->accept(this); });
 
     // check statements
+    symboltable.reset_free_variables();
     std::for_each(cbegin(ast->stats), cend(ast->stats),
                   [this, ast](auto const &x) { x->accept(this); });
+    auto free_variables = symboltable.get_free_variables();
+    for (auto const &f : free_variables) {
+        auto sym = symboltable.find(f.first());
+        if (sym->is(Attr::global_var)) {
+            continue;
+        }
+        Attrs attrs;
+        attrs.set(Attr::free_var);
+        if (sym->is(Attr::modified)) {
+            attrs.set(Attr::modified);
+        }
+        debug("Inspector::visit_ASTProcedure {0}: Free variable {1} {2}", ast->name->value,
+              f.first(), attrs.contains(Attr::modified) ? "Modified" : "");
+        ast->free_variables.emplace_back(std::string(f.first()), attrs);
+    };
     symboltable.pop_frame();
 }
 
@@ -246,6 +268,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
             errors.add(e);
             return;
         }
+        res->set(Attr::modified);
     };
 
     ast->ident->accept(this);
@@ -345,15 +368,23 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
 
         (*call_iter)->accept(this);
 
-        if ((*proc_iter).second == Attr::var && (!is_lvalue || is_const)) {
-            debug("Inspector::visit_ASTCall is_lvalue");
-            std::replace(begin(name), end(name), '_', '.');
-            auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
-                                             "reference for VAR parameter {2}",
-                                             name, last_type->get_name(),
-                                             (*proc_iter).first->get_name()),
-                               ast->get_location());
-            errors.add(e);
+        if ((*proc_iter).second == Attr::var) {
+            if (!is_lvalue || is_const) {
+                debug("Inspector::visit_ASTCall is_lvalue");
+                std::replace(begin(name), end(name), '_', '.');
+                auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
+                                                 "reference for VAR parameter {2}",
+                                                 name, last_type->get_name(),
+                                                 (*proc_iter).first->get_name()),
+                                   ast->get_location());
+                errors.add(e);
+            } else if (is_lvalue) {
+                auto var_name = std::string(*(*call_iter));
+                auto res = symboltable.find(var_name);
+                if (res) {
+                    res->set(Attr::modified);
+                }
+            }
         }
 
         if (skip_argument_typecheck) {

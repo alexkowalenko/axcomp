@@ -7,6 +7,7 @@
 #include "printer.hh"
 
 #include <algorithm>
+#include <experimental/iterator>
 
 #include <llvm/Support/FormatVariadic.h>
 

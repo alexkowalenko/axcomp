@@ -15,6 +15,9 @@
 #include <string>
 
 #include <llvm/ADT/StringMap.h>
+#include <llvm/ADT/StringSet.h>
+#include <llvm/Support/Debug.h>
+#include <llvm/Support/FormatVariadic.h>
 
 namespace ax {
 
@@ -29,6 +32,9 @@ template <typename T> class TableInterface {
 
     [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator begin() const = 0;
     [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator end() const = 0;
+
+    virtual void                             reset_free_variables() = 0;
+    [[nodiscard]] virtual llvm::StringSet<> &get_free_variables() const = 0;
 };
 
 template <typename T> class SymbolTable : public TableInterface<T> {
@@ -51,11 +57,23 @@ template <typename T> class SymbolTable : public TableInterface<T> {
         return table.end();
     }
 
+    // Free variables
+
+    void reset_free_variables() override {
+        free_variables.clear();
+        if (next) {
+            next->reset_free_variables();
+        }
+    }
+    llvm::StringSet<> &get_free_variables() const override { return free_variables; }
+
     void dump(std::ostream &os) const;
 
   private:
     llvm::StringMap<T>           table;
     std::shared_ptr<SymbolTable> next = nullptr;
+
+    mutable llvm::StringSet<> free_variables;
 };
 
 template <typename T> T SymbolTable<T>::find(const std::string &name) const {
@@ -63,7 +81,12 @@ template <typename T> T SymbolTable<T>::find(const std::string &name) const {
         return x->second;
     }
     if (next) {
-        return next->find(name);
+        auto res = next->find(name);
+        if (res) {
+            // add free variable
+            free_variables.insert(name);
+        }
+        return res;
     }
     return nullptr;
 }
@@ -75,7 +98,12 @@ template <typename T> bool SymbolTable<T>::set(const std::string &name, T const 
     }
     // not found, check above
     if (next) {
-        return next->set(name, val);
+        auto res = next->set(name, val);
+        if (res) {
+            // add free variable
+            free_variables.insert(name);
+        }
+        return res;
     }
     return false;
 }
@@ -120,6 +148,15 @@ template <typename T> class FrameTable : public TableInterface<T> {
         return current_table->end();
     };
 
+    // Free variables
+
+    void reset_free_variables() override { current_table->reset_free_variables(); };
+    [[nodiscard]] llvm::StringSet<> &get_free_variables() const override {
+        return current_table->get_free_variables();
+    };
+
+    // Frames
+
     void push_frame(std::string const &frame_name);
     void pop_frame();
 
@@ -163,7 +200,6 @@ template <typename T> void FrameTable<T>::dump(std::ostream &os) {
 } // namespace ax
 
 #include "symbol.hh"
-#include "llvm/Support/FormatVariadic.h"
 namespace ax {
 
 class SymbolFrameTable : public FrameTable<SymbolPtr> {

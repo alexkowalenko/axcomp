@@ -17,6 +17,7 @@
 #include "attr.hh"
 #include "lexerUTF8.hh"
 #include "location.hh"
+#include "symbol.hh"
 #include "token.hh"
 #include "type.hh"
 
@@ -608,6 +609,8 @@ class ASTProcedure : public ASTProc, public std::enable_shared_from_this<ASTProc
     ASTDeclarationPtr            decs;
     std::vector<ASTProcPtr>      procedures;
     std::vector<ASTStatementPtr> stats;
+
+    std::vector<std::pair<std::string, Attrs>> free_variables;
 };
 using ASTProcedurePtr = std::shared_ptr<ASTProcedure>;
 

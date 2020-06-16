@@ -422,7 +422,7 @@ void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
     }
 }
 
-std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr ast) {
+std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
     // Look up the name in the global module table.
     auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
@@ -559,7 +559,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     }
 
     // codegen of ELSE can change the current block, update else_block
-    else_block = builder.GetInsertBlock();
+    else_block = builder.GetInsertBlock(); // NOLINT
 
     // Emit merge block.
     funct->getBasicBlockList().push_back(merge_block);
@@ -684,13 +684,13 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
         if (else_block->back().getOpcode() != llvm::Instruction::Br) {
             builder.CreateBr(end_block);
         }
-        else_block = builder.GetInsertBlock(); // necessary for correct generation of code
+        else_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
     }
 
     // END
     funct->getBasicBlockList().push_back(end_block);
     builder.SetInsertPoint(end_block);
-    end_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    end_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 }
 
 void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
@@ -810,7 +810,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
     // Expr
     ast->expr->accept(this);
     builder.CreateCondBr(last_value, end_block, repeat_block);
-    repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -832,7 +832,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
     builder.CreateBr(loop_block);
-    loop_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    loop_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -857,7 +857,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
 
     builder.CreateBr(end_block);
-    begin_block = builder.GetInsertBlock(); // necessary for correct generation of code
+    begin_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
     funct->getBasicBlockList().push_back(end_block);
@@ -1158,7 +1158,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
                ast->factor);
 }
 
-void CodeGenerator::visit_ASTRange_value(ASTRangePtr ast, Value *case_value) {
+void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_value) {
     debug("CodeGenerator::visit_ASTRange");
     ast->first->accept(this);
     auto *low = builder.CreateICmpSLE(last_value, case_value);
@@ -1489,7 +1489,7 @@ void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, Basic
 }
 
 std::string CodeGenerator::get_nested_name() {
-    auto        insert{""};
+    const auto *insert{""};
     std::string result{};
     std::for_each(cbegin(nested_procs), cend(nested_procs), [&result, &insert](auto const &n) {
         result += insert + n;
