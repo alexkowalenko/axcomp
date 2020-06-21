@@ -7,8 +7,11 @@
 #include <fstream>
 #include <iostream>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/CommandLine.h"
+#pragma clang diagnostic pop
 
 #include "builtin.hh"
 #include "codegen.hh"

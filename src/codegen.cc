@@ -41,7 +41,7 @@ namespace ax {
 #define DEBUG_TYPE "codegen"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << formatv(msg...) << '\n');
 }
 
 using namespace llvm::sys;
@@ -115,32 +115,30 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
 }
 
 void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
-    debug("CodeGenerator::visit_ASTImport");
+    debug("ASTImport");
 
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
         SymbolFrameTable symbols;
         auto             found = importer.find_module(i.first->value, symbols, types);
         assert(found);
 
-        debug("CodeGenerator::visit_ASTImport do {0}", i.first->value);
+        debug("ASTImport do {0}", i.first->value);
 
         // convert table to ValueSymboltable
         std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto &s) {
             auto name = s.first();
             auto type = s.second->type;
-            debug("CodeGenerator::visit_ASTImport get {0} : {1}", name, type->get_name());
+            debug("ASTImport get {0} : {1}", name, type->get_name());
 
             if (is_referencable(type->id)) {
+                GlobalVariable *gVar = generate_global(name, type->get_llvm());
 
-                module->getOrInsertGlobal(name, type->get_llvm());
-                GlobalVariable *gVar = module->getNamedGlobal(name);
-
-                debug("CodeGenerator::visit_ASTImport var {0}", name);
+                debug("ASTImport var {0}", name);
 
                 symboltable.set_value(name, gVar, Attr::global);
             } else if (type->id == TypeId::procedure) {
 
-                debug("CodeGenerator::visit_ASTImport proc {0}", name);
+                debug("ASTImport proc {0}", name);
                 if (auto res = symboltable.find(name); res->is(Attr::used)) {
                     auto *funcType = (FunctionType *)type->get_llvm();
 
@@ -148,7 +146,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                         funcType, Function::LinkageTypes::ExternalLinkage, name, module.get());
                     verifyFunction(*func);
                     symboltable.set_value(name, func);
-                    debug("CodeGenerator::visit_ASTImport proc {0} set ", name);
+                    debug("ASTImport proc {0} set ", name);
                 }
             } else {
                 // Should be not here
@@ -168,16 +166,14 @@ void CodeGenerator::doTopDecs(ASTDeclarationPtr const &ast) {
 }
 
 void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
-    debug("CodeGenerator::doTopVars");
+    debug("doTopVars");
     for (auto const &c : ast->vars) {
-        debug("CodeGenerator::doTopVars {0}: {1}", c.first->value,
-              c.second->get_type()->get_name(), c.second->get_type()->get_llvm());
+        debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name(),
+              c.second->get_type()->get_llvm());
 
-        llvm::Type *type = getType(c.second);
-        auto        var_name = gen_module_id(c.first->value);
-
-        module->getOrInsertGlobal(var_name, type);
-        GlobalVariable *gVar = module->getNamedGlobal(var_name);
+        llvm::Type *    type = getType(c.second);
+        auto            var_name = gen_module_id(c.first->value);
+        GlobalVariable *gVar = generate_global(var_name, type);
 
         GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.first->is(Attr::global)) {
@@ -191,13 +187,12 @@ void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
 }
 
 void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
-    debug("CodeGenerator::doTopConsts");
+    debug("doTopConsts");
     for (auto const &c : ast->consts) {
-        debug("CodeGenerator::doTopConsts type: {0}", c.type->get_type()->get_name());
-        auto *type = getType(c.type);
-        auto  const_name = gen_module_id(c.ident->value);
-        module->getOrInsertGlobal(const_name, type);
-        GlobalVariable *gVar = module->getNamedGlobal(const_name);
+        debug("doTopConsts type: {0}", c.type->get_type()->get_name());
+        auto *          type = getType(c.type);
+        auto            const_name = gen_module_id(c.ident->value);
+        GlobalVariable *gVar = generate_global(const_name, type);
 
         c.value->accept(this);
         GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
@@ -229,7 +224,7 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclarationPtr ast) {
 }
 
 void CodeGenerator::visit_ASTConst(ASTConstPtr ast) {
-    debug("CodeGenerator::visit_ASTConst");
+    debug("ASTConst");
     for (auto const &c : ast->consts) {
         c.value->accept(this);
         auto *val = last_value;
@@ -247,7 +242,7 @@ void CodeGenerator::visit_ASTConst(ASTConstPtr ast) {
 }
 
 void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
-    debug("CodeGenerator::visit_ASTVar");
+    debug("ASTVar");
     for (auto const &c : ast->vars) {
 
         // Create variable
@@ -268,20 +263,34 @@ void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
 }
 
 void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
-    debug("CodeGenerator::visit_ASTProcedure {0}", ast->name->value);
+    debug("ASTProcedure {0}", ast->name->value);
 
     nested_procs.push_back(ast->name->value);
+    auto sym = symboltable.find(ast->name->value);
 
     // Make the function arguments
-    std::vector<llvm::Type *> proto;
-    std::for_each(ast->params.begin(), ast->params.end(), [this, ast, &proto](auto const &p) {
-        auto type = getType(p.second);
+    std::vector<llvm::Type *>                              proto;
+    std::vector<std::pair<int, llvm::Attribute::AttrKind>> argAttr;
+    auto                                                   index{0};
+
+    for (auto const &p : ast->params) {
+        auto              type = getType(p.second);
+        llvm::AttrBuilder attrs;
+        index++;
+        if (index == 1 && sym->is(Attr::closure)) {
+            debug("ASTProcedure {0} is closure function", ast->name->value);
+            argAttr.emplace_back(index, llvm::Attribute::Nest);
+        }
         if (p.first->is(Attr::var)) {
             debug(" CodeGenerator::visit_ASTProcedure VAR {0}", p.first->value);
             type = type->getPointerTo();
+
+        } else {
+            // Todo: Switch on later
+            // argAttr.emplace_back(index, llvm::Attribute::ByVal);
         }
         proto.push_back(type);
-    });
+    };
 
     llvm::Type *returnType = nullptr;
     if (ast->return_type == nullptr) {
@@ -300,13 +309,16 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     if (!f) {
         f = Function::Create(ft, linkage, proc_name, module.get());
     }
+    for (auto const &[index, attr] : argAttr) {
+        f->addAttribute(index, attr);
+    }
 
     // Create a new basic block to start insertion into.
     BasicBlock *block = BasicBlock::Create(context, "entry", f);
     builder.SetInsertPoint(block);
 
     // Push new frame
-    debug("CodeGenerator::visit_ASTProcedure push frame {0}", get_nested_name());
+    debug("ASTProcedure push frame {0}", get_nested_name());
     symboltable.push_frame(ast->name->value);
     // Set paramater names
     unsigned i = 0;
@@ -341,7 +353,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     builder.SetInsertPoint(block);
 
     // for recursion
-    debug("CodeGenerator::visit_ASTProcedure set function {0}", ast->name->value);
+    debug("ASTProcedure set function {0}", ast->name->value);
     symboltable.set_value(ast->name->value, f);
 
     // Go through the statements
@@ -356,7 +368,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
         }
     }
     symboltable.pop_frame();
-    debug("CodeGenerator::visit_ASTProcedure pop frame {0}", get_nested_name());
+    debug("ASTProcedure pop frame {0}", get_nested_name());
     // set function in outer scope, incase function name identical in outer and inner scope
     symboltable.set_value(ast->name->value, f);
     nested_procs.pop_back();
@@ -377,7 +389,7 @@ void CodeGenerator::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
 }
 
 void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
-    debug("CodeGenerator::visit_ASTAssignment {0}", std::string(*(ast->ident)));
+    debug("ASTAssignment {0}", std::string(*(ast->ident)));
     ast->expr->accept(this);
     auto *val = last_value;
 
@@ -387,7 +399,7 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
             var = true;
         }
     }
-    debug("CodeGenerator::visit_ASTAssignment VAR {0}", var);
+    debug("ASTAssignment VAR {0}", var);
     if (var) {
         // Handle VAR assignment
         is_var = true; // Set change in visit_ASTIdentifierPtr to notify
@@ -414,7 +426,7 @@ void CodeGenerator::visit_ASTReturn(ASTReturnPtr ast) {
 }
 
 void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
-    debug("CodeGenerator::visit_ASTExit");
+    debug("ASTExit");
     if (last_end) {
         builder.CreateBr(last_end);
     } else {
@@ -435,7 +447,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
     auto                 i = 0;
     for (auto const &a : ast->args) {
         if (typeFunction->params[i].second == Attr::var) {
-            debug("CodeGenerator::visit_ASTCall VAR parameter");
+            debug("ASTCall VAR parameter");
             // Var Parameter
 
             // Get Identifier, get pointer set to last_value
@@ -445,7 +457,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
             auto ptr = a->expr->term->factor->factor;
             auto p2 = std::get<ASTDesignatorPtr>(ptr)->ident;
 
-            debug("CodeGenerator::visit_ASTCall identifier {0}", p2->id->value);
+            debug("ASTCall identifier {0}", p2->id->value);
             visit_ASTIdentifierPtr(p2->id);
         } else {
             // Reference Parameter
@@ -464,24 +476,102 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
 
 void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     auto name = ast->name->ident->make_coded_id();
-    debug("CodeGenerator::visit_ASTCall: {0}", name);
+    debug("ASTCall: {0}", name);
     auto res = symboltable.find(name);
 
     if (res->is(Attr::compile_function)) {
-        debug("CodeGenerator::visit_ASTCall: compile {0}", name);
+        debug("ASTCall: compile {0}", name);
         auto &f = Builtin::compile_functions[name];
         last_value = f(this, ast);
         return;
     }
-    debug("CodeGenerator::visit_ASTCall: global {0}", name);
+    debug("ASTCall: global {0}", name);
     auto args = do_arguments(ast);
     assert(res->value);
+    auto  callee_type = std::dynamic_pointer_cast<ProcedureType>(res->type);
     auto *callee = llvm::dyn_cast<Function>(res->value);
-    last_value = builder.CreateCall(callee, args);
+    if (res->is(Attr::closure)) {
+        debug("ASTCall: {0} call closure", name);
+
+#if 0
+        // temporary memory to store the trampoline itself.
+        auto *trampTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 32);
+        auto *tramp = builder.CreateAlloca(trampTy, 0, "tramp");
+        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0),
+                                          TypeTable::IntType->make_value(0)};
+        auto *                     tptr = builder.CreateGEP(tramp, ind, "tramp.first");
+
+        // make closure
+        auto *current_func = builder.GetInsertBlock()->getParent();
+        auto *nest = gen_closureStruct(callee_type, current_func);
+
+        llvm::Type *ptrTy = llvm::PointerType::get(TypeTable::IntType->get_llvm(), 0);
+        nest = builder.CreateBitCast(nest, ptrTy, "closure");
+        llvm::Value *castFn = builder.CreateBitCast(callee, ptrTy, "callee");
+        auto trampinit = generate_function("llvm.init.trampoline", TypeTable::VoidType->get_llvm(),
+                                           {ptrTy, ptrTy, ptrTy});
+        builder.CreateCall(trampinit, {tptr, castFn, nest});
+        auto  llvmAdjust = generate_function("llvm.adjust.trampoline", ptrTy, {ptrTy});
+        auto *fptr = builder.CreateCall(llvmAdjust, {tptr}, "tramp.ptr");
+        last_value = builder.CreateBitCast(fptr, callee->getFunctionType(), "tramp.func");
+#endif
+
+        // From lacsap ClosureAST::CodeGen
+
+        // this should be a struct
+        auto cls_str =
+            std::make_shared<ArrayType>(std::make_shared<PointerType>(TypeTable::IntType));
+        cls_str->dimensions.push_back(callee_type->free_vars.size());
+        auto *                     cls_ty = cls_str->get_llvm();
+        auto *                     tramp = builder.CreateAlloca(cls_ty, 0, "closure_struct");
+        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
+        auto *                     current_func = builder.GetInsertBlock()->getParent();
+        llvm::Value *closure = createEntryBlockAlloca(current_func, "closure_struct", cls_ty);
+        int          index = 0;
+        for (auto const &[name, f_ty] : callee_type->free_vars) {
+            auto         r = symboltable.find(name);
+            llvm::Value *v = r->value;
+            ind[1] = TypeTable::IntType->make_value(index);
+            llvm::Value *ptr = builder.CreateGEP(closure, ind, name);
+            builder.CreateStore(v, ptr);
+            index++;
+        }
+        args.insert(args.begin(), closure);
+    }
+    auto *inst = builder.CreateCall(callee, args);
+    if (res->is(Attr::closure)) {
+        inst->addAttribute(1, llvm::Attribute::Nest);
+    }
+    last_value = inst;
+}
+
+llvm::Value *CodeGenerator::gen_closureStruct(std::shared_ptr<ProcedureType> fun_type,
+                                              llvm::Function *               f) {
+    debug("gen_closureStruct: ");
+    std::array<llvm::Value *, 2> ind = {TypeTable::IntType->make_value(0), nullptr};
+    llvm::Function *             fn = builder.GetInsertBlock()->getParent();
+
+    auto ptr = std::make_shared<PointerType>(TypeTable::IntType);
+    auto space = ArrayType(ptr);
+    space.dimensions.push_back(fun_type->free_vars.size());
+    auto *closure = createEntryBlockAlloca(f, "closure_struct", space.get_llvm());
+
+    int index = 0;
+    for (auto const &[f_name, f_type] : fun_type->free_vars) {
+        debug("gen_closureStruct: {0}", f_name);
+        auto  res = symboltable.find(f_name);
+        auto *v = res->value;
+        v = builder.CreateBitCast(v, ptr->get_llvm());
+        ind[1] = TypeTable::IntType->make_value(index);
+        llvm::Value *ptr = builder.CreateGEP(closure, ind, f_name);
+        builder.CreateStore(v, ptr);
+        index++;
+    }
+    return closure;
 }
 
 void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
-    debug("CodeGenerator::visit_ASTIf");
+    debug("ASTIf");
 
     // IF
     ast->if_clause.expr->accept(this);
@@ -567,7 +657,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
 }
 
 void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
-    debug("CodeGenerator::visit_ASTCase");
+    debug("ASTCase");
 
     // Create blocks, insert then block
     auto *                    funct = builder.GetInsertBlock()->getParent();
@@ -597,17 +687,17 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
 
     i = 0;
     for (auto const &element : ast->elements) {
-        debug("CodeGenerator::visit_ASTCase {0}", i);
+        debug("ASTCase {0}", i);
         std::for_each(begin(element->exprs), end(element->exprs),
                       [this, switch_inst, element_blocks, i, &range_list](auto &expr) {
                           if (std::holds_alternative<ASTSimpleExprPtr>(expr)) {
-                              debug("CodeGenerator::visit_ASTCase {0} expr", i);
+                              debug("ASTCase {0} expr", i);
                               std::get<ASTSimpleExprPtr>(expr)->accept(this);
                               assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
                               switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
                                                    element_blocks[i]);
                           } else if (std::holds_alternative<ASTRangePtr>(expr)) {
-                              debug("CodeGenerator::visit_ASTCase {0} range", i);
+                              debug("ASTCase {0} range", i);
                               auto range = std::get<ASTRangePtr>(expr);
                               range_list.push_back({range, i});
                           }
@@ -659,7 +749,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
 
     i = 0;
     for (auto const &element : ast->elements) {
-        debug("CodeGenerator::visit_ASTCase element {0}", i);
+        debug("ASTCase element {0}", i);
 
         funct->getBasicBlockList().push_back(element_blocks[i]);
         builder.SetInsertPoint(element_blocks[i]);
@@ -694,7 +784,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
 }
 
 void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
-    debug("CodeGenerator::visit_ASTFor");
+    debug("ASTFor");
 
     // do start expr
     ast->start->accept(this);
@@ -757,11 +847,11 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
 
-    debug("CodeGenerator::visit_ASTFor after:{0}", last_end);
+    debug("ASTFor after:{0}", last_end);
 }
 
 void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
-    debug("CodeGenerator::visit_ASTWhile");
+    debug("ASTWhile");
 
     // Create blocks
     auto *      funct = builder.GetInsertBlock()->getParent();
@@ -793,7 +883,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
 }
 
 void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
-    debug("CodeGenerator::visit_ASTRepeat");
+    debug("ASTRepeat");
 
     // Create blocks
     auto *      funct = builder.GetInsertBlock()->getParent();
@@ -818,7 +908,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
 }
 
 void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
-    debug("CodeGenerator::visit_ASTLoop");
+    debug("ASTLoop");
 
     // Create blocks
     auto *      funct = builder.GetInsertBlock()->getParent();
@@ -841,7 +931,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
 }
 
 void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
-    debug("CodeGenerator::visit_ASTBlock");
+    debug("ASTBlock");
 
     // Create blocks
     auto *      funct = builder.GetInsertBlock()->getParent();
@@ -865,7 +955,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
 }
 
 void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
-    debug("CodeGenerator::visit_ASTExpr");
+    debug("ASTExpr");
     ast->expr->accept(this);
 
     if (ast->relation) {
@@ -913,7 +1003,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         } else if (ast->relation_expr->get_type() == TypeTable::SetType) {
             // SET comparisons
-            debug("CodeGenerator::visit_ASTExpr set comprisons");
+            debug("ASTExpr set comprisons");
             switch (*ast->relation) {
             case TokenType::in: {
                 auto *index = builder.CreateShl(TypeTable::IntType->make_value(1), L);
@@ -1075,7 +1165,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
 }
 
 void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
-    debug("CodeGenerator::visit_ASTTerm {0}", std::string(*ast));
+    // debug("ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
     for (auto const &t : ast->rest) {
@@ -1144,7 +1234,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
 }
 
 void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
-    debug("CodeGenerator::visit_ASTFactor {0}", std::string(*ast));
+    // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
                           [this, ast](ASTFactorPtr const &arg) {
@@ -1159,7 +1249,7 @@ void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
 }
 
 void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_value) {
-    debug("CodeGenerator::visit_ASTRange");
+    debug("ASTRange");
     ast->first->accept(this);
     auto *low = builder.CreateICmpSLE(last_value, case_value);
     ast->last->accept(this);
@@ -1168,38 +1258,37 @@ void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_val
 }
 
 void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
-    debug("CodeGenerator::get_index");
+    debug("get_index");
     visit_ASTIdentifierPtr(ast->ident->id);
     auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
 
-        std::visit(overloaded{[this, &index](ArrayRef const &s) {
-                                  // calculate index;
-                                  std::for_each(rbegin(s), rend(s), [this, &index](auto &expr) {
-                                      expr->accept(this);
-                                      debug("GEP index is Int: {0}",
-                                            last_value->getType()->isIntegerTy());
-                                      index.push_back(last_value);
-                                  });
-                              },
-                              [this, &index](FieldRef const &s) {
-                                  // calculate index
-                                  // extract the field index
-                                  debug("CodeGenerator::get_index record index {0} for {1}",
-                                        s.second, s.first->value);
-                                  assert(s.second >= 0);
+        std::visit(
+            overloaded{[this, &index](ArrayRef const &s) {
+                           // calculate index;
+                           std::for_each(rbegin(s), rend(s), [this, &index](auto &expr) {
+                               expr->accept(this);
+                               debug("GEP index is Int: {0}",
+                                     last_value->getType()->isIntegerTy());
+                               index.push_back(last_value);
+                           });
+                       },
+                       [this, &index](FieldRef const &s) {
+                           // calculate index
+                           // extract the field index
+                           debug("get_index record index {0} for {1}", s.second, s.first->value);
+                           assert(s.second >= 0);
 
-                                  // record indexes are 32 bit integers
-                                  auto *idx =
-                                      ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
-                                  index.push_back(idx);
-                              },
-                              [this, &arg_ptr](PointerRef /* unused */) {
-                                  arg_ptr = builder.CreateLoad(arg_ptr);
-                              }},
-                   s);
+                           // record indexes are 32 bit integers
+                           auto *idx = ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
+                           index.push_back(idx);
+                       },
+                       [this, &arg_ptr](PointerRef /* unused */) {
+                           arg_ptr = builder.CreateLoad(arg_ptr);
+                       }},
+            s);
     }
     debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
     // arg_ptr->getType()->print(llvm::dbgs());
@@ -1218,7 +1307,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
-    debug("CodeGenerator::visit_ASTDesignator {0}", std::string(*ast));
+    // debug("ASTDesignator {0}", std::string(*ast));
     visit_ASTQualident(ast->ident);
 
     // Check if has selectors
@@ -1237,7 +1326,7 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast) {
-    debug("CodeGenerator::visit_ASTDesignatorPtr {0}", std::string(*ast));
+    // debug("ASTDesignatorPtr {0}", std::string(*ast));
 
     visit_ASTQualidentPtr(ast->ident);
 
@@ -1251,7 +1340,7 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast) {
 }
 
 void CodeGenerator::visit_ASTQualident(ASTQualidentPtr ast) {
-    debug("CodeGenerator::visit_ASTQualident");
+    // debug("ASTQualident");
     if (ast->qual.empty()) {
         visit_ASTIdentifier(ast->id);
     } else {
@@ -1262,7 +1351,7 @@ void CodeGenerator::visit_ASTQualident(ASTQualidentPtr ast) {
 }
 
 void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast) {
-    debug("CodeGenerator::visit_ASTQualidentPtr");
+    // debug("ASTQualidentPtr");
     if (ast->qual.empty()) {
         visit_ASTIdentifierPtr(ast->id);
     } else {
@@ -1273,18 +1362,18 @@ void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast) {
 }
 
 void CodeGenerator::visit_ASTIdentifier(ASTIdentifierPtr ast) {
-    debug("CodeGenerator::visit_ASTIdentifier {0}", ast->value);
+    debug("ASTIdentifier {0}", ast->value);
     visit_ASTIdentifierPtr(ast);
     last_value = builder.CreateLoad(last_value, ast->value);
 }
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
-    debug("CodeGenerator::visit_ASTIdentifierPtr {0}", ast->value);
+    debug("ASTIdentifierPtr {0}", ast->value);
 
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;
         if (res->is(Attr::var)) {
-            debug("CodeGenerator::visit_ASTIdentifierPtr VAR {0}", ast->value);
+            debug("ASTIdentifierPtr VAR {0}", ast->value);
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         if (is_var) {
@@ -1301,13 +1390,13 @@ void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
     auto * one = TypeTable::IntType->make_value(1);
     for (auto const &exp : ast->values) {
         std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExprPtr const &exp) {
-                                  debug("CodeGenerator::visit_ASTSet exp");
+                                  debug("ASTSet exp");
                                   exp->accept(this);
                                   auto *index = builder.CreateShl(one, last_value);
                                   set_value = builder.CreateOr(set_value, index);
                               },
                               [this, &set_value, ast, one](ASTRangePtr const &exp) {
-                                  debug("CodeGenerator::visit_ASTSet range");
+                                  debug("ASTSet range");
                                   exp->first->accept(this);
                                   auto *first = last_value;
                                   exp->last->accept(this);
@@ -1334,7 +1423,7 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
 }
 
 void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
-    debug("CodeGenerator::visit_ASTString {0}", ast->value);
+    debug("ASTString {0}", ast->value);
 
     if (do_strchar_conv) {
         auto char_val = ast->value[0];
@@ -1347,9 +1436,7 @@ void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
         var = res->second;
     } else {
         std::string name = llvm::formatv("STRING_{0}", string_const++);
-        module->getOrInsertGlobal(name, TypeTable::StrType->make_type(ast->value));
-
-        var = module->getNamedGlobal(name);
+        var = generate_global(name, TypeTable::StrType->make_type(ast->value));
         var->setInitializer(TypeTable::StrType->make_value(ast->value));
         var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
         global_strings[ast->value] = var;
@@ -1380,19 +1467,19 @@ std::string CodeGenerator::gen_module_id(std::string const &id) const {
  */
 Value *CodeGenerator::call_function(std::string const &name, llvm::Type *ret,
                                     std::vector<Value *> const &args) {
-    debug("CodeGenerator::call_function {0}", name);
+    debug("call_function {0}", name);
 
     auto *f = module->getFunction(name);
     if (!f) {
 
-        debug("CodeGenerator::call_function generate {0}", name);
+        debug("call_function generate {0}", name);
         std::vector<llvm::Type *> proto;
         std::for_each(begin(args), end(args),
                       [this, &proto](auto const &t) { proto.push_back(t->getType()); });
         auto *ft = FunctionType::get(ret, proto, false);
         f = Function::Create(ft, Function::LinkageTypes::ExternalLinkage, name, module.get());
     }
-    debug("CodeGenerator::call_function call {0}", name);
+    debug("call_function call {0}", name);
     return builder.CreateCall(f, args);
 }
 
@@ -1428,34 +1515,34 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
 }
 
 TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
-    debug("CodeGenerator::resolve_type {0}", std::string(*t));
+    debug("resolve_type {0}", std::string(*t));
     TypePtr result;
     std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
                               result = types.resolve(type->id->value);
 
                               // should be a resloved type this far down
-                              assert(result);
+                              assert(result && "Type not found");
                           },
                           [t, &result, this](auto /* not used*/) {
                               result = types.resolve(t->get_type()->get_name());
                           }},
                t->type);
-    debug("CodeGenerator::resolve_type to {0}", std::string(*result));
+    debug("resolve_type to {0}", std::string(*result));
     return result;
 }
 
 llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
-    debug("CodeGenerator::getType {0}", std::string(*t));
+    debug("getType {0}", std::string(*t));
     return resolve_type(t)->get_llvm();
 }
 
 Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
-    debug("CodeGenerator::getType_init {0}", std::string(*t));
+    debug("getType_init {0}", std::string(*t));
     return resolve_type(t)->get_init();
 }
 
 void CodeGenerator::setup_builtins() {
-    debug("CodeGenerator::setup_builtins");
+    debug("setup_builtins");
 
     for (auto const &f : Builtin::global_functions) {
         // debug("function: {0} ", f.first);
@@ -1479,11 +1566,11 @@ void CodeGenerator::setup_builtins() {
  */
 void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, BasicBlock *block,
                                 BasicBlock *where) {
-    debug("CodeGenerator::ejectBranch");
+    debug("ejectBranch");
     if (stats.empty() || (block->back().getOpcode() != llvm::Instruction::Br &&
                           block->back().getOpcode() != llvm::Instruction::Ret)) {
         // not terminator (branch) put in EXIT
-        debug("CodeGenerator::ejectBranch BR");
+        debug("ejectBranch BR");
         builder.CreateBr(where);
     }
 }
@@ -1496,6 +1583,17 @@ std::string CodeGenerator::get_nested_name() {
         insert = "_";
     });
     return result;
+}
+
+GlobalVariable *CodeGenerator::generate_global(std::string const &name, llvm::Type *t) {
+    module->getOrInsertGlobal(name, t);
+    return module->getNamedGlobal(name);
+}
+
+FunctionCallee CodeGenerator::generate_function(std::string const &name, llvm::Type *ret,
+                                                llvm::ArrayRef<llvm::Type *> const &params) {
+    llvm::FunctionType *ft = llvm::FunctionType::get(ret, params, false);
+    return module->getOrInsertFunction(name, ft);
 }
 
 void CodeGenerator::init() {
@@ -1538,7 +1636,7 @@ void CodeGenerator::optimize() {
 }
 
 void CodeGenerator::generate_llcode() {
-    debug("CodeGenerator::generate_llcode");
+    debug("generate_llcode");
     auto            f = filename + file_ext_llvmri;
     std::error_code EC;
     raw_fd_ostream  out_file(f, EC, sys::fs::OF_None);
@@ -1551,7 +1649,7 @@ void CodeGenerator::generate_llcode() {
 }
 
 void CodeGenerator::generate_objectcode() {
-    debug("CodeGenerator::generate_objectcode");
+    debug("generate_objectcode");
 
     // Define the target triple
     auto targetTriple = sys::getDefaultTargetTriple();

@@ -120,8 +120,8 @@ template <typename T> void SymbolTable<T>::remove(const std::string &name) {
 
 template <typename T> void SymbolTable<T>::dump(std::ostream &os) const {
     os << "Dump symbol table: \n";
-    for (auto const &x : table) {
-        os << x.first << " -> " << x.second.first->get_name() << std::endl;
+    for (auto const &[name, val] : table) {
+        os << name << " -> " << val.first->get_name() << std::endl;
     }
     if (next) {
         next->dump(os);

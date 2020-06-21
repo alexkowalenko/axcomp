@@ -38,6 +38,8 @@ def main():
 
     argsParser.add_argument(
         '-debug', help="turn on debugging", action='store_true')
+    argsParser.add_argument(
+        '-debug-only', help="debug options")
 
     argsParser.add_argument(
         '-v', '--verbose', help="show the compile steps", action='store_true')
@@ -70,6 +72,8 @@ def main():
 
     if args.debug:
         arguments += "-debug "
+    if args.debug_only:
+        arguments += "-debug  -debug-only " + args.debug_only + " "
 
     cmd = f"{compiler} {arguments} {args.file}"
     if args.verbose:

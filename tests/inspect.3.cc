@@ -56,21 +56,6 @@ TEST(Inspector, ReadOnly) {
          "", "2,21: CONST a is always read only"},
 
         {R"(MODULE alpha;
-                CONST a* = 10;
-                TYPE second- = INTEGER;
-                VAR x* : ARRAY 5 OF INTEGER;
-                VAR pt : RECORD x*, y* : INTEGER END;
-
-                PROCEDURE f* : INTEGER;
-                BEGIN
-                    RETURN 0
-                END f;
-                BEGIN
-                    RETURN 0 
-                END alpha.)",
-         "", "3,20: TYPE second is always read only"},
-
-        {R"(MODULE alpha;
                 CONST a = 10;
                 TYPE second = INTEGER;
                 VAR x : ARRAY 5 OF INTEGER;

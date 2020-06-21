@@ -355,8 +355,11 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
     };
 
-    std::for_each(begin(global_functions), end(global_functions),
-                  [&symbols](auto &f) { symbols.put(f.first, mkSym(f.second)); });
+    std::for_each(begin(global_functions), end(global_functions), [&symbols](auto &f) {
+        auto sym = mkSym(f.second);
+        sym->set(Attr::global_var);
+        symbols.put(f.first, sym);
+    });
 
     compile_functions.try_emplace("LEN", len);
     compile_functions.try_emplace("SIZE", size);

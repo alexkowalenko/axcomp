@@ -27,7 +27,7 @@ namespace ax {
 #define DEBUG_TYPE "parser"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n');
 }
 
 // module identifier markers
@@ -128,7 +128,7 @@ ASTModulePtr Parser::parse_module() {
  * @return ASTImportPtr
  */
 ASTImportPtr Parser::parse_import() {
-    debug("Parser::parse_import");
+    debug("parse_import");
     auto ast = makeAST<ASTImport>(lexer);
 
     lexer.get_token(); // IMPORT
@@ -142,11 +142,11 @@ ASTImportPtr Parser::parse_import() {
             auto second = parse_identifier();
             ast->imports.emplace_back(ASTImport::Pair{second, ident});
             auto module = std::make_shared<ModuleType>(second->value);
-            symbols.put(ident->value, mkSym(module));
+            symbols.put(ident->value, mkSym(module, Attr::global_var));
         } else {
             ast->imports.emplace_back(ASTImport::Pair{ident, nullptr});
             auto module = std::make_shared<ModuleType>(ident->value);
-            symbols.put(ident->value, mkSym(module));
+            symbols.put(ident->value, mkSym(module, Attr::global_var));
         }
         tok = lexer.peek_token();
         if (tok.type != TokenType::comma) {
@@ -167,7 +167,7 @@ ASTImportPtr Parser::parse_import() {
  * @return ASTDeclarationPtr
  */
 ASTDeclarationPtr Parser::parse_declaration() {
-    debug("Parser::parse_declaration");
+    debug("parse_declaration");
     auto decs = makeAST<ASTDeclaration>(lexer);
 
     auto tok = lexer.peek_token();
@@ -220,7 +220,7 @@ ASTDeclarationPtr Parser::parse_declaration() {
  * @return ASTConstPtr
  */
 ASTConstPtr Parser::parse_const() {
-    debug("Parser::parse_const");
+    debug("parse_const");
     auto cnst = makeAST<ASTConst>(lexer);
 
     lexer.get_token(); // CONST
@@ -267,7 +267,7 @@ void Parser::parse_identList(std::vector<ASTIdentifierPtr> &list) {
  * @return ASTTypeDecPtr
  */
 ASTTypeDecPtr Parser::parse_typedec() {
-    debug("Parser::parse_typedec");
+    debug("parse_typedec");
     auto type = makeAST<ASTTypeDec>(lexer);
 
     lexer.get_token(); // TYPE
@@ -292,7 +292,7 @@ ASTTypeDecPtr Parser::parse_typedec() {
  * @return ASTVarPtr
  */
 ASTVarPtr Parser::parse_var() {
-    debug("Parser::parse_var");
+    debug("parse_var");
     auto var = makeAST<ASTVar>(lexer);
 
     lexer.get_token(); // VAR
@@ -344,10 +344,10 @@ void Parser::parse_proc(ASTProc &proc) {
  * @return ASTProcedurePtr
  */
 ASTProcedurePtr Parser::parse_procedure() {
-    debug("Parser::parse_procedure");
     auto proc = makeAST<ASTProcedure>(lexer);
 
     parse_proc(*proc);
+    debug("parse_procedure {0}", proc->name->value);
 
     // Declarations
     symbols.push_frame(proc->name->value);
@@ -391,11 +391,11 @@ ASTProcedurePtr Parser::parse_procedure() {
 }
 
 ASTProcedureForwardPtr Parser::parse_procedureForward() {
-    debug("Parser::parse_procedure");
     auto proc = makeAST<ASTProcedureForward>(lexer);
 
     lexer.get_token(); // ^
     parse_proc(*proc);
+    debug("parse_procedureForward {0}", proc->name->value);
 
     // Put into symbol table as a procedure
     auto forward = std::make_shared<ProcedureFwdType>();
@@ -475,7 +475,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
  */
 ASTStatementPtr Parser::parse_statement() {
     auto tok = lexer.peek_token();
-    debug("Parser::parse_statement {}", std::string(tok));
+    debug("parse_statement {0}", std::string(tok));
     switch (tok.type) {
     case TokenType::ret:
         return parse_return();
@@ -501,7 +501,7 @@ ASTStatementPtr Parser::parse_statement() {
         auto designator = parse_designator();
 
         tok = lexer.peek_token();
-        debug("Parser::parse_statement next {0}", std::string(tok));
+        debug("parse_statement next {0}", std::string(tok));
 
         if (tok.type == TokenType::l_paren || tok.type == TokenType::semicolon ||
             tok.type == TokenType::end) {
@@ -536,7 +536,7 @@ void Parser::parse_statement_block(std::vector<ASTStatementPtr> &stats,
  * @return ASTAssignmentPtr
  */
 ASTAssignmentPtr Parser::parse_assignment(ASTDesignatorPtr d) {
-    debug("Parser::parse_assignment");
+    debug("parse_assignment");
     auto assign = makeAST<ASTAssignment>(lexer);
 
     assign->ident = std::move(d);
@@ -551,7 +551,7 @@ ASTAssignmentPtr Parser::parse_assignment(ASTDesignatorPtr d) {
  * @return ASTReturnPtr
  */
 ASTReturnPtr Parser::parse_return() {
-    debug("Parser::parse_return");
+    debug("parse_return");
     auto ret = makeAST<ASTReturn>(lexer);
     get_token(TokenType::ret);
     auto tok = lexer.peek_token();
@@ -615,7 +615,7 @@ inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif, Token
  * @return ASTIfPtr
  */
 ASTIfPtr Parser::parse_if() {
-    debug("Parser::parse_if");
+    debug("parse_if");
     auto stat = makeAST<ASTIf>(lexer);
 
     // IF
@@ -629,7 +629,7 @@ ASTIfPtr Parser::parse_if() {
     // ELSIF
     auto tok = lexer.peek_token();
     while (tok.type == TokenType::elsif) {
-        debug("Parser::parse_if elsif");
+        debug("parse_if elsif");
         lexer.get_token();
         ASTIf::IFClause clause;
         clause.expr = parse_expr();
@@ -640,7 +640,7 @@ ASTIfPtr Parser::parse_if() {
     }
     // ELSE
     if (tok.type == TokenType::else_k) {
-        debug("Parser::parse_if else\n");
+        debug("parse_if else\n");
         lexer.get_token();
         stat->else_clause = std::make_optional<std::vector<ASTStatementPtr>>();
         parse_statement_block(*stat->else_clause, module_ends);
@@ -659,7 +659,7 @@ ASTIfPtr Parser::parse_if() {
  */
 
 std::variant<ASTSimpleExprPtr, ASTRangePtr> Parser::parse_caseLabel() {
-    debug("Parser::parse_caseLabel");
+    debug("parse_caseLabel");
     auto e = parse_simpleexpr();
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::dotdot) {
@@ -667,11 +667,10 @@ std::variant<ASTSimpleExprPtr, ASTRangePtr> Parser::parse_caseLabel() {
         auto range = makeAST<ASTRange>(lexer);
         range->first = e;
         range->last = parse_simpleexpr();
-        debug("Parser::parse_caseLabel range {0}..{1}", std::string(*e),
-              std::string(*(range->last)));
+        debug("parse_caseLabel range {0}..{1}", std::string(*e), std::string(*(range->last)));
         return std::variant<ASTSimpleExprPtr, ASTRangePtr>(range);
     } else {
-        debug("Parser::parse_caseLabel {0}", std::string(*e));
+        debug("parse_caseLabel {0}", std::string(*e));
         return std::variant<ASTSimpleExprPtr, ASTRangePtr>(e);
     }
 }
@@ -687,7 +686,7 @@ inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::el
  * @return std::vector<ASTCaseElementPtr>
  */
 void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
-    debug("Parser::parse_caseElements");
+    debug("parse_caseElements");
 
     auto tok = lexer.peek_token();
     if (tok.type == TokenType::bar) {
@@ -695,7 +694,7 @@ void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
         tok = lexer.peek_token();
     }
     while (tok.type != TokenType::end && tok.type != TokenType::else_k) {
-        debug("Parser::parse_caseElement {0}", std::string(tok));
+        debug("parse_caseElement {0}", std::string(tok));
         auto element = makeAST<ASTCaseElement>(lexer);
 
         while (tok.type != TokenType::colon) {
@@ -714,7 +713,7 @@ void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
         elements.push_back(element);
 
         tok = lexer.peek_token();
-        debug("Parser::parse_caseElement {0}", std::string(tok));
+        debug("parse_caseElement {0}", std::string(tok));
         if (tok.type == TokenType::bar) {
             lexer.get_token();
             tok = lexer.peek_token();
@@ -728,7 +727,7 @@ void Parser::parse_caseElements(std::vector<ASTCaseElementPtr> &elements) {
  * @return ASTCasePtr
  */
 ASTCasePtr Parser::parse_case() {
-    debug("Parser::parse_case");
+    debug("parse_case");
     auto ast = makeAST<ASTCase>(lexer);
 
     // CASE
@@ -740,7 +739,7 @@ ASTCasePtr Parser::parse_case() {
 
     // ELSE
     auto tok = lexer.peek_token();
-    debug("Parser::parse_case {0}", std::string(tok));
+    debug("parse_case {0}", std::string(tok));
     if (tok.type == TokenType::else_k) {
         lexer.get_token();
         parse_statement_block(ast->else_stats, module_ends);
@@ -758,7 +757,7 @@ ASTCasePtr Parser::parse_case() {
  * @return ASTForPtr
  */
 ASTForPtr Parser::parse_for() {
-    debug("Parser::parse_for");
+    debug("parse_for");
     auto ast = makeAST<ASTFor>(lexer);
 
     // FOR
@@ -856,7 +855,7 @@ inline const std::set<TokenType> relationOps = {
     TokenType::greater, TokenType::gteq, TokenType::in};
 
 ASTExprPtr Parser::parse_expr() {
-    debug("Parser::parse_expr");
+    debug("parse_expr");
     auto ast = makeAST<ASTExpr>(lexer);
 
     ast->expr = parse_simpleexpr();
@@ -875,7 +874,7 @@ ASTExprPtr Parser::parse_expr() {
  * @return ASTSimpleExprPtr
  */
 ASTSimpleExprPtr Parser::parse_simpleexpr() {
-    debug("Parser::parse_simpleexpr");
+    debug("parse_simpleexpr");
     auto expr = makeAST<ASTSimpleExpr>(lexer);
 
     auto tok = lexer.peek_token();
@@ -905,7 +904,7 @@ inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::slas
                                             TokenType::mod, TokenType::ampersand};
 
 ASTTermPtr Parser::parse_term() {
-    debug("Parser::parse_term");
+    debug("parse_term");
     auto term = makeAST<ASTTerm>(lexer);
 
     term->factor = parse_factor();
@@ -935,7 +934,7 @@ ASTTermPtr Parser::parse_term() {
  * @return ASTFactorPtr
  */
 ASTFactorPtr Parser::parse_factor() {
-    debug("Parser::parse_factor");
+    debug("parse_factor");
     auto ast = makeAST<ASTFactor>(lexer);
 
     auto tok = lexer.peek_token();
@@ -982,10 +981,9 @@ ASTFactorPtr Parser::parse_factor() {
         auto d = parse_designator();
         auto nexttok = lexer.peek_token();
         auto res = symbols.find(std::string(*d));
-        debug("Parser::parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok),
-              std::string(*d));
+        debug("parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok), std::string(*d));
         if (nexttok.type == TokenType::l_paren || (res && res->type->id == TypeId::procedureFwd)) {
-            debug("Parser::parse_factor call: {0}");
+            debug("parse_factor call: {0}");
             ast->factor = parse_call(d);
             return ast;
         }
@@ -1013,7 +1011,7 @@ inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenTyp
                                                   TokenType::caret};
 
 ASTDesignatorPtr Parser::parse_designator() {
-    debug("Parser::parse_designator");
+    debug("parse_designator");
     auto ast = makeAST<ASTDesignator>(lexer);
 
     ast->ident = parse_qualident();
@@ -1024,7 +1022,7 @@ ASTDesignatorPtr Parser::parse_designator() {
         case TokenType::l_bracket: {
             lexer.get_token(); // [
             ArrayRef ref;
-            debug("Parser::parse_designator array ref");
+            debug("parse_designator array ref");
             do {
                 ref.push_back(parse_simpleexpr());
                 tok = lexer.peek_token();
@@ -1110,7 +1108,7 @@ ASTArrayPtr Parser::parse_array() {
  * @return ASTRecordPtr
  */
 ASTRecordPtr Parser::parse_record() {
-    debug("Parser::parse_record");
+    debug("parse_record");
     auto ast = makeAST<ASTRecord>(lexer);
 
     get_token(TokenType::record);
@@ -1148,7 +1146,7 @@ ASTRecordPtr Parser::parse_record() {
  * @return ASTPointerTypePtr
  */
 ASTPointerTypePtr Parser::parse_pointer() {
-    debug("Parser::parse_record");
+    debug("parse_record");
     auto ast = makeAST<ASTPointerType>(lexer);
 
     get_token(TokenType::pointer);
@@ -1163,7 +1161,7 @@ ASTPointerTypePtr Parser::parse_pointer() {
  * @return ASTIdentifierPtr
  */
 ASTQualidentPtr Parser::parse_qualident() {
-    debug("Parser::parse_qualident");
+    debug("parse_qualident");
     auto ast = makeAST<ASTQualident>(lexer);
 
     auto first = get_token(TokenType::ident);
@@ -1179,12 +1177,12 @@ ASTQualidentPtr Parser::parse_qualident() {
 
         auto res = symbols.find(first.val);
         if (res && std::dynamic_pointer_cast<ModuleType>(res->type)) {
-            debug("Parser::parse_qualident found module {0}", first.val);
+            debug("parse_qualident found module {0}", first.val);
             ast->qual = first.val;
             ast->id = makeAST<ASTIdentifier>(lexer);
             ast->id->value = ident.val;
         } else {
-            debug("Parser::parse_qualident not found module {0}", first.val);
+            debug("parse_qualident not found module {0}", first.val);
             // push back tokens
             lexer.push_token(ident);
             lexer.push_token(tok);
@@ -1195,7 +1193,7 @@ ASTQualidentPtr Parser::parse_qualident() {
         ast->id = makeAST<ASTIdentifier>(lexer);
         ast->id->value = first.val;
     }
-    debug("Parser::parse_qualident: {0}", std::string(*ast));
+    debug("parse_qualident: {0}", std::string(*ast));
     return ast;
 }
 
@@ -1205,7 +1203,7 @@ ASTQualidentPtr Parser::parse_qualident() {
  * @return ASTIdentifierPtr
  */
 ASTIdentifierPtr Parser::parse_identifier() {
-    debug("Parser::parse_identifier");
+    debug("parse_identifier");
     auto ast = makeAST<ASTIdentifier>(lexer);
 
     auto tok = get_token(TokenType::ident);
@@ -1221,7 +1219,7 @@ ASTIdentifierPtr Parser::parse_identifier() {
  */
 
 ASTSetPtr Parser::parse_set() {
-    debug("Parser::parse_set");
+    debug("parse_set");
     auto ast = makeAST<ASTSet>(lexer);
 
     lexer.get_token(); // {
@@ -1249,7 +1247,7 @@ constexpr int hex_radix = 16;
  * @return ASTIntegerPtr
  */
 ASTIntegerPtr Parser::parse_integer() {
-    debug("Parser::parse_integer");
+    debug("parse_integer");
     auto  ast = makeAST<ASTInteger>(lexer);
     char *end = nullptr;
 
@@ -1266,7 +1264,7 @@ ASTIntegerPtr Parser::parse_integer() {
     }
     if (tok.type == TokenType::integer) {
         lexer.get_token();
-        debug("Parser::parse_integer: {0}", std::string(tok));
+        debug("parse_integer: {0}", std::string(tok));
         ast->value = std::strtol(tok.val.c_str(), &end, radix);
         return ast;
     }
@@ -1276,7 +1274,7 @@ ASTIntegerPtr Parser::parse_integer() {
 }
 
 ASTRealPtr Parser::parse_real() {
-    debug("Parser::parse_real");
+    debug("parse_real");
     auto ast = makeAST<ASTReal>(lexer);
 
     auto tok = lexer.get_token();
@@ -1303,7 +1301,7 @@ ASTRealPtr Parser::parse_real() {
  * @return ASTCharPtr
  */
 ASTCharPtr Parser::parse_char() {
-    debug("Parser::parse_char");
+    debug("parse_char");
     auto ast = makeAST<ASTChar>(lexer);
 
     // Either TokenType::hexchr or TokenType::chr
@@ -1311,13 +1309,13 @@ ASTCharPtr Parser::parse_char() {
     auto tok = lexer.get_token();
     if (tok.type == TokenType::hexchr) {
         char *end = nullptr;
-        debug("Parser::parse_char hex {0}", tok.val);
+        debug("parse_char hex {0}", tok.val);
         ast->value = Char(std::strtol(tok.val.c_str(), &end, hex_radix));
         ast->hex = true;
         return ast;
     }
     ast->value = tok.val_int;
-    debug("Parser::parse_char: x {0} {1}", ast->value, ast->str());
+    debug("parse_char: x {0} {1}", ast->value, ast->str());
     return ast;
 }
 

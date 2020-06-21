@@ -107,6 +107,7 @@ void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
     for (const auto &iter : from) {
         std::string n = ASTQualident::make_coded_id(module_name, iter.first());
+        iter.second->set(Attr::global_var);
         to.put(n, iter.second);
     }
 }

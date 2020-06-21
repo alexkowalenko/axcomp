@@ -23,6 +23,7 @@ enum class Attr {
 
     global_function,  // global function defined in runtime
     compile_function, // compiler function
+    closure,          // function needs has closure variables
 
     global_var, // global top level variable
     free_var,   // non local variable

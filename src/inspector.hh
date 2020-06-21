@@ -81,7 +81,7 @@ class Inspector : ASTVisitor {
     TypePtr         last_type{nullptr};
     ASTProcedurePtr last_proc{nullptr};
 
-    Attr variable_type;
+    Attr variable_type{Attr::null};
 
     // Post process
     std::vector<std::shared_ptr<PointerType>> pointer_types;

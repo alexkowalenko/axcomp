@@ -24,17 +24,19 @@
 
 namespace ax {
 
+constexpr auto closure_arg{"_closure"};
+
 #define DEBUG_TYPE "inspector"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n');
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)
     : symboltable(s), types(t), errors(e), importer(i){};
 
 void Inspector::visit_ASTModule(ASTModulePtr ast) {
-    debug("Inspector::visit_ASTModule");
+    debug("ASTModule");
     if (ast->import) {
         ast->import->accept(this);
     }
@@ -53,18 +55,19 @@ void Inspector::visit_ASTModule(ASTModulePtr ast) {
 }
 
 void Inspector::visit_ASTImport(ASTImportPtr ast) {
-    debug("Inspector::visit_ASTImport");
+    debug("ASTImport");
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
-        auto found = importer.find_module(i.first->value, symboltable, types);
+        const auto &[name, _] = i;
+        auto found = importer.find_module(name->value, symboltable, types);
         if (!found) {
-            throw TypeError(llvm::formatv("MODULE {0} not found", i.first->value),
-                            i.first->get_location());
+            throw TypeError(llvm::formatv("MODULE {0} not found", name->value),
+                            name->get_location());
         }
     });
 }
 
 void Inspector::visit_ASTConst(ASTConstPtr ast) {
-    debug("Inspector::visit_ASTConst");
+    debug("ASTConst");
     std::for_each(begin(ast->consts), end(ast->consts), [this, ast](auto &c) {
         c.value->accept(this);
         if (!is_const) {
@@ -81,7 +84,7 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
         c.type = std::make_shared<ASTType>();
         c.type->set_type(last_type);
         c.type->type = make<ASTQualident>(last_type->get_name());
-        debug("Inspector::visit_ASTConst type: {0}", last_type->get_name());
+        debug("ASTConst type: {0}", last_type->get_name());
         auto sym = mkSym(last_type, Attr::cnst);
         sym->set(variable_type);
         symboltable.put(c.ident->value, sym);
@@ -89,46 +92,41 @@ void Inspector::visit_ASTConst(ASTConstPtr ast) {
 }
 
 void Inspector::visit_ASTTypeDec(ASTTypeDecPtr ast) {
-    debug("Inspector::visit_ASTTypeDec");
-    for (auto const &t : ast->types) {
-        if (types.find(t.first->value)) {
-            auto e = TypeError(llvm::formatv("TYPE {0} already defined", t.first->value),
+    debug("ASTTypeDec");
+    for (auto const &[name, type_expr] : ast->types) {
+        if (types.find(name->value)) {
+            auto e = TypeError(llvm::formatv("TYPE {0} already defined", name->value),
                                ast->get_location());
             errors.add(e);
             continue;
         }
-        if (t.first->is(Attr::read_only)) {
-            auto e = TypeError(llvm::formatv("TYPE {0} is always read only", t.first->value),
-                               ast->get_location());
-            errors.add(e);
-            continue;
-        }
-        t.second->accept(this);
+        type_expr->accept(this);
         if (last_type->id == TypeId::record) {
-            std::dynamic_pointer_cast<RecordType>(last_type)->set_identified(t.first->value);
+            std::dynamic_pointer_cast<RecordType>(last_type)->set_identified(name->value);
         }
-        auto type = std::make_shared<TypeAlias>(t.first->value, last_type);
-        debug("Inspector::visit_ASTTypeDec put type {0}", t.first->value);
-        types.put(t.first->value, type);
+        auto type = std::make_shared<TypeAlias>(name->value, last_type);
+        debug("ASTTypeDec put type {0}", name->value);
+        types.put(name->value, type);
     };
 }
 
 void Inspector::visit_ASTVar(ASTVarPtr ast) {
-    debug("Inspector::visit_ASTVar");
+    debug("ASTVar");
 
     std::for_each(ast->vars.begin(), ast->vars.end(), [this](auto const &v) {
+        auto const &[name, expr] = v;
         // No need to check the identifier - its being
         // defined.
-        v.second->accept(this);
+        expr->accept(this);
         // Update VAR declaration symbols with type
         debug("var type: {0}", last_type->get_name());
-        symboltable.put(v.first->value, mkSym(last_type, variable_type));
+        symboltable.put(name->value, mkSym(last_type, variable_type));
     });
 
     // Post process all pointer defintions
     for (auto &ptr_type : pointer_types) {
         if (!ptr_type->get_reference()) {
-            debug("Inspector::visit_ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
+            debug("ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
             auto ref = types.resolve(ptr_type->get_ref_name());
             if (!ref) {
                 auto e = TypeError(llvm::formatv("TYPE {0} not found", ptr_type->get_ref_name()),
@@ -166,7 +164,7 @@ std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
     }
 
     // Check parameter types
-    debug("Inspector::visit_ASTProcedure check parameter types");
+    debug("ASTProcedure check parameter types");
     ProcedureType::ParamsList argTypes;
     std::for_each(ast.params.begin(), ast.params.end(), [this, &argTypes](auto const &p) {
         p.second->accept(this); // type
@@ -180,31 +178,33 @@ std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
 }
 
 void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
-    debug("Inspector::visit_ASTProcedure: {0}", ast->name->value);
+    debug("ASTProcedure: {0}", ast->name->value);
 
     auto [retType, argTypes] = do_proc(*ast);
 
     auto proc_type = std::make_shared<ProcedureType>(retType, argTypes);
-    symboltable.put(ast->name->value, mkSym(proc_type));
+    auto sym = mkSym(proc_type, Attr::global_var);
+    symboltable.put(ast->name->value, sym);
 
     last_proc = ast;
 
     // new symbol table
     symboltable.push_frame(ast->name->value);
     int count = 0;
-    for (auto const &p : ast->params) {
+    for (auto const &[p, type] : ast->params) {
+        auto const &param = p;
         std::visit(
             overloaded{
                 [this](auto arg) { arg->accept(this); }, // lambda arg can't be reference here
-                [this, p](ASTQualidentPtr const &tname) {
-                    debug("Inspector::visit_ASTProcedure param type ident");
+                [this, param](ASTQualidentPtr const &tname) {
+                    debug("ASTProcedure param type ident");
                     auto type = types.find(tname->id->value);
-                    symboltable.put(p.first->value,
-                                    mkSym(type, p.first->is(Attr::var) ? Attr::var : Attr::null));
+                    symboltable.put(param->value,
+                                    mkSym(type, param->is(Attr::var) ? Attr::var : Attr::null));
                 }},
-            p.second->type);
-        symboltable.put(p.first->value, mkSym(argTypes[count].first,
-                                              p.first->is(Attr::var) ? Attr::var : Attr::null));
+            type->type);
+        symboltable.put(param->value, mkSym(argTypes[count].first,
+                                            param->is(Attr::var) ? Attr::var : Attr::null));
         count++;
     };
     if (ast->decs) {
@@ -221,34 +221,53 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
                   [this, ast](auto const &x) { x->accept(this); });
     auto free_variables = symboltable.get_free_variables();
     for (auto const &f : free_variables) {
+        if (f.first() == ast->name->value) {
+            // skip recursive defintions
+            continue;
+        }
         auto sym = symboltable.find(f.first());
         if (sym->is(Attr::global_var)) {
             continue;
         }
+
         Attrs attrs;
         attrs.set(Attr::free_var);
         if (sym->is(Attr::modified)) {
             attrs.set(Attr::modified);
         }
-        debug("Inspector::visit_ASTProcedure {0}: Free variable {1} {2}", ast->name->value,
-              f.first(), attrs.contains(Attr::modified) ? "Modified" : "");
+        debug("ASTProcedure {0}: Free variable {1} {2}", ast->name->value, f.first(),
+              attrs.contains(Attr::modified) ? "Modified" : "");
         ast->free_variables.emplace_back(std::string(f.first()), attrs);
+
+        // add to type def
+        proc_type->free_vars.emplace_back(f.first(), sym->type);
     };
+    if (!ast->free_variables.empty()) {
+        debug("ASTProcedure: {0} closure function", ast->name->value);
+        sym->set(Attr::closure);
+        auto type = std::make_shared<ASTType>();
+        auto c = std::string("INTEGER");
+        type->type = std::make_shared<ASTQualident>(c);
+        auto v = std::make_pair(std::make_shared<ASTIdentifier>(closure_arg), type);
+        ast->params.insert(ast->params.begin(), v);
+        symboltable.put(closure_arg, mkSym(TypeTable::IntType, Attr::closure));
+    }
     symboltable.pop_frame();
 }
 
 void Inspector::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
-    debug("Inspector::visit_ASTProcedureForward: {0}", ast->name->value);
+    debug("ASTProcedureForward: {0}", ast->name->value);
     auto [retType, argTypes] = do_proc(*ast);
 
     auto proc_type = std::make_shared<ProcedureFwdType>();
     proc_type->ret = retType;
     proc_type->params = argTypes;
-    symboltable.put(ast->name->value, mkSym(proc_type));
+    // Override the defintion placed in the symbol table by the parser
+    symboltable.put(ast->name->value, mkSym(proc_type, Attr::global_var));
 };
 
 void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
-    debug("Inspector::visit_ASTAssignment");
+    debug("ASTAssignment");
     ast->expr->accept(this);
     auto expr_type = last_type;
 
@@ -289,7 +308,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
 }
 
 void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
-    debug("Inspector::visit_ASTReturn");
+    debug("ASTReturn");
     TypePtr expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);
@@ -328,12 +347,10 @@ void Inspector::visit_ASTReturn(ASTReturnPtr ast) {
 }
 
 void Inspector::visit_ASTCall(ASTCallPtr ast) {
-    debug("Inspector::visit_ASTCall");
-    // auto name = ast->name->ident->make_coded_id();
     auto name = get_Qualident(ast->name->ident);
     bool skip_argument_typecheck{false};
 
-    debug("Inspector::visit_ASTCall - {0} {1}", name, name);
+    debug("ASTCall: {0}", name);
     auto res = symboltable.find(name);
     if (!res) {
         std::replace(begin(name), end(name), '_', '.');
@@ -357,7 +374,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
                             ast->get_location());
         }
     } else {
-        debug("Inspector::visit_ASTCall: {0} AnyType args", name);
+        debug("ASTCall: {0} AnyType args", name);
         skip_argument_typecheck = true;
     }
 
@@ -370,7 +387,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
 
         if ((*proc_iter).second == Attr::var) {
             if (!is_lvalue || is_const) {
-                debug("Inspector::visit_ASTCall is_lvalue");
+                debug("ASTCall is_lvalue");
                 std::replace(begin(name), end(name), '_', '.');
                 auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
                                                  "reference for VAR parameter {2}",
@@ -669,7 +686,7 @@ void Inspector::visit_ASTFactor(ASTFactorPtr ast) {
 }
 
 void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
-    debug("Inspector::visit_ASTDesignator");
+    debug("ASTDesignator");
     ast->ident->accept(this);
 
     // check type array before processing selectors
@@ -707,7 +724,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         if (std::holds_alternative<ArrayRef>(ss)) {
 
             // do ARRAY indexes
-            debug("Inspector::visit_ASTDesignator array index");
+            debug("ASTDesignator array index");
             auto s = std::get<ArrayRef>(ss);
             if (!(is_array || is_string)) {
                 auto e = TypeError("value not indexable type", ast->get_location());
@@ -745,7 +762,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         } else if (std::holds_alternative<FieldRef>(ss)) {
 
             // do RECORD type
-            debug("Inspector::visit_ASTDesignator record field");
+            debug("ASTDesignator record field");
             auto &s = std::get<FieldRef>(ss);
             if (!is_record) {
                 auto e = TypeError(llvm::formatv("value not RECORD: {0}", last_type->get_name()),
@@ -767,8 +784,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             // generator.
 
             s.second = record_type->get_index(s.first->value);
-            debug("Inspector::visit_ASTDesignator record index {0} for {1}", s.second,
-                  s.first->value);
+            debug("ASTDesignator record index {0} for {1}", s.second, s.first->value);
 
             last_type = *field;
             ast->set_type(last_type);
@@ -782,10 +798,10 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
                 return;
             }
             auto ptr_type = std::dynamic_pointer_cast<PointerType>(b_type);
-            debug("Inspector::visit_ASTDesignator ptr {0} ref: {1}", ptr_type->get_name(),
+            debug("ASTDesignator ptr {0} ref: {1}", ptr_type->get_name(),
                   ptr_type->get_reference()->get_name());
             last_type = ptr_type->get_reference();
-            debug("Inspector::visit_ASTDesignator {0} ", last_type->get_name());
+            debug("ASTDesignator {0} ", last_type->get_name());
             ast->set_type(last_type);
         }
         b_type = types.resolve(last_type->get_name());
@@ -796,16 +812,15 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
 } // namespace ax
 
 void Inspector::visit_ASTType(ASTTypePtr ast) {
-    debug("Inspector::visit_ASTType");
     std::visit(overloaded{[this, ast](ASTQualidentPtr const &type) {
-                              debug("Inspector::visit_ASTType {0}", type->id->value);
+                              debug("ASTType {0}", type->id->value);
                               auto result = types.find(type->id->value);
                               if (!result) {
                                   throw TypeError(
                                       llvm::formatv("Unknown type: {0}", type->id->value),
                                       ast->get_location());
                               }
-                              debug("Inspector::visit_ASTType 2 {0}", type->id->value);
+                              debug("ASTType 2 {0}", type->id->value);
                               ast->set_type(result);
                               last_type = result;
                           },
@@ -852,13 +867,13 @@ void Inspector::visit_ASTArray(ASTArrayPtr ast) {
 }
 
 void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
-    debug("Inspector::visit_ASTRecord");
+    debug("ASTRecord");
 
     auto rec_type = std::make_shared<ax::RecordType>();
     if (ast->base) {
         ast->base->accept(this);
         auto baseType_name = std::string(*ast->base);
-        debug("Inspector::visit_ASTRecord base {0}", baseType_name);
+        debug("ASTRecord base {0}", baseType_name);
         auto baseType = types.resolve(baseType_name);
         if (!baseType) {
             auto e = TypeError(llvm::formatv("RECORD base type {0} not found", baseType_name),
@@ -895,7 +910,7 @@ void Inspector::visit_ASTRecord(ASTRecordPtr ast) {
 
 void Inspector::visit_ASTPointerType(ASTPointerTypePtr ast) {
     auto ref_name = std::string(*ast->reference);
-    debug("Inspector::visit_ASTPointerType {0}", ref_name);
+    debug("ASTPointerType {0}", ref_name);
     std::shared_ptr<ax::PointerType> ptr_type;
     try {
         ast->reference->accept(this);
@@ -928,12 +943,12 @@ std::string Inspector::get_Qualident(ASTQualidentPtr const &ast) {
 }
 
 void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
-    debug("Inspector::visit_ASTQualident");
+    debug("ASTQualident");
     if (ast->qual.empty()) {
         visit_ASTIdentifier(ast->id);
         ast->set_type(last_type);
     } else {
-        debug("Inspector::visit_ASTQualident {0}", ast->qual);
+        debug("ASTQualident {0}", ast->qual);
 
         auto new_ast = make<ASTIdentifier>();
         new_ast->value = get_Qualident(ast);
@@ -951,7 +966,7 @@ void Inspector::visit_ASTQualident(ASTQualidentPtr ast) {
 }
 
 void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
-    debug("Inspector::visit_ASTIdentifier");
+    debug("ASTIdentifier");
     auto res = symboltable.find(ast->value);
     if (!res) {
         if (!is_qualid) {
@@ -997,7 +1012,7 @@ void Inspector::visit_ASTSet(ASTSetPtr ast) {
         std::visit(
             overloaded{
                 [this, &set_const, ast](ASTSimpleExprPtr const &exp) {
-                    debug("Inspector::visit_ASTSet exp");
+                    debug("ASTSet exp");
                     exp->accept(this);
                     if (!TypeTable::IntType->equiv(last_type)) {
                         auto e = TypeError(llvm::formatv("Expression {0} is not a integer type",
@@ -1008,7 +1023,7 @@ void Inspector::visit_ASTSet(ASTSetPtr ast) {
                     set_const &= is_const;
                 },
                 [this, &set_const, ast](ASTRangePtr const &exp) {
-                    debug("Inspector::visit_ASTSet range");
+                    debug("ASTSet range");
                     exp->first->accept(this);
                     if (!TypeTable::IntType->equiv(last_type)) {
                         auto e = TypeError(llvm::formatv("Expression {0} is not a integer type",
@@ -1068,7 +1083,7 @@ void Inspector::visit_ASTBool(ASTBoolPtr /* not used */) {
 }
 
 void Inspector::visit_ASTNil(ASTNilPtr /*not used*/) {
-    debug("Inspector::visit_ASTNil");
+    debug("ASTNil");
     last_type = TypeTable::VoidType; // NIL can be assigned to any pointer
     is_const = true;
     is_lvalue = false;

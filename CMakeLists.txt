@@ -63,7 +63,11 @@ option(PACKAGE_TESTS "Build the tests" ON)
 if(PACKAGE_TESTS)
   message("Enabling testing")
   enable_testing()
+  
   include(GoogleTest)
+  set(INSTALL_GTEST OFF)
+  set(BUILD_GMOCK OFF)
+
   add_subdirectory(tests)
   add_subdirectory(xtest)
 endif()

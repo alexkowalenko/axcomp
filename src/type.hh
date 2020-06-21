@@ -161,6 +161,8 @@ class ProcedureType : public Type {
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
     ParamsList params{};
+    using FreeList = std::vector<std::pair<std::string, TypePtr>>;
+    FreeList free_vars{};
 
   protected:
     std::string get_print(bool forward);
