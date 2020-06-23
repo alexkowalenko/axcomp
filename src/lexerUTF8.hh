@@ -11,7 +11,10 @@
 
 #include <codecvt>
 
-#include "utf8.h"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#include <utf8.h>
+#pragma clang diagnostic pop
 
 #include <unicode/uchar.h>
 
@@ -47,7 +50,7 @@ class Character32 : CharacterClass<Char> {
     static std::string to_string(Char c) { return converterX.to_bytes(std::wstring(1, c)); }
     static void        add_string(std::string &s, Char c) {
         try {
-            utf8::append(c, s);
+            utf8::append(char32_t(c), s);
         } catch (utf8::invalid_code_point &e) {
             throw LexicalException("Invalid code Point", Location(0, 0));
         };

@@ -8,6 +8,7 @@
 
 #include <cfloat>
 #include <climits>
+#include <cstddef>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -72,7 +73,7 @@ class Type {
     void                    set_init(llvm::Constant *t) { llvm_init = t; };
     virtual llvm::Constant *get_init() { return llvm_init; };
 
-    virtual unsigned get_size() { return 0; };
+    virtual size_t get_size() { return 0; };
 
     virtual llvm::Value *min();
     virtual llvm::Value *max();
@@ -99,7 +100,7 @@ class IntegerType : public SimpleType {
     bool is_numeric() override { return true; };
 
     llvm::Constant *make_value(Int i);
-    unsigned int    get_size() override {
+    size_t          get_size() override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
@@ -113,7 +114,7 @@ class BooleanType : public SimpleType {
     ~BooleanType() override = default;
 
     llvm::Constant *make_value(Bool b);
-    unsigned int    get_size() override {
+    size_t          get_size() override {
         return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
@@ -127,7 +128,7 @@ class RealCType : public SimpleType {
     ~RealCType() override = default;
 
     llvm::Constant *make_value(Real f) { return llvm::ConstantFP::get(get_llvm(), f); }
-    unsigned int    get_size() override { return sizeof(Real); } // 64 bit floats;
+    size_t          get_size() override { return sizeof(Real); } // 64 bit floats;
 
     llvm::Value *min() override { return make_value(DBL_MIN); };
     llvm::Value *max() override { return make_value(DBL_MAX); };
@@ -139,7 +140,7 @@ class CharacterType : public SimpleType {
     ~CharacterType() override = default;
 
     llvm::Constant *make_value(Char c);
-    unsigned int    get_size() override {
+    size_t          get_size() override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
@@ -157,6 +158,8 @@ class ProcedureType : public Type {
     explicit operator std::string() override;
 
     llvm::Type *get_llvm() override;
+
+    TypePtr get_closure_struct() const;
 
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
@@ -186,10 +189,10 @@ class ArrayType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    unsigned int get_size() override { return dimensions[0] * base_type->get_size(); }
+    size_t get_size() override { return dimensions[0] * base_type->get_size(); }
 
-    TypePtr          base_type;
-    std::vector<int> dimensions;
+    TypePtr             base_type;
+    std::vector<size_t> dimensions;
 };
 
 class StringType : public SimpleType {
@@ -214,9 +217,9 @@ class RecordType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    void insert(std::string const &field, TypePtr type);
-    bool has_field(std::string const &field);
-    int  count() { return index.size(); };
+    void   insert(std::string const &field, TypePtr type);
+    bool   has_field(std::string const &field);
+    size_t count() { return index.size(); };
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
@@ -225,7 +228,7 @@ class RecordType : public Type {
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
 
-    unsigned int get_size() override;
+    size_t get_size() override;
 
     void        set_identified(std::string const &s) { identified = s; };
     std::string get_identified() { return identified; };
@@ -245,8 +248,8 @@ class TypeAlias : public Type {
         : Type(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
-    explicit     operator std::string() override { return name; };
-    unsigned int get_size() override { return alias->get_size(); };
+    explicit operator std::string() override { return name; };
+    size_t   get_size() override { return alias->get_size(); };
 
     TypePtr get_alias() { return alias; }
 
@@ -264,8 +267,8 @@ class PointerType : public Type {
 
     ~PointerType() override = default;
 
-    explicit     operator std::string() override { return '^' + ref_name; };
-    unsigned int get_size() override {
+    explicit operator std::string() override { return '^' + ref_name; };
+    size_t   get_size() override {
         return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / CHAR_BIT;
     };
 

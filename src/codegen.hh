@@ -11,6 +11,7 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wconversion"
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -114,8 +115,6 @@ class CodeGenerator : ASTVisitor {
 
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
     std::string               get_nested_name();
-
-    llvm::Value *gen_closureStruct(std::shared_ptr<ProcedureType> fun_type, llvm::Function *f);
 
     GlobalVariable *generate_global(std::string const &name, llvm::Type *t);
     FunctionCallee  generate_function(std::string const &name, llvm::Type *t,

@@ -245,12 +245,13 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
     if (!ast->free_variables.empty()) {
         debug("ASTProcedure: {0} closure function", ast->name->value);
         sym->set(Attr::closure);
+        // This defines the closure as an int which is not true, but is corrected in the codegen
         auto type = std::make_shared<ASTType>();
         auto c = std::string("INTEGER");
         type->type = std::make_shared<ASTQualident>(c);
         auto v = std::make_pair(std::make_shared<ASTIdentifier>(closure_arg), type);
         ast->params.insert(ast->params.begin(), v);
-        symboltable.put(closure_arg, mkSym(TypeTable::IntType, Attr::closure));
+        symboltable.put(closure_arg, mkSym(proc_type->get_closure_struct(), Attr::closure));
     }
     symboltable.pop_frame();
 }

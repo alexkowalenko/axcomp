@@ -12,7 +12,10 @@
 #include <string>
 #include <unordered_map>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
 #include <llvm/Support/FormatVariadic.h>
+#pragma clang diagnostic pop
 
 #include "ax.hh"
 #include "error.hh"
@@ -112,9 +115,9 @@ class Lexer : public LexerImplementation<char, Character8> {
             return tmp;
         }
         charpos++;
-        return is.get();
+        return char(is.get());
     };
-    char peek() override { return is.peek(); };
+    char peek() override { return char(is.peek()); };
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +146,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     C c = get_char();
 
     // Check single digit character tokens
-    if (auto res = single_tokens.find(c); res != single_tokens.end()) {
+    if (auto res = single_tokens.find(char(c)); res != single_tokens.end()) {
         return res->second;
     }
 
@@ -208,11 +211,13 @@ template <typename C, class CharClass> void LexerImplementation<C, CharClass>::g
 }
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_digit(C c) {
-    std::string digit(1, c);
+    // We are assuming that all characters for digits fit in the type char, i.e. they are normal
+    // western digits.
+    std::string digit(1, char(c));
     c = peek();
     while (CharClass::isxdigit(c)) {
         get();
-        digit += c;
+        digit += char(c);
         c = peek();
     }
     if (c == 'H') {
@@ -235,22 +240,22 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         digit += '.';
         while (CharClass::isdigit(c)) {
             get();
-            digit += c;
+            digit += char(c);
             c = peek();
         }
         if (c == 'D' || c == 'E') {
             get();
-            digit += c;
+            digit += char(c);
             c = peek();
         }
         if (c == '+' || c == '-') {
             get();
-            digit += c;
+            digit += char(c);
             c = peek();
         }
         while (CharClass::isdigit(c)) {
             get();
-            digit += c;
+            digit += char(c);
             c = peek();
         }
         return Token(TokenType::real, digit);

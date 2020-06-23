@@ -7,6 +7,7 @@
 #include "codegen.hh"
 
 #include <cstddef>
+#include <exception>
 #include <iostream>
 #include <memory>
 
@@ -267,22 +268,25 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     nested_procs.push_back(ast->name->value);
     auto sym = symboltable.find(ast->name->value);
+    auto funct_type = std::dynamic_pointer_cast<ProcedureType>(sym->type);
 
     // Make the function arguments
     std::vector<llvm::Type *>                              proto;
     std::vector<std::pair<int, llvm::Attribute::AttrKind>> argAttr;
     auto                                                   index{0};
 
-    for (auto const &p : ast->params) {
-        auto              type = getType(p.second);
+    for (auto const &[var, t_type] : ast->params) {
+        auto *            type = getType(t_type);
         llvm::AttrBuilder attrs;
         index++;
         if (index == 1 && sym->is(Attr::closure)) {
             debug("ASTProcedure {0} is closure function", ast->name->value);
             argAttr.emplace_back(index, llvm::Attribute::Nest);
+            proto.push_back(funct_type->get_closure_struct()->get_llvm()->getPointerTo());
+            continue;
         }
-        if (p.first->is(Attr::var)) {
-            debug(" CodeGenerator::visit_ASTProcedure VAR {0}", p.first->value);
+        if (var->is(Attr::var)) {
+            debug(" CodeGenerator::visit_ASTProcedure VAR {0}", var->value);
             type = type->getPointerTo();
 
         } else {
@@ -320,9 +324,43 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     // Push new frame
     debug("ASTProcedure push frame {0}", get_nested_name());
     symboltable.push_frame(ast->name->value);
-    // Set paramater names
+
+    if (sym->is(Attr::closure)) {
+        // Set closure variables
+        // from lacsap PrototypeAST::CreateArgumentAlloca
+        debug("ASTProcedure set up closure variables", ast->name->value);
+
+        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
+        unsigned                   i = 0;
+        auto *                     cls_arg = f->arg_begin();
+        // auto *cls_arg = builder.CreateLoad(f->arg_begin());
+        auto *cls_str_type = funct_type->get_closure_struct()->get_llvm();
+        for (auto const &[cls_var, cls_type] :
+             std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
+            // const Types::FieldDecl *cls_field = nulptr; // get ith element of array for cls;
+            ind[1] = TypeTable::IntType->make_value(i);
+            debug("ASTProcedure var {0} : {1}", cls_arg->getName(), cls_var);
+            (&*cls_arg)->getType()->print(llvm::dbgs());
+            // llvm::dbgs() << ' ';
+            // cls_str_type->print(llvm::dbgs());
+            // llvm::dbgs() << '\n';
+
+            llvm::Value *a = builder.CreateGEP(&*cls_arg, ind, cls_var);
+            a = builder.CreateLoad(a, cls_var);
+
+            // put also into symbol table
+            symboltable.set_value(cls_var, a, Attr::null);
+            i++;
+        }
+    }
+
+    // Set parameter names
     unsigned i = 0;
     for (auto &arg : f->args()) {
+        if (i == 0 && sym->is(Attr::closure)) {
+            // skip closure variable
+            continue;
+        }
         auto param_name = ast->params[i].first->value;
         arg.setName(param_name);
         auto type_name = ast->params[i].second;
@@ -493,37 +531,9 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     if (res->is(Attr::closure)) {
         debug("ASTCall: {0} call closure", name);
 
-#if 0
-        // temporary memory to store the trampoline itself.
-        auto *trampTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 32);
-        auto *tramp = builder.CreateAlloca(trampTy, 0, "tramp");
-        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0),
-                                          TypeTable::IntType->make_value(0)};
-        auto *                     tptr = builder.CreateGEP(tramp, ind, "tramp.first");
-
-        // make closure
-        auto *current_func = builder.GetInsertBlock()->getParent();
-        auto *nest = gen_closureStruct(callee_type, current_func);
-
-        llvm::Type *ptrTy = llvm::PointerType::get(TypeTable::IntType->get_llvm(), 0);
-        nest = builder.CreateBitCast(nest, ptrTy, "closure");
-        llvm::Value *castFn = builder.CreateBitCast(callee, ptrTy, "callee");
-        auto trampinit = generate_function("llvm.init.trampoline", TypeTable::VoidType->get_llvm(),
-                                           {ptrTy, ptrTy, ptrTy});
-        builder.CreateCall(trampinit, {tptr, castFn, nest});
-        auto  llvmAdjust = generate_function("llvm.adjust.trampoline", ptrTy, {ptrTy});
-        auto *fptr = builder.CreateCall(llvmAdjust, {tptr}, "tramp.ptr");
-        last_value = builder.CreateBitCast(fptr, callee->getFunctionType(), "tramp.func");
-#endif
-
         // From lacsap ClosureAST::CodeGen
 
-        // this should be a struct
-        auto cls_str =
-            std::make_shared<ArrayType>(std::make_shared<PointerType>(TypeTable::IntType));
-        cls_str->dimensions.push_back(callee_type->free_vars.size());
-        auto *                     cls_ty = cls_str->get_llvm();
-        auto *                     tramp = builder.CreateAlloca(cls_ty, 0, "closure_struct");
+        auto *                     cls_ty = callee_type->get_closure_struct()->get_llvm();
         std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
         auto *                     current_func = builder.GetInsertBlock()->getParent();
         llvm::Value *closure = createEntryBlockAlloca(current_func, "closure_struct", cls_ty);
@@ -532,7 +542,8 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
             auto         r = symboltable.find(name);
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
-            llvm::Value *ptr = builder.CreateGEP(closure, ind, name);
+            llvm::Value *ptr = builder.CreateGEP(closure, ind, "cls");
+            debug("ASTCall var {0} : {1}", v->getName(), name);
             builder.CreateStore(v, ptr);
             index++;
         }
@@ -543,31 +554,6 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
         inst->addAttribute(1, llvm::Attribute::Nest);
     }
     last_value = inst;
-}
-
-llvm::Value *CodeGenerator::gen_closureStruct(std::shared_ptr<ProcedureType> fun_type,
-                                              llvm::Function *               f) {
-    debug("gen_closureStruct: ");
-    std::array<llvm::Value *, 2> ind = {TypeTable::IntType->make_value(0), nullptr};
-    llvm::Function *             fn = builder.GetInsertBlock()->getParent();
-
-    auto ptr = std::make_shared<PointerType>(TypeTable::IntType);
-    auto space = ArrayType(ptr);
-    space.dimensions.push_back(fun_type->free_vars.size());
-    auto *closure = createEntryBlockAlloca(f, "closure_struct", space.get_llvm());
-
-    int index = 0;
-    for (auto const &[f_name, f_type] : fun_type->free_vars) {
-        debug("gen_closureStruct: {0}", f_name);
-        auto  res = symboltable.find(f_name);
-        auto *v = res->value;
-        v = builder.CreateBitCast(v, ptr->get_llvm());
-        ind[1] = TypeTable::IntType->make_value(index);
-        llvm::Value *ptr = builder.CreateGEP(closure, ind, f_name);
-        builder.CreateStore(v, ptr);
-        index++;
-    }
-    return closure;
 }
 
 void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {

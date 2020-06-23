@@ -62,7 +62,7 @@ class ASTPrinter : public ASTVisitor {
     void visit_ASTBool(ASTBoolPtr ast) override;
     void visit_ASTNil(ASTNilPtr /*not used*/) override;
 
-    void set_indent(int i) { indent_width = i; }
+    void set_indent(size_t i) { indent_width = i; }
 
   protected:
     std::ostream &os;
@@ -75,8 +75,8 @@ class ASTPrinter : public ASTVisitor {
     }
 
   private:
-    int indent_width{0};
-    int level{0};
+    size_t indent_width{0};
+    size_t level{0};
 };
 
 } // namespace ax

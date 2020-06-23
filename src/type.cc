@@ -138,6 +138,13 @@ llvm::Type *ProcedureType::get_llvm() {
     return FunctionType::get(ret->get_llvm(), proto, false);
 }
 
+TypePtr ProcedureType::get_closure_struct() const {
+    // this should be a struct
+    auto cls_str = std::make_shared<ArrayType>(std::make_shared<PointerType>(TypeTable::IntType));
+    cls_str->dimensions.push_back(free_vars.size());
+    return cls_str;
+}
+
 ProcedureFwdType::operator std::string() {
     return get_print(true);
 }
@@ -253,9 +260,9 @@ bool RecordType::has_field(std::string const &field) {
     return false;
 }
 
-unsigned int RecordType::get_size() {
+size_t RecordType::get_size() {
     return std::accumulate(cbegin(fields), cend(fields), cbegin(fields)->second->get_size(),
-                           [](unsigned int x, auto &y) { return x + y.second->get_size(); });
+                           [](size_t x, auto &y) { return x + y.second->get_size(); });
 }
 
 std::optional<TypePtr> RecordType::get_type(std::string const &field) {
@@ -270,7 +277,7 @@ std::optional<TypePtr> RecordType::get_type(std::string const &field) {
 }
 
 int RecordType::get_index(std::string const &field) {
-    long base_count{0};
+    int base_count{0};
     if (base) {
         auto d = base->get_index(field);
         if (d >= 0) {
