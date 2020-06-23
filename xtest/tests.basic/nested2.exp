@@ -1,0 +1,54 @@
+; ModuleID = 'nested2'
+source_filename = "nested2"
+
+@nested2_x = internal global i64 0
+@STRING_0 = private global [0 x i32] [i32 103, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
+@STRING_1 = private global [0 x i32] [i32 102, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_String([0 x i32]*)
+
+define internal void @nested2_f() {
+entry:
+  %closure_struct = alloca [1 x i64*]
+  %y = alloca i64
+  store i64 0, i64* %y
+  store i64 1, i64* %y
+  call void @Out_String([0 x i32]* @STRING_1)
+  %y1 = load i64, i64* %y
+  call void @Out_Int(i64 %y1, i64 0)
+  call void @Out_Ln()
+  %cls = getelementptr [1 x i64*], [1 x i64*]* %closure_struct, i64 0, i64 0
+  store i64* %y, i64** %cls
+  call void @nested2_f_g([1 x i64*]* nest %closure_struct)
+  call void @Out_String([0 x i32]* @STRING_1)
+  %y2 = load i64, i64* %y
+  call void @Out_Int(i64 %y2, i64 0)
+  call void @Out_Ln()
+  ret void
+}
+
+define internal void @nested2_f_g([1 x i64*]* nest %0) {
+entry:
+  %y = getelementptr [1 x i64*], [1 x i64*]* %0, i64 0, i64 0
+  %y1 = load i64*, i64** %y
+  call void @Out_String([0 x i32]* @STRING_0)
+  %y2 = load i64, i64* %y1
+  call void @Out_Int(i64 %y2, i64 0)
+  call void @Out_Ln()
+  store i64 3, i64* %y1
+  call void @Out_String([0 x i32]* @STRING_0)
+  %y3 = load i64, i64* %y1
+  call void @Out_Int(i64 %y3, i64 0)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @nested2_f()
+  ret i64 0
+}

@@ -25,10 +25,27 @@ template <typename T> class TableInterface {
   public:
     virtual ~TableInterface() = default;
 
-    virtual void            put(const std::string &name, T const &val) = 0;
     [[nodiscard]] virtual T find(const std::string &name) const = 0;
-    virtual bool            set(const std::string &name, T const &val) = 0;
-    virtual void            remove(const std::string &name) = 0;
+
+    /**
+     * @brief puts the value into the table at the top current map. See set for changeing an
+     * existing value.
+     *
+     * @param name
+     * @param val
+     */
+    virtual void put(const std::string &name, T const &val) = 0;
+
+    /**
+     * @brief sets a value in the symbol table, wherever it could be in the symbol table.
+     *
+     * @param name
+     * @param val
+     * @return true - name found, and value changed changed.
+     * @return false
+     */
+    virtual bool set(const std::string &name, T const &val) = 0;
+    virtual void remove(const std::string &name) = 0;
 
     [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator begin() const = 0;
     [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator end() const = 0;
@@ -44,11 +61,11 @@ template <typename T> class SymbolTable : public TableInterface<T> {
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
 
-    void put(const std::string &name, T const &val) override { table[name] = val; };
-
     [[nodiscard]] T find(const std::string &name) const override;
-    bool            set(const std::string &name, T const &val) override;
-    void            remove(const std::string &name) override;
+
+    void put(const std::string &name, T const &val) override { table[name] = val; };
+    bool set(const std::string &name, T const &val) override;
+    void remove(const std::string &name) override;
 
     [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
         return table.begin();
@@ -132,13 +149,15 @@ template <typename T> class FrameTable : public TableInterface<T> {
   public:
     FrameTable() { push_frame("."); };
 
-    void put(const std::string &name, T const &val) override { current_table->put(name, val); };
     [[nodiscard]] T find(const std::string &name) const override {
         return current_table->find(name);
     };
+
+    void put(const std::string &name, T const &val) override { current_table->put(name, val); };
     bool set(const std::string &name, T const &val) override {
         return current_table->set(name, val);
     };
+
     void remove(const std::string &name) override { current_table->remove(name); };
 
     [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
@@ -205,11 +224,24 @@ namespace ax {
 class SymbolFrameTable : public FrameTable<SymbolPtr> {
 
   public:
+    /**
+     * @brief Set the value object - wherever it is in the symbol table.
+     *
+     * @param name
+     * @param v
+     */
     void set_value(std::string const &name, llvm::Value *v) {
         auto s = find(name);
         s->value = v;
     };
 
+    /**
+     * @brief Set the value object - wherever it is in the symbol table.
+     *
+     * @param name
+     * @param v
+     * @param a
+     */
     void set_value(std::string const &name, llvm::Value *v, Attr a) {
         auto s = find(name);
         s->value = v;

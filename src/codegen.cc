@@ -325,35 +325,6 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     debug("ASTProcedure push frame {0}", get_nested_name());
     symboltable.push_frame(ast->name->value);
 
-    if (sym->is(Attr::closure)) {
-        // Set closure variables
-        // from lacsap PrototypeAST::CreateArgumentAlloca
-        debug("ASTProcedure set up closure variables", ast->name->value);
-
-        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
-        unsigned                   i = 0;
-        auto *                     cls_arg = f->arg_begin();
-        // auto *cls_arg = builder.CreateLoad(f->arg_begin());
-        auto *cls_str_type = funct_type->get_closure_struct()->get_llvm();
-        for (auto const &[cls_var, cls_type] :
-             std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
-            // const Types::FieldDecl *cls_field = nulptr; // get ith element of array for cls;
-            ind[1] = TypeTable::IntType->make_value(i);
-            debug("ASTProcedure var {0} : {1}", cls_arg->getName(), cls_var);
-            (&*cls_arg)->getType()->print(llvm::dbgs());
-            // llvm::dbgs() << ' ';
-            // cls_str_type->print(llvm::dbgs());
-            // llvm::dbgs() << '\n';
-
-            llvm::Value *a = builder.CreateGEP(&*cls_arg, ind, cls_var);
-            a = builder.CreateLoad(a, cls_var);
-
-            // put also into symbol table
-            symboltable.set_value(cls_var, a, Attr::null);
-            i++;
-        }
-    }
-
     // Set parameter names
     unsigned i = 0;
     for (auto &arg : f->args()) {
@@ -383,6 +354,34 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     // Do declarations
     ast->decs->accept(this);
+
+    // Do closure variables
+    if (sym->is(Attr::closure)) {
+        // Set closure variables
+        // from lacsap PrototypeAST::CreateArgumentAlloca
+        debug("ASTProcedure set up closure variables", ast->name->value);
+
+        std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
+        unsigned                   i = 0;
+        auto *                     cls_arg = f->arg_begin();
+        auto *                     cls_str_type = funct_type->get_closure_struct()->get_llvm();
+        for (auto const &[cls_var, cls_type] :
+             std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
+            ind[1] = TypeTable::IntType->make_value(i);
+
+            llvm::Value *a = builder.CreateGEP(&*cls_arg, ind, cls_var);
+            a = builder.CreateLoad(a, cls_var);
+
+            // put into symbol table
+            // * this is meant to shadow the variable in the outer scope otherwise the outer scope
+            // * variable changes.
+            debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(), a->getName());
+            auto sym = mkSym(cls_type);
+            sym->value = a;
+            symboltable.put(cls_var, sym);
+            i++;
+        }
+    }
 
     // Do local procedures
     std::for_each(cbegin(ast->procedures), cend(ast->procedures),
@@ -525,7 +524,7 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     }
     debug("ASTCall: global {0}", name);
     auto args = do_arguments(ast);
-    assert(res->value);
+    assert(res->value && "did not find function to call!"); // NOLINT
     auto  callee_type = std::dynamic_pointer_cast<ProcedureType>(res->type);
     auto *callee = llvm::dyn_cast<Function>(res->value);
     if (res->is(Attr::closure)) {
@@ -543,7 +542,7 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
             llvm::Value *ptr = builder.CreateGEP(closure, ind, "cls");
-            debug("ASTCall var {0} : {1}", v->getName(), name);
+            debug("ASTCall closure call {0} : {1}", v->getName(), name);
             builder.CreateStore(v, ptr);
             index++;
         }
@@ -1501,7 +1500,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
 }
 
 TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
-    debug("resolve_type {0}", std::string(*t));
+    // debug("resolve_type {0}", std::string(*t));
     TypePtr result;
     std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
                               result = types.resolve(type->id->value);
@@ -1513,17 +1512,17 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
                               result = types.resolve(t->get_type()->get_name());
                           }},
                t->type);
-    debug("resolve_type to {0}", std::string(*result));
+    // debug("resolve_type to {0}", std::string(*result));
     return result;
 }
 
 llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
-    debug("getType {0}", std::string(*t));
+    // debug("getType {0}", std::string(*t));
     return resolve_type(t)->get_llvm();
 }
 
 Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
-    debug("getType_init {0}", std::string(*t));
+    // debug("getType_init {0}", std::string(*t));
     return resolve_type(t)->get_init();
 }
 

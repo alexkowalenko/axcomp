@@ -13,10 +13,10 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#include <unicode/uchar.h>
 #include <utf8.h>
 #pragma clang diagnostic pop
-
-#include <unicode/uchar.h>
 
 namespace ax {
 
