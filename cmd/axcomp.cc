@@ -11,6 +11,7 @@
 #pragma clang diagnostic ignored "-Wshadow"
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Support/CommandLine.h"
 #pragma clang diagnostic pop

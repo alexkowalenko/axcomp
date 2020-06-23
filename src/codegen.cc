@@ -328,8 +328,10 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     // Set parameter names
     unsigned i = 0;
     for (auto &arg : f->args()) {
+        debug("ASTProcedure process parameter {0}", i);
         if (i == 0 && sym->is(Attr::closure)) {
             // skip closure variable
+            i++;
             continue;
         }
         auto param_name = ast->params[i].first->value;
@@ -348,7 +350,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
 
         // put also into symbol table
         symboltable.set_value(param_name, alloca, attr);
-        debug("put {} into symboltable", param_name);
+        debug("put {0} into symboltable", param_name);
         i++;
     };
 
