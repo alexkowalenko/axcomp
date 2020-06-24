@@ -25,47 +25,47 @@ loop:                                             ; preds = %forneg, %forpos, %e
   %0 = call i32 @CHR(i64 %addtmp)
   store i32 %0, i32* @case3_c
   %c = load i32, i32* @case3_c
-  switch i32 %c, label %range [
+  switch i32 %c, label %case.range [
     i32 65, label %case.element0
     i32 66, label %case.element1
     i32 67, label %case.element2
   ]
 
-forpos:                                           ; preds = %case_end
+forpos:                                           ; preds = %case.end
   %loopcond = icmp sle i64 %nextvar, 4
   br i1 %loopcond, label %loop, label %afterloop
 
-forneg:                                           ; preds = %case_end
+forneg:                                           ; preds = %case.end
   %loopcond1 = icmp sge i64 %nextvar, 4
   br i1 %loopcond1, label %loop, label %afterloop
 
 afterloop:                                        ; preds = %forneg, %forpos
   ret i64 0
 
-range:                                            ; preds = %loop
-  br label %else
+case.range:                                       ; preds = %loop
+  br label %case.else
 
 case.element0:                                    ; preds = %loop
   call void @Out_String([0 x i32]* @STRING_0)
   call void @Out_Ln()
-  br label %case_end
+  br label %case.end
 
 case.element1:                                    ; preds = %loop
   call void @Out_String([0 x i32]* @STRING_1)
   call void @Out_Ln()
-  br label %case_end
+  br label %case.end
 
 case.element2:                                    ; preds = %loop
   call void @Out_String([0 x i32]* @STRING_2)
   call void @Out_Ln()
-  br label %case_end
+  br label %case.end
 
-else:                                             ; preds = %range
+case.else:                                        ; preds = %case.range
   call void @Out_String([0 x i32]* @STRING_3)
   call void @Out_Ln()
-  br label %case_end
+  br label %case.end
 
-case_end:                                         ; preds = %else, %case.element2, %case.element1, %case.element0
+case.end:                                         ; preds = %case.else, %case.element2, %case.element1, %case.element0
   %index = load i64, i64* @case3_i
   %nextvar = add i64 %index, 1
   store i64 %nextvar, i64* @case3_i

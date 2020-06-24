@@ -10,21 +10,21 @@ declare void @Out_String([0 x i32]*)
 
 define void @Const5_Test() {
 entry:
-  switch i64 10, label %range [
+  switch i64 10, label %case.range [
   ]
 
-range:                                            ; preds = %entry
+case.range:                                       ; preds = %entry
   br label %case.range0
 
-case.range0:                                      ; preds = %range
-  br i1 false, label %case.element0, label %case_end
+case.range0:                                      ; preds = %case.range
+  br i1 false, label %case.element0, label %case.end
 
 case.element0:                                    ; preds = %case.range0
   call void @Out_String([0 x i32]* @STRING_0)
   ret void
-  br label %case_end
+  br label %case.end
 
-case_end:                                         ; preds = %case.element0, %case.range0
+case.end:                                         ; preds = %case.element0, %case.range0
   call void @Out_String([0 x i32]* @STRING_1)
   call void @Out_Ln()
   ret void

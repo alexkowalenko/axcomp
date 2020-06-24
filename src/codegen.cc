@@ -658,10 +658,10 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     });
 
     if (!ast->else_stats.empty()) {
-        else_block = BasicBlock::Create(context, "else");
+        else_block = BasicBlock::Create(context, "case.else");
     }
-    BasicBlock *range_block = BasicBlock::Create(context, "range");
-    BasicBlock *end_block = BasicBlock::Create(context, "case_end");
+    BasicBlock *range_block = BasicBlock::Create(context, "case.range");
+    BasicBlock *end_block = BasicBlock::Create(context, "case.end");
 
     // CASE
     ast->expr->accept(this);
@@ -757,10 +757,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
         std::for_each(begin(ast->else_stats), end(ast->else_stats),
                       [this](auto const &s) { s->accept(this); });
 
-        // check if last instruction is branch (EXIT)
-        if (else_block->back().getOpcode() != llvm::Instruction::Br) {
-            builder.CreateBr(end_block);
-        }
+        builder.CreateBr(end_block);
         else_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
     }
 

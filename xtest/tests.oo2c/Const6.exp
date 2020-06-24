@@ -1,0 +1,58 @@
+; ModuleID = 'Const6'
+source_filename = "Const6"
+
+@STRING_0 = private global [0 x i32] [i32 102, i32 111, i32 111, i32 0]
+@STRING_1 = private global [0 x i32] [i32 98, i32 97, i32 114, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_String([0 x i32]*)
+
+define internal void @Const6_P(i1 %b) {
+entry:
+  %b1 = alloca i1
+  store i1 %b, i1* %b1
+  br label %loop
+
+loop:                                             ; preds = %case.end, %entry
+  switch i64 1, label %case.range [
+    i64 0, label %case.element0
+  ]
+
+case.range:                                       ; preds = %loop
+  br label %case.else
+
+case.element0:                                    ; preds = %loop
+  call void @Out_String([0 x i32]* @STRING_0)
+  br label %end
+
+case.else:                                        ; preds = %case.range
+  %b2 = load i1, i1* %b1
+  br i1 %b2, label %then, label %ifcont
+
+then:                                             ; preds = %case.else
+  call void @Out_String([0 x i32]* @STRING_1)
+  br label %end
+
+ifcont:                                           ; preds = %case.else
+  br label %case.end
+
+case.end:                                         ; preds = %ifcont
+  br label %loop
+
+end:                                              ; preds = %then, %case.element0
+  ret void
+}
+
+define void @Const6_Test() {
+entry:
+  call void @Const6_P(i1 true)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Const6_Test()
+  ret i64 0
+}

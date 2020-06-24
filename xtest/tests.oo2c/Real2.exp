@@ -1,0 +1,39 @@
+; ModuleID = 'Real2'
+source_filename = "Real2"
+
+declare void @Out_Ln()
+
+declare void @Out_Real(double, i64)
+
+define internal void @Real2_Print(double %x) {
+entry:
+  %x1 = alloca double
+  store double %x, double* %x1
+  %x2 = load double, double* %x1
+  call void @Out_Real(double %x2, i64 3)
+  call void @Out_Ln()
+  ret void
+}
+
+define internal void @Real2_Print2(double %x) {
+entry:
+  %x1 = alloca double
+  store double %x, double* %x1
+  %x2 = load double, double* %x1
+  call void @Real2_Print(double %x2)
+  ret void
+}
+
+define void @Real2_Test() {
+entry:
+  call void @Real2_Print2(double 1.000000e+00)
+  call void @Real2_Print2(double 2.000000e+00)
+  call void @Real2_Print2(double -2.500000e-02)
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Real2_Test()
+  ret i64 0
+}

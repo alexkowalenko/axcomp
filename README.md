@@ -8,10 +8,13 @@ Supports at the moment:
 
 - The Oberon0 definition in Writh's _Compiler Construction_ (1996, 2017).
 - Modules with the IMPORT statement.
-- REALs, CHARs, SET types. (SMALLINT, etc. aliased INTEGER, LONGREAL aliased to REAL).
+- REALs, CHARs, SET types. (SMALLINT, etc. aliased to INTEGER (i64), LONGREAL aliased to REAL (double)).
+- Nested PROCEDUREs (with closures in LLVM!).
+- RECORD types, with base RECORD.
+- Multidimensional ARRAY types.
 - Open ARRAYs.
 - POINTER TO ...
-- Oberon-2 statements.
+- Oberon-2 statements IF, FOR, WHILE, LOOP, EXIT, REPEAT, CASE.
 
 Beyond the Oberon-2 definition:
 
@@ -42,7 +45,7 @@ How to run the compiler is explained in the [_AX Oberon-2/07 Language Report_](r
 
 ## Known issues
 
-Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex). Bugs listed in the issue tracker [![https://github.com/alexkowalenko/axcomp/issues](https://img.shields.io/github/issues/alexkowalenko/axcomp.svg)](https://github.com/alexkowalenko/axcomp/issues). 
+Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex). Bugs listed in the issue tracker [![https://github.com/alexkowalenko/axcomp/issues](https://img.shields.io/github/issues/alexkowalenko/axcomp)](https://github.com/alexkowalenko/axcomp/issues). 
 
 ## Open Source Licensing information
 

@@ -36,6 +36,11 @@ red = fg('red_1')
 restore = attr('reset')
 
 
+def remove_file(name: str):
+    if os.path.isfile(name):
+        os.remove(name)
+
+
 def do_clang(stem: str) -> int:
     obj = stem + ".o"
     cmd = linker + f" {link_objs} {obj}"
@@ -43,8 +48,11 @@ def do_clang(stem: str) -> int:
     ret = os.system(cmd)
     if (ret != 0):
         print(red + "link " + restore, end="")
-        os.system(f"rm -f a.out {obj} {stem}.def result.diff.txt result.txt")
-
+        os.remove("a.out")
+        os.remove(obj)
+        os.remove(f"{stem}.def")
+        os.remove("result.diff.txt")
+        os.remove("result.txt")
     os.system("./a.out > result.txt")
     res = stem + ".res"
     ret = os.system(
@@ -52,8 +60,13 @@ def do_clang(stem: str) -> int:
     if(ret != 0):
         print(red + "run " + restore, end="")
         fail = stem + ".fail"
-        os.system(f"mv result.txt {fail}")
-    os.system(f"rm -f a.out {obj} {stem}.def result.diff.txt result.txt")
+        os.rename("result.txt", fail)
+    # os.system(f"rm -f a.out {obj} {stem}.def result.diff.txt result.txt")
+    os.remove("a.out")
+    os.remove(obj)
+    os.remove(f"{stem}.def")
+    os.remove("result.diff.txt")
+    remove_file("result.txt")
 
     return (ret == 0)
 
@@ -71,7 +84,7 @@ def do_test(t: str) -> int:
     # print(cmd)
     ret = os.system(cmd)
     if ret:
-        os.system(f"mv result.txt {fail}")
+        os.rename("result.txt", fail)
         print(red + "compile " + restore, end="")
         return 0
 
@@ -83,16 +96,19 @@ def do_test(t: str) -> int:
         # print(cmd)
         ret = os.system(cmd)
         if(ret != 0):
-            os.system(f"mv {asm} {fail}")
-            os.system(f"rm -f {stem}.o {stem}.def")
+            os.rename(asm, fail)
+            os.remove(f"{stem}.o")
+            os.remove(f"{stem}.def")
         else:
-            os.system(f"rm -f {fail} {asm}")
-        os.system("rm -f result.diff.txt")
+            os.remove(asm)
+            remove_file(fail)
+        os.remove("result.diff.txt")
         if (ret != 0):
             print(red + "llir " + restore, end="")
             return 0
     else:
-        os.system(f"rm -f {fail} {asm}")
+        os.remove(asm)
+        os.remove(fail)
     # compile
     return do_clang(stem)
 
@@ -106,7 +122,7 @@ def do_test_parse(t: str) -> int:
     # print(cmd)
     ret = os.system(cmd)
     if ret:
-        os.system(f"mv result.txt {fail}")
+        os.rename("result.txt", fail)
         print(red + "compile " + restore, end="")
         return 0
 
@@ -116,11 +132,12 @@ def do_test_parse(t: str) -> int:
     # print(cmd)
     ret = os.system(cmd)
     if(ret != 0):
-        os.system(f"mv result.txt {fail}")
-        os.system(f"rm -f {stem}.def")
+        os.rename("result.txt", fail)
+        os.remove(f"{stem}.def")
     else:
-        os.system(f"rm -f {fail} result.txt")
-    os.system("rm -f result.diff.txt")
+        remove_file(fail)
+        os.remove("result.txt")
+    os.remove("result.diff.txt")
     if (ret != 0):
         print(red + "parse " + restore, end="")
         return 0
