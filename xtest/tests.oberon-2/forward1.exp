@@ -1,8 +1,8 @@
 ; ModuleID = 'forward1'
 source_filename = "forward1"
 
-@STRING_0 = private global [0 x i32] [i32 103, i32 40, i32 41, i32 0]
-@STRING_1 = private global [0 x i32] [i32 102, i32 40, i32 41, i32 0]
+@STRING_0 = private global [4 x i32] [i32 103, i32 40, i32 41, i32 0]
+@STRING_1 = private global [4 x i32] [i32 102, i32 40, i32 41, i32 0]
 
 declare void @Out_Ln()
 
@@ -14,14 +14,14 @@ entry:
   %x1 = alloca i64
   store i64 %x, i64* %x1
   store i64 0, i64* %y
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Ln()
   ret i64 0
 }
 
 define internal i64 @forward1_g() {
 entry:
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   %0 = call i64 @forward1_f(i64 1)
   ret i64 %0

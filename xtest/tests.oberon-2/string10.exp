@@ -1,12 +1,12 @@
 ; ModuleID = 'string10'
 source_filename = "string10"
 
-@string10_a = internal constant [0 x i32]* @STRING_0
-@STRING_0 = private global [0 x i32] [i32 97, i32 108, i32 112, i32 104, i32 97, i32 32, i32 0]
-@string10_b = internal constant [0 x i32]* @STRING_1
-@STRING_1 = private global [0 x i32] [i32 98, i32 101, i32 116, i32 97, i32 32, i32 0]
-@string10_cc = internal constant [0 x i32]* @STRING_2
-@STRING_2 = private global [0 x i32] [i32 103, i32 97, i32 109, i32 109, i32 97, i32 32, i32 0]
+@string10_a = internal constant [0 x i32]* bitcast ([7 x i32]* @STRING_0 to [0 x i32]*)
+@STRING_0 = private global [7 x i32] [i32 97, i32 108, i32 112, i32 104, i32 97, i32 32, i32 0]
+@string10_b = internal constant [0 x i32]* bitcast ([6 x i32]* @STRING_1 to [0 x i32]*)
+@STRING_1 = private global [6 x i32] [i32 98, i32 101, i32 116, i32 97, i32 32, i32 0]
+@string10_cc = internal constant [0 x i32]* bitcast ([7 x i32]* @STRING_2 to [0 x i32]*)
+@STRING_2 = private global [7 x i32] [i32 103, i32 97, i32 109, i32 109, i32 97, i32 32, i32 0]
 @string10_c = internal global [0 x i32]* null
 @string10_d = internal global [0 x i32]* null
 @string10_e = internal global i32 0

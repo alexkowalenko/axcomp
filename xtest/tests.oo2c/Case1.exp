@@ -1,12 +1,12 @@
 ; ModuleID = 'Case1'
 source_filename = "Case1"
 
-@STRING_0 = private global [0 x i32] [i32 111, i32 110, i32 101, i32 0]
-@STRING_1 = private global [0 x i32] [i32 116, i32 119, i32 111, i32 0]
-@STRING_2 = private global [0 x i32] [i32 116, i32 104, i32 114, i32 101, i32 101, i32 0]
-@STRING_3 = private global [0 x i32] [i32 109, i32 97, i32 110, i32 121, i32 0]
-@STRING_4 = private global [0 x i32] [i32 116, i32 111, i32 111, i32 32, i32 109, i32 97, i32 110, i32 121, i32 0]
-@STRING_5 = private global [0 x i32] [i32 110, i32 111, i32 32, i32 109, i32 97, i32 116, i32 99, i32 104, i32 0]
+@STRING_0 = private global [4 x i32] [i32 111, i32 110, i32 101, i32 0]
+@STRING_1 = private global [4 x i32] [i32 116, i32 119, i32 111, i32 0]
+@STRING_2 = private global [6 x i32] [i32 116, i32 104, i32 114, i32 101, i32 101, i32 0]
+@STRING_3 = private global [5 x i32] [i32 109, i32 97, i32 110, i32 121, i32 0]
+@STRING_4 = private global [9 x i32] [i32 116, i32 111, i32 111, i32 32, i32 109, i32 97, i32 110, i32 121, i32 0]
+@STRING_5 = private global [9 x i32] [i32 110, i32 111, i32 32, i32 109, i32 97, i32 116, i32 99, i32 104, i32 0]
 
 declare void @Out_Ln()
 
@@ -35,27 +35,27 @@ case.range0:                                      ; preds = %case.range
   br i1 %2, label %case.element4, label %case.else
 
 case.element0:                                    ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_0 to [0 x i32]*))
   br label %case.end
 
 case.element1:                                    ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   br label %case.end
 
 case.element2:                                    ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_2 to [0 x i32]*))
   br label %case.end
 
 case.element3:                                    ; preds = %entry, %entry
-  call void @Out_String([0 x i32]* @STRING_3)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_3 to [0 x i32]*))
   br label %case.end
 
 case.element4:                                    ; preds = %case.range0
-  call void @Out_String([0 x i32]* @STRING_4)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_4 to [0 x i32]*))
   br label %case.end
 
 case.else:                                        ; preds = %case.range0
-  call void @Out_String([0 x i32]* @STRING_5)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_5 to [0 x i32]*))
   br label %case.end
 
 case.end:                                         ; preds = %case.else, %case.element4, %case.element3, %case.element2, %case.element1, %case.element0

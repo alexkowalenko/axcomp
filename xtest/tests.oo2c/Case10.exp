@@ -1,8 +1,8 @@
 ; ModuleID = 'Case10'
 source_filename = "Case10"
 
-@STRING_0 = private global [0 x i32] [i32 101, i32 109, i32 112, i32 116, i32 121, i32 0]
-@STRING_1 = private global [0 x i32] [i32 110, i32 111, i32 32, i32 109, i32 97, i32 116, i32 99, i32 104, i32 0]
+@STRING_0 = private global [6 x i32] [i32 101, i32 109, i32 112, i32 116, i32 121, i32 0]
+@STRING_1 = private global [9 x i32] [i32 110, i32 111, i32 32, i32 109, i32 97, i32 116, i32 99, i32 104, i32 0]
 
 declare void @Out_Ln()
 
@@ -26,11 +26,11 @@ case.range0:                                      ; preds = %case.range
   br i1 %2, label %case.element0, label %case.else
 
 case.element0:                                    ; preds = %case.range0
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %case.end
 
 case.else:                                        ; preds = %case.range0
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_1 to [0 x i32]*))
   br label %case.end
 
 case.end:                                         ; preds = %case.else, %case.element0

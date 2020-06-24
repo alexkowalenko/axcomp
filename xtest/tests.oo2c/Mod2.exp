@@ -1,8 +1,8 @@
 ; ModuleID = 'Mod2'
 source_filename = "Mod2"
 
-@STRING_0 = private global [0 x i32] [i32 32, i32 77, i32 79, i32 68, i32 32, i32 0]
-@STRING_1 = private global [0 x i32] [i32 32, i32 61, i32 32, i32 0]
+@STRING_0 = private global [6 x i32] [i32 32, i32 77, i32 79, i32 68, i32 32, i32 0]
+@STRING_1 = private global [4 x i32] [i32 32, i32 61, i32 32, i32 0]
 
 declare void @Out_Ln()
 
@@ -18,10 +18,10 @@ entry:
   store i64 %j, i64* %j2
   %i3 = load i64, i64* %i1
   call void @Out_Int(i64 %i3, i64 3)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   %j4 = load i64, i64* %j2
   call void @Out_Int(i64 %j4, i64 0)
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   %i5 = load i64, i64* %i1
   %j6 = load i64, i64* %j2
   %modtmp = srem i64 %i5, %j6

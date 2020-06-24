@@ -1,7 +1,7 @@
 ; ModuleID = 'string12'
 source_filename = "string12"
 
-@STRING_0 = private global [0 x i32] [i32 67, i32 0]
+@STRING_0 = private global [2 x i32] [i32 67, i32 0]
 
 declare void @Out_Ln()
 
@@ -33,6 +33,6 @@ define i64 @output() {
 entry:
   call void @string12_print(i32 67)
   call void @string12_print(i32 99)
-  call void @string12_print2([0 x i32]* @STRING_0)
+  call void @string12_print2([0 x i32]* bitcast ([2 x i32]* @STRING_0 to [0 x i32]*))
   ret i64 0
 }

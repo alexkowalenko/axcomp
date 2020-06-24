@@ -2,9 +2,9 @@
 source_filename = "case2"
 
 @case2_i = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 79, i32 110, i32 101, i32 0]
-@STRING_1 = private global [0 x i32] [i32 84, i32 119, i32 111, i32 0]
-@STRING_2 = private global [0 x i32] [i32 77, i32 111, i32 114, i32 101, i32 0]
+@STRING_0 = private global [4 x i32] [i32 79, i32 110, i32 101, i32 0]
+@STRING_1 = private global [4 x i32] [i32 84, i32 119, i32 111, i32 0]
+@STRING_2 = private global [5 x i32] [i32 77, i32 111, i32 114, i32 101, i32 0]
 
 declare void @Out_Ln()
 
@@ -38,17 +38,17 @@ case.range:                                       ; preds = %loop
   br label %case.end
 
 case.element0:                                    ; preds = %loop
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %case.end
 
 case.element1:                                    ; preds = %loop
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Ln()
   br label %case.end
 
 case.element2:                                    ; preds = %loop
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_2 to [0 x i32]*))
   call void @Out_Ln()
   br label %case.end
 

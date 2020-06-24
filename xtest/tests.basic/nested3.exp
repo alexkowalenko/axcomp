@@ -2,9 +2,9 @@
 source_filename = "nested3"
 
 @nested3_x = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 103, i32 32, i32 97, i32 32, i32 61, i32 32, i32 0]
-@STRING_1 = private global [0 x i32] [i32 103, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
-@STRING_2 = private global [0 x i32] [i32 102, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
+@STRING_0 = private global [7 x i32] [i32 103, i32 32, i32 97, i32 32, i32 61, i32 32, i32 0]
+@STRING_1 = private global [7 x i32] [i32 103, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
+@STRING_2 = private global [7 x i32] [i32 102, i32 32, i32 121, i32 32, i32 61, i32 32, i32 0]
 
 declare void @Out_Ln()
 
@@ -18,14 +18,14 @@ entry:
   %y = alloca i64
   store i64 0, i64* %y
   store i64 1, i64* %y
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_2 to [0 x i32]*))
   %y1 = load i64, i64* %y
   call void @Out_Int(i64 %y1, i64 0)
   call void @Out_Ln()
   %cls = getelementptr [1 x i64*], [1 x i64*]* %closure_struct, i64 0, i64 0
   store i64* %y, i64** %cls
   call void @nested3_f_g([1 x i64*]* nest %closure_struct, i64 7)
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_2 to [0 x i32]*))
   %y2 = load i64, i64* %y
   call void @Out_Int(i64 %y2, i64 0)
   call void @Out_Ln()
@@ -38,16 +38,16 @@ entry:
   store i64 %a, i64* %a1
   %y = getelementptr [1 x i64*], [1 x i64*]* %0, i64 0, i64 0
   %y2 = load i64*, i64** %y
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_0 to [0 x i32]*))
   %a3 = load i64, i64* %a1
   call void @Out_Int(i64 %a3, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   %y4 = load i64, i64* %y2
   call void @Out_Int(i64 %y4, i64 0)
   call void @Out_Ln()
   store i64 3, i64* %y2
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   %y5 = load i64, i64* %y2
   call void @Out_Int(i64 %y5, i64 0)
   call void @Out_Ln()

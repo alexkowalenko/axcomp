@@ -4,7 +4,7 @@ source_filename = "string9"
 @string9_x = internal global [0 x i32]* null
 @string9_y = internal global [0 x i32]* null
 @string9_z = internal global [0 x i32]* null
-@STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 33, i32 0]
+@STRING_0 = private global [7 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 33, i32 0]
 
 declare void @Out_Ln()
 
@@ -20,7 +20,7 @@ entry:
 
 define i64 @output() {
 entry:
-  store [0 x i32]* @STRING_0, [0 x i32]** @string9_x
+  store [0 x i32]* bitcast ([7 x i32]* @STRING_0 to [0 x i32]*), [0 x i32]** @string9_x
   %0 = call i64 @NEW_String([0 x i32]** @string9_y, i64 5)
   %x = load [0 x i32]*, [0 x i32]** @string9_x
   store [0 x i32]* %x, [0 x i32]** @string9_z

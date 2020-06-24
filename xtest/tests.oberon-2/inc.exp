@@ -3,8 +3,8 @@ source_filename = "inc"
 
 @inc_x = internal global i64 0
 @inc_y = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 83, i32 97, i32 109, i32 101, i32 0]
-@STRING_1 = private global [0 x i32] [i32 68, i32 105, i32 102, i32 102, i32 101, i32 114, i32 101, i32 110, i32 116, i32 0]
+@STRING_0 = private global [5 x i32] [i32 83, i32 97, i32 109, i32 101, i32 0]
+@STRING_1 = private global [10 x i32] [i32 68, i32 105, i32 102, i32 102, i32 101, i32 114, i32 101, i32 110, i32 116, i32 0]
 
 declare void @Out_Ln()
 
@@ -35,12 +35,12 @@ entry:
   br i1 %2, label %then, label %else
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 
 else:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 

@@ -5,12 +5,12 @@ source_filename = "set2"
 @set2_y = internal global i64 0
 @set2_z = internal global i64 0
 @set2_a = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 120, i32 0]
-@STRING_1 = private global [0 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 121, i32 0]
-@STRING_2 = private global [0 x i32] [i32 120, i32 32, i32 61, i32 32, i32 122, i32 0]
-@STRING_3 = private global [0 x i32] [i32 120, i32 32, i32 35, i32 32, i32 122, i32 0]
-@STRING_4 = private global [0 x i32] [i32 121, i32 32, i32 35, i32 32, i32 122, i32 0]
-@STRING_5 = private global [0 x i32] [i32 70, i32 105, i32 110, i32 105, i32 115, i32 104, i32 33, i32 0]
+@STRING_0 = private global [10 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 120, i32 0]
+@STRING_1 = private global [10 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 121, i32 0]
+@STRING_2 = private global [6 x i32] [i32 120, i32 32, i32 61, i32 32, i32 122, i32 0]
+@STRING_3 = private global [6 x i32] [i32 120, i32 32, i32 35, i32 32, i32 122, i32 0]
+@STRING_4 = private global [6 x i32] [i32 121, i32 32, i32 35, i32 32, i32 122, i32 0]
+@STRING_5 = private global [8 x i32] [i32 70, i32 105, i32 110, i32 105, i32 115, i32 104, i32 33, i32 0]
 
 declare void @Out_Ln()
 
@@ -35,7 +35,7 @@ entry:
 then:                                             ; preds = %entry
   %a2 = load i64, i64* @set2_a
   call void @Out_Int(i64 %a2, i64 0)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 
@@ -47,7 +47,7 @@ ifcont:                                           ; preds = %then, %entry
 
 then4:                                            ; preds = %ifcont
   call void @Out_Int(i64 1, i64 0)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont5
 
@@ -61,7 +61,7 @@ ifcont5:                                          ; preds = %then4, %ifcont
 
 then6:                                            ; preds = %ifcont5
   call void @Out_Int(i64 7, i64 0)
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont7
 
@@ -73,7 +73,7 @@ ifcont7:                                          ; preds = %then6, %ifcont5
   br i1 %10, label %then9, label %ifcont10
 
 then9:                                            ; preds = %ifcont7
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_2 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont10
 
@@ -84,7 +84,7 @@ ifcont10:                                         ; preds = %then9, %ifcont7
   br i1 %11, label %then13, label %ifcont14
 
 then13:                                           ; preds = %ifcont10
-  call void @Out_String([0 x i32]* @STRING_3)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_3 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont14
 
@@ -95,12 +95,12 @@ ifcont14:                                         ; preds = %then13, %ifcont10
   br i1 %12, label %then17, label %ifcont18
 
 then17:                                           ; preds = %ifcont14
-  call void @Out_String([0 x i32]* @STRING_4)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_4 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont18
 
 ifcont18:                                         ; preds = %then17, %ifcont14
-  call void @Out_String([0 x i32]* @STRING_5)
+  call void @Out_String([0 x i32]* bitcast ([8 x i32]* @STRING_5 to [0 x i32]*))
   call void @Out_Ln()
   ret i64 0
 }

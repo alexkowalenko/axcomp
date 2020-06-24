@@ -1,7 +1,7 @@
 ; ModuleID = 'ConstFold20'
 source_filename = "ConstFold20"
 
-@STRING_0 = private global [0 x i32] [i32 84, i32 82, i32 85, i32 69, i32 0]
+@STRING_0 = private global [5 x i32] [i32 84, i32 82, i32 85, i32 69, i32 0]
 
 declare void @Out_Ln()
 
@@ -12,7 +12,7 @@ entry:
   br i1 true, label %then, label %ifcont
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 

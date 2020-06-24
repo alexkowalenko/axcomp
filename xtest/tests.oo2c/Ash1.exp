@@ -1,7 +1,7 @@
 ; ModuleID = 'Ash1'
 source_filename = "Ash1"
 
-@STRING_0 = private global [0 x i32] [i32 32, i32 32, i32 0]
+@STRING_0 = private global [3 x i32] [i32 32, i32 32, i32 0]
 
 declare i64 @ASH(i64, i64)
 
@@ -26,7 +26,7 @@ entry:
   call void @Out_Char(i32 44)
   %n5 = load i64, i64* %n2
   call void @Out_Int(i64 %n5, i64 0)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([3 x i32]* @STRING_0 to [0 x i32]*))
   %res6 = load i64, i64* %res3
   call void @Out_Int(i64 %res6, i64 4)
   %x7 = load i64, i64* %x1

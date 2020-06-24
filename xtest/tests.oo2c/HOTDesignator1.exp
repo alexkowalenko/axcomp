@@ -1,7 +1,7 @@
 ; ModuleID = 'HOTDesignator1'
 source_filename = "HOTDesignator1"
 
-@STRING_0 = private global [0 x i32] [i32 97, i32 98, i32 0]
+@STRING_0 = private global [3 x i32] [i32 97, i32 98, i32 0]
 
 declare void @Out_Ln()
 
@@ -23,13 +23,13 @@ entry:
 
 define void @HOTDesignator1_Test() {
 entry:
-  %0 = call i32 @HOTDesignator1_Get([0 x i32]* @STRING_0, i64 0)
+  %0 = call i32 @HOTDesignator1_Get([0 x i32]* bitcast ([3 x i32]* @STRING_0 to [0 x i32]*), i64 0)
   call void @Out_Char(i32 %0)
   call void @Out_Ln()
-  %1 = call i32 @HOTDesignator1_Get([0 x i32]* @STRING_0, i64 1)
+  %1 = call i32 @HOTDesignator1_Get([0 x i32]* bitcast ([3 x i32]* @STRING_0 to [0 x i32]*), i64 1)
   call void @Out_Char(i32 %1)
   call void @Out_Ln()
-  %2 = call i32 @HOTDesignator1_Get([0 x i32]* @STRING_0, i64 2)
+  %2 = call i32 @HOTDesignator1_Get([0 x i32]* bitcast ([3 x i32]* @STRING_0 to [0 x i32]*), i64 2)
   call void @Out_Char(i32 %2)
   call void @Out_Ln()
   ret void

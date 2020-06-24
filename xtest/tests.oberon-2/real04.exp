@@ -5,15 +5,15 @@ source_filename = "real04"
 @Math_ln2 = external global double
 @Math_e = external global double
 @real04_x = internal global double 0.000000e+00
-@STRING_0 = private global [0 x i32] [i32 112, i32 105, i32 58, i32 32, i32 0]
-@STRING_1 = private global [0 x i32] [i32 101, i32 58, i32 32, i32 0]
-@STRING_2 = private global [0 x i32] [i32 115, i32 105, i32 110, i32 58, i32 32, i32 0]
-@STRING_3 = private global [0 x i32] [i32 99, i32 111, i32 115, i32 58, i32 32, i32 0]
-@STRING_4 = private global [0 x i32] [i32 97, i32 114, i32 99, i32 116, i32 97, i32 110, i32 58, i32 32, i32 0]
-@STRING_5 = private global [0 x i32] [i32 108, i32 110, i32 58, i32 32, i32 0]
-@STRING_6 = private global [0 x i32] [i32 101, i32 120, i32 112, i32 58, i32 32, i32 0]
-@STRING_7 = private global [0 x i32] [i32 115, i32 113, i32 114, i32 116, i32 58, i32 32, i32 0]
-@STRING_8 = private global [0 x i32] [i32 112, i32 105, i32 32, i32 105, i32 115, i32 32, i32 103, i32 114, i32 101, i32 97, i32 116, i32 101, i32 114, i32 32, i32 116, i32 104, i32 97, i32 110, i32 32, i32 101, i32 0]
+@STRING_0 = private global [5 x i32] [i32 112, i32 105, i32 58, i32 32, i32 0]
+@STRING_1 = private global [4 x i32] [i32 101, i32 58, i32 32, i32 0]
+@STRING_2 = private global [6 x i32] [i32 115, i32 105, i32 110, i32 58, i32 32, i32 0]
+@STRING_3 = private global [6 x i32] [i32 99, i32 111, i32 115, i32 58, i32 32, i32 0]
+@STRING_4 = private global [9 x i32] [i32 97, i32 114, i32 99, i32 116, i32 97, i32 110, i32 58, i32 32, i32 0]
+@STRING_5 = private global [5 x i32] [i32 108, i32 110, i32 58, i32 32, i32 0]
+@STRING_6 = private global [6 x i32] [i32 101, i32 120, i32 112, i32 58, i32 32, i32 0]
+@STRING_7 = private global [7 x i32] [i32 115, i32 113, i32 114, i32 116, i32 58, i32 32, i32 0]
+@STRING_8 = private global [21 x i32] [i32 112, i32 105, i32 32, i32 105, i32 115, i32 32, i32 103, i32 114, i32 101, i32 97, i32 116, i32 101, i32 114, i32 32, i32 116, i32 104, i32 97, i32 110, i32 32, i32 101, i32 0]
 
 declare void @Out_Ln()
 
@@ -35,37 +35,37 @@ declare double @Math_cos(double)
 
 define i64 @output() {
 entry:
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_0 to [0 x i32]*))
   %Math_pi = load double, double* @Math_pi
   call void @Out_Real(double %Math_pi, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   %Math_e = load double, double* @Math_e
   call void @Out_Real(double %Math_e, i64 0)
   call void @Out_Ln()
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_2 to [0 x i32]*))
   %0 = call double @Math_sin(double 0.000000e+00)
   call void @Out_Real(double %0, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_3)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_3 to [0 x i32]*))
   %1 = call double @Math_cos(double 0.000000e+00)
   call void @Out_Real(double %1, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_4)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_4 to [0 x i32]*))
   %2 = call double @Math_arctan(double 1.000000e+00)
   call void @Out_Real(double %2, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_5)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_5 to [0 x i32]*))
   %Math_e1 = load double, double* @Math_e
   %3 = call double @Math_ln(double %Math_e1)
   call void @Out_Real(double %3, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_6)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_6 to [0 x i32]*))
   %4 = call double @Math_exp(double 1.000000e+00)
   call void @Out_Real(double %4, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_7)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_7 to [0 x i32]*))
   %5 = call double @Math_sqrt(double 2.000000e+00)
   call void @Out_Real(double %5, i64 0)
   call void @Out_Ln()
@@ -75,7 +75,7 @@ entry:
   br i1 %6, label %then, label %ifcont
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_8)
+  call void @Out_String([0 x i32]* bitcast ([21 x i32]* @STRING_8 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 

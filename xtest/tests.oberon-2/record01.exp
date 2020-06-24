@@ -8,10 +8,10 @@ source_filename = "record01"
 
 @record01_a = internal global %pt3 zeroinitializer
 @record01_b = internal global %pt zeroinitializer
-@STRING_0 = private global [0 x i32] [i32 97, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
-@STRING_1 = private global [0 x i32] [i32 98, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
-@STRING_2 = private global [0 x i32] [i32 115, i32 117, i32 109, i32 32, i32 97, i32 32, i32 61, i32 32, i32 0]
-@STRING_3 = private global [0 x i32] [i32 115, i32 117, i32 109, i32 32, i32 98, i32 32, i32 61, i32 32, i32 0]
+@STRING_0 = private global [7 x i32] [i32 97, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
+@STRING_1 = private global [7 x i32] [i32 98, i32 32, i32 58, i32 61, i32 32, i32 123, i32 0]
+@STRING_2 = private global [9 x i32] [i32 115, i32 117, i32 109, i32 32, i32 97, i32 32, i32 61, i32 32, i32 0]
+@STRING_3 = private global [9 x i32] [i32 115, i32 117, i32 109, i32 32, i32 98, i32 32, i32 61, i32 32, i32 0]
 
 declare void @Out_Ln()
 
@@ -32,7 +32,7 @@ entry:
   %a1 = load %pt3, %pt3* @record01_a
   %idx2 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 1)
   store i64 %idx2, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 1)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_0 to [0 x i32]*))
   %a3 = load %pt3, %pt3* @record01_a
   %idx4 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
   call void @Out_Int(i64 %idx4, i64 0)
@@ -46,7 +46,7 @@ entry:
   call void @Out_Int(i64 %idx8, i64 0)
   call void @Out_Char(i32 125)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   %b = load %pt, %pt* @record01_b
   %idx9 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 0)
   call void @Out_Int(i64 %idx9, i64 0)
@@ -56,7 +56,7 @@ entry:
   call void @Out_Int(i64 %idx11, i64 0)
   call void @Out_Char(i32 125)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_2 to [0 x i32]*))
   %a12 = load %pt3, %pt3* @record01_a
   %idx13 = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record01_a, i64 0, i32 0)
   %a14 = load %pt3, %pt3* @record01_a
@@ -67,7 +67,7 @@ entry:
   %addtmp18 = add i64 %addtmp, %idx17
   call void @Out_Int(i64 %addtmp18, i64 0)
   call void @Out_Ln()
-  call void @Out_String([0 x i32]* @STRING_3)
+  call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_3 to [0 x i32]*))
   %b19 = load %pt, %pt* @record01_b
   %idx20 = load i64, i64* getelementptr inbounds (%pt, %pt* @record01_b, i64 0, i32 0)
   %b21 = load %pt, %pt* @record01_b

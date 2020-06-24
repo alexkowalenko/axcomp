@@ -1,10 +1,10 @@
 ; ModuleID = 'string11'
 source_filename = "string11"
 
-@string11_a = internal constant [0 x i32]* @STRING_0
-@STRING_0 = private global [0 x i32] [i32 97, i32 108, i32 112, i32 104, i32 97, i32 0]
-@string11_b = internal constant [0 x i32]* @STRING_1
-@STRING_1 = private global [0 x i32] [i32 98, i32 101, i32 116, i32 97, i32 0]
+@string11_a = internal constant [0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*)
+@STRING_0 = private global [6 x i32] [i32 97, i32 108, i32 112, i32 104, i32 97, i32 0]
+@string11_b = internal constant [0 x i32]* bitcast ([5 x i32]* @STRING_1 to [0 x i32]*)
+@STRING_1 = private global [5 x i32] [i32 98, i32 101, i32 116, i32 97, i32 0]
 
 declare void @Out_Ln()
 

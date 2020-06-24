@@ -100,12 +100,15 @@ llvm::Constant *StringType::make_value(std::string const &s) {
     return ConstantArray::get(llvm::dyn_cast<llvm::ArrayType>(make_type(s)), array);
 }
 
-llvm::Type *StringType::make_type(std::string const & /* unused */) {
+llvm::Type *StringType::make_type(std::string const &s) {
     // Type dependant on string size
 
     return llvm::ArrayType::get(TypeTable::CharType->get_llvm(),
-                                // utf8::distance(s.begin(), s.end()) + 1
-                                0); // All strings are undetermined length
+                                utf8::distance(s.begin(), s.end()) + 1);
+}
+
+llvm::Type *StringType::make_type_ptr() {
+    return llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0)->getPointerTo();
 }
 
 std::string ProcedureType::get_print(bool forward) {

@@ -1,14 +1,14 @@
 ; ModuleID = 'stdlib03'
 source_filename = "stdlib03"
 
-@stdlib03_a = internal constant [0 x i32]* @STRING_0
-@STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
-@stdlib03_b = internal constant [0 x i32]* @STRING_1
-@STRING_1 = private global [0 x i32] [i32 32, i32 87, i32 111, i32 114, i32 108, i32 100, i32 0]
+@stdlib03_a = internal constant [0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*)
+@STRING_0 = private global [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@stdlib03_b = internal constant [0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*)
+@STRING_1 = private global [7 x i32] [i32 32, i32 87, i32 111, i32 114, i32 108, i32 100, i32 0]
 @stdlib03_c = internal global [0 x i32]* null
-@STRING_2 = private global [0 x i32] [i32 32, i32 45, i32 62, i32 32, i32 0]
-@STRING_3 = private global [0 x i32] [i32 97, i32 0]
-@STRING_4 = private global [0 x i32] [i32 98, i32 0]
+@STRING_2 = private global [5 x i32] [i32 32, i32 45, i32 62, i32 32, i32 0]
+@STRING_3 = private global [2 x i32] [i32 97, i32 0]
+@STRING_4 = private global [2 x i32] [i32 98, i32 0]
 
 declare void @Out_Ln()
 
@@ -53,7 +53,7 @@ entry:
   call void @Out_Char(i32 32)
   %s24 = load [0 x i32]*, [0 x i32]** %s22
   call void @Out_String([0 x i32]* %s24)
-  call void @Out_String([0 x i32]* @STRING_2)
+  call void @Out_String([0 x i32]* bitcast ([5 x i32]* @STRING_2 to [0 x i32]*))
   %s15 = load [0 x i32]*, [0 x i32]** %s11
   %s26 = load [0 x i32]*, [0 x i32]** %s22
   %0 = call i64 @Strings_Compare([0 x i32]* %s15, [0 x i32]* %s26)
@@ -81,8 +81,8 @@ entry:
   %c4 = load [0 x i32]*, [0 x i32]** @stdlib03_c
   call void @stdlib03_print([0 x i32]* %c4)
   call void @Out_Ln()
-  call void @stdlib03_printCompare([0 x i32]* @STRING_3, [0 x i32]* @STRING_3)
-  call void @stdlib03_printCompare([0 x i32]* @STRING_3, [0 x i32]* @STRING_4)
-  call void @stdlib03_printCompare([0 x i32]* @STRING_4, [0 x i32]* @STRING_3)
+  call void @stdlib03_printCompare([0 x i32]* bitcast ([2 x i32]* @STRING_3 to [0 x i32]*), [0 x i32]* bitcast ([2 x i32]* @STRING_3 to [0 x i32]*))
+  call void @stdlib03_printCompare([0 x i32]* bitcast ([2 x i32]* @STRING_3 to [0 x i32]*), [0 x i32]* bitcast ([2 x i32]* @STRING_4 to [0 x i32]*))
+  call void @stdlib03_printCompare([0 x i32]* bitcast ([2 x i32]* @STRING_4 to [0 x i32]*), [0 x i32]* bitcast ([2 x i32]* @STRING_3 to [0 x i32]*))
   ret i64 0
 }

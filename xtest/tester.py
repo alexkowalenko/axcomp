@@ -30,6 +30,7 @@ c_flags = ""
 compiler = f"{install_dir}/axcomp"
 linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
 optimize = False
+llir_compile = False
 opt_flag = "-O1"
 
 red = fg('red_1')
@@ -42,17 +43,24 @@ def remove_file(name: str):
 
 
 def do_clang(stem: str) -> int:
-    obj = stem + ".o"
-    cmd = linker + f" {link_objs} {obj}"
+    global llir_compile
+
+    if llir_compile:
+        obj = stem + ".ll"
+    else:
+        obj = stem + ".o"
+    cmd = linker + f" {link_objs} {obj}  > result.txt 2>&1"
     # print(cmd)
     ret = os.system(cmd)
     if (ret != 0):
         print(red + "link " + restore, end="")
-        os.remove("a.out")
-        os.remove(obj)
+        remove_file("a.out")
         os.remove(f"{stem}.def")
-        os.remove("result.diff.txt")
-        os.remove("result.txt")
+        remove_file("result.diff.txt")
+        fail = stem + ".fail"
+        os.rename("result.txt", fail)
+        remove_file(stem + ".o")
+        return (ret == 0)
     os.system("./a.out > result.txt")
     res = stem + ".res"
     ret = os.system(
@@ -62,16 +70,20 @@ def do_clang(stem: str) -> int:
         fail = stem + ".fail"
         os.rename("result.txt", fail)
     # os.system(f"rm -f a.out {obj} {stem}.def result.diff.txt result.txt")
-    os.remove("a.out")
-    os.remove(obj)
-    os.remove(f"{stem}.def")
-    os.remove("result.diff.txt")
+    remove_file("a.out")
+    remove_file(obj)
+    if llir_compile:
+        remove_file(stem + ".o")
+    remove_file(f"{stem}.def")
+    remove_file("result.diff.txt")
     remove_file("result.txt")
 
     return (ret == 0)
 
 
 def do_test(t: str) -> int:
+    global llir_compile
+
     stem = Path(t).stem
     fail = stem + ".fail"
 
@@ -100,7 +112,8 @@ def do_test(t: str) -> int:
             os.remove(f"{stem}.o")
             os.remove(f"{stem}.def")
         else:
-            os.remove(asm)
+            if not llir_compile:
+                os.remove(asm)
             remove_file(fail)
         os.remove("result.diff.txt")
         if (ret != 0):
@@ -108,7 +121,7 @@ def do_test(t: str) -> int:
             return 0
     else:
         os.remove(asm)
-        os.remove(fail)
+        remove_file(fail)
     # compile
     return do_clang(stem)
 
@@ -219,12 +232,15 @@ def get_tests() -> list:
 
 def main() -> int:
     global optimize
+    global llir_compile
 
     argsParser = argparse.ArgumentParser()
     argsParser.add_argument(
         '-t', '--tests', help="run test on these directories")
     argsParser.add_argument(
         '-O', '--optimize', help="switch on the optimizer", action='store_true')
+    argsParser.add_argument(
+        '-l', '--llir', help="compile the .ll output instead", action='store_true')
 
     args = argsParser.parse_args()
     if args.optimize:
@@ -237,6 +253,7 @@ def main() -> int:
         tests = x.split(",")
     else:
         tests = get_tests()
+    llir_compile = args.llir
 
     print(f"tests {tests}")
     for d in tests:

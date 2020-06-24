@@ -202,6 +202,7 @@ class StringType : public SimpleType {
 
     llvm::Constant *make_value(std::string const &s);
     llvm::Type *    make_type(std::string const &s); // Type dependant on string size
+    llvm::Type *    make_type_ptr();                 // Zero size
 };
 
 class RecordType : public Type {

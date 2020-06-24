@@ -4,8 +4,8 @@ source_filename = "set4"
 @set4_y = internal global i64 0
 @set4_z = internal global i64 0
 @set4_a = internal global i64 0
-@STRING_0 = private global [0 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 121, i32 0]
-@STRING_1 = private global [0 x i32] [i32 70, i32 105, i32 110, i32 105, i32 115, i32 104, i32 33, i32 0]
+@STRING_0 = private global [10 x i32] [i32 32, i32 105, i32 110, i32 32, i32 115, i32 101, i32 116, i32 32, i32 121, i32 0]
+@STRING_1 = private global [8 x i32] [i32 70, i32 105, i32 110, i32 105, i32 115, i32 104, i32 33, i32 0]
 
 declare void @Out_Ln()
 
@@ -32,7 +32,7 @@ entry:
 
 then:                                             ; preds = %entry
   call void @Out_Int(i64 3, i64 0)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont
 
@@ -44,12 +44,12 @@ ifcont:                                           ; preds = %then, %entry
 
 then2:                                            ; preds = %ifcont
   call void @Out_Int(i64 4, i64 0)
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([10 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Ln()
   br label %ifcont3
 
 ifcont3:                                          ; preds = %then2, %ifcont
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([8 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Ln()
   ret i64 0
 }

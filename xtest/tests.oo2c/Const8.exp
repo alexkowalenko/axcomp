@@ -1,8 +1,8 @@
 ; ModuleID = 'Const8'
 source_filename = "Const8"
 
-@STRING_0 = private global [0 x i32] [i32 84, i32 82, i32 85, i32 69, i32 32, i32 0]
-@STRING_1 = private global [0 x i32] [i32 70, i32 65, i32 76, i32 83, i32 69, i32 32, i32 0]
+@STRING_0 = private global [6 x i32] [i32 84, i32 82, i32 85, i32 69, i32 32, i32 0]
+@STRING_1 = private global [7 x i32] [i32 70, i32 65, i32 76, i32 83, i32 69, i32 32, i32 0]
 
 declare void @Out_Ln()
 
@@ -17,11 +17,11 @@ entry:
   br i1 %modtmp, label %then, label %else
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
 else:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
 ifcont:                                           ; preds = %else, %then
@@ -37,11 +37,11 @@ entry:
   br i1 %modtmp, label %then, label %else
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
 else:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
 ifcont:                                           ; preds = %else, %then
@@ -57,11 +57,11 @@ entry:
   br i1 %subtmp, label %then, label %else
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
 else:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
 ifcont:                                           ; preds = %else, %then
@@ -77,11 +77,11 @@ entry:
   br i1 %subtmp, label %then, label %else
 
 then:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
 else:                                             ; preds = %entry
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
 ifcont:                                           ; preds = %else, %then

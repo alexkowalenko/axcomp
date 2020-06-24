@@ -2,7 +2,7 @@
 source_filename = "L1"
 
 @L1_x = internal global [0 x i32]* null
-@STRING_0 = private global [0 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
+@STRING_0 = private global [6 x i32] [i32 72, i32 101, i32 108, i32 108, i32 111, i32 0]
 
 declare void @Out_Ln()
 
@@ -48,7 +48,7 @@ end:                                              ; preds = %then
 
 define i64 @output() {
 entry:
-  store [0 x i32]* @STRING_0, [0 x i32]** @L1_x
+  store [0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*), [0 x i32]** @L1_x
   %x = load [0 x i32]*, [0 x i32]** @L1_x
   call void @Out_String([0 x i32]* %x)
   call void @Out_Char(i32 32)

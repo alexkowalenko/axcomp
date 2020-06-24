@@ -1,8 +1,8 @@
 ; ModuleID = 'Const6'
 source_filename = "Const6"
 
-@STRING_0 = private global [0 x i32] [i32 102, i32 111, i32 111, i32 0]
-@STRING_1 = private global [0 x i32] [i32 98, i32 97, i32 114, i32 0]
+@STRING_0 = private global [4 x i32] [i32 102, i32 111, i32 111, i32 0]
+@STRING_1 = private global [4 x i32] [i32 98, i32 97, i32 114, i32 0]
 
 declare void @Out_Ln()
 
@@ -23,7 +23,7 @@ case.range:                                       ; preds = %loop
   br label %case.else
 
 case.element0:                                    ; preds = %loop
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_0 to [0 x i32]*))
   br label %end
 
 case.else:                                        ; preds = %case.range
@@ -31,7 +31,7 @@ case.else:                                        ; preds = %case.range
   br i1 %b2, label %then, label %ifcont
 
 then:                                             ; preds = %case.else
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   br label %end
 
 ifcont:                                           ; preds = %case.else

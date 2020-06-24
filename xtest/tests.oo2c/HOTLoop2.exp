@@ -1,9 +1,9 @@
 ; ModuleID = 'HOTLoop2'
 source_filename = "HOTLoop2"
 
-@STRING_0 = private global [0 x i32] zeroinitializer
-@STRING_1 = private global [0 x i32] [i32 97, i32 0]
-@STRING_2 = private global [0 x i32] [i32 97, i32 98, i32 99, i32 0]
+@STRING_0 = private global [1 x i32] zeroinitializer
+@STRING_1 = private global [2 x i32] [i32 97, i32 0]
+@STRING_2 = private global [4 x i32] [i32 97, i32 98, i32 99, i32 0]
 
 declare void @Out_Ln()
 
@@ -40,13 +40,13 @@ end:                                              ; preds = %while
 
 define void @HOTLoop2_Test() {
 entry:
-  %0 = call i64 @HOTLoop2_Len([0 x i32]* @STRING_0)
+  %0 = call i64 @HOTLoop2_Len([0 x i32]* bitcast ([1 x i32]* @STRING_0 to [0 x i32]*))
   call void @Out_Int(i64 %0, i64 0)
   call void @Out_Ln()
-  %1 = call i64 @HOTLoop2_Len([0 x i32]* @STRING_1)
+  %1 = call i64 @HOTLoop2_Len([0 x i32]* bitcast ([2 x i32]* @STRING_1 to [0 x i32]*))
   call void @Out_Int(i64 %1, i64 0)
   call void @Out_Ln()
-  %2 = call i64 @HOTLoop2_Len([0 x i32]* @STRING_2)
+  %2 = call i64 @HOTLoop2_Len([0 x i32]* bitcast ([4 x i32]* @STRING_2 to [0 x i32]*))
   call void @Out_Int(i64 %2, i64 0)
   call void @Out_Ln()
   ret void

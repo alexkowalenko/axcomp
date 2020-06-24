@@ -1,8 +1,8 @@
 ; ModuleID = 'Const3'
 source_filename = "Const3"
 
-@STRING_0 = private global [0 x i32] [i32 102, i32 111, i32 111, i32 0]
-@STRING_1 = private global [0 x i32] [i32 98, i32 97, i32 114, i32 0]
+@STRING_0 = private global [4 x i32] [i32 102, i32 111, i32 111, i32 0]
+@STRING_1 = private global [4 x i32] [i32 98, i32 97, i32 114, i32 0]
 
 declare void @Out_Ln()
 
@@ -18,7 +18,7 @@ loop:                                             ; preds = %ifcont, %entry
   br i1 false, label %then, label %elsif0
 
 then:                                             ; preds = %loop
-  call void @Out_String([0 x i32]* @STRING_0)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_0 to [0 x i32]*))
   br label %end
 
 elsif0:                                           ; preds = %loop
@@ -26,7 +26,7 @@ elsif0:                                           ; preds = %loop
   br i1 %b2, label %then3, label %ifcont
 
 then3:                                            ; preds = %elsif0
-  call void @Out_String([0 x i32]* @STRING_1)
+  call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
   br label %end
 
 ifcont:                                           ; preds = %elsif0

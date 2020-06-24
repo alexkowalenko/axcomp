@@ -1311,7 +1311,6 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
  */
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast) {
     // debug("ASTDesignatorPtr {0}", std::string(*ast));
-
     visit_ASTQualidentPtr(ast->ident);
 
     // Check if has selectors
@@ -1425,7 +1424,7 @@ void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
         var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
         global_strings[ast->value] = var;
     }
-    last_value = var;
+    last_value = builder.CreateBitCast(var, TypeTable::StrType->make_type_ptr());
 }
 
 void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
