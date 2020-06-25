@@ -2,7 +2,6 @@
 source_filename = "record13"
 
 %List = type { i64, i64 }
-%List.0 = type { i64, i64 }
 
 @record13_current = internal global %List zeroinitializer
 

@@ -2,15 +2,10 @@
 source_filename = "Assign19"
 
 %0 = type { i64, i64 }
-%1 = type { i64, i64 }
-%2 = type { i64, i64 }
-%3 = type { i64, i64 }
-%4 = type { i64, i64 }
-%5 = type { i64, i64 }
 
 @Assign19_r1 = internal global %0 zeroinitializer
-@Assign19_r2 = internal global %2 zeroinitializer
-@Assign19_r4 = internal global %4 zeroinitializer
+@Assign19_r2 = internal global %0 zeroinitializer
+@Assign19_r4 = internal global %0 zeroinitializer
 
 declare void @Out_Ln()
 
@@ -30,11 +25,11 @@ entry:
 
 define internal void @Assign19_P2() {
 entry:
-  %r2 = load %2, %2* @Assign19_r2
-  %idx = load i64, i64* getelementptr inbounds (%2, %2* @Assign19_r2, i64 0, i32 0)
+  %r2 = load %0, %0* @Assign19_r2
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @Assign19_r2, i64 0, i32 0)
   call void @Out_Int(i64 %idx, i64 10)
-  %r21 = load %2, %2* @Assign19_r2
-  %idx2 = load i64, i64* getelementptr inbounds (%2, %2* @Assign19_r2, i64 0, i32 1)
+  %r21 = load %0, %0* @Assign19_r2
+  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @Assign19_r2, i64 0, i32 1)
   call void @Out_Int(i64 %idx2, i64 10)
   call void @Out_Ln()
   ret void
@@ -42,11 +37,11 @@ entry:
 
 define internal void @Assign19_P4() {
 entry:
-  %r4 = load %4, %4* @Assign19_r4
-  %idx = load i64, i64* getelementptr inbounds (%4, %4* @Assign19_r4, i64 0, i32 0)
+  %r4 = load %0, %0* @Assign19_r4
+  %idx = load i64, i64* getelementptr inbounds (%0, %0* @Assign19_r4, i64 0, i32 0)
   call void @Out_Int(i64 %idx, i64 10)
-  %r41 = load %4, %4* @Assign19_r4
-  %idx2 = load i64, i64* getelementptr inbounds (%4, %4* @Assign19_r4, i64 0, i32 1)
+  %r41 = load %0, %0* @Assign19_r4
+  %idx2 = load i64, i64* getelementptr inbounds (%0, %0* @Assign19_r4, i64 0, i32 1)
   call void @Out_Int(i64 %idx2, i64 10)
   call void @Out_Ln()
   ret void
@@ -56,9 +51,9 @@ define void @Assign19_Test() {
 entry:
   store i64 1, i64* getelementptr inbounds (%0, %0* @Assign19_r1, i64 0, i32 0)
   call void @Assign19_P1()
-  store i64 258, i64* getelementptr inbounds (%2, %2* @Assign19_r2, i64 0, i32 0)
+  store i64 258, i64* getelementptr inbounds (%0, %0* @Assign19_r2, i64 0, i32 0)
   call void @Assign19_P2()
-  store i64 67371521, i64* getelementptr inbounds (%4, %4* @Assign19_r4, i64 0, i32 0)
+  store i64 67371521, i64* getelementptr inbounds (%0, %0* @Assign19_r4, i64 0, i32 0)
   call void @Assign19_P4()
   ret void
 }
@@ -67,10 +62,10 @@ define i64 @output() {
 entry:
   store i64 0, i64* getelementptr inbounds (%0, %0* @Assign19_r1, i64 0, i32 0)
   store i64 -1, i64* getelementptr inbounds (%0, %0* @Assign19_r1, i64 0, i32 1)
-  store i64 0, i64* getelementptr inbounds (%2, %2* @Assign19_r2, i64 0, i32 0)
-  store i64 -1, i64* getelementptr inbounds (%2, %2* @Assign19_r2, i64 0, i32 1)
-  store i64 0, i64* getelementptr inbounds (%4, %4* @Assign19_r4, i64 0, i32 0)
-  store i64 -1, i64* getelementptr inbounds (%4, %4* @Assign19_r4, i64 0, i32 1)
+  store i64 0, i64* getelementptr inbounds (%0, %0* @Assign19_r2, i64 0, i32 0)
+  store i64 -1, i64* getelementptr inbounds (%0, %0* @Assign19_r2, i64 0, i32 1)
+  store i64 0, i64* getelementptr inbounds (%0, %0* @Assign19_r4, i64 0, i32 0)
+  store i64 -1, i64* getelementptr inbounds (%0, %0* @Assign19_r4, i64 0, i32 1)
   call void @Assign19_Test()
   ret i64 0
 }

@@ -1,0 +1,39 @@
+; ModuleID = 'T6b'
+source_filename = "T6b"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define i64 @T6b_f(i1 %a, i1 %b, i1 %c) {
+entry:
+  %c3 = alloca i1
+  %b2 = alloca i1
+  %a1 = alloca i1
+  store i1 %a, i1* %a1
+  store i1 %b, i1* %b2
+  store i1 %c, i1* %c3
+  %a4 = load i1, i1* %a1
+  %b5 = load i1, i1* %b2
+  %c6 = load i1, i1* %c3
+  %modtmp = and i1 %b5, %c6
+  %modtmp7 = and i1 %a4, %modtmp
+  br i1 %modtmp7, label %then, label %else
+
+then:                                             ; preds = %entry
+  ret i64 9
+
+else:                                             ; preds = %entry
+  ret i64 -9
+
+ifcont:                                           ; No predecessors!
+  ret i64 -9
+}
+
+define i64 @output() {
+entry:
+  %0 = call i64 @T6b_f(i1 true, i1 true, i1 true)
+  call void @Out_Int(i64 %0, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

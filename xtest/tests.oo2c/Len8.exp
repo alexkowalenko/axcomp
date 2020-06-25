@@ -2,7 +2,6 @@
 source_filename = "Len8"
 
 %R = type { i1 }
-%R.0 = type { i1 }
 
 declare void @Out_Ln()
 
@@ -11,7 +10,7 @@ declare void @Out_Int(i64, i64)
 define internal i64 @Len8_F() {
 entry:
   %r = alloca %R
-  store %R.0 zeroinitializer, %R* %r
+  store %R zeroinitializer, %R* %r
   %r1 = load %R, %R* %r
   ret i64 1
 }

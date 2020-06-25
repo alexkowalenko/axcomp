@@ -2,18 +2,10 @@
 source_filename = "record02"
 
 %pt3 = type { i64, i64, i64 }
-%pt3.0 = type { i64, i64, i64 }
-%pt3.1 = type { i64, i64, i64 }
-%pt3.2 = type { i64, i64, i64 }
 %pt = type { i64, i64 }
-%pt.3 = type { i64, i64 }
-%pt3.4 = type { i64, i64, i64 }
-%pt3.5 = type { i64, i64, i64 }
-%pt.6 = type { i64, i64 }
-%pt.7 = type { i64, i64 }
 
 @record02_a = internal global %pt3 zeroinitializer
-@record02_aa = internal global %pt3.1 zeroinitializer
+@record02_aa = internal global %pt3 zeroinitializer
 @record02_b = internal global %pt zeroinitializer
 @STRING_0 = private global [6 x i32] [i32 97, i32 32, i32 58, i32 61, i32 32, i32 0]
 @STRING_1 = private global [7 x i32] [i32 97, i32 97, i32 32, i32 58, i32 61, i32 32, i32 0]
@@ -27,23 +19,23 @@ declare void @Out_Char(i32)
 
 declare void @Out_String([0 x i32]*)
 
-define internal void @record02_print(%pt3.4 %a) {
+define internal void @record02_print(%pt3 %a) {
 entry:
-  %a1 = alloca %pt3.5
-  store %pt3.4 %a, %pt3.5* %a1
+  %a1 = alloca %pt3
+  store %pt3 %a, %pt3* %a1
   call void @Out_Char(i32 123)
-  %a2 = load %pt3.5, %pt3.5* %a1
-  %idx = getelementptr %pt3.5, %pt3.5* %a1, i64 0, i32 0
+  %a2 = load %pt3, %pt3* %a1
+  %idx = getelementptr %pt3, %pt3* %a1, i64 0, i32 0
   %idx3 = load i64, i64* %idx
   call void @Out_Int(i64 %idx3, i64 0)
   call void @Out_Char(i32 44)
-  %a4 = load %pt3.5, %pt3.5* %a1
-  %idx5 = getelementptr %pt3.5, %pt3.5* %a1, i64 0, i32 1
+  %a4 = load %pt3, %pt3* %a1
+  %idx5 = getelementptr %pt3, %pt3* %a1, i64 0, i32 1
   %idx6 = load i64, i64* %idx5
   call void @Out_Int(i64 %idx6, i64 0)
   call void @Out_Char(i32 44)
-  %a7 = load %pt3.5, %pt3.5* %a1
-  %idx8 = getelementptr %pt3.5, %pt3.5* %a1, i64 0, i32 2
+  %a7 = load %pt3, %pt3* %a1
+  %idx8 = getelementptr %pt3, %pt3* %a1, i64 0, i32 2
   %idx9 = load i64, i64* %idx8
   call void @Out_Int(i64 %idx9, i64 0)
   call void @Out_Char(i32 125)
@@ -51,18 +43,18 @@ entry:
   ret void
 }
 
-define internal void @record02_print2(%pt.6 %a) {
+define internal void @record02_print2(%pt %a) {
 entry:
-  %a1 = alloca %pt.7
-  store %pt.6 %a, %pt.7* %a1
+  %a1 = alloca %pt
+  store %pt %a, %pt* %a1
   call void @Out_Char(i32 123)
-  %a2 = load %pt.7, %pt.7* %a1
-  %idx = getelementptr %pt.7, %pt.7* %a1, i64 0, i32 0
+  %a2 = load %pt, %pt* %a1
+  %idx = getelementptr %pt, %pt* %a1, i64 0, i32 0
   %idx3 = load i64, i64* %idx
   call void @Out_Int(i64 %idx3, i64 0)
   call void @Out_Char(i32 44)
-  %a4 = load %pt.7, %pt.7* %a1
-  %idx5 = getelementptr %pt.7, %pt.7* %a1, i64 0, i32 1
+  %a4 = load %pt, %pt* %a1
+  %idx5 = getelementptr %pt, %pt* %a1, i64 0, i32 1
   %idx6 = load i64, i64* %idx5
   call void @Out_Int(i64 %idx6, i64 0)
   call void @Out_Char(i32 125)
@@ -76,21 +68,21 @@ entry:
   store i64 2, i64* getelementptr inbounds (%pt3, %pt3* @record02_a, i64 0, i32 1)
   store i64 3, i64* getelementptr inbounds (%pt3, %pt3* @record02_a, i64 0, i32 2)
   %a = load %pt3, %pt3* @record02_a
-  store %pt3 %a, %pt3.1* @record02_aa
+  store %pt3 %a, %pt3* @record02_aa
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   %a1 = load %pt3, %pt3* @record02_a
   call void @record02_print(%pt3 %a1)
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
-  %aa = load %pt3.1, %pt3.1* @record02_aa
-  call void @record02_print(%pt3.1 %aa)
+  %aa = load %pt3, %pt3* @record02_aa
+  call void @record02_print(%pt3 %aa)
   call void @Out_Ln()
   store i64 4, i64* getelementptr inbounds (%pt3, %pt3* @record02_a, i64 0, i32 0)
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   %a2 = load %pt3, %pt3* @record02_a
   call void @record02_print(%pt3 %a2)
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
-  %aa3 = load %pt3.1, %pt3.1* @record02_aa
-  call void @record02_print(%pt3.1 %aa3)
+  %aa3 = load %pt3, %pt3* @record02_aa
+  call void @record02_print(%pt3 %aa3)
   call void @Out_String([0 x i32]* bitcast ([9 x i32]* @STRING_2 to [0 x i32]*))
   %a4 = load %pt3, %pt3* @record02_a
   %idx = load i64, i64* getelementptr inbounds (%pt3, %pt3* @record02_a, i64 0, i32 0)

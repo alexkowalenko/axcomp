@@ -7,6 +7,7 @@
 #include "type.hh"
 #include "typetable.hh"
 
+#include <climits>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
 
@@ -220,11 +221,16 @@ std::vector<llvm::Type *> RecordType::get_fieldTypes() {
 }
 
 llvm::Type *RecordType::get_llvm() {
+    if (cache) {
+        return cache;
+    }
     auto fs = get_fieldTypes();
     if (identified.empty()) {
-        return StructType::create(fs);
+        cache = StructType::create(fs);
+    } else {
+        cache = StructType::create(fs, identified);
     }
-    return StructType::create(fs, identified);
+    return cache;
 }
 
 std::vector<llvm::Constant *> RecordType::get_fieldInit() {

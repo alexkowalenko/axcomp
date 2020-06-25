@@ -2,9 +2,7 @@
 source_filename = "record01"
 
 %pt3 = type { i64, i64, i64 }
-%pt3.0 = type { i64, i64, i64 }
 %pt = type { i64, i64 }
-%pt.1 = type { i64, i64 }
 
 @record01_a = internal global %pt3 zeroinitializer
 @record01_b = internal global %pt zeroinitializer

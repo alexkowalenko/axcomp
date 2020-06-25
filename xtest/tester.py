@@ -146,7 +146,7 @@ def do_test_parse(t: str) -> int:
     ret = os.system(cmd)
     if(ret != 0):
         os.rename("result.txt", fail)
-        os.remove(f"{stem}.def")
+        remove_file(f"{stem}.def")
     else:
         remove_file(fail)
         os.remove("result.txt")

@@ -2,7 +2,6 @@
 source_filename = "Record4"
 
 %R = type { i64, i64 }
-%R.0 = type { i64, i64 }
 
 @Record4_r = internal global %R zeroinitializer
 

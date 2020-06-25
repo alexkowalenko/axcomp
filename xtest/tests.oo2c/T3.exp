@@ -1,0 +1,41 @@
+; ModuleID = 'T3'
+source_filename = "T3"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define i64 @T3_f(i1 %select, i64 %a, i64 %b) {
+entry:
+  %b3 = alloca i64
+  %a2 = alloca i64
+  %select1 = alloca i1
+  store i1 %select, i1* %select1
+  store i64 %a, i64* %a2
+  store i64 %b, i64* %b3
+  %select4 = load i1, i1* %select1
+  br i1 %select4, label %then, label %else
+
+then:                                             ; preds = %entry
+  %a5 = load i64, i64* %a2
+  %b6 = load i64, i64* %b3
+  %addtmp = add i64 %a5, %b6
+  ret i64 %addtmp
+
+else:                                             ; preds = %entry
+  %a7 = load i64, i64* %a2
+  %b8 = load i64, i64* %b3
+  %subtmp = sub i64 %a7, %b8
+  ret i64 %subtmp
+
+ifcont:                                           ; No predecessors!
+  ret i64 %subtmp
+}
+
+define i64 @output() {
+entry:
+  %0 = call i64 @T3_f(i1 true, i64 3, i64 17)
+  call void @Out_Int(i64 %0, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

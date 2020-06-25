@@ -2,7 +2,6 @@
 source_filename = "record14"
 
 %0 = type { i1 }
-%1 = type { i1 }
 
 @record14_y = internal global %0 zeroinitializer
 

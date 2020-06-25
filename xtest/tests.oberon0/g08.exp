@@ -3,8 +3,6 @@ source_filename = "g08"
 
 %0 = type { i64, i64, %1, i1 }
 %1 = type { i64, i64 }
-%2 = type { i64, i64, %3, i1 }
-%3 = type { i64, i64 }
 
 @g08_pt = internal global %0 zeroinitializer
 

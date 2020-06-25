@@ -241,6 +241,8 @@ class RecordType : public Type {
     std::shared_ptr<RecordType> base{nullptr};
     llvm::StringMap<TypePtr>    fields;
     std::vector<std::string>    index;
+
+    llvm::Type *cache{nullptr};
 };
 
 class TypeAlias : public Type {

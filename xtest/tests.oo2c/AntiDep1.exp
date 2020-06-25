@@ -2,7 +2,6 @@
 source_filename = "AntiDep1"
 
 %0 = type { i64 }
-%1 = type { i64 }
 
 @AntiDep1_r = internal global %0 zeroinitializer
 

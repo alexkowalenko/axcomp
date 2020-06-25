@@ -2,9 +2,6 @@
 source_filename = "Record3"
 
 %R = type { i64, i64 }
-%R.0 = type { i64, i64 }
-%R.1 = type { i64, i64 }
-%R.2 = type { i64, i64 }
 
 @Record3_r = internal global %R zeroinitializer
 
@@ -12,19 +9,19 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Record3_Set(%R.1 %r, i64 %a, i64 %b) {
+define internal void @Record3_Set(%R %r, i64 %a, i64 %b) {
 entry:
   %b3 = alloca i64
   %a2 = alloca i64
-  %r1 = alloca %R.2
-  store %R.1 %r, %R.2* %r1
+  %r1 = alloca %R
+  store %R %r, %R* %r1
   store i64 %a, i64* %a2
   store i64 %b, i64* %b3
   %a4 = load i64, i64* %a2
-  %idx = getelementptr %R.2, %R.2* %r1, i64 0, i32 0
+  %idx = getelementptr %R, %R* %r1, i64 0, i32 0
   store i64 %a4, i64* %idx
   %b5 = load i64, i64* %b3
-  %idx6 = getelementptr %R.2, %R.2* %r1, i64 0, i32 1
+  %idx6 = getelementptr %R, %R* %r1, i64 0, i32 1
   store i64 %b5, i64* %idx6
   ret void
 }

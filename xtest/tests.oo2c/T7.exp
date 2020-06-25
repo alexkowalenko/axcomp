@@ -1,0 +1,35 @@
+; ModuleID = 'T7'
+source_filename = "T7"
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define i64 @T7_f(i1 %a, i1 %b) {
+entry:
+  %b2 = alloca i1
+  %a1 = alloca i1
+  store i1 %a, i1* %a1
+  store i1 %b, i1* %b2
+  %a3 = load i1, i1* %a1
+  %b4 = load i1, i1* %b2
+  %subtmp = or i1 %a3, %b4
+  br i1 %subtmp, label %then, label %else
+
+then:                                             ; preds = %entry
+  ret i64 9
+
+else:                                             ; preds = %entry
+  ret i64 -9
+
+ifcont:                                           ; No predecessors!
+  ret i64 -9
+}
+
+define i64 @output() {
+entry:
+  %0 = call i64 @T7_f(i1 false, i1 true)
+  call void @Out_Int(i64 %0, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

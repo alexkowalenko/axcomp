@@ -2,7 +2,6 @@
 source_filename = "g09"
 
 %0 = type { i64, [3 x i64] }
-%1 = type { i64, [3 x i64] }
 
 @g09_pt = internal global %0 zeroinitializer
 
