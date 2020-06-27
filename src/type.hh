@@ -65,7 +65,8 @@ class Type {
 
     std::string get_name() { return std::string(*this); }
 
-    virtual bool is_numeric() { return false; };
+    [[nodiscard]] virtual bool is_numeric() const { return false; };
+    [[nodiscard]] virtual bool is_assignable() const { return true; };
 
     void                set_llvm(llvm::Type *t) { llvm_type = t; };
     virtual llvm::Type *get_llvm() { return llvm_type; };
@@ -97,7 +98,7 @@ class IntegerType : public SimpleType {
     explicit IntegerType() : SimpleType("INTEGER", TypeId::integer){};
     ~IntegerType() override = default;
 
-    bool is_numeric() override { return true; };
+    [[nodiscard]] bool is_numeric() const override { return true; };
 
     llvm::Constant *make_value(Int i);
     size_t          get_size() override {
@@ -157,6 +158,8 @@ class ProcedureType : public Type {
 
     explicit operator std::string() override;
 
+    [[nodiscard]] bool is_assignable() const override { return false; };
+
     llvm::Type *get_llvm() override;
 
     TypePtr get_closure_struct() const;
@@ -186,6 +189,8 @@ class ArrayType : public Type {
 
     explicit operator std::string() override;
 
+    [[nodiscard]] bool is_assignable() const override { return false; };
+
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
@@ -211,6 +216,8 @@ class RecordType : public Type {
     ~RecordType() override = default;
 
     explicit operator std::string() override;
+
+    [[nodiscard]] bool is_assignable() const override { return false; };
 
     std::vector<llvm::Type *>     get_fieldTypes();
     std::vector<llvm::Constant *> get_fieldInit();
@@ -306,6 +313,8 @@ class ModuleType : public Type {
     ~ModuleType() override = default;
 
     explicit operator std::string() override { return "MODULE: " + name; };
+
+    [[nodiscard]] bool is_assignable() const override { return false; };
 
     std::string &module_name() { return name; };
 

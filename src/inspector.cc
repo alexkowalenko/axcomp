@@ -298,9 +298,10 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     }
     auto alias = types.resolve(last_type->get_name());
     assert(alias);
-    debug("type of ident: {0} -> {1}", last_type->get_name(), alias->get_name());
+    debug("ASTAssignment type of ident: {0} -> {1}", last_type->get_name(), alias->get_name());
     last_type = alias;
-    if (!(types.check(TokenType::assign, last_type, expr_type) || last_type->equiv(expr_type))) {
+    if (!(types.check(TokenType::assign, last_type, expr_type) ||
+          (last_type->is_assignable() && last_type->equiv(expr_type)))) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
                                          std::string(*expr_type), std::string(*ast->ident)),
                            ast->get_location());

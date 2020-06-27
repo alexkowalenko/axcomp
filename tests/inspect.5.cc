@@ -510,6 +510,8 @@ TEST(Inspector, RecordFields) {
 TEST(Inspector, RecordAssign) {
     std::vector<ParseTests> tests = {
 
+        // Errors
+
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD
                         x: INTEGER;
@@ -523,10 +525,7 @@ TEST(Inspector, RecordAssign) {
                     b := a;
                     RETURN a.x;
                 END alpha.)",
-         "MODULE alpha;\nTYPE\npt2 = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD "
-         "(pt2)\nz: "
-         "INTEGER\nEND;\nVAR\na: pt3;\nb: pt3;\nBEGIN\nb := a;\nRETURN a.x\nEND alpha.",
-         ""},
+         "", "11,24: Can't assign expression of type {({x,y})z} to b"},
 
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD
@@ -542,11 +541,7 @@ TEST(Inspector, RecordAssign) {
                     a := b; (* no data lost *)
                     RETURN a.x;
                 END alpha.)",
-         "MODULE alpha;\nTYPE\npt2 = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD "
-         "(pt2)\nz: INTEGER\nEND;\nVAR\na: pt3;\nb: pt2;\nBEGIN\na := b;\nRETURN a.x\nEND alpha.",
-         ""},
-
-        // Errors
+         "", "12,24: Can't assign expression of type {x,y} to a"},
 
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD

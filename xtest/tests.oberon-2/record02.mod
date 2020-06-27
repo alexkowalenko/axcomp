@@ -7,8 +7,7 @@ IMPORT Out;
       pt3 = RECORD (pt)
           z: INTEGER;
       END;
-  VAR a, aa : pt3;
-      b : pt;
+  VAR a: pt3;
 
 PROCEDURE print(a : pt3);
 BEGIN
@@ -25,21 +24,14 @@ BEGIN
   a.x := 1;
   a.y := 2;
   a.z := 3;
-  aa := a;
   
   Out.String("a := "); print(a);
-  Out.String("aa := "); print(aa);
   Out.Ln;
 
   a.x := 4;
   Out.String("a := "); print(a);
-  Out.String("aa := "); print(aa);
   Out.String("sum a = "); Out.Int(a.x + a.y + a.z, 0); Out.Ln; 
   Out.Ln;
-  
-  b.x := 7;
-  a := b;
-  Out.String("a := "); print(a);
 
   RETURN a.x;
 END record02.

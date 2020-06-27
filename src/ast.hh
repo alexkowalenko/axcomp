@@ -198,7 +198,7 @@ class ASTQualident : public ASTBase, public std::enable_shared_from_this<ASTQual
 using ASTQualidentPtr = std::shared_ptr<ASTQualident>;
 
 /**
- * @brief INDENT | arrayType | recordType | pointerType
+ * @brief Qualident | arrayType | recordType | pointerType
  *
  */
 

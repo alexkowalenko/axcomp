@@ -164,6 +164,7 @@ void TypeTable::initialise() {
     reg(TokenType::assign, RealType, RealType, VoidType);
     reg(TokenType::assign, CharType, CharType, VoidType);
     reg(TokenType::assign, StrType, StrType, VoidType);
+    reg(TokenType::assign, SetType, SetType, VoidType);
 
     reg(TokenType::assign, IntType, AnyType, VoidType); // Any type can be assigned to anything
     reg(TokenType::assign, BoolType, AnyType, VoidType);
@@ -191,8 +192,7 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     StrType->set_init(Constant::getNullValue(llvm::Type::getInt32PtrTy(context)));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
-    VoidType->set_init(
-        llvm::ConstantPointerNull::get(llvm::Type::getVoidTy(context)->getPointerTo()));
+    VoidType->set_init(llvm::ConstantPointerNull::get(llvm::Type::getInt8PtrTy(context)));
 }
 
 TypePtr TypeTable::resolve(std::string const &n) {

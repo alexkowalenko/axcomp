@@ -5,6 +5,6 @@ source_filename = "pointer01"
 
 define i64 @output() {
 entry:
-  store void* null, i64** @pointer01_x
+  store i64* null, i64** @pointer01_x
   ret i64 0
 }

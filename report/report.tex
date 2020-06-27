@@ -258,6 +258,8 @@ ARRAY 10, N OF INTEGER
 ARRAY OF CHAR 
 \end{lstlisting}
 
+Arrays can't be assigned to each other, the elements have to be copied individually.
+
 \subsection{Record types}
 \label{records}
 A record type is a structure consisting of a fixed number of elements of possibly different types. The record type declaration specifies for each element, called field, its type and an identifier which denotes the field. The scope of these field identifiers is the record definition itself, but they are also visible within field designators (see \ref{operands}) referring to elements of record variables.
@@ -296,6 +298,8 @@ T1 = RECORD (T0) y: REAL END
 
 T1 is a (direct) extension of T0 and T0 is the (direct) base type of T1 (see Appendix \ref{type-rule}). 
 An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. Identifiers declared in the extension must be different from the identifiers declared in its base type(s).
+
+Records can't be assigned to each other, the elements have to be copied individually.
 
 
 \subsection{Pointer types}
@@ -967,7 +971,7 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
 \begin{itemize}
     \item $T_e$ and $T_v$ are the same type;
     % 2. Te and Tv are numeric types and Tv includes Te;
-    \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
+    % \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
     \item $T_e$ and $T_v$ are pointer types and $T_e$ is an extension of $T_v$;
     \item  $T_v$ is a pointer % or a procedure type  
     and $e$ is \NIL;

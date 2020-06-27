@@ -443,9 +443,18 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
         // Handle VAR assignment
         is_var = true; // Set change in visit_ASTIdentifierPtr to notify
                        // this is a write of a VAR variable
-        visit_ASTDesignator(ast->ident);
+        visit_ASTDesignatorPtr(ast->ident, false);
     } else {
-        visit_ASTDesignatorPtr(ast->ident);
+        visit_ASTDesignatorPtr(ast->ident, true);
+    }
+    debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
+
+    // Do LLIR Type adjustments for the final assignment
+    if (auto *ty = dyn_cast<llvm::PointerType>(last_value->getType()); ty) {
+        auto *base_type = ty->getElementType(); // extract base type
+        if (val->getType() != base_type) {
+            val = builder.CreateBitCast(val, base_type);
+        }
     }
     builder.CreateStore(val, last_value);
     is_var = false;
@@ -497,7 +506,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
             auto p2 = std::get<ASTDesignatorPtr>(ptr)->ident;
 
             debug("ASTCall identifier {0}", p2->id->value);
-            visit_ASTIdentifierPtr(p2->id);
+            visit_ASTIdentifierPtr(p2->id, true);
         } else {
             // Reference Parameter
 
@@ -1221,6 +1230,9 @@ void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
     // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
+                          [this, ast](ASTDesignatorPtr const &arg) {
+                              visit_ASTDesignatorPtr(arg, false);
+                          },
                           [this, ast](ASTFactorPtr const &arg) {
                               debug("visit_ASTFactor: not ");
                               if (ast->is_not) {
@@ -1243,7 +1255,7 @@ void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_val
 
 void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     debug("get_index");
-    visit_ASTIdentifierPtr(ast->ident->id);
+    visit_ASTIdentifierPtr(ast->ident->id, true);
     auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
@@ -1290,10 +1302,10 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
  *
  * @param ast
  */
-void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
+void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr ast, bool ptr) {
     // debug("ASTDesignator {0}", std::string(*ast));
-    visit_ASTQualident(ast->ident);
 
+    visit_ASTQualidentPtr(ast->ident, ptr);
     // Check if has selectors
     if (ast->selectors.empty()) {
         return;
@@ -1301,71 +1313,37 @@ void CodeGenerator::visit_ASTDesignator(ASTDesignatorPtr ast) {
 
     // Array structure
     get_index(ast);
-    last_value = builder.CreateLoad(last_value, "idx");
-}
-
-/**
- * @brief Used to assign values to
- *
- * @param ast
- */
-void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast) {
-    // debug("ASTDesignatorPtr {0}", std::string(*ast));
-    visit_ASTQualidentPtr(ast->ident);
-
-    // Check if has selectors
-    if (ast->selectors.empty()) {
-        return;
+    if (!ptr) {
+        last_value = builder.CreateLoad(last_value, "idx");
     }
-
-    // Array structure
-    get_index(ast);
 }
 
-void CodeGenerator::visit_ASTQualident(ASTQualidentPtr ast) {
+void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr ast, bool ptr) {
     // debug("ASTQualident");
-    if (ast->qual.empty()) {
-        visit_ASTIdentifier(ast->id);
-    } else {
-        auto new_ast = std::make_shared<ASTIdentifier>();
-        new_ast->value = ast->make_coded_id();
-        visit_ASTIdentifier(new_ast);
+    if (!ast->qual.empty()) {
+        // modify the AST
+        ast->id->value = ast->make_coded_id();
     }
+    visit_ASTIdentifierPtr(ast->id, ptr);
 }
 
-void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast) {
-    // debug("ASTQualidentPtr");
-    if (ast->qual.empty()) {
-        visit_ASTIdentifierPtr(ast->id);
-    } else {
-        auto new_ast = std::make_shared<ASTIdentifier>();
-        new_ast->value = ast->make_coded_id();
-        visit_ASTIdentifierPtr(new_ast);
-    }
-}
-
-void CodeGenerator::visit_ASTIdentifier(ASTIdentifierPtr ast) {
-    debug("ASTIdentifier {0}", ast->value);
-    visit_ASTIdentifierPtr(ast);
-    last_value = builder.CreateLoad(last_value, ast->value);
-}
-
-void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast) {
-    debug("ASTIdentifierPtr {0}", ast->value);
-
+void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast, bool ptr) {
+    // debug("ASTIdentifier {0}", ast->value);
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;
         if (res->is(Attr::var)) {
-            debug("ASTIdentifierPtr VAR {0}", ast->value);
+            // debug("ASTIdentifierPtr VAR {0}", ast->value);
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         if (is_var) {
             // This is a write of a VAR variable, preseve this value
             last_value = res->value;
         }
+        if (!ptr) {
+            last_value = builder.CreateLoad(last_value, ast->value);
+        }
         return;
     }
-    throw CodeGenException(formatv("identifier {0} unknown", ast->value), ast->get_location());
 }
 
 void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
