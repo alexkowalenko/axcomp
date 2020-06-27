@@ -4,5 +4,4 @@ source_filename = "b13"
 define i64 @output() {
 entry:
   ret i64 0
-  ret i64 1
 }

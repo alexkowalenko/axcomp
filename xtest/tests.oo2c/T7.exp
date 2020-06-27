@@ -12,14 +12,20 @@ entry:
   store i1 %a, i1* %a1
   store i1 %b, i1* %b2
   %a3 = load i1, i1* %a1
-  %b4 = load i1, i1* %b2
-  %subtmp = or i1 %a3, %b4
-  br i1 %subtmp, label %then, label %else
+  br i1 %a3, label %or_end, label %or_next
 
-then:                                             ; preds = %entry
+or_next:                                          ; preds = %entry
+  %b4 = load i1, i1* %b2
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ %a3, %entry ], [ %b4, %or_next ]
+  br i1 %or, label %then, label %else
+
+then:                                             ; preds = %or_end
   ret i64 9
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %or_end
   ret i64 -9
 
 ifcont:                                           ; No predecessors!

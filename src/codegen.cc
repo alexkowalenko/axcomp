@@ -1069,7 +1069,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
             }
         }
     }
-} // namespace ax
+}
 
 void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     ast->term->accept(this);
@@ -1084,12 +1084,30 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         last_value = L;
     }
 
-    for (auto const &t : ast->rest) {
-        t.second->accept(this);
+    BasicBlock *or_end_block = BasicBlock::Create(context, "or_end");
+    std::vector<std::pair<BasicBlock *, Value *>> next_blocks;
+    bool                                          use_end{false};
+
+    for (auto const &[op, right] : ast->rest) {
+
+        if (op == TokenType::or_k && builder.GetInsertBlock()) {
+            // Last evaluation of OR, only when we are in a block
+            next_blocks.push_back({builder.GetInsertBlock(), last_value});
+            auto *      funct = builder.GetInsertBlock()->getParent();
+            BasicBlock *or_next_block = BasicBlock::Create(context, "or_next", funct);
+            builder.CreateCondBr(last_value, or_end_block, or_next_block);
+            use_end = true;
+            builder.SetInsertPoint(or_next_block);
+            right->accept(this);
+            L = last_value;
+            continue;
+        }
+
+        right->accept(this);
         Value *R = last_value;
-        if (t.second->get_type() == TypeTable::SetType) {
+        if (right->get_type() == TypeTable::SetType) {
             // SET operations
-            switch (t.first) {
+            switch (op) {
             case TokenType::plus:
                 last_value = builder.CreateOr(L, R, "setunion");
                 break;
@@ -1098,7 +1116,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
                 last_value = builder.CreateAnd(L, last_value, "setdiff");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
+                throw CodeGenException("ASTSimpleExpr with sign" + string(op),
                                        ast->get_location());
             }
         } else if (L->getType() == TypeTable::StrType->get_llvm() ||
@@ -1118,18 +1136,18 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
             // INTEGER operations
-            switch (t.first) {
+            switch (op) {
             case TokenType::plus:
                 last_value = builder.CreateAdd(L, R, "addtmp");
                 break;
             case TokenType::dash:
                 last_value = builder.CreateSub(L, R, "subtmp");
                 break;
-            case TokenType::or_k:
+            case TokenType::or_k: // leave in for CONST calculations
                 last_value = builder.CreateOr(L, R, "subtmp");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr with sign" + string(t.first),
+                throw CodeGenException("ASTSimpleExpr with sign" + string(op),
                                        ast->get_location());
             }
         } else {
@@ -1141,7 +1159,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
             if (R->getType() == TypeTable::IntType->get_llvm()) {
                 R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
             }
-            switch (t.first) {
+            switch (op) {
             case TokenType::plus:
                 last_value = builder.CreateFAdd(L, R, "addtmp");
                 break;
@@ -1149,11 +1167,24 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
                 last_value = builder.CreateFSub(L, R, "subtmp");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr float with sign" + string(t.first),
+                throw CodeGenException("ASTSimpleExpr float with sign" + string(op),
                                        ast->get_location());
             }
         }
         L = last_value;
+    }
+    if (use_end) {
+        next_blocks.push_back({builder.GetInsertBlock(), last_value});
+        builder.CreateBr(or_end_block);
+        auto *funct = builder.GetInsertBlock()->getParent();
+        funct->getBasicBlockList().push_back(or_end_block);
+        builder.SetInsertPoint(or_end_block);
+        auto *phi_node =
+            builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "or");
+        for (auto const &[block, value] : next_blocks) {
+            phi_node->addIncoming(value, block);
+        };
+        last_value = phi_node;
     }
 }
 
@@ -1161,12 +1192,12 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
     // debug("ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
-    for (auto const &t : ast->rest) {
-        t.second->accept(this);
+    for (auto const &[op, right] : ast->rest) {
+        right->accept(this);
         Value *R = last_value;
-        if (t.second->get_type() == TypeTable::SetType) {
+        if (right->get_type() == TypeTable::SetType) {
             // SET operations
-            switch (t.first) {
+            switch (op) {
             case TokenType::asterisk:
                 last_value = builder.CreateAnd(L, R, "setintersect");
                 break;
@@ -1180,12 +1211,12 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
                 break;
             }
             default:
-                throw CodeGenException("ASTTerm with sign" + string(t.first), ast->get_location());
+                throw CodeGenException("ASTTerm with sign" + string(op), ast->get_location());
             }
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
             // Do integer calculations
-            switch (t.first) {
+            switch (op) {
             case TokenType::asterisk:
                 last_value = builder.CreateMul(L, R, "multmp");
                 break;
@@ -1199,7 +1230,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
                 last_value = builder.CreateAnd(L, R, "modtmp");
                 break;
             default:
-                throw CodeGenException("ASTTerm with sign" + string(t.first), ast->get_location());
+                throw CodeGenException("ASTTerm with sign" + string(op), ast->get_location());
             }
         } else {
             // Do float calculations
@@ -1210,7 +1241,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
             if (R->getType() == TypeTable::IntType->get_llvm()) {
                 R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
             }
-            switch (t.first) {
+            switch (op) {
             case TokenType::asterisk:
                 last_value = builder.CreateFMul(L, R, "multmp");
                 break;
@@ -1218,7 +1249,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
                 last_value = builder.CreateFDiv(L, R, "divtmp");
                 break;
             default:
-                throw CodeGenException("ASTTerm float with sign" + string(t.first),
+                throw CodeGenException("ASTTerm float with sign" + string(op),
                                        ast->get_location());
             }
         }

@@ -7,16 +7,22 @@ define i64 @output() {
 entry:
   %x = load i64, i64* @e02_x
   %0 = icmp eq i64 %x, 0
+  br i1 %0, label %or_end, label %or_next
+
+or_next:                                          ; preds = %entry
   %x1 = load i64, i64* @e02_x
   %1 = icmp eq i64 %x1, 7
-  %subtmp = or i1 %0, %1
-  br i1 %subtmp, label %then, label %ifcont
+  br label %or_end
 
-then:                                             ; preds = %entry
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ %0, %entry ], [ %1, %or_next ]
+  br i1 %or, label %then, label %ifcont
+
+then:                                             ; preds = %or_end
   store i64 77, i64* @e02_x
   br label %ifcont
 
-ifcont:                                           ; preds = %then, %entry
+ifcont:                                           ; preds = %then, %or_end
   %x2 = load i64, i64* @e02_x
   ret i64 %x2
 }

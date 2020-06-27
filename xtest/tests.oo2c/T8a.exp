@@ -16,14 +16,20 @@ entry:
   %a4 = load i1, i1* %a1
   %b5 = load i1, i1* %b2
   %modtmp = and i1 %a4, %b5
-  %c6 = load i1, i1* %c3
-  %subtmp = or i1 %modtmp, %c6
-  br i1 %subtmp, label %then, label %else
+  br i1 %modtmp, label %or_end, label %or_next
 
-then:                                             ; preds = %entry
+or_next:                                          ; preds = %entry
+  %c6 = load i1, i1* %c3
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ %modtmp, %entry ], [ %c6, %or_next ]
+  br i1 %or, label %then, label %else
+
+then:                                             ; preds = %or_end
   ret i64 9
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %or_end
   ret i64 -9
 
 ifcont:                                           ; No predecessors!

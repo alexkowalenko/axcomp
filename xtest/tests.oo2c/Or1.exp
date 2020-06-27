@@ -1,0 +1,86 @@
+; ModuleID = 'Or1'
+source_filename = "Or1"
+
+@STRING_0 = private global [17 x i32] [i32 70, i32 65, i32 76, i32 83, i32 69, i32 32, i32 79, i32 82, i32 32, i32 70, i32 65, i32 76, i32 83, i32 69, i32 58, i32 32, i32 0]
+@STRING_1 = private global [17 x i32] [i32 70, i32 65, i32 76, i32 83, i32 69, i32 32, i32 79, i32 82, i32 32, i32 84, i32 82, i32 85, i32 69, i32 32, i32 58, i32 32, i32 0]
+@STRING_2 = private global [17 x i32] [i32 84, i32 82, i32 85, i32 69, i32 32, i32 79, i32 82, i32 32, i32 70, i32 65, i32 76, i32 83, i32 69, i32 32, i32 58, i32 32, i32 0]
+@STRING_3 = private global [17 x i32] [i32 84, i32 82, i32 85, i32 69, i32 32, i32 79, i32 82, i32 32, i32 84, i32 82, i32 85, i32 69, i32 32, i32 32, i32 58, i32 32, i32 0]
+
+declare void @Out_Ln()
+
+declare void @Out_Bool(i1)
+
+declare void @Out_Char(i32)
+
+declare void @Out_String([0 x i32]*)
+
+define internal i1 @Or1_P(i32 %c, i1 %x) {
+entry:
+  %x2 = alloca i1
+  %c1 = alloca i32
+  store i32 %c, i32* %c1
+  store i1 %x, i1* %x2
+  %c3 = load i32, i32* %c1
+  call void @Out_Char(i32 %c3)
+  %x4 = load i1, i1* %x2
+  ret i1 %x4
+}
+
+define void @Or1_Test() {
+entry:
+  call void @Out_String([0 x i32]* bitcast ([17 x i32]* @STRING_0 to [0 x i32]*))
+  %0 = call i1 @Or1_P(i32 97, i1 false)
+  br i1 %0, label %or_end, label %or_next
+
+or_next:                                          ; preds = %entry
+  %1 = call i1 @Or1_P(i32 98, i1 false)
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ %0, %entry ], [ %1, %or_next ]
+  call void @Out_Bool(i1 %or)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* bitcast ([17 x i32]* @STRING_1 to [0 x i32]*))
+  %2 = call i1 @Or1_P(i32 97, i1 false)
+  br i1 %2, label %or_end2, label %or_next1
+
+or_next1:                                         ; preds = %or_end
+  %3 = call i1 @Or1_P(i32 98, i1 true)
+  br label %or_end2
+
+or_end2:                                          ; preds = %or_next1, %or_end
+  %or3 = phi i1 [ %2, %or_end ], [ %3, %or_next1 ]
+  call void @Out_Bool(i1 %or3)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* bitcast ([17 x i32]* @STRING_2 to [0 x i32]*))
+  %4 = call i1 @Or1_P(i32 97, i1 true)
+  br i1 %4, label %or_end5, label %or_next4
+
+or_next4:                                         ; preds = %or_end2
+  %5 = call i1 @Or1_P(i32 98, i1 false)
+  br label %or_end5
+
+or_end5:                                          ; preds = %or_next4, %or_end2
+  %or6 = phi i1 [ %4, %or_end2 ], [ %5, %or_next4 ]
+  call void @Out_Bool(i1 %or6)
+  call void @Out_Ln()
+  call void @Out_String([0 x i32]* bitcast ([17 x i32]* @STRING_3 to [0 x i32]*))
+  %6 = call i1 @Or1_P(i32 97, i1 true)
+  br i1 %6, label %or_end8, label %or_next7
+
+or_next7:                                         ; preds = %or_end5
+  %7 = call i1 @Or1_P(i32 98, i1 true)
+  br label %or_end8
+
+or_end8:                                          ; preds = %or_next7, %or_end5
+  %or9 = phi i1 [ %6, %or_end5 ], [ %7, %or_next7 ]
+  call void @Out_Bool(i1 %or9)
+  call void @Out_Ln()
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Or1_Test()
+  ret i64 0
+}

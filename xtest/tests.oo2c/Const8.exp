@@ -52,15 +52,21 @@ define internal void @Const8_Tor(i1 %b) {
 entry:
   %b1 = alloca i1
   store i1 %b, i1* %b1
-  %b2 = load i1, i1* %b1
-  %subtmp = or i1 true, %b2
-  br i1 %subtmp, label %then, label %else
+  br i1 true, label %or_end, label %or_next
 
-then:                                             ; preds = %entry
+or_next:                                          ; preds = %entry
+  %b2 = load i1, i1* %b1
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ true, %entry ], [ %b2, %or_next ]
+  br i1 %or, label %then, label %else
+
+then:                                             ; preds = %or_end
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %or_end
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
@@ -72,15 +78,21 @@ define internal void @Const8_For(i1 %b) {
 entry:
   %b1 = alloca i1
   store i1 %b, i1* %b1
-  %b2 = load i1, i1* %b1
-  %subtmp = or i1 false, %b2
-  br i1 %subtmp, label %then, label %else
+  br i1 false, label %or_end, label %or_next
 
-then:                                             ; preds = %entry
+or_next:                                          ; preds = %entry
+  %b2 = load i1, i1* %b1
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ false, %entry ], [ %b2, %or_next ]
+  br i1 %or, label %then, label %else
+
+then:                                             ; preds = %or_end
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %or_end
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 

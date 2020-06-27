@@ -15,15 +15,21 @@ entry:
   store i1 %c, i1* %c3
   %a4 = load i1, i1* %a1
   %b5 = load i1, i1* %b2
+  br i1 %b5, label %or_end, label %or_next
+
+or_next:                                          ; preds = %entry
   %c6 = load i1, i1* %c3
-  %subtmp = or i1 %b5, %c6
-  %modtmp = and i1 %a4, %subtmp
+  br label %or_end
+
+or_end:                                           ; preds = %or_next, %entry
+  %or = phi i1 [ %b5, %entry ], [ %c6, %or_next ]
+  %modtmp = and i1 %a4, %or
   br i1 %modtmp, label %then, label %else
 
-then:                                             ; preds = %entry
+then:                                             ; preds = %or_end
   ret i64 9
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %or_end
   ret i64 -9
 
 ifcont:                                           ; No predecessors!

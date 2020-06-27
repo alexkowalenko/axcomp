@@ -39,12 +39,20 @@ forneg:                                           ; preds = %loop
 afterloop:                                        ; preds = %forneg, %forpos
   %x3 = load [3 x i1], [3 x i1]* @g04_x
   %idx4 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 0)
+  br i1 %idx4, label %or_end, label %or_next
+
+or_next:                                          ; preds = %afterloop
   %x5 = load [3 x i1], [3 x i1]* @g04_x
   %idx6 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 1)
-  %subtmp = or i1 %idx4, %idx6
-  %x7 = load [3 x i1], [3 x i1]* @g04_x
-  %idx8 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 2)
-  %subtmp9 = or i1 %subtmp, %idx8
-  %0 = zext i1 %subtmp9 to i64
+  br i1 %idx6, label %or_end, label %or_next7
+
+or_next7:                                         ; preds = %or_next
+  %x8 = load [3 x i1], [3 x i1]* @g04_x
+  %idx9 = load i1, i1* getelementptr inbounds ([3 x i1], [3 x i1]* @g04_x, i64 0, i64 2)
+  br label %or_end
+
+or_end:                                           ; preds = %or_next7, %or_next, %afterloop
+  %or = phi i1 [ %idx4, %afterloop ], [ %idx6, %or_next ], [ %idx9, %or_next7 ]
+  %0 = zext i1 %or to i64
   ret i64 %0
 }
