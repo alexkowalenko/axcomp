@@ -84,15 +84,21 @@ ifcont:                                           ; preds = %then, %repeat
   store i1 true, i1* %prim
   br label %while20
 
-while20:                                          ; preds = %ifcont43, %ifcont
+while20:                                          ; preds = %ifcont
   %prim21 = load i1, i1* %prim
+  br i1 %prim21, label %and_next, label %and_end
+
+and_next:                                         ; preds = %while20
   %k22 = load i64, i64* %k
   %lim23 = load i64, i64* %lim
   %2 = icmp slt i64 %k22, %lim23
-  %modtmp = and i1 %prim21, %2
-  br i1 %modtmp, label %loop24, label %end
+  br label %and_end
 
-loop24:                                           ; preds = %while20
+and_end:                                          ; preds = %ifcont43, %and_next, %while20
+  %and = phi i1 [ %prim21, %while20 ], [ %2, %and_next ]
+  br i1 %and, label %loop24, label %end
+
+loop24:                                           ; preds = %and_end
   %k25 = load i64, i64* %k
   %addtmp26 = add i64 %k25, 1
   store i64 %addtmp26, i64* %k
@@ -127,9 +133,9 @@ ifcont43:                                         ; preds = %then31, %loop24
   %idx48 = load i64, i64* %idx47
   %4 = icmp ne i64 %x44, %idx48
   store i1 %4, i1* %prim
-  br label %while20
+  br label %and_end
 
-end:                                              ; preds = %while20
+end:                                              ; preds = %and_end
   %prim49 = load i1, i1* %prim
   br i1 %prim49, label %end50, label %repeat
 

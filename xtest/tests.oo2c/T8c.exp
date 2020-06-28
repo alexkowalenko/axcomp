@@ -22,14 +22,20 @@ or_next:                                          ; preds = %entry
 
 or_end:                                           ; preds = %or_next, %entry
   %or = phi i1 [ %a4, %entry ], [ %b5, %or_next ]
-  %c6 = load i1, i1* %c3
-  %modtmp = and i1 %or, %c6
-  br i1 %modtmp, label %then, label %else
+  br i1 %or, label %and_next, label %and_end
 
-then:                                             ; preds = %or_end
+and_next:                                         ; preds = %or_end
+  %c6 = load i1, i1* %c3
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %or_end
+  %and = phi i1 [ %or, %or_end ], [ %c6, %and_next ]
+  br i1 %and, label %then, label %else
+
+then:                                             ; preds = %and_end
   ret i64 9
 
-else:                                             ; preds = %or_end
+else:                                             ; preds = %and_end
   ret i64 -9
 
 ifcont:                                           ; No predecessors!

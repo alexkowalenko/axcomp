@@ -1091,7 +1091,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     for (auto const &[op, right] : ast->rest) {
 
         if (op == TokenType::or_k && builder.GetInsertBlock()) {
-            // Last evaluation of OR, only when we are in a block
+            // Lazy evaluation of OR, only when we are in a block
             next_blocks.push_back({builder.GetInsertBlock(), last_value});
             auto *      funct = builder.GetInsertBlock()->getParent();
             BasicBlock *or_next_block = BasicBlock::Create(context, "or_next", funct);
@@ -1192,7 +1192,26 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
     // debug("ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
+
+    BasicBlock *end_block = BasicBlock::Create(context, "and_end");
+    std::vector<std::pair<BasicBlock *, Value *>> next_blocks;
+    bool                                          use_end{false};
+
     for (auto const &[op, right] : ast->rest) {
+
+        if (op == TokenType::ampersand && builder.GetInsertBlock()) {
+            // Lazy evaluation of & AND, only when we are in a block
+            next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
+            auto *      funct = builder.GetInsertBlock()->getParent();
+            BasicBlock *next_block = BasicBlock::Create(context, "and_next", funct);
+            builder.CreateCondBr(last_value, next_block, end_block);
+            use_end = true;
+            builder.SetInsertPoint(next_block);
+            right->accept(this);
+            L = last_value;
+            continue;
+        }
+
         right->accept(this);
         Value *R = last_value;
         if (right->get_type() == TypeTable::SetType) {
@@ -1254,6 +1273,19 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
             }
         }
         L = last_value;
+    }
+    if (use_end) {
+        next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
+        builder.CreateBr(end_block);
+        auto *funct = builder.GetInsertBlock()->getParent();
+        funct->getBasicBlockList().push_back(end_block);
+        builder.SetInsertPoint(end_block);
+        auto *phi_node =
+            builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "and");
+        for (auto const &[block, value] : next_blocks) {
+            phi_node->addIncoming(value, block);
+        };
+        last_value = phi_node;
     }
 }
 

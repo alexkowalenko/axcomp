@@ -12,15 +12,21 @@ define internal void @Const8_Tand(i1 %b) {
 entry:
   %b1 = alloca i1
   store i1 %b, i1* %b1
-  %b2 = load i1, i1* %b1
-  %modtmp = and i1 true, %b2
-  br i1 %modtmp, label %then, label %else
+  br i1 true, label %and_next, label %and_end
 
-then:                                             ; preds = %entry
+and_next:                                         ; preds = %entry
+  %b2 = load i1, i1* %b1
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %entry
+  %and = phi i1 [ true, %entry ], [ %b2, %and_next ]
+  br i1 %and, label %then, label %else
+
+then:                                             ; preds = %and_end
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %and_end
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 
@@ -32,15 +38,21 @@ define internal void @Const8_Fand(i1 %b) {
 entry:
   %b1 = alloca i1
   store i1 %b, i1* %b1
-  %b2 = load i1, i1* %b1
-  %modtmp = and i1 false, %b2
-  br i1 %modtmp, label %then, label %else
+  br i1 false, label %and_next, label %and_end
 
-then:                                             ; preds = %entry
+and_next:                                         ; preds = %entry
+  %b2 = load i1, i1* %b1
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %entry
+  %and = phi i1 [ false, %entry ], [ %b2, %and_next ]
+  br i1 %and, label %then, label %else
+
+then:                                             ; preds = %and_end
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
   br label %ifcont
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %and_end
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))
   br label %ifcont
 

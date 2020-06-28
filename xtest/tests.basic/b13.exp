@@ -3,5 +3,13 @@ source_filename = "b13"
 
 define i64 @output() {
 entry:
-  ret i64 0
+  br i1 true, label %and_next, label %and_end
+
+and_next:                                         ; preds = %entry
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %entry
+  %and = phi i1 [ true, %entry ], [ false, %and_next ]
+  %0 = zext i1 %and to i64
+  ret i64 %0
 }

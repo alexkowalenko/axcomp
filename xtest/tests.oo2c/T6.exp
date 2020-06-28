@@ -12,14 +12,20 @@ entry:
   store i1 %a, i1* %a1
   store i1 %b, i1* %b2
   %a3 = load i1, i1* %a1
-  %b4 = load i1, i1* %b2
-  %modtmp = and i1 %a3, %b4
-  br i1 %modtmp, label %then, label %else
+  br i1 %a3, label %and_next, label %and_end
 
-then:                                             ; preds = %entry
+and_next:                                         ; preds = %entry
+  %b4 = load i1, i1* %b2
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %entry
+  %and = phi i1 [ %a3, %entry ], [ %b4, %and_next ]
+  br i1 %and, label %then, label %else
+
+then:                                             ; preds = %and_end
   ret i64 9
 
-else:                                             ; preds = %entry
+else:                                             ; preds = %and_end
   ret i64 -9
 
 ifcont:                                           ; No predecessors!

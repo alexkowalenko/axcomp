@@ -28,9 +28,15 @@ entry:
 define i64 @output() {
 entry:
   %0 = call i1 @d11_eq(i64 1, i64 1)
+  br i1 %0, label %and_next, label %and_end
+
+and_next:                                         ; preds = %entry
   %1 = call i1 @d11_neq(i64 1, i64 1)
-  %modtmp = and i1 %0, %1
-  %2 = xor i1 %modtmp, true
+  br label %and_end
+
+and_end:                                          ; preds = %and_next, %entry
+  %and = phi i1 [ %0, %entry ], [ %1, %and_next ]
+  %2 = xor i1 %and, true
   %3 = zext i1 %2 to i64
   ret i64 %3
 }
