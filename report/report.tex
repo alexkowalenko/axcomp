@@ -420,7 +420,10 @@ The available operators are listed in the following tables. In some instances, s
     \OR & logical disjunction \\
     \& & logical conjuction \\
     \~{} & negation
-\end{tabular}   
+\end{tabular}
+\vspace{2mm}
+
+The operators \& and \OR\ evaluate their operands only until an conclusive result is obtained (first \TRUE\ value for \OR, first \FALSE\ value for \&).
 
 \subsubsection{Arithmetic operators}
 
@@ -458,7 +461,7 @@ x = (x DIV y) * y + (x MOD y)
 \end{tabular}   
 \vspace{2mm}
 
-Set operators apply to operands of type \SET and yield a result of type \SET. 
+Set operators apply to operands of type \SET\ and yield a result of type \SET. 
 The monadic minus sign denotes the complement of x, i.e. -x denotes the set of integers between 0 and \MAX(\SET) which are not elements of x. Set operators are not associative ((a+b)-c \# a+(b-c)).
 
 A set constructor defines the value of a set by listing its elements between curly brackets. The elements must be integers in the range 0..\MAX(\SET). A range a..b denotes all integers in the interval [a, b].
@@ -478,7 +481,7 @@ A set constructor defines the value of a set by listing its elements between cur
 \end{tabular}
 \vspace{2mm}
 
-Relations yield \BOOLEAN results. The ordering relations <, <=, >, and >= apply to the numeric types, CHAR, strings and character arrays containing 0X as a terminator. The relations = and \# also apply to the type \BOOLEAN\ and \SET, as well as to pointer types (including the value \NIL). x \IN\ s stands for "x is an element of s". x must be of an integer type, and s of type \SET. 
+Relations yield \BOOLEAN\ results. The ordering relations <, <=, >, and >= apply to the numeric types, CHAR, strings and character arrays containing 0X as a terminator. The relations = and \# also apply to the type \BOOLEAN\ and \SET, as well as to pointer types (including the value \NIL). x \IN\ s stands for "x is an element of s". x must be of an integer type, and s of type \SET. 
 
 
 Examples of expressions:

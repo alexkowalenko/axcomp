@@ -58,9 +58,10 @@ extern "C" void COPY(String x, String **v) {
     std::wcscpy(*(String *)v, x);
 }
 
-extern "C" void NEW_Array(void **ptr, Int size) {
-    *ptr = static_cast<void *>(my_malloc(size));
-    memset(*ptr, 0, size);
+extern "C" void *NEW_Array(Int size) {
+    auto ptr = static_cast<void *>(my_malloc(size));
+    memset(ptr, 0, size);
+    return ptr;
 }
 
 extern "C" String Strings_Concat(String s1, String s2) {

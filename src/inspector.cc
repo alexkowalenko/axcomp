@@ -389,7 +389,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
 
         if ((*proc_iter).second == Attr::var) {
             if (!is_lvalue || is_const) {
-                debug("ASTCall is_lvalue");
+                debug("ASTCall is_lvalue: {0} is_const: {0}", is_lvalue, is_const);
                 std::replace(begin(name), end(name), '_', '.');
                 auto e = TypeError(llvm::formatv("procedure call {0} does not have a variable "
                                                  "reference for VAR parameter {2}",

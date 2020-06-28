@@ -14,7 +14,7 @@ Supports at the moment:
 - Multidimensional ARRAY types.
 - Open ARRAYs.
 - POINTER TO ...
-- Oberon-2 statements IF, FOR, WHILE, LOOP, EXIT, REPEAT, CASE.
+- Oberon-2 statements FOR, LOOP, EXIT, REPEAT, CASE, RETURN.
 
 Beyond the Oberon-2 definition:
 

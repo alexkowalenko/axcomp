@@ -91,8 +91,8 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * 
         for (int i = 1; i < args.size(); i++) {
             value = codegen->get_builder().CreateMul(args[i], value);
         }
-        return codegen->call_function("NEW_Array", TypeTable::IntType->get_llvm(),
-                                      {args[0], value});
+        auto *ptr = codegen->call_function("NEW_Array", array_type->get_llvm(), {value});
+        return codegen->get_builder().CreateStore(ptr, args[0]);
     }
     throw CodeGenException(llvm::formatv("Variable with type {0} passed to NEW",
                                          ast->args[0]->get_type()->get_name()),

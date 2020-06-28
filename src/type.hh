@@ -9,6 +9,7 @@
 #include <cfloat>
 #include <climits>
 #include <cstddef>
+#include <functional>
 #include <memory>
 #include <numeric>
 #include <string>
@@ -194,7 +195,11 @@ class ArrayType : public Type {
     llvm::Type *    get_llvm() override;
     llvm::Constant *get_init() override;
 
-    size_t get_size() override { return dimensions[0] * base_type->get_size(); }
+    size_t get_size() override {
+        return std::accumulate(begin(dimensions), end(dimensions), size_t(1),
+                               std::multiplies<size_t>()) *
+               base_type->get_size();
+    }
 
     TypePtr             base_type;
     std::vector<size_t> dimensions;
