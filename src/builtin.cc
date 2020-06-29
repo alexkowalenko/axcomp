@@ -82,7 +82,7 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * 
         return codegen->call_function("NEW_ptr", TypeTable::IntType->get_llvm(),
                                       {args[0], TypeTable::IntType->make_value(size)});
     }
-    if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::array) {
+    if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::openarray) {
         debug("builtin NEW ARRAY");
 
         auto   array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());

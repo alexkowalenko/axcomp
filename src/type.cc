@@ -188,6 +188,18 @@ llvm::Constant *ArrayType::get_init() {
     return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
 }
 
+OpenArrayType::operator std::string() {
+    return llvm::formatv("{0}[]", std::string(*base_type));
+}
+
+llvm::Type *OpenArrayType::get_llvm() {
+    return ArrayType::get_llvm()->getPointerTo();
+}
+
+llvm::Constant *OpenArrayType::get_init() {
+    return Constant::getNullValue(get_llvm());
+}
+
 RecordType::operator std::string() {
     std::string str{"{"};
     if (base) {

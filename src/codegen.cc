@@ -1357,6 +1357,11 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
         arg_ptr = builder.CreateLoad(arg_ptr);
     }
     debug("GEP number of indices: {0}", index.size());
+    debug("basetype: {0}", std::string(*ast->ident->get_type()));
+    if (ast->ident->get_type()->id == TypeId::openarray) {
+        // open arrays are pointers to arrays
+        arg_ptr = builder.CreateLoad(arg_ptr);
+    }
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
 }
 

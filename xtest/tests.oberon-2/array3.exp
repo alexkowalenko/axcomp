@@ -1,7 +1,7 @@
 ; ModuleID = 'array3'
 source_filename = "array3"
 
-@array3_x = internal global [0 x i64] zeroinitializer
+@array3_x = internal global [0 x i64]* null
 @array3_sum = internal global i64 0
 @array3_i = internal global i64 0
 
@@ -13,7 +13,8 @@ declare void @Out_Char(i32)
 
 define i64 @output() {
 entry:
-  %0 = call i64 @NEW_Array([0 x i64]* @array3_x, i64 80)
+  %0 = call [0 x i64]* @NEW_Array(i64 80)
+  store [0 x i64]* %0, [0 x i64]** @array3_x
   store i64 0, i64* @array3_i
   br label %loop
 
@@ -25,7 +26,8 @@ loop:                                             ; preds = %forneg, %forpos, %e
   %addtmp = add i64 %multmp, %i2
   %addtmp3 = add i64 %addtmp, 1
   %i4 = load i64, i64* @array3_i
-  %idx = getelementptr [0 x i64], [0 x i64]* @array3_x, i64 0, i64 %i4
+  %1 = load [0 x i64]*, [0 x i64]** @array3_x
+  %idx = getelementptr [0 x i64], [0 x i64]* %1, i64 0, i64 %i4
   store i64 %addtmp3, i64* %idx
   %index = load i64, i64* @array3_i
   %nextvar = add i64 %index, 1
@@ -45,9 +47,10 @@ afterloop:                                        ; preds = %forneg, %forpos
   br label %loop6
 
 loop6:                                            ; preds = %forneg8, %forpos7, %afterloop
-  %x = load [0 x i64], [0 x i64]* @array3_x
+  %x = load [0 x i64]*, [0 x i64]** @array3_x
   %i10 = load i64, i64* @array3_i
-  %idx11 = getelementptr [0 x i64], [0 x i64]* @array3_x, i64 0, i64 %i10
+  %2 = load [0 x i64]*, [0 x i64]** @array3_x
+  %idx11 = getelementptr [0 x i64], [0 x i64]* %2, i64 0, i64 %i10
   %idx12 = load i64, i64* %idx11
   call void @Out_Int(i64 %idx12, i64 2)
   call void @Out_Char(i32 32)
@@ -69,4 +72,4 @@ afterloop9:                                       ; preds = %forneg8, %forpos7
   ret i64 0
 }
 
-declare i64 @NEW_Array([0 x i64]*, i64)
+declare [0 x i64]* @NEW_Array(i64)

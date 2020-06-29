@@ -696,7 +696,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         // null - error in identifier
         return;
     }
-    bool is_array = last_type->id == TypeId::array;
+    bool is_array = last_type->is_array();
     bool is_record = last_type->id == TypeId::record;
     bool is_string = last_type->id == TypeId::string;
     bool is_pointer = last_type->id == TypeId::pointer;
@@ -715,11 +715,8 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         return;
     }
 
-    if (is_array || is_record) {
-        is_lvalue = false; // no lvalues for aggregate values
-    } else {
-        is_lvalue = true; // STRINGs can be passed
-    }
+    is_lvalue = !(is_record); // no lvalues for aggregate values for records
+
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop
@@ -807,7 +804,7 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
             ast->set_type(last_type);
         }
         b_type = types.resolve(last_type->get_name());
-        is_array = b_type->id == TypeId::array;
+        is_array = b_type->is_array();
         is_record = b_type->id == TypeId::record;
         is_string = b_type->id == TypeId::string;
     }
@@ -856,13 +853,20 @@ void Inspector::visit_ASTArray(ASTArrayPtr ast) {
                                ast->get_location());
             errors.add(e);
         }
+        i++;
     }
 
     ast->type->accept(this);
 
-    auto array_type = std::make_shared<ax::ArrayType>(last_type);
-    std::for_each(begin(ast->dimensions), end(ast->dimensions),
-                  [&array_type](auto &d) { array_type->dimensions.push_back(d->value); });
+    TypePtr array_type{nullptr};
+    if (ast->dimensions.empty()) {
+        array_type = std::make_shared<ax::OpenArrayType>(last_type);
+    } else {
+        auto at = std::make_shared<ax::ArrayType>(last_type);
+        std::for_each(begin(ast->dimensions), end(ast->dimensions),
+                      [&at](auto &d) { at->dimensions.push_back(d->value); });
+        array_type = at;
+    }
     last_type = array_type;
     ast->set_type(last_type);
     types.put(last_type->get_name(), last_type);

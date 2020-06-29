@@ -38,6 +38,7 @@ enum class TypeId {
     procedure,
     procedureFwd,
     array,
+    openarray,
     string,
     str1, // One char STRING which can be a CHAR
     set,
@@ -67,6 +68,9 @@ class Type {
     std::string get_name() { return std::string(*this); }
 
     [[nodiscard]] virtual bool is_numeric() const { return false; };
+    [[nodiscard]] virtual bool is_array() const {
+        return id == TypeId::array || id == TypeId::openarray;
+    };
     [[nodiscard]] virtual bool is_assignable() const { return true; };
 
     void                set_llvm(llvm::Type *t) { llvm_type = t; };
@@ -203,6 +207,19 @@ class ArrayType : public Type {
 
     TypePtr             base_type;
     std::vector<size_t> dimensions;
+};
+
+class OpenArrayType : public ArrayType {
+  public:
+    explicit OpenArrayType(TypePtr b) : ArrayType(b) { id = TypeId::openarray; };
+    ~OpenArrayType() override = default;
+
+    explicit operator std::string() override;
+
+    [[nodiscard]] bool is_assignable() const override { return true; };
+
+    llvm::Type *    get_llvm() override;
+    llvm::Constant *get_init() override;
 };
 
 class StringType : public SimpleType {
