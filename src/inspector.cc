@@ -715,8 +715,6 @@ void Inspector::visit_ASTDesignator(ASTDesignatorPtr ast) {
         return;
     }
 
-    is_lvalue = !(is_record); // no lvalues for aggregate values for records
-
     for (auto &ss : ast->selectors) {
 
         // can't do a std::visit as need to break out this loop

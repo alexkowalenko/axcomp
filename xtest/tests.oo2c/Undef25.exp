@@ -1,0 +1,31 @@
+; ModuleID = 'Undef25'
+source_filename = "Undef25"
+
+%R = type { i64 }
+
+define void @Undef25_P() {
+entry:
+  %r = alloca %R
+  store %R zeroinitializer, %R* %r
+  call void @Undef25_P_N(%R* %r)
+  ret void
+}
+
+define internal void @Undef25_P_N(%R* %x) {
+entry:
+  %x1 = alloca %R*
+  store %R* %x, %R** %x1
+  %x2 = load %R*, %R** %x1
+  %x3 = load %R*, %R** %x1
+  %x4 = load %R*, %R** %x1
+  %0 = load %R*, %R** %x1
+  %idx = getelementptr %R, %R* %0, i64 0, i32 0
+  store i64 1, i64* %idx
+  ret void
+}
+
+define i64 @output() {
+entry:
+  call void @Undef25_P()
+  ret i64 0
+}

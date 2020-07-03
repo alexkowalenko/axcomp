@@ -131,7 +131,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
             auto type = s.second->type;
             debug("ASTImport get {0} : {1}", name, type->get_name());
 
-            if (is_referencable(type->id)) {
+            if (type->is_referencable()) {
                 GlobalVariable *gVar = generate_global(name, type->get_llvm());
 
                 debug("ASTImport var {0}", name);
@@ -1318,7 +1318,7 @@ void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_val
 
 void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     debug("get_index");
-    visit_ASTIdentifierPtr(ast->ident->id, true);
+    visit_ASTQualidentPtr(ast->ident, true);
     auto *               arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
@@ -1349,19 +1349,16 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
                        }},
             s);
     }
-    debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
+    // debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
     // arg_ptr->getType()->print(llvm::dbgs());
 
     assert(arg_ptr->getType()->isPointerTy());
-    if (ast->ident->id->is(Attr::ptr)) {
+    if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
+        is_var) {
         arg_ptr = builder.CreateLoad(arg_ptr);
     }
-    debug("GEP number of indices: {0}", index.size());
-    debug("basetype: {0}", std::string(*ast->ident->get_type()));
-    if (ast->ident->get_type()->id == TypeId::openarray) {
-        // open arrays are pointers to arrays
-        arg_ptr = builder.CreateLoad(arg_ptr);
-    }
+    // debug("get_index: GEP number of indices: {0}", index.size());
+    // debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
     last_value = builder.CreateGEP(arg_ptr, index, "idx");
 }
 
@@ -1381,7 +1378,9 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr ast, bool ptr) {
 
     // Array structure
     get_index(ast);
-    if (!ptr) {
+    // debug("ASTDesignator: ptr:{0} is_var:{1}", ptr, is_var);
+    if (!ptr && !is_var) {
+        // debug("ASTDesignator: load");
         last_value = builder.CreateLoad(last_value, "idx");
     }
 }
@@ -1396,11 +1395,11 @@ void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr ast, bool ptr) {
 }
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast, bool ptr) {
-    // debug("ASTIdentifier {0}", ast->value);
+    debug("ASTIdentifierPtr {0}", ast->value);
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;
         if (res->is(Attr::var)) {
-            // debug("ASTIdentifierPtr VAR {0}", ast->value);
+            debug("ASTIdentifierPtr VAR ");
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         if (is_var) {
@@ -1408,6 +1407,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast, bool ptr) {
             last_value = res->value;
         }
         if (!ptr) {
+            debug("ASTIdentifierPtr !ptr ");
             last_value = builder.CreateLoad(last_value, ast->value);
         }
         return;

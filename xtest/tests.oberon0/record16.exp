@@ -1,0 +1,37 @@
+; ModuleID = 'record16'
+source_filename = "record16"
+
+%pt = type { i64, i64 }
+
+@record16_x = internal global %pt zeroinitializer
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+define internal void @record16_f(%pt* %a) {
+entry:
+  %a1 = alloca %pt*
+  store %pt* %a, %pt** %a1
+  %a2 = load %pt*, %pt** %a1
+  %a3 = load %pt*, %pt** %a1
+  %a4 = load %pt*, %pt** %a1
+  %0 = load %pt*, %pt** %a1
+  %idx = getelementptr %pt, %pt* %0, i64 0, i32 0
+  store i64 1, i64* %idx
+  ret void
+}
+
+define i64 @output() {
+entry:
+  %x = load %pt, %pt* @record16_x
+  %idx = load i64, i64* getelementptr inbounds (%pt, %pt* @record16_x, i64 0, i32 0)
+  call void @Out_Int(i64 %idx, i64 0)
+  call void @Out_Ln()
+  call void @record16_f(%pt* @record16_x)
+  %x1 = load %pt, %pt* @record16_x
+  %idx2 = load i64, i64* getelementptr inbounds (%pt, %pt* @record16_x, i64 0, i32 0)
+  call void @Out_Int(i64 %idx2, i64 0)
+  call void @Out_Ln()
+  ret i64 0
+}

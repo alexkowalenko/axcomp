@@ -50,10 +50,6 @@ enum class TypeId {
 
 std::string string(TypeId t);
 
-inline bool is_referencable(TypeId &id) {
-    return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
-}
-
 class Type {
   public:
     explicit Type(TypeId i) : id(i){};
@@ -67,11 +63,14 @@ class Type {
 
     std::string get_name() { return std::string(*this); }
 
-    [[nodiscard]] virtual bool is_numeric() const { return false; };
-    [[nodiscard]] virtual bool is_array() const {
+    [[nodiscard]] virtual bool   is_numeric() const { return false; };
+    [[nodiscard]] constexpr bool is_array() const {
         return id == TypeId::array || id == TypeId::openarray;
     };
     [[nodiscard]] virtual bool is_assignable() const { return true; };
+    [[nodiscard]] bool constexpr is_referencable() const {
+        return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
+    }
 
     void                set_llvm(llvm::Type *t) { llvm_type = t; };
     virtual llvm::Type *get_llvm() { return llvm_type; };
