@@ -501,3 +501,76 @@ TEST(Parser, NestedProcs) {
     };
     do_parse_tests(tests);
 }
+
+TEST(Parser, ProcReceiver) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE (x : pt) print();
+                BEGIN
+                END print;
+
+                PROCEDURE (VAR a : pt) clear();
+                BEGIN
+                END clear;
+
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE (x : pt) "
+         "print;\nEND print;\nPROCEDURE (VAR a : pt) clear;\nEND clear;\nEND alpha.",
+         ""},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE ^ (x : pt) print;
+
+                PROCEDURE ^ (VAR a : pt) clear;
+
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE ^ (x : pt) "
+         "print;\nPROCEDURE ^ (VAR a : pt) clear;\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE () print();
+                BEGIN
+                END print;
+
+                END alpha.)",
+         "", "4,28: Unexpected token: ) - expecting indent"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE x : pt print();
+                BEGIN
+                END print;
+
+                END alpha.)",
+         "", "4,38: Unexpected token: print - expecting semicolon"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE (x) print();
+                BEGIN
+                END print;
+
+                END alpha.)",
+         "", "4,29: Unexpected token: ) - expecting :"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE pt = RECORD x, y : INTEGER; END;
+
+                PROCEDURE ^ (VAR ) clear;
+
+                END alpha.)",
+         "", "4,34: Unexpected token: ) - expecting indent"},
+    };
+    do_parse_tests(tests);
+}

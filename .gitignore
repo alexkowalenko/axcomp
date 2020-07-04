@@ -13,6 +13,7 @@ compile_commands.json
 *.out
 *.toc
 report.pdf
+comparison.pdf
 *.synctex.gz
 __latexindent_temp.tex
 *.fdb_latexmk

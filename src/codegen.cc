@@ -42,7 +42,7 @@ namespace ax {
 #define DEBUG_TYPE "codegen"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << formatv(msg...) << '\n'); // NOLINT
 }
 
 using namespace llvm::sys;
@@ -121,7 +121,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
         SymbolFrameTable symbols;
         auto             found = importer.find_module(i.first->value, symbols, types);
-        assert(found);
+        assert(found); // NOLINT
 
         debug("ASTImport do {0}", i.first->value);
 
@@ -151,7 +151,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
                 }
             } else {
                 // Should be not here
-                assert(false);
+                assert(false); // NOLINT
             }
         });
     });
@@ -366,7 +366,6 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
         std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
         unsigned                   i = 0;
         auto *                     cls_arg = f->arg_begin();
-        auto *                     cls_str_type = funct_type->get_closure_struct()->get_llvm();
         for (auto const &[cls_var, cls_type] :
              std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
             ind[1] = TypeTable::IntType->make_value(i);
@@ -486,10 +485,10 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
     // Look up the name in the global module table.
     auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
-    assert(res);
+    assert(res); // NOLINT
 
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
-    assert(typeFunction);
+    assert(typeFunction); // NOLINT
 
     std::vector<Value *> args;
     auto                 i = 0;
@@ -689,7 +688,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
                           if (std::holds_alternative<ASTSimpleExprPtr>(expr)) {
                               debug("ASTCase {0} expr", i);
                               std::get<ASTSimpleExprPtr>(expr)->accept(this);
-                              assert(llvm::dyn_cast<llvm::ConstantInt>(last_value));
+                              assert(llvm::dyn_cast<llvm::ConstantInt>(last_value)); // NOLINT
                               switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
                                                    element_blocks[i]);
                           } else if (std::holds_alternative<ASTRangePtr>(expr)) {
@@ -1092,7 +1091,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
 
         if (op == TokenType::or_k && builder.GetInsertBlock()) {
             // Lazy evaluation of OR, only when we are in a block
-            next_blocks.push_back({builder.GetInsertBlock(), last_value});
+            next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
             auto *      funct = builder.GetInsertBlock()->getParent();
             BasicBlock *or_next_block = BasicBlock::Create(context, "or_next", funct);
             builder.CreateCondBr(last_value, or_end_block, or_next_block);
@@ -1174,7 +1173,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         L = last_value;
     }
     if (use_end) {
-        next_blocks.push_back({builder.GetInsertBlock(), last_value});
+        next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
         builder.CreateBr(or_end_block);
         auto *funct = builder.GetInsertBlock()->getParent();
         funct->getBasicBlockList().push_back(or_end_block);
@@ -1338,7 +1337,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
                            // calculate index
                            // extract the field index
                            debug("get_index record index {0} for {1}", s.second, s.first->value);
-                           assert(s.second >= 0);
+                           assert(s.second >= 0); // NOLINT
 
                            // record indexes are 32 bit integers
                            auto *idx = ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
@@ -1352,7 +1351,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     // debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
     // arg_ptr->getType()->print(llvm::dbgs());
 
-    assert(arg_ptr->getType()->isPointerTy());
+    assert(arg_ptr->getType()->isPointerTy()); // NOLINT
     if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
         is_var) {
         arg_ptr = builder.CreateLoad(arg_ptr);
@@ -1550,7 +1549,7 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
                               result = types.resolve(type->id->value);
 
                               // should be a resloved type this far down
-                              assert(result && "Type not found");
+                              assert(result && "Type not found"); // NOLINT
                           },
                           [t, &result, this](auto /* not used*/) {
                               result = types.resolve(t->get_type()->get_name());

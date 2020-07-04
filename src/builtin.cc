@@ -22,7 +22,7 @@ llvm::StringMap<BIFunctor>                  Builtin::compile_functions;
 #define DEBUG_TYPE "builtin"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n'); // NOLINT
 }
 
 BIFunctor abs{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {

@@ -108,29 +108,50 @@ void ASTPrinter::visit_ASTVar(ASTVarPtr ast) {
     }
 }
 
-void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
-    os << indent() << std::string(llvm::formatv("PROCEDURE {0}", ast->name->value))
-       << std::string(ast->name->attrs);
-    if (!ast->params.empty() || ast->return_type != nullptr) {
+void ASTPrinter::proc_rec(RecVar const &r) {
+    os << '(';
+    if (r.first->is(Attr::var)) {
+        os << "VAR ";
+    }
+    r.first->accept(this);
+    os << " : ";
+    r.second->accept(this);
+    os << ") ";
+}
+
+void ASTPrinter::proc_header(ASTProc const &ast, bool forward) {
+    os << indent() << "PROCEDURE ";
+    if (forward) {
+        os << "^ ";
+    }
+    if (ast.receiver.first) {
+        proc_rec(ast.receiver);
+    }
+    os << ast.name->value << std::string(ast.name->attrs);
+    if (!ast.params.empty() || ast.return_type != nullptr) {
         os << "(";
-        std::for_each(cbegin(ast->params), cend(ast->params), [this, ast](auto const &p) {
+        std::for_each(cbegin(ast.params), cend(ast.params), [this, &ast](auto const &p) {
             if (p.first->is(Attr::var)) {
                 os << "VAR ";
             }
             p.first->accept(this);
             os << " : ";
             p.second->accept(this);
-            if (p != *(ast->params.end() - 1)) {
+            if (p != *(ast.params.end() - 1)) {
                 os << "; ";
             }
         });
         os << ")";
     }
-    if (ast->return_type != nullptr) {
+    if (ast.return_type != nullptr) {
         os << ": ";
-        ast->return_type->accept(this);
+        ast.return_type->accept(this);
     }
     os << ";\n";
+}
+
+void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
+    proc_header(*ast, false);
     push();
     ast->decs->accept(this);
     std::for_each(cbegin(ast->procedures), cend(ast->procedures),
@@ -144,28 +165,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedurePtr ast) {
 }
 
 void ASTPrinter::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
-    os << indent() << std::string(llvm::formatv("PROCEDURE ^{0}", ast->name->value))
-       << std::string(ast->name->attrs);
-    if (!ast->params.empty() || ast->return_type != nullptr) {
-        os << "(";
-        std::for_each(ast->params.begin(), ast->params.end(), [this, ast](auto const &p) {
-            if (p.first->is(Attr::var)) {
-                os << "VAR ";
-            }
-            p.first->accept(this);
-            os << " : ";
-            p.second->accept(this);
-            if (p != *(ast->params.end() - 1)) {
-                os << "; ";
-            }
-        });
-        os << ")";
-    }
-    if (ast->return_type != nullptr) {
-        os << ": ";
-        ast->return_type->accept(this);
-    }
-    os << ";\n";
+    proc_header(*ast, true);
 }
 
 void ASTPrinter::visit_ASTAssignment(ASTAssignmentPtr ast) {

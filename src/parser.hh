@@ -38,6 +38,7 @@ class Parser {
     ASTProcedurePtr        parse_procedure();
     ASTProcedureForwardPtr parse_procedureForward();
     void                   parse_parameters(std::vector<VarDec> &params);
+    RecVar                 parse_receiver();
 
     ASTStatementPtr parse_statement();
     void            parse_statement_block(std::vector<ASTStatementPtr> &stats,

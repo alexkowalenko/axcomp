@@ -31,7 +31,7 @@ namespace ax {
 #define DEBUG_TYPE "importer"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 STATISTIC(st_imports, "Number of imports");

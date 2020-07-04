@@ -13,6 +13,7 @@
 #include <memory>
 #include <numeric>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <llvm/ADT/StringMap.h>
@@ -166,7 +167,7 @@ class ProcedureType : public Type {
 
     llvm::Type *get_llvm() override;
 
-    TypePtr get_closure_struct() const;
+    [[nodiscard]] TypePtr get_closure_struct() const;
 
     TypePtr ret{nullptr};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
@@ -200,7 +201,7 @@ class ArrayType : public Type {
 
     size_t get_size() override {
         return std::accumulate(begin(dimensions), end(dimensions), size_t(1),
-                               std::multiplies<size_t>()) *
+                               std::multiplies<>()) *
                base_type->get_size();
     }
 
@@ -210,7 +211,7 @@ class ArrayType : public Type {
 
 class OpenArrayType : public ArrayType {
   public:
-    explicit OpenArrayType(TypePtr b) : ArrayType(b) { id = TypeId::openarray; };
+    explicit OpenArrayType(TypePtr b) : ArrayType(std::move(b)) { id = TypeId::openarray; };
     ~OpenArrayType() override = default;
 
     explicit operator std::string() override;
@@ -226,9 +227,9 @@ class StringType : public SimpleType {
     StringType() : SimpleType("STRING", TypeId::string){};
     ~StringType() override = default;
 
-    llvm::Constant *make_value(std::string const &s);
-    llvm::Type *    make_type(std::string const &s); // Type dependant on string size
-    llvm::Type *    make_type_ptr();                 // Zero size
+    static llvm::Constant *make_value(std::string const &s);
+    static llvm::Type *    make_type(std::string const &s);
+    static llvm::Type *    make_type_ptr();
 };
 
 class RecordType : public Type {
@@ -252,7 +253,7 @@ class RecordType : public Type {
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
-    bool                        is_base(TypePtr t);
+    bool                        is_base(TypePtr const &t);
 
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
@@ -262,7 +263,7 @@ class RecordType : public Type {
     void        set_identified(std::string const &s) { identified = s; };
     std::string get_identified() { return identified; };
 
-    bool equiv(std::shared_ptr<RecordType> r);
+    bool equiv(std::shared_ptr<RecordType> const &r);
 
   private:
     std::string                 identified{}; // identified records

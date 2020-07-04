@@ -581,10 +581,13 @@ using ASTBlockPtr = std::shared_ptr<ASTBlock>;
 //////////////////////
 // Declaration objects
 
+using RecVar = std::pair<ASTIdentifierPtr, ASTIdentifierPtr>;
+
 class ASTProc : public ASTBase {
   public:
     ASTIdentifierPtr    name;
     ASTTypePtr          return_type{nullptr};
+    RecVar              receiver{nullptr, nullptr};
     std::vector<VarDec> params;
 };
 using ASTProcPtr = std::shared_ptr<ASTProc>;

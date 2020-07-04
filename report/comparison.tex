@@ -1,0 +1,1004 @@
+\documentclass[10pt]{article}
+
+\usepackage{report}
+
+\title{Differences between the Wirth family of programming languages}
+
+\begin{document}
+    
+\maketitle
+
+\section{Introduction}
+
+This document provides an summary of the syntax differences between Pascal, Modula-2 and Oberon-2/07. It is based on the article {\em Differences between Modula-2 and Pascal}, by Hausi A. Muller in SIGPLAN Notices, V19, \#10, October 1984.
+
+\section{Syntax}
+
+\subsection{Case of reserved words}
+\begin{description}
+    \item[Pascal] Case is not significant \lstinline!while! = \lstinline!WHILE! 
+    \item[Modula-2] Upper case; \lstinline!WHILE! 
+    \item[Oberon-2/07] Upper case; \lstinline!WHILE!
+\end{description}
+
+\subsection{Case of identifiers}
+\begin{description}
+    \item[Pascal] Case is not significant; \lstinline!IsEmpty! = \lstinline!isempty! 
+    \item[Modula-2] Case is significant; \lstinline!IsEmpty! <> \lstinline!isempty! 
+    \item[Oberon-2/07] Case is significant; \lstinline!IsEmpty! \# \lstinline!isempty!
+\end{description}
+
+\subsection{Number of significant characters in identifiers}
+\begin{description}
+    \item[Pascal] A fixed number of characters is significant.
+    \item[Modula-2] All characters are significant.
+    \item[Oberon-2/07] All characters are significant.
+\end{description}
+
+\subsection{Character constants}
+\begin{description}
+    \item[Pascal] \lstinline!'@'! 
+    \item[Modula-2] \lstinline!'@' "@"! 
+    \item[Oberon-2/07] \lstinline!'@' "@"! 
+\end{description}
+
+\subsection{Strings}
+\begin{description}
+    \item[Pascal] \lstinline!'That''s incredible'! \lstinline!'Codeword "Barbarossa"'!
+    \item[Modula-2] \lstinline!"That's incredible"! \lstinline!'Codeword "Barbarossa"'!
+    \item[Oberon-2/07] \lstinline!"That's incredible"! \lstinline!'Codeword "Barbarossa"'!
+\end{description}
+
+\subsection{Single and double quotes in one string}
+\begin{description}
+    \item[Pascal] \lstinline!'That''s incredible'!
+    \item[Modula-2] cannot be done 
+    \item[Oberon-2/07] cannot be done 
+\end{description}
+
+\subsection{Comments}
+\begin{description}
+    \item[Pascal] \lstinline!{ } (* *)!; must not be nested
+    \item[Modula-2] \lstinline!(* *)!; may be nested
+    \item[Oberon-2/07] \lstinline!(* *)!; may be nested
+\end{description}
+
+\subsection{Set brackets}
+\begin{description}
+    \item[Pascal] \lstinline![ ]!
+    \item[Modula-2] \lstinline!{ }!
+    \item[Oberon-2/07] \lstinline!{ }!
+\end{description}
+
+\subsection{Constant \NIL}
+\begin{description}
+    \item[Pascal] reserved word.
+    \item[Modula-2] standard identifier.
+    \item[Oberon-2/07] reserved word.
+\end{description}
+
+\subsection{Function keyword }
+\begin{description}
+    \item[Pascal] \FUNCTION 
+    \item[Modula-2] \PROCEDURE
+    \item[Oberon-2/07] \PROCEDURE
+\end{description}
+
+\subsection{Parameterless function declaration }
+\begin{description}
+    \item[Pascal] \lstinline!FUNCTION p: CHAR;!
+    \item[Modula-2] \lstinline!PROCEDURE p(): CHAR;!
+    \item[Oberon-2/07] \lstinline!PROCEDURE p: CHAR;! or \lstinline!PROCEDURE p(): CHAR;!
+\end{description}
+
+\subsection{Sequence of declarations in a block}
+The symbols [], \{\}, \textbar are meta-symbols of EBNF. 
+
+\begin{description}
+    \item[Pascal] [ ConstDec ] [ TypeDec ] [ VarDec ] \{ ProcDec \}
+    \item[Modula-2] \{ ConstDec \textbar\ TypeDec \textbar\ VarDec \textbar\  ProcDec \}
+    \item[Oberon-2/07]  \{ ConstDec \textbar\ TypeDec \textbar\ VarDec \} \{ProcDec \}
+\end{description}
+
+\subsubsection{Pascal}
+\begin{lstlisting}[style=example]   
+CONST
+    N =32; 
+    N1 = 31; 
+    N2 = 63 ;
+TYPE
+    index = 0..N1; 
+    buf = ARRAY [index] OF CHAR; 
+    entry = RECORD
+        a: CHAR;
+        b: 0..MaxCard
+    END; 
+    sequence = ARRAY [0..N2] OF CHAR;
+    
+PROCEDURE BufHandler ;
+END; (* BufHandler *)
+
+PROCEDURE EnterEntry ; 
+END; (* EnterEntry *)
+\end{lstlisting} 
+
+\subsubsection{Modula-2}
+\begin{lstlisting}[style=example]   
+CONST N=32;
+TYPE
+    index = [0..N-1]; 
+    bur = ARRAY index OF CHAR; 
+VAR b: buf;
+
+PROCEDURE BufHandler ; 
+END BufHandler;
+
+TYPE entry = RECORD
+        a: CHAR;
+        b: CARDINAL
+    END; 
+    sequence = ARRAY [0..2*N-I] OF entry; 
+    
+VAR s: sequence;
+    
+PROCEDURE EnterEntry; 
+END EnterEntry;
+\end{lstlisting} 
+
+\subsubsection{Oberon-2}
+\begin{lstlisting}[style=example]   
+CONST N=32;
+TYPE
+    bur = ARRAY [N-1] OF CHAR; 
+VAR b: buf;
+
+PROCEDURE BufHandler ; 
+END BufHandler;
+
+TYPE entry = RECORD
+        a: CHAR;
+        b: INTEGER
+    END; 
+    sequence = ARRAY [2*N-I] OF entry; 
+    
+VAR s: sequence;
+    
+PROCEDURE EnterEntry; 
+END EnterEntry;
+\end{lstlisting}
+
+\subsection{Storage allocation}
+\begin{description}
+    \item[Pascal] \NEW(x) 
+    \item[Modula-2] \lstinline!FROM Storage! \\
+    \lstinline!IMPORT ALLOCATE;! \\
+    \lstinline!NEW(x)!
+    \item[Oberon-2/07]  \NEW(x) 
+\end{description}
+
+\subsection{Storage deallocation}
+\begin{description}
+    \item[Pascal] \NEW(x) 
+    \item[Modula-2] \lstinline!FROM DEALLOCATE! \\
+    \lstinline!IMPORT ALLOCATE;! \\
+    \lstinline!DISPOSE(x)!
+    \item[Oberon-2/07] garbage collected.
+\end{description}
+
+\subsection{Separator in variant records and case statements}
+\begin{description}
+    \item[Pascal] ; 
+    \item[Modula-2] \textbar
+    \item[Oberon-2/07] \textbar\ for case statements, no variant records.
+\end{description}
+
+\subsection{Repeating procedure identifier}
+\begin{description}
+    \item[Pascal] \lstinline!PROCEDURE BufHandler;! \\
+    \lstinline!END; (* BufHandler *)!
+    \item[Modula-2] \lstinline!PROCEDURE BufHandler;! \\
+    \lstinline!END BufHandler;!
+    \item[Oberon-2/07] \lstinline!PROCEDURE BufHandler;! \\
+    \lstinline!END BufHandler;!
+\end{description}
+
+\subsection{Indirect recursion}
+
+\subsubsection{Pascal}
+\begin{lstlisting}[style=example]   
+PROCEDURE b; FORWARD;
+    
+PROCEDURE a; 
+BEGIN
+    b
+END; (*a*)
+    
+PROCEDURE b; 
+BEGIN
+    a
+END; (*b*)    
+\end{lstlisting} 
+
+\subsubsection{Modula-2}
+\begin{lstlisting}[style=example]   
+PROCEDURE a; 
+BEGIN
+    b
+END a ;
+    
+PROCEDURE b;
+BEGIN 
+    a
+END b;
+\end{lstlisting} 
+
+\subsubsection{Oberon-2}
+\begin{lstlisting}[style=example]   
+PROCEDURE ^b;
+    
+PROCEDURE a; 
+BEGIN
+    b
+END a; 
+    
+PROCEDURE b; 
+BEGIN
+    a
+END b;    
+\end{lstlisting}
+
+\section{Types}
+
+\subsection{Subrange type}
+
+\begin{description}
+    \item[Pascal] \lstinline!index = 0..31!
+    \item[Modula-2] \lstinline!index = [0..31]!
+    \item[Oberon-2/07] no subrange type.
+\end{description}
+
+\subsection{Unsigned integers}
+
+\begin{description}
+    \item[Pascal] \lstinline!cardinal = 0..MaxCard!
+    \item[Modula-2] standard type \lstinline!CARDINAL!
+    \item[Oberon-2/07] no special unsigned integer type.
+\end{description}
+
+\subsection{Pointer type}
+
+\begin{description}
+    \item[Pascal] \lstinline!x = ^t!
+    \item[Modula-2] \lstinline!x = POINTER TO t!
+    \item[Oberon-2/07] \lstinline!x = POINTER TO t!
+\end{description}
+
+\subsection{Parameterless procedure type}
+
+\begin{description}
+    \item[Pascal] not defined.
+    \item[Modula-2] \lstinline!PROC!
+    \item[Oberon-2/07] \lstinline!PROCEDURE!
+\end{description}
+
+\subsection{Variant records (semicolon, parenthesis explicit \END)}
+
+\begin{description}
+    \item[Pascal] explicit variant must be the last record entry.
+    \begin{lstlisting}[style=example]   
+        RECORD
+            CASE BOOLEAN OF 
+                TRUE: (u,v: INTEGER); 
+                FALSE: (r,s: CHAR)  
+        END
+        \end{lstlisting}
+ 
+    \item[Modula-2] no restrictions; same syntax as case statements.
+    \begin{lstlisting}[style=example]   
+        RECORD
+            CASE BOOLEAN OF 
+                TRUE: u,v: INTEGER |
+                FALSE: r,s: CHAR
+            END 
+        END
+        \end{lstlisting}
+    \item[Oberon-2/07] No variant records.
+\end{description}
+
+\subsection{Array declaration}
+
+\begin{description}
+    \item[Pascal] \lstinline!ARRAY [1..3,'a'..'z'] OF INTEGER!
+    \item[Modula-2] \lstinline!ARRAY [1..3],['a'..'z'] OF INTEGER!
+    \item[Oberon-2/07] \lstinline!ARRAY [3, 26] OF INTEGER!
+\end{description}
+
+\subsection{String type}
+
+\begin{description}
+    \item[Pascal] \lstinline!PACKED ARRAY [1..N] OF CHAR!
+    \item[Modula-2] \lstinline!ARRAY [1..N] OF CHAR!
+    \item[Oberon-2/07] \lstinline!ARRAY OF CHAR!
+\end{description}
+
+\subsection{Packing}
+
+\begin{description}
+    \item[Pascal] \lstinline!PACKED! StructuredType
+    \item[Modula-2] not defined.
+    \item[Oberon-2/07] not defined.
+\end{description}
+
+\subsection{Unbounded arrays parameters, arrays of varying length}
+
+\begin{description}
+    \item[Pascal] implementation dependent.
+    \item[Modula-2] open arrays.
+    \item[Oberon-2/07] open arrays -- \lstinline!ARRAY OF! type.
+\end{description}
+
+\subsection{Low-level storage unit type}
+
+\begin{description}
+    \item[Pascal] variant records.
+    \item[Modula-2] \lstinline!WORD!; to be imported from module \SYSTEM; compatible with \lstinline!CARDINAL!, \INTEGER, \lstinline!BITSET!, pointers.
+    \item[Oberon-2/07] \lstinline!BYTE!; to be imported from module \SYSTEM; compatible with \CHAR, SHORTINT. Larger types compatible with \lstinline!ARRAY OF BYTE!.
+\end{description}
+
+\subsection{Address manipulation type}
+
+\begin{description}
+    \item[Pascal]  \begin{lstlisting}[style=example]   
+        address = RECORD
+            CASE BOOLEAN OF 
+                TRUE: (p: pointer); 
+                FALSE: (a: INTEGER);
+            END;
+        \end{lstlisting}.
+    \item[Modula-2] \lstinline!ADDRESS!; to be imported from module \SYSTEM; compatible with \lstinline!CARDINAL!, cardinal arithmetic.
+    \item[Oberon-2/07] Procedure \lstinline!ADR() GET(a, v), PUT(a, v)!; to be imported from module \SYSTEM; \lstinline!ADR()! produces LONGINT value.
+\end{description}
+
+\section{Statements}
+
+\subsection{Statement terminator}
+
+\begin{description}
+    \item[Pascal] statement or SimpleStatement.
+    \item[Modula-2] each statement has an explicit terminating symbol; \UNTIL\ for the RepeatStatement and \END\ the rest; no compound statement.
+    \item[Oberon-2/07] each statement has an explicit terminating symbol; \UNTIL\ for the RepeatStatement and \END\ the rest; no compound statement. 
+\end{description}
+
+\subsection{BITSET assignment}
+
+\begin{description}
+    \item[Pascal] \lstinline!x := [3]!
+    \item[Modula-2] \lstinline!x := {3}!
+    \item[Oberon-2/07] \lstinline!x := {3}!
+\end{description}
+
+\subsection{Arbitrary set assignment}
+
+\begin{description}
+    \item[Pascal] \lstinline!y := [A,B]!
+    \item[Modula-2] \lstinline!y := TypeId{A,B};! TypeId is \CHAR, \INTEGER, CARDINAL, enumeration, subrange type.
+    \item[Oberon-2/07] Not available.
+\end{description}
+
+\subsection{Return statement}
+
+\begin{description}
+    \item[Pascal] 
+     
+    \begin{lstlisting}[style=example]   
+        FUNCTION p: CHAR; 
+        LABEL 1;
+        BEGIN
+            StatementList;
+            IF b THEN
+            BEGIN 
+                p:= '@';
+                GOTO 1 
+            END;
+            StatementList; 
+            p:='!';
+        1:
+        END; (* p *)
+        \end{lstlisting}
+    
+        \item[Modula-2] 
+         
+        \begin{lstlisting}[style=example]   
+        PROCEDURE p(): CHAR; 
+        BEGIN
+            StatementList; 
+            IF b THEN
+                RETURN('@') 
+            END; 
+            StatementList;
+            RETURN('!')
+        END p;
+        \end{lstlisting}
+        Return Statements can also appear in procedures and modules without expression.
+    
+        \item[Oberon-2/07] Oberon-02 has an explicit \RETURN\ statement which can appear anywhere in the \PROCEDURE.
+       
+        \begin{lstlisting}[style=example]   
+        PROCEDURE p: CHAR; 
+        BEGIN
+            StatementList; 
+            IF b THEN
+                RETURN '@' 
+            END; 
+            StatementList;
+            RETURN '!'
+        END p;
+        \end{lstlisting}
+
+    In Oberon-07, functions -- \PROCEDURE s with a return value, must have a \RETURN\ clause which terminates the function and returns a value. \RETURN\ clause must be at the end of the function body and contains an expression.
+
+    \begin{lstlisting}[style=example]   
+    PROCEDURE p: CHAR;
+    VAR ret: CHAR; 
+    BEGIN
+        StatementList; 
+        IF b THEN
+            ret := '@'; 
+        END; 
+        StatementList;
+        ret := '!'
+    RETURN res;
+    END p;
+    \end{lstlisting}
+\end{description}
+
+\subsection{\IF\ statement}
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    IF b1 THEN a := 3 ELSE 
+    BEGIN
+        IF b2 THEN a := 4 ELSE 
+        BEGIN
+            a:=5; c:=7 
+        END
+    END
+    \end{lstlisting}
+    
+    \item[Modula-2] 
+        \begin{lstlisting}[style=example]   
+        IF b1 THEN 
+            a:=3
+        ELSIF b2 THEN 
+            a:=4
+        ELSE
+            a := 5; c := 7;
+        END
+        \end{lstlisting}
+    
+    \item[Oberon-2/07] 
+    \begin{lstlisting}[style=example]   
+    IF b1 THEN 
+        a:=3
+    ELSIF b2 THEN 
+        a:=4
+    ELSE
+        a := 5; c := 7;
+    END
+    \end{lstlisting}
+\end{description}
+
+\subsection{\CASE\ statement}
+Subrange, expression, else clause, \textbar as Separator
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    IF (i>0) AND (i<5) THEN BEGIN 
+        CASE i OF
+            2: BEGIN StatementList1 END;
+            3: BEGIN StatementList2 END;
+            4: BEGIN StatementList2 END;
+            5: BEGIN StatementList2 END;
+            6: BEGIN StatementList3 END;
+        END (* case *) 
+    END ELSE BEGIN
+        StatementList4 
+    END (* if *)
+    \end{lstlisting}
+    
+    \item[Modula-2] 
+        \begin{lstlisting}[style=example]   
+        CASE i OF
+            2: StatementList1;
+            | 3..5: StatementList2;
+            | 2*3: StatementList3;
+        ELSE StatementList4
+        END
+        \end{lstlisting}
+    
+    \item[Oberon-2/07] 
+    \begin{lstlisting}[style=example]   
+    CASE i OF
+        2: StatementList1;
+        | 3..5: StatementList2;
+        | 2*3: StatementList3;
+    ELSE StatementList4
+    END
+    \end{lstlisting}
+\end{description}
+
+\subsection{\FOR\ statement}
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    FOR i := 1 TO 3 DO BEGIN 
+        StatementList
+    END
+    
+    FOR i := 9 DOWNTO 1 DO BEGIN 
+        StatementList
+    END
+
+    i:=0;
+    WHILE i < = 55 DO BEGIN
+        StatementList ;
+    i:=i+5 END    
+    \end{lstlisting}
+    
+    \item[Modula-2] 
+    \begin{lstlisting}[style=example]   
+    FOR i:= 1 TO 3 DO 
+        StatementList
+    END
+
+    FOR i:= 9 TO 1 BY -1 DO
+        StatementList
+    END
+
+    FOR i := 0 TO 55 BY 5 DO
+        StatementList
+    END
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] 
+    \begin{lstlisting}[style=example]   
+    FOR i:= 1 TO 3 DO 
+        StatementList
+    END
+
+    FOR i:= 9 TO 1 BY -1 DO
+        StatementList
+    END
+
+    FOR i := 0 TO 55 BY 5 DO
+        StatementList
+    END
+    \end{lstlisting}
+\end{description}
+
+\subsection{\LOOP\ statement}
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    WHILE TRUE DO BEGIN 
+        StatementList
+    END      
+    \end{lstlisting}
+    
+    \item[Modula-2] 
+    \begin{lstlisting}[style=example]   
+    LOOP 
+        StatementList
+    END    
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] 
+    \begin{lstlisting}[style=example]   
+    LOOP 
+        StatementList
+    END 
+    \end{lstlisting}
+\end{description}
+
+subsection{\EXIT\ statement}
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    WHILE TRUE DO BEGIN 
+        StatementList1;
+        IF b THEN GOTO 1; 
+            StatementList2
+    END; 
+    1:  
+    \end{lstlisting}
+    
+    \item[Modula-2] 
+    \begin{lstlisting}[style=example]   
+    LOOP
+        StatementList1;
+        IF b THEN 
+            EXIT 
+        END; 
+        StatementList2
+    END    
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] 
+    \begin{lstlisting}[style=example]   
+    LOOP
+        StatementList1;
+        IF b THEN 
+            EXIT 
+        END; 
+        StatementList2
+    END    
+    \end{lstlisting}
+\end{description}
+
+\subsection{Goto statement}
+
+\begin{description}
+    \item[Pascal] 
+    \begin{lstlisting}[style=example]   
+    LABEL 1; 
+    GOTO 1; 
+    1:
+    \end{lstlisting}
+    
+    \item[Modula-2] Not defined.
+    
+    \item[Oberon-2/07] Not defined.
+\end{description}
+
+\section{Expressions and standard procedures}
+
+\subsection{Evaluation of expressions}
+\begin{description}
+    \item[Pascal] no evaluation order can be assumed.
+    \begin{lstlisting}[style=example]   
+    IF p <> nil THEN BEGIN
+        IF p^.key <> x THEN BEGIN
+            StatementList 
+        END
+    END     
+    \end{lstlisting}
+    
+    \item[Modula-2] "short-circuit"; the \AND and \OR\ operators skip the second operand if the expression value can be detected from the first operand.
+    \begin{lstlisting}[style=example]   
+    IF (p<>NIL) AND (p^.key< >x) THEN
+        StatementList 
+    END   
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] short-circuit"; the \&\ and \OR\ operators skip the second operand if the expression value can be detected from the first operand.
+    \begin{lstlisting}[style=example]   
+    IF (p # NIL) AND (p^.key # x) THEN
+        StatementList 
+    END   
+    \end{lstlisting}
+\end{description}
+
+\subsection{Constant declarations}
+\begin{description}
+    \item[Pascal] not defined.
+    \begin{lstlisting}[style=example]   
+    N = 100; 
+    limit = 199;   
+    \end{lstlisting}
+    
+    \item[Modula-2] constant expressions
+    \begin{lstlisting}[style=example]   
+    N = 100;
+    limit = 2*N-1 ;  
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] constant expressions
+    \begin{lstlisting}[style=example]   
+    N = 100;
+    limit = 2*N-1 ;  
+    \end{lstlisting}
+\end{description}
+
+\subsection{\CASE\ labels}
+\begin{description}
+    \item[Pascal] constants.
+    
+    \item[Modula-2] constant expressions
+    
+    \item[Oberon-2/07] constant expressions, characters.
+\end{description}
+
+\subsection{Constant declarations}
+\begin{description}
+    \item[Pascal] not defined.
+    \begin{lstlisting}[style=example]   
+    N = 100; 
+    limit = 199;   
+    \end{lstlisting}
+    
+    \item[Modula-2] constant expressions
+    \begin{lstlisting}[style=example]   
+    N = 100;
+    limit = 2*N-1 ;  
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] constant expressions
+    \begin{lstlisting}[style=example]   
+    N = 100;
+    limit = 2*N-1 ;  
+    \end{lstlisting}
+\end{description}
+
+\subsection{\CASE\ labels}
+\begin{description}
+    \item[Pascal] constants.
+    
+    \item[Modula-2] constant expressions
+    
+    \item[Oberon-2/07] constant expressions, characters.
+\end{description}
+
+\subsection{Scale factor}
+\begin{description}
+    \item[Pascal] 3.0E+12; 3.0e+ 12.
+    
+    \item[Modula-2] 3.0E+12
+    
+    \item[Oberon-2/07] 3.0E+12, 3.0D+12.
+\end{description}
+
+\subsection{Fast increments and decrements}
+\begin{description}
+    \item[Pascal]
+    \begin{lstlisting}[style=example]   
+    i := i + 1;
+    i := i + d;
+    i := i - 1;
+    i := i - d;
+    \end{lstlisting}
+    
+    \item[Modula-2]
+    \begin{lstlisting}[style=example]   
+    INC(i);
+    INC(i, d);
+    DEC(i);
+    DEC(i, d);  
+    \end{lstlisting}
+    
+    \item[Oberon-2/07] constant expressions
+    \begin{lstlisting}[style=example]   
+    INC(i);
+    INC(i, d);
+    DEC(i);
+    DEC(i, d);   
+    \end{lstlisting}
+\end{description}
+
+\subsection{Predecessor}
+\begin{description}
+    \item[Pascal] PRED(i)
+    
+    \item[Modula-2] DEC(i)
+    
+    \item[Oberon-2/07] DEC(i)
+\end{description}
+
+\subsection{Successor}
+\begin{description}
+    \item[Pascal] SUCC(i)
+    
+    \item[Modula-2] INC(i)
+    
+    \item[Oberon-2/07] INC(i)
+\end{description}
+
+\subsection{Inverse of ORD}
+\begin{description}
+    \item[Pascal] not defined, except for \CHAR, \CHR(x)
+    
+    \item[Modula-2] VAL(TypeId,ORD(x)) = x; TypeId is \CHAR, \INTEGER, CARDINAL, enumeration, subrange type identifier.
+    
+    \item[Oberon-2/07] not defined, except for \CHAR, \CHR(x)
+\end{description}
+
+\subsection{Round to cardinal}
+\begin{description}
+    \item[Pascal] ROUND(x)
+    
+    \item[Modula-2] TRUNC(x + 0.5)
+    
+    \item[Oberon-2/07] ENTIER(x + 0.5).
+\end{description}
+
+\subsection{Arithmetic functions}
+\begin{description}
+    \item[Pascal] Standard functions.
+    
+    \item[Modula-2] Library module.
+    
+    \item[Oberon-2/07] Library module.
+\end{description}
+
+\subsection{Low index bound of unbounded array}
+\begin{description}
+    \item[Pascal] Implementation dependent.
+    
+    \item[Modula-2] always equal to 0.
+    
+    \item[Oberon-2/07] always equal to 0.
+\end{description}
+
+\subsection{High index bound of unbounded array}
+\begin{description}
+    \item[Pascal] Implementation dependent.
+    
+    \item[Modula-2] HIGH(a).
+    
+    \item[Oberon-2/07] MAX(a).
+\end{description}
+
+\subsection{Terminate program execution}
+\begin{description}
+    \item[Pascal] 
+        \begin{lstlisting}[style=example]   
+        LABEL 99;
+        BEGIN
+            ... GOTO 99 ...
+        99: 
+        \end{lstlisting}
+    
+    \item[Modula-2] HALT
+    
+    \item[Oberon-2/07] HALT(z).
+\end{description}
+
+\subsection{Capitalize character}
+\begin{description}
+    \item[Pascal] 
+     
+        \begin{lstlisting}[style=example]   
+        IF ch IN ['a'..'z'] THEN 
+            ch := CHR(ORD(ch) - ORD('a') + ORD('A'))
+        \end{lstlisting}
+    
+    \item[Modula-2] \CAP(ch)
+    
+    \item[Oberon-2/07] \CAP(ch).
+\end{description}
+
+\subsection{Symmetric set difference}
+\begin{description}
+    \item[Pascal]  (A-B) + (B-A)
+    
+    \item[Modula-2] A/B
+    
+    \item[Oberon-2/07] A/B
+\end{description}
+
+\subsection{Set inclusion}
+\begin{description}
+    \item[Pascal]  S := S + [i]
+    
+    \item[Modula-2] \INCL(S, i)
+    
+    \item[Oberon-2/07] \INCL(S, i)
+\end{description}
+
+\subsection{Set exclusion}
+\begin{description}
+    \item[Pascal]  S := S - [i]
+    
+    \item[Modula-2] \EXCL(S, i)
+    
+    \item[Oberon-2/07] \EXCL(S, i)
+\end{description}
+
+\subsection{Not equal}
+\begin{description}
+    \item[Pascal]  <>
+    
+    \item[Modula-2] <> \#
+    
+    \item[Oberon-2/07] \#
+\end{description}
+
+\subsection{Logical and}
+\begin{description}
+    \item[Pascal]  \AND
+    
+    \item[Modula-2] \AND\ \&
+    
+    \item[Oberon-2/07] \&
+\end{description}
+
+\subsection{Address of a variable}
+\begin{description}
+    \item[Pascal]  not defined
+    
+    \item[Modula-2] ADR(x); to be imported from module \SYSTEM
+    
+    \item[Oberon-2/07] ADR(x); to be imported from module \SYSTEM
+\end{description}
+
+\subsection{Number of storage units assigned to variable x}
+\begin{description}
+    \item[Pascal]  not defined.
+    
+    \item[Modula-2] \SIZE(x); to be imported from module \SYSTEM
+    
+    \item[Oberon-2/07] not defined.
+\end{description}
+
+\subsection{Number of storage units assigned to variable of type t}
+\begin{description}
+    \item[Pascal]  not defined.
+    
+    \item[Modula-2] TSIZE(x); to be imported from module \SYSTEM
+    
+    \item[Oberon-2/07] \SIZE(x)
+\end{description}
+
+\subsection{cardinal to real conversion}
+\begin{description}
+    \item[Pascal]  implicit conversion.
+    
+    \item[Modula-2] \FLOAT(x)
+    
+    \item[Oberon-2/07] \FLT(x)
+\end{description}
+
+\subsection{type transfer functions; representation is not changed}
+\begin{description}
+    \item[Pascal] using variant records.
+    
+    \item[Modula-2] variables of type WORD, CARDINAL, \INTEGER, \REAL, BITSET, \ADDRESS, and pointers can be transferred
+    into each other; x := TypeId(y); TypeId is one of the above; x is a variable of this type; y is a variable of one of the above types.
+    
+    \item[Oberon-2/07] variables of \INTEGER, SHORTINT LONGINT can use implicitly converted. Similary \REAL, LONGREAL. Funtions \LONG(), and \SHORT() can be used. Pointers can be coverted to base types and passed to bound routines with syntax r(baseType).call() .
+\end{description}
+
+\section{Miscellaneous facilities}
+
+\subsection{Input and output facilities}
+\begin{description}
+    \item[Pascal] defined in the language.
+    
+    \item[Modula-2] not defined in the language; library modules.
+    
+    \item[Oberon-2/07] not defined in the language; library modules.
+\end{description}
+
+\subsection{Compilation units}
+\begin{description}
+    \item[Pascal] implementation dependent
+    
+    \item[Modula-2] main \MODULE, DEFINITION \MODULE, IMPLEMENTATION \MODULE.
+    
+    \item[Oberon-2/07] main \MODULE, and other  \MODULE s.
+\end{description}
+
+\subsection{Static variables}
+\begin{description}
+    \item[Pascal]  one set of global variables only.
+    
+    \item[Modula-2] variables at a module level.
+    
+    \item[Oberon-2/07] variables at a module level.
+\end{description}
+
+\subsection{Dynamic storage allocation scheme}
+\begin{description}
+    \item[Pascal] implicit; cannot be altered.
+    
+    \item[Modula-2] can be explicitly programmed.
+    
+    \item[Oberon-2/07] implicit; cannot be altered.
+\end{description}
+
+
+\end{document}

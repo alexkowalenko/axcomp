@@ -18,7 +18,7 @@ using namespace llvm;
 #define DEBUG_TYPE "types"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 void TypeTable::set_type_alias(char const *name, TypePtr const &t) {

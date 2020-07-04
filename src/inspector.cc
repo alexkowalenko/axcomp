@@ -29,7 +29,7 @@ constexpr auto closure_arg{"_closure"};
 #define DEBUG_TYPE "inspector"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)
@@ -297,7 +297,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
         return;
     }
     auto alias = types.resolve(last_type->get_name());
-    assert(alias);
+    assert(alias); // NOLINT
     debug("ASTAssignment type of ident: {0} -> {1}", last_type->get_name(), alias->get_name());
     last_type = alias;
     if (!(types.check(TokenType::assign, last_type, expr_type) ||

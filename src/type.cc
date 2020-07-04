@@ -313,7 +313,7 @@ int RecordType::get_index(std::string const &field) {
     return base_count + std::distance(cbegin(index), it);
 }
 
-bool RecordType::is_base(TypePtr t) {
+bool RecordType::is_base(TypePtr const &t) {
     if (!t || !base) {
         return false;
     }
@@ -323,7 +323,7 @@ bool RecordType::is_base(TypePtr t) {
     return t->equiv(base);
 }
 
-bool RecordType::equiv(std::shared_ptr<RecordType> r) {
+bool RecordType::equiv(std::shared_ptr<RecordType> const &r) {
 
     if ((base != nullptr) != (r->base != nullptr)) { // xor
         return false;

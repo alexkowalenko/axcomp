@@ -27,7 +27,7 @@ namespace ax {
 #define DEBUG_TYPE "parser"
 
 template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n');
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 // module identifier markers
@@ -317,12 +317,45 @@ ASTVarPtr Parser::parse_var() {
     return var;
 }
 
+/**
+ * @brief ( [VAR] identifier : indentifier)
+ *
+ * @return VarDec
+ */
+RecVar Parser::parse_receiver() {
+    debug("parse_receiver");
+    RecVar result;
+    lexer.get_token(); // (
+
+    auto tok = lexer.peek_token();
+    bool var{false};
+    if (tok.type == TokenType::var) {
+        var = true;
+        lexer.get_token();
+    }
+    result.first = parse_identifier();
+    if (var) {
+        result.first->set(Attr::var);
+    }
+    get_token(TokenType::colon);
+    result.second = parse_identifier();
+    get_token(TokenType::r_paren);
+    return result;
+}
+
 void Parser::parse_proc(ASTProc &proc) {
+    debug("parse_proc");
+
+    auto tok = lexer.peek_token();
+    if (tok.type == TokenType::l_paren) {
+        proc.receiver = parse_receiver();
+    }
+
     proc.name = parse_identifier();
     set_attrs(proc.name);
 
     // Parameters
-    auto tok = lexer.peek_token();
+    tok = lexer.peek_token();
     if (tok.type == TokenType::l_paren) {
         parse_parameters(proc.params);
     }
@@ -344,6 +377,7 @@ void Parser::parse_proc(ASTProc &proc) {
  * @return ASTProcedurePtr
  */
 ASTProcedurePtr Parser::parse_procedure() {
+    debug("parse_procedure");
     auto proc = makeAST<ASTProcedure>(lexer);
 
     parse_proc(*proc);
@@ -391,6 +425,7 @@ ASTProcedurePtr Parser::parse_procedure() {
 }
 
 ASTProcedureForwardPtr Parser::parse_procedureForward() {
+    debug("parse_procedureForward");
     auto proc = makeAST<ASTProcedureForward>(lexer);
 
     lexer.get_token(); // ^
@@ -669,10 +704,10 @@ std::variant<ASTSimpleExprPtr, ASTRangePtr> Parser::parse_caseLabel() {
         range->last = parse_simpleexpr();
         debug("parse_caseLabel range {0}..{1}", std::string(*e), std::string(*(range->last)));
         return std::variant<ASTSimpleExprPtr, ASTRangePtr>(range);
-    } else {
-        debug("parse_caseLabel {0}", std::string(*e));
-        return std::variant<ASTSimpleExprPtr, ASTRangePtr>(e);
     }
+
+    debug("parse_caseLabel {0}", std::string(*e));
+    return std::variant<ASTSimpleExprPtr, ASTRangePtr>(e);
 }
 
 inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::else_k,

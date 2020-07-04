@@ -764,6 +764,47 @@ PROCEDURE mult(x : INTEGER; y : INTEGER): INTEGER;
   END mult;
 \end{lstlisting} 
 
+\subsection{Type-bound procedures}
+
+Globally declared procedures may be associated with a record type declared in the same module. The procedures are said to be bound to the record type. The binding is expressed by the type of the receiver in the heading of a procedure declaration. The receiver may be either a variable parameter of record type T or a value parameter of type \POINTER\ \TO\ T (where T is a record type). The procedure is bound to the type T and is considered local to it.
+
+\begin{lstlisting}[style=ebnf]
+ProcedureHeading = PROCEDURE [Receiver] IdentDef [FormalParameters]. 
+    
+Receiver = "(" [VAR] ident ":" ident ")".
+\end{lstlisting} 
+
+If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. 
+P' is considered a redefinition of P for T1. The formal parameters of P and P' must match (see App. A). 
+If P and T1 are exported (see Chapter 4) P' must be exported too.
+
+If v is a designator and P is a type-bound procedure, then v.P denotes that procedure P which is bound to the dynamic type of v. Note, that this may be a different procedure than the one bound to the static type of v. v is passed to P's receiver according to the parameter passing rules specified in \ref{parameters}.
+
+If r is a receiver parameter declared with type T, r.P\^{} denotes the (redefined) procedure P bound to the base type of T.
+
+In a forward declaration of a type-bound procedure the receiver parameter must be of the same type as in the actual procedure declaration. The formal parameter lists of both declarations must be identical.
+
+Examples:
+
+\begin{lstlisting}[style=example]
+PROCEDURE (t: Tree) Insert (node: Tree); 
+    VAR p, father: Tree;
+BEGIN p := t;
+    REPEAT father := p;
+        IF node.key = p.key THEN RETURN END;
+        IF node.key < p.key THEN p := p.left ELSE p := p.right END
+    UNTIL p = NIL;
+    IF node.key < father.key THEN father.left := node ELSE father.right := node END; 
+    node.left := NIL; node.right := NIL
+END Insert;
+
+PROCEDURE (t: CenterTree) Insert (node: Tree); (*redefinition*) 
+BEGIN
+    WriteInt(node(CenterTree).width);
+    t.Insert^ (node) (* calls the Insert procedure bound to Tree *) 
+END Insert;
+\end{lstlisting} 
+
 \subsection{Predefined Procedures}
 \label{predefined}
 The following table lists the predefined procedures. Some are generic procedures, i.e. they apply to several types of operands.
@@ -946,11 +987,19 @@ END Strings.
 
 \subsection{Same types}
 
-Two variables a and b with types Ta and Tb are of the same type if
+Two variables a and b with types $T_a$ and $T_b$ are of the same type if
 \begin{itemize}
     \item $T_a$ and $T_b$ are both denoted by the same type identifier, or
     \item  $T_a$ is declared to equal$T_b$ in a type declaration of the form $T_b$ = $T_b$, or
     \item a and b appear in the same identifier list in a variable (\VAR), record field, or formal parameter declaration and are not open arrays.
+\end{itemize}
+
+\subsection{Equal types}
+Two types $T_a$ and $T_b$ are equal if
+\begin{itemize}
+    \item $T_a$ and $T_b$ are the same type, or
+    \item $T_a$ and $T_b$ are open array types with equal element types, or
+    %\item $T_a$ and $T_b$ are procedure types whose formal parameter lists match.
 \end{itemize}
 
 \subsection{Type inclusion}
@@ -974,12 +1023,20 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
 \begin{itemize}
     \item $T_e$ and $T_v$ are the same type;
     % 2. Te and Tv are numeric types and Tv includes Te;
-    % \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
+    \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
     \item $T_e$ and $T_v$ are pointer types and $T_e$ is an extension of $T_v$;
     \item  $T_v$ is a pointer % or a procedure type  
     and $e$ is \NIL;
     \item. $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;
     % 7. Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
+\end{itemize}
+
+\subsection{Array compatible}
+An actual parameter a of type $T_a$ is array compatible with a formal parameter f of type $T_f$ if
+\begin{itemize}
+    \item $T_f$ and $T_a$ are the same type, or
+    \item $T_f$ is an open array, $T_a$ is any array, and their element types are array compatible, or
+    \item f is a value parameter of type ARRAY OF CHAR and a is a string.
 \end{itemize}
 
 \subsection{Expression compatible}
@@ -1005,6 +1062,15 @@ For a given operator, the types of its operands are expression compatible if the
     \IN & integer & \SET & \BOOLEAN\\ 
     \hline
 \end{tabular}
+
+\subsection{Matching formal parameter lists}
+Two formal parameter lists match if
+\begin{itemize}
+    \item they have the same number of parameters, and
+    \item they have either the same function result type or none, and
+    \item parameters at corresponding positions have equal types, and
+    \item parameters at corresponding positions are both either value or variable parameters.
+\end{itemize}
 
 
 \newpage
@@ -1034,10 +1100,12 @@ TypeDecl = IdentDef "=" Type.
 
 VarDecl = IdentList ":" Type.
 
-ProcDecl = PROCEDURE IdentDef [FormalPars] ";" DeclSeq 
+ProcDecl = PROCEDURE  [Receiver] IdentDef [FormalPars] ";" DeclSeq 
            [BEGIN StatementSeq] END ident.
 
-ForwardDecl = PROCEDURE "^" IdentDef [FormalPars].
+ForwardDecl = PROCEDURE  [Receiver] "^" IdentDef [FormalPars].
+
+Receiver = "(" [VAR] ident ":" ident ")".
 
 FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Type].
 
