@@ -5,11 +5,11 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Proc13_P(i64 %y) {
+define internal void @Proc13_P(i64 %y1) {
 entry:
-  %y1 = alloca i64
-  store i64 %y, i64* %y1
-  store i64 99, i64* %y1
+  %y = alloca i64
+  store i64 %y1, i64* %y
+  store i64 99, i64* %y
   ret void
 }
 

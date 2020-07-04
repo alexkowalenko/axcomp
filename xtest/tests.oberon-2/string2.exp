@@ -9,11 +9,11 @@ declare void @Out_Ln()
 
 declare void @Out_String([0 x i32]*)
 
-define internal [0 x i32]* @string2_identity([0 x i32]* %x) {
+define internal [0 x i32]* @string2_identity([0 x i32]* %x1) {
 entry:
-  %x1 = alloca [0 x i32]*
-  store [0 x i32]* %x, [0 x i32]** %x1
-  %x2 = load [0 x i32]*, [0 x i32]** %x1
+  %x = alloca [0 x i32]*
+  store [0 x i32]* %x1, [0 x i32]** %x
+  %x2 = load [0 x i32]*, [0 x i32]** %x
   ret [0 x i32]* %x2
 }
 

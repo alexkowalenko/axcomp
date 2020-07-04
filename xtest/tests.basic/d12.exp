@@ -1,26 +1,26 @@
 ; ModuleID = 'd12'
 source_filename = "d12"
 
-define internal i64 @d12_add(i64 %x, i64 %y) {
+define internal i64 @d12_add(i64 %x1, i64 %y2) {
 entry:
-  %y2 = alloca i64
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i64 %y, i64* %y2
-  %x3 = load i64, i64* %x1
-  %y4 = load i64, i64* %y2
+  %y = alloca i64
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i64 %y2, i64* %y
+  %x3 = load i64, i64* %x
+  %y4 = load i64, i64* %y
   %addtmp = add i64 %x3, %y4
   ret i64 %addtmp
 }
 
-define internal i64 @d12_mult(i64 %x, i64 %y) {
+define internal i64 @d12_mult(i64 %x1, i64 %y2) {
 entry:
-  %y2 = alloca i64
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i64 %y, i64* %y2
-  %x3 = load i64, i64* %x1
-  %y4 = load i64, i64* %y2
+  %y = alloca i64
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i64 %y2, i64* %y
+  %x3 = load i64, i64* %x
+  %y4 = load i64, i64* %y
   %multmp = mul i64 %x3, %y4
   ret i64 %multmp
 }

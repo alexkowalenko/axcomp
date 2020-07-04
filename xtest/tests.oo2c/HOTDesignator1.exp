@@ -7,15 +7,15 @@ declare void @Out_Ln()
 
 declare void @Out_Char(i32)
 
-define internal i32 @HOTDesignator1_Get([0 x i32]* %str, i64 %n) {
+define internal i32 @HOTDesignator1_Get([0 x i32]* %str1, i64 %n2) {
 entry:
-  %n2 = alloca i64
-  %str1 = alloca [0 x i32]*
-  store [0 x i32]* %str, [0 x i32]** %str1
-  store i64 %n, i64* %n2
-  %str3 = load [0 x i32]*, [0 x i32]** %str1
-  %n4 = load i64, i64* %n2
-  %0 = load [0 x i32]*, [0 x i32]** %str1
+  %n = alloca i64
+  %str = alloca [0 x i32]*
+  store [0 x i32]* %str1, [0 x i32]** %str
+  store i64 %n2, i64* %n
+  %str3 = load [0 x i32]*, [0 x i32]** %str
+  %n4 = load i64, i64* %n
+  %0 = load [0 x i32]*, [0 x i32]** %str
   %idx = getelementptr [0 x i32], [0 x i32]* %0, i64 0, i64 %n4
   %idx5 = load i32, i32* %idx
   ret i32 %idx5

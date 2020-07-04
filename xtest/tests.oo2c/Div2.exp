@@ -10,20 +10,20 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_String([0 x i32]*)
 
-define internal void @Div2_Div(i64 %i, i64 %j) {
+define internal void @Div2_Div(i64 %i1, i64 %j2) {
 entry:
-  %j2 = alloca i64
-  %i1 = alloca i64
-  store i64 %i, i64* %i1
-  store i64 %j, i64* %j2
-  %i3 = load i64, i64* %i1
+  %j = alloca i64
+  %i = alloca i64
+  store i64 %i1, i64* %i
+  store i64 %j2, i64* %j
+  %i3 = load i64, i64* %i
   call void @Out_Int(i64 %i3, i64 3)
   call void @Out_String([0 x i32]* bitcast ([6 x i32]* @STRING_0 to [0 x i32]*))
-  %j4 = load i64, i64* %j2
+  %j4 = load i64, i64* %j
   call void @Out_Int(i64 %j4, i64 0)
   call void @Out_String([0 x i32]* bitcast ([4 x i32]* @STRING_1 to [0 x i32]*))
-  %i5 = load i64, i64* %i1
-  %j6 = load i64, i64* %j2
+  %i5 = load i64, i64* %i
+  %j6 = load i64, i64* %j
   %divtmp = sdiv i64 %i5, %j6
   call void @Out_Int(i64 %divtmp, i64 0)
   call void @Out_Ln()

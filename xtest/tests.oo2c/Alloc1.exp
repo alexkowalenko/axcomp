@@ -5,22 +5,22 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Alloc1_F(i64 %a) {
+define internal void @Alloc1_F(i64 %a1) {
 entry:
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
-  %a2 = load i64, i64* %a1
+  %a = alloca i64
+  store i64 %a1, i64* %a
+  %a2 = load i64, i64* %a
   %0 = icmp slt i64 %a2, 0
   br i1 %0, label %then, label %else
 
 then:                                             ; preds = %entry
-  %a3 = load i64, i64* %a1
+  %a3 = load i64, i64* %a
   %addtmp = add i64 %a3, 1
   call void @Out_Int(i64 %addtmp, i64 0)
   br label %ifcont
 
 else:                                             ; preds = %entry
-  %a4 = load i64, i64* %a1
+  %a4 = load i64, i64* %a
   %subtmp = sub i64 %a4, 1
   call void @Out_Int(i64 %subtmp, i64 0)
   br label %ifcont

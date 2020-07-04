@@ -32,6 +32,7 @@ class Inspector : ASTVisitor {
     void visit_ASTTypeDec(ASTTypeDecPtr ast) override;
     void visit_ASTVar(ASTVarPtr ast) override;
 
+    void                                          do_receiver(RecVar &r);
     std::pair<TypePtr, ProcedureType::ParamsList> do_proc(ASTProc &ast);
 
     void visit_ASTProcedure(ASTProcedurePtr ast) override;

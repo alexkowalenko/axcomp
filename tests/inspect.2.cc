@@ -149,7 +149,7 @@ TEST(Inspector, FOR) {
             END;
             RETURN
             END e06.)",
-         "", "5,15: undefined identifier i"},
+         "", "3,15: FOR index variable i not defined"},
 
         {R"(MODULE For2;
             TYPE

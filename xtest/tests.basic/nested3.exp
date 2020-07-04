@@ -32,14 +32,14 @@ entry:
   ret void
 }
 
-define internal void @nested3_f_g([1 x i64*]* nest %0, i64 %a) {
+define internal void @nested3_f_g([1 x i64*]* nest %0, i64 %a1) {
 entry:
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
+  %a = alloca i64
+  store i64 %a1, i64* %a
   %y = getelementptr [1 x i64*], [1 x i64*]* %0, i64 0, i64 0
   %y2 = load i64*, i64** %y
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_0 to [0 x i32]*))
-  %a3 = load i64, i64* %a1
+  %a3 = load i64, i64* %a
   call void @Out_Int(i64 %a3, i64 0)
   call void @Out_Ln()
   call void @Out_String([0 x i32]* bitcast ([7 x i32]* @STRING_1 to [0 x i32]*))

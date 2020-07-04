@@ -1,10 +1,10 @@
 ; ModuleID = 'Proc6'
 source_filename = "Proc6"
 
-define internal void @Proc6_P(i64 %a) {
+define internal void @Proc6_P(i64 %a1) {
 entry:
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
+  %a = alloca i64
+  store i64 %a1, i64* %a
   ret void
 }
 

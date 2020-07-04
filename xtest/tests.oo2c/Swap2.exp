@@ -8,13 +8,13 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Swap2_Swap(i1 %swap) {
+define internal void @Swap2_Swap(i1 %swap1) {
 entry:
   %h = alloca i64
   %hy = alloca i64
   %hx = alloca i64
-  %swap1 = alloca i1
-  store i1 %swap, i1* %swap1
+  %swap = alloca i1
+  store i1 %swap1, i1* %swap
   store i64 0, i64* %hx
   store i64 0, i64* %hy
   store i64 0, i64* %h
@@ -22,7 +22,7 @@ entry:
   store i64 %x, i64* %hx
   %y = load i64, i64* @Swap2_y
   store i64 %y, i64* %hy
-  %swap2 = load i1, i1* %swap1
+  %swap2 = load i1, i1* %swap
   br i1 %swap2, label %then, label %ifcont
 
 then:                                             ; preds = %entry

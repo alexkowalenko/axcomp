@@ -11,27 +11,27 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Assign20_P1(%R4* %v1, %R4* %v2) {
+define internal void @Assign20_P1(%R4* %v11, %R4* %v22) {
 entry:
-  %v22 = alloca %R4*
-  %v11 = alloca %R4*
-  store %R4* %v1, %R4** %v11
-  store %R4* %v2, %R4** %v22
-  %v13 = load %R4*, %R4** %v11
-  %v14 = load %R4*, %R4** %v11
-  %v15 = load %R4*, %R4** %v11
-  %0 = load %R4*, %R4** %v11
+  %v2 = alloca %R4*
+  %v1 = alloca %R4*
+  store %R4* %v11, %R4** %v1
+  store %R4* %v22, %R4** %v2
+  %v13 = load %R4*, %R4** %v1
+  %v14 = load %R4*, %R4** %v1
+  %v15 = load %R4*, %R4** %v1
+  %0 = load %R4*, %R4** %v1
   %idx = getelementptr %R4, %R4* %0, i64 0, i32 0
   store i64 1, i64* %idx
-  %v26 = load %R4*, %R4** %v22
+  %v26 = load %R4*, %R4** %v2
   %v27 = load %R4, %R4* %v26
-  %v28 = load %R4*, %R4** %v22
+  %v28 = load %R4*, %R4** %v2
   %idx9 = getelementptr %R4, %R4* %v28, i64 0, i32 0
   %idx10 = load i64, i64* %idx9
   call void @Out_Int(i64 %idx10, i64 10)
-  %v211 = load %R4*, %R4** %v22
+  %v211 = load %R4*, %R4** %v2
   %v212 = load %R4, %R4* %v211
-  %v213 = load %R4*, %R4** %v22
+  %v213 = load %R4*, %R4** %v2
   %idx14 = getelementptr %R4, %R4* %v213, i64 0, i32 1
   %idx15 = load i64, i64* %idx14
   call void @Out_Int(i64 %idx15, i64 10)
@@ -39,27 +39,27 @@ entry:
   ret void
 }
 
-define internal void @Assign20_P2(%R4* %v1, %R4* %v2) {
+define internal void @Assign20_P2(%R4* %v11, %R4* %v22) {
 entry:
-  %v22 = alloca %R4*
-  %v11 = alloca %R4*
-  store %R4* %v1, %R4** %v11
-  store %R4* %v2, %R4** %v22
-  %v13 = load %R4*, %R4** %v11
-  %v14 = load %R4*, %R4** %v11
-  %v15 = load %R4*, %R4** %v11
-  %0 = load %R4*, %R4** %v11
+  %v2 = alloca %R4*
+  %v1 = alloca %R4*
+  store %R4* %v11, %R4** %v1
+  store %R4* %v22, %R4** %v2
+  %v13 = load %R4*, %R4** %v1
+  %v14 = load %R4*, %R4** %v1
+  %v15 = load %R4*, %R4** %v1
+  %0 = load %R4*, %R4** %v1
   %idx = getelementptr %R4, %R4* %0, i64 0, i32 0
   store i64 258, i64* %idx
-  %v26 = load %R4*, %R4** %v22
+  %v26 = load %R4*, %R4** %v2
   %v27 = load %R4, %R4* %v26
-  %v28 = load %R4*, %R4** %v22
+  %v28 = load %R4*, %R4** %v2
   %idx9 = getelementptr %R4, %R4* %v28, i64 0, i32 0
   %idx10 = load i64, i64* %idx9
   call void @Out_Int(i64 %idx10, i64 10)
-  %v211 = load %R4*, %R4** %v22
+  %v211 = load %R4*, %R4** %v2
   %v212 = load %R4, %R4* %v211
-  %v213 = load %R4*, %R4** %v22
+  %v213 = load %R4*, %R4** %v2
   %idx14 = getelementptr %R4, %R4* %v213, i64 0, i32 1
   %idx15 = load i64, i64* %idx14
   call void @Out_Int(i64 %idx15, i64 10)
@@ -67,27 +67,27 @@ entry:
   ret void
 }
 
-define internal void @Assign20_P4(%R4* %v1, %R4* %v2) {
+define internal void @Assign20_P4(%R4* %v11, %R4* %v22) {
 entry:
-  %v22 = alloca %R4*
-  %v11 = alloca %R4*
-  store %R4* %v1, %R4** %v11
-  store %R4* %v2, %R4** %v22
-  %v13 = load %R4*, %R4** %v11
-  %v14 = load %R4*, %R4** %v11
-  %v15 = load %R4*, %R4** %v11
-  %0 = load %R4*, %R4** %v11
+  %v2 = alloca %R4*
+  %v1 = alloca %R4*
+  store %R4* %v11, %R4** %v1
+  store %R4* %v22, %R4** %v2
+  %v13 = load %R4*, %R4** %v1
+  %v14 = load %R4*, %R4** %v1
+  %v15 = load %R4*, %R4** %v1
+  %0 = load %R4*, %R4** %v1
   %idx = getelementptr %R4, %R4* %0, i64 0, i32 0
   store i64 67371521, i64* %idx
-  %v26 = load %R4*, %R4** %v22
+  %v26 = load %R4*, %R4** %v2
   %v27 = load %R4, %R4* %v26
-  %v28 = load %R4*, %R4** %v22
+  %v28 = load %R4*, %R4** %v2
   %idx9 = getelementptr %R4, %R4* %v28, i64 0, i32 0
   %idx10 = load i64, i64* %idx9
   call void @Out_Int(i64 %idx10, i64 10)
-  %v211 = load %R4*, %R4** %v22
+  %v211 = load %R4*, %R4** %v2
   %v212 = load %R4, %R4* %v211
-  %v213 = load %R4*, %R4** %v22
+  %v213 = load %R4*, %R4** %v2
   %idx14 = getelementptr %R4, %R4* %v213, i64 0, i32 1
   %idx15 = load i64, i64* %idx14
   call void @Out_Int(i64 %idx15, i64 10)

@@ -9,17 +9,17 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
-define internal void @Chr1_Chr(i64 %x, i32 %ch) {
+define internal void @Chr1_Chr(i64 %x1, i32 %ch2) {
 entry:
-  %ch2 = alloca i32
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i32 %ch, i32* %ch2
-  %x3 = load i64, i64* %x1
+  %ch = alloca i32
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i32 %ch2, i32* %ch
+  %x3 = load i64, i64* %x
   call void @Out_Int(i64 %x3, i64 4)
-  %ch4 = load i32, i32* %ch2
+  %ch4 = load i32, i32* %ch
   call void @Out_Char(i32 %ch4)
-  %x5 = load i64, i64* %x1
+  %x5 = load i64, i64* %x
   %0 = call i32 @CHR(i64 %x5)
   call void @Out_Char(i32 %0)
   call void @Out_Ln()

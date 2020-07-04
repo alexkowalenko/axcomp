@@ -9,14 +9,14 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @record16_f(%pt* %a) {
+define internal void @record16_f(%pt* %a1) {
 entry:
-  %a1 = alloca %pt*
-  store %pt* %a, %pt** %a1
-  %a2 = load %pt*, %pt** %a1
-  %a3 = load %pt*, %pt** %a1
-  %a4 = load %pt*, %pt** %a1
-  %0 = load %pt*, %pt** %a1
+  %a = alloca %pt*
+  store %pt* %a1, %pt** %a
+  %a2 = load %pt*, %pt** %a
+  %a3 = load %pt*, %pt** %a
+  %a4 = load %pt*, %pt** %a
+  %0 = load %pt*, %pt** %a
   %idx = getelementptr %pt, %pt* %0, i64 0, i32 0
   store i64 1, i64* %idx
   ret void

@@ -5,31 +5,31 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define i64 @T5_f(i64 %a, i64 %b) {
+define i64 @T5_f(i64 %a1, i64 %b2) {
 entry:
   %h = alloca i64
-  %b2 = alloca i64
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
-  store i64 %b, i64* %b2
+  %b = alloca i64
+  %a = alloca i64
+  store i64 %a1, i64* %a
+  store i64 %b2, i64* %b
   store i64 0, i64* %h
-  %b3 = load i64, i64* %b2
-  %a4 = load i64, i64* %a1
+  %b3 = load i64, i64* %b
+  %a4 = load i64, i64* %a
   %0 = icmp sgt i64 %b3, %a4
   br i1 %0, label %then, label %ifcont
 
 then:                                             ; preds = %entry
-  %a5 = load i64, i64* %a1
+  %a5 = load i64, i64* %a
   store i64 %a5, i64* %h
-  %b6 = load i64, i64* %b2
-  store i64 %b6, i64* %a1
+  %b6 = load i64, i64* %b
+  store i64 %b6, i64* %a
   %h7 = load i64, i64* %h
-  store i64 %h7, i64* %b2
+  store i64 %h7, i64* %b
   br label %ifcont
 
 ifcont:                                           ; preds = %then, %entry
-  %a8 = load i64, i64* %a1
-  %b9 = load i64, i64* %b2
+  %a8 = load i64, i64* %a
+  %b9 = load i64, i64* %b
   %subtmp = sub i64 %a8, %b9
   ret i64 %subtmp
 }

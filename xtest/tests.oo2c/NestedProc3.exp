@@ -18,11 +18,11 @@ entry:
   ret void
 }
 
-define internal void @NestedProc3_Test_Inner(i64 %x) {
+define internal void @NestedProc3_Test_Inner(i64 %x1) {
 entry:
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i64 123, i64* %x1
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i64 123, i64* %x
   ret void
 }
 

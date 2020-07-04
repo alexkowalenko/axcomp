@@ -317,6 +317,16 @@ class PointerType : public Type {
     std::string ref_name;
 };
 
+inline bool is_ptr_to_record(TypePtr const &t) {
+    if (t->id == TypeId::pointer) {
+        if (auto p = std::dynamic_pointer_cast<PointerType>(t);
+            p->get_reference()->id == TypeId::record) {
+            return true;
+        }
+    }
+    return false;
+}
+
 class SetCType : public SimpleType {
   public:
     SetCType() : SimpleType("SET", TypeId::set){};

@@ -12,19 +12,19 @@ declare void @Out_Char(i32)
 
 declare void @Out_String([0 x i32]*)
 
-define i64 @L1_f([0 x i32]** %str) {
+define i64 @L1_f([0 x i32]** %str1) {
 entry:
   %i = alloca i64
-  %str1 = alloca [0 x i32]**
-  store [0 x i32]** %str, [0 x i32]*** %str1
+  %str = alloca [0 x i32]**
+  store [0 x i32]** %str1, [0 x i32]*** %str
   store i64 0, i64* %i
   store i64 0, i64* %i
   br label %loop
 
 loop:                                             ; preds = %ifcont, %entry
-  %str2 = load [0 x i32]**, [0 x i32]*** %str1
+  %str2 = load [0 x i32]**, [0 x i32]*** %str
   %str3 = load [0 x i32]*, [0 x i32]** %str2
-  %str4 = load [0 x i32]**, [0 x i32]*** %str1
+  %str4 = load [0 x i32]**, [0 x i32]*** %str
   %i5 = load i64, i64* %i
   %0 = load [0 x i32]*, [0 x i32]** %str4
   %idx = getelementptr [0 x i32], [0 x i32]* %0, i64 0, i64 %i5

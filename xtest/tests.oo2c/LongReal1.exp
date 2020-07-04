@@ -5,11 +5,11 @@ declare void @Out_Ln()
 
 declare void @Out_LongReal(double, i64)
 
-define internal void @LongReal1_Print(double %x) {
+define internal void @LongReal1_Print(double %x1) {
 entry:
-  %x1 = alloca double
-  store double %x, double* %x1
-  %x2 = load double, double* %x1
+  %x = alloca double
+  store double %x1, double* %x
+  %x2 = load double, double* %x
   call void @Out_LongReal(double %x2, i64 3)
   call void @Out_Ln()
   ret void

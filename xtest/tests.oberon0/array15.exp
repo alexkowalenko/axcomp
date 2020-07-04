@@ -7,14 +7,14 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @array15_f([3 x i64]* %a) {
+define internal void @array15_f([3 x i64]* %a1) {
 entry:
-  %a1 = alloca [3 x i64]*
-  store [3 x i64]* %a, [3 x i64]** %a1
-  %a2 = load [3 x i64]*, [3 x i64]** %a1
-  %a3 = load [3 x i64]*, [3 x i64]** %a1
-  %a4 = load [3 x i64]*, [3 x i64]** %a1
-  %0 = load [3 x i64]*, [3 x i64]** %a1
+  %a = alloca [3 x i64]*
+  store [3 x i64]* %a1, [3 x i64]** %a
+  %a2 = load [3 x i64]*, [3 x i64]** %a
+  %a3 = load [3 x i64]*, [3 x i64]** %a
+  %a4 = load [3 x i64]*, [3 x i64]** %a
+  %0 = load [3 x i64]*, [3 x i64]** %a
   %idx = getelementptr [3 x i64], [3 x i64]* %0, i64 0, i64 0
   store i64 1, i64* %idx
   ret void

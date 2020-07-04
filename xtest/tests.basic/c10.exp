@@ -5,19 +5,19 @@ source_filename = "c10"
 
 @c10_z0 = internal global %point zeroinitializer
 
-define internal i64 @c10_sum(%point %a) {
+define internal i64 @c10_sum(%point %a1) {
 entry:
-  %a1 = alloca %point
-  store %point %a, %point* %a1
-  %a2 = load %point, %point* %a1
-  %idx = getelementptr %point, %point* %a1, i64 0, i32 0
+  %a = alloca %point
+  store %point %a1, %point* %a
+  %a2 = load %point, %point* %a
+  %idx = getelementptr %point, %point* %a, i64 0, i32 0
   %idx3 = load i64, i64* %idx
-  %a4 = load %point, %point* %a1
-  %idx5 = getelementptr %point, %point* %a1, i64 0, i32 1
+  %a4 = load %point, %point* %a
+  %idx5 = getelementptr %point, %point* %a, i64 0, i32 1
   %idx6 = load i64, i64* %idx5
   %addtmp = add i64 %idx3, %idx6
-  %a7 = load %point, %point* %a1
-  %idx8 = getelementptr %point, %point* %a1, i64 0, i32 2
+  %a7 = load %point, %point* %a
+  %idx8 = getelementptr %point, %point* %a, i64 0, i32 2
   %idx9 = load i64, i64* %idx8
   %addtmp10 = add i64 %addtmp, %idx9
   ret i64 %addtmp10

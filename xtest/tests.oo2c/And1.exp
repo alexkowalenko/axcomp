@@ -14,15 +14,15 @@ declare void @Out_Char(i32)
 
 declare void @Out_String([0 x i32]*)
 
-define internal i1 @And1_P(i32 %c, i1 %x) {
+define internal i1 @And1_P(i32 %c1, i1 %x2) {
 entry:
-  %x2 = alloca i1
-  %c1 = alloca i32
-  store i32 %c, i32* %c1
-  store i1 %x, i1* %x2
-  %c3 = load i32, i32* %c1
+  %x = alloca i1
+  %c = alloca i32
+  store i32 %c1, i32* %c
+  store i1 %x2, i1* %x
+  %c3 = load i32, i32* %c
   call void @Out_Char(i32 %c3)
-  %x4 = load i1, i1* %x2
+  %x4 = load i1, i1* %x
   ret i1 %x4
 }
 

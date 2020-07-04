@@ -8,31 +8,31 @@ declare void @WriteInt(i64)
 
 declare void @WriteLn()
 
-define internal void @d16_h(i64* %x, i64* %y) {
+define internal void @d16_h(i64* %x1, i64* %y2) {
 entry:
-  %y2 = alloca i64*
-  %x1 = alloca i64*
-  store i64* %x, i64** %x1
-  store i64* %y, i64** %y2
-  %x3 = load i64*, i64** %x1
+  %y = alloca i64*
+  %x = alloca i64*
+  store i64* %x1, i64** %x
+  store i64* %y2, i64** %y
+  %x3 = load i64*, i64** %x
   %x4 = load i64, i64* %x3
   call void @WriteInt(i64 %x4)
   call void @WriteLn()
-  %y5 = load i64*, i64** %y2
+  %y5 = load i64*, i64** %y
   %y6 = load i64, i64* %y5
   call void @WriteInt(i64 %y6)
   call void @WriteLn()
-  %x7 = load i64*, i64** %x1
-  %x8 = load i64*, i64** %x1
+  %x7 = load i64*, i64** %x
+  %x8 = load i64*, i64** %x
   store i64 10, i64* %x8
-  %y9 = load i64*, i64** %y2
-  %y10 = load i64*, i64** %y2
+  %y9 = load i64*, i64** %y
+  %y10 = load i64*, i64** %y
   store i64 20, i64* %y10
-  %x11 = load i64*, i64** %x1
+  %x11 = load i64*, i64** %x
   %x12 = load i64, i64* %x11
   call void @WriteInt(i64 %x12)
   call void @WriteLn()
-  %y13 = load i64*, i64** %y2
+  %y13 = load i64*, i64** %y
   %y14 = load i64, i64* %y13
   call void @WriteInt(i64 %y14)
   call void @WriteLn()

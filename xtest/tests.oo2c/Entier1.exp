@@ -7,17 +7,17 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_Real(double, i64)
 
-define internal void @Entier1_EntierReal(double %x, i64 %i) {
+define internal void @Entier1_EntierReal(double %x1, i64 %i2) {
 entry:
-  %i2 = alloca i64
-  %x1 = alloca double
-  store double %x, double* %x1
-  store i64 %i, i64* %i2
-  %x3 = load double, double* %x1
+  %i = alloca i64
+  %x = alloca double
+  store double %x1, double* %x
+  store i64 %i2, i64* %i
+  %x3 = load double, double* %x
   call void @Out_Real(double %x3, i64 4)
-  %i4 = load i64, i64* %i2
+  %i4 = load i64, i64* %i
   call void @Out_Int(i64 %i4, i64 4)
-  %x5 = load double, double* %x1
+  %x5 = load double, double* %x
   %0 = call double @llvm.floor.f64(double %x5)
   %1 = fptosi double %0 to i64
   call void @Out_Int(i64 %1, i64 4)
@@ -28,17 +28,17 @@ entry:
 ; Function Attrs: nounwind readnone speculatable willreturn
 declare double @llvm.floor.f64(double) #0
 
-define internal void @Entier1_EntierLongReal(double %x, i64 %i) {
+define internal void @Entier1_EntierLongReal(double %x1, i64 %i2) {
 entry:
-  %i2 = alloca i64
-  %x1 = alloca double
-  store double %x, double* %x1
-  store i64 %i, i64* %i2
-  %x3 = load double, double* %x1
+  %i = alloca i64
+  %x = alloca double
+  store double %x1, double* %x
+  store i64 %i2, i64* %i
+  %x3 = load double, double* %x
   call void @Out_Real(double %x3, i64 4)
-  %i4 = load i64, i64* %i2
+  %i4 = load i64, i64* %i
   call void @Out_Int(i64 %i4, i64 4)
-  %x5 = load double, double* %x1
+  %x5 = load double, double* %x
   %0 = call double @llvm.floor.f64(double %x5)
   %1 = fptosi double %0 to i64
   call void @Out_Int(i64 %1, i64 4)

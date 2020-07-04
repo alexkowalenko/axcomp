@@ -8,14 +8,14 @@ declare void @Out_Ln()
 
 declare void @Out_String([0 x i32]*)
 
-define internal void @Const8_Tand(i1 %b) {
+define internal void @Const8_Tand(i1 %b1) {
 entry:
-  %b1 = alloca i1
-  store i1 %b, i1* %b1
+  %b = alloca i1
+  store i1 %b1, i1* %b
   br i1 true, label %and_next, label %and_end
 
 and_next:                                         ; preds = %entry
-  %b2 = load i1, i1* %b1
+  %b2 = load i1, i1* %b
   br label %and_end
 
 and_end:                                          ; preds = %and_next, %entry
@@ -34,14 +34,14 @@ ifcont:                                           ; preds = %else, %then
   ret void
 }
 
-define internal void @Const8_Fand(i1 %b) {
+define internal void @Const8_Fand(i1 %b1) {
 entry:
-  %b1 = alloca i1
-  store i1 %b, i1* %b1
+  %b = alloca i1
+  store i1 %b1, i1* %b
   br i1 false, label %and_next, label %and_end
 
 and_next:                                         ; preds = %entry
-  %b2 = load i1, i1* %b1
+  %b2 = load i1, i1* %b
   br label %and_end
 
 and_end:                                          ; preds = %and_next, %entry
@@ -60,14 +60,14 @@ ifcont:                                           ; preds = %else, %then
   ret void
 }
 
-define internal void @Const8_Tor(i1 %b) {
+define internal void @Const8_Tor(i1 %b1) {
 entry:
-  %b1 = alloca i1
-  store i1 %b, i1* %b1
+  %b = alloca i1
+  store i1 %b1, i1* %b
   br i1 true, label %or_end, label %or_next
 
 or_next:                                          ; preds = %entry
-  %b2 = load i1, i1* %b1
+  %b2 = load i1, i1* %b
   br label %or_end
 
 or_end:                                           ; preds = %or_next, %entry
@@ -86,14 +86,14 @@ ifcont:                                           ; preds = %else, %then
   ret void
 }
 
-define internal void @Const8_For(i1 %b) {
+define internal void @Const8_For(i1 %b1) {
 entry:
-  %b1 = alloca i1
-  store i1 %b, i1* %b1
+  %b = alloca i1
+  store i1 %b1, i1* %b
   br i1 false, label %or_end, label %or_next
 
 or_next:                                          ; preds = %entry
-  %b2 = load i1, i1* %b1
+  %b2 = load i1, i1* %b
   br label %or_end
 
 or_end:                                           ; preds = %or_next, %entry

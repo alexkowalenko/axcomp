@@ -9,7 +9,7 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_Char(i32)
 
-define internal void @MagicSquares_Generate(i64 %n) {
+define internal void @MagicSquares_Generate(i64 %n1) {
 entry:
   %M = alloca [13 x [13 x i64]]
   %nsq = alloca i64
@@ -17,23 +17,23 @@ entry:
   %x = alloca i64
   %j = alloca i64
   %i = alloca i64
-  %n1 = alloca i64
-  store i64 %n, i64* %n1
+  %n = alloca i64
+  store i64 %n1, i64* %n
   store i64 0, i64* %i
   store i64 0, i64* %j
   store i64 0, i64* %x
   store i64 0, i64* %nx
   store i64 0, i64* %nsq
   store [13 x [13 x i64]] zeroinitializer, [13 x [13 x i64]]* %M
-  %n2 = load i64, i64* %n1
-  %n3 = load i64, i64* %n1
+  %n2 = load i64, i64* %n
+  %n3 = load i64, i64* %n
   %multmp = mul i64 %n2, %n3
   store i64 %multmp, i64* %nsq
   store i64 0, i64* %x
-  %n4 = load i64, i64* %n1
+  %n4 = load i64, i64* %n
   %divtmp = sdiv i64 %n4, 2
   store i64 %divtmp, i64* %i
-  %n5 = load i64, i64* %n1
+  %n5 = load i64, i64* %n
   %subtmp = sub i64 %n5, 1
   store i64 %subtmp, i64* %j
   br label %while
@@ -45,13 +45,13 @@ while:                                            ; preds = %end, %entry
   br i1 %0, label %loop, label %end36
 
 loop:                                             ; preds = %while
-  %n8 = load i64, i64* %n1
+  %n8 = load i64, i64* %n
   %x9 = load i64, i64* %x
   %addtmp = add i64 %n8, %x9
   store i64 %addtmp, i64* %nx
   %j10 = load i64, i64* %j
   %subtmp11 = sub i64 %j10, 1
-  %n12 = load i64, i64* %n1
+  %n12 = load i64, i64* %n
   %modtmp = srem i64 %subtmp11, %n12
   store i64 %modtmp, i64* %j
   %x13 = load i64, i64* %x
@@ -73,12 +73,12 @@ while18:                                          ; preds = %loop21, %loop
 loop21:                                           ; preds = %while18
   %i22 = load i64, i64* %i
   %addtmp23 = add i64 %i22, 1
-  %n24 = load i64, i64* %n1
+  %n24 = load i64, i64* %n
   %modtmp25 = srem i64 %addtmp23, %n24
   store i64 %modtmp25, i64* %i
   %j26 = load i64, i64* %j
   %addtmp27 = add i64 %j26, 1
-  %n28 = load i64, i64* %n1
+  %n28 = load i64, i64* %n
   %modtmp29 = srem i64 %addtmp27, %n28
   store i64 %modtmp29, i64* %j
   %x30 = load i64, i64* %x
@@ -114,7 +114,7 @@ repeat37:                                         ; preds = %repeat37, %repeat
   %addtmp44 = add i64 %j43, 1
   store i64 %addtmp44, i64* %j
   %j45 = load i64, i64* %j
-  %n46 = load i64, i64* %n1
+  %n46 = load i64, i64* %n
   %2 = icmp eq i64 %j45, %n46
   br i1 %2, label %end47, label %repeat37
 
@@ -124,7 +124,7 @@ end47:                                            ; preds = %repeat37
   %addtmp49 = add i64 %i48, 1
   store i64 %addtmp49, i64* %i
   %i50 = load i64, i64* %i
-  %n51 = load i64, i64* %n1
+  %n51 = load i64, i64* %n
   %3 = icmp eq i64 %i50, %n51
   br i1 %3, label %end52, label %repeat
 

@@ -7,15 +7,15 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @HOTVarPar1_Set(i64* %x, i64 %val) {
+define internal void @HOTVarPar1_Set(i64* %x1, i64 %val2) {
 entry:
-  %val2 = alloca i64
-  %x1 = alloca i64*
-  store i64* %x, i64** %x1
-  store i64 %val, i64* %val2
-  %val3 = load i64, i64* %val2
-  %x4 = load i64*, i64** %x1
-  %x5 = load i64*, i64** %x1
+  %val = alloca i64
+  %x = alloca i64*
+  store i64* %x1, i64** %x
+  store i64 %val2, i64* %val
+  %val3 = load i64, i64* %val
+  %x4 = load i64*, i64** %x
+  %x5 = load i64*, i64** %x
   store i64 %val3, i64* %x5
   ret void
 }

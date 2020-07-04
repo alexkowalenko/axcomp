@@ -1,26 +1,26 @@
 ; ModuleID = 'd11'
 source_filename = "d11"
 
-define internal i1 @d11_eq(i64 %x, i64 %y) {
+define internal i1 @d11_eq(i64 %x1, i64 %y2) {
 entry:
-  %y2 = alloca i64
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i64 %y, i64* %y2
-  %x3 = load i64, i64* %x1
-  %y4 = load i64, i64* %y2
+  %y = alloca i64
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i64 %y2, i64* %y
+  %x3 = load i64, i64* %x
+  %y4 = load i64, i64* %y
   %0 = icmp eq i64 %x3, %y4
   ret i1 %0
 }
 
-define internal i1 @d11_neq(i64 %x, i64 %y) {
+define internal i1 @d11_neq(i64 %x1, i64 %y2) {
 entry:
-  %y2 = alloca i64
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i64 %y, i64* %y2
-  %x3 = load i64, i64* %x1
-  %y4 = load i64, i64* %y2
+  %y = alloca i64
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i64 %y2, i64* %y
+  %x3 = load i64, i64* %x
+  %y4 = load i64, i64* %y
   %0 = icmp ne i64 %x3, %y4
   ret i1 %0
 }

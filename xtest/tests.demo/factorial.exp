@@ -5,14 +5,14 @@ declare void @WriteInt(i64)
 
 declare void @WriteLn()
 
-define internal i64 @factorial_factor(i64 %x) {
+define internal i64 @factorial_factor(i64 %x1) {
 entry:
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  %x2 = load i64, i64* %x1
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  %x2 = load i64, i64* %x
   call void @WriteInt(i64 %x2)
   call void @WriteLn()
-  %x3 = load i64, i64* %x1
+  %x3 = load i64, i64* %x
   %0 = icmp sle i64 %x3, 1
   br i1 %0, label %then, label %ifcont
 
@@ -20,8 +20,8 @@ then:                                             ; preds = %entry
   ret i64 1
 
 ifcont:                                           ; preds = %entry
-  %x4 = load i64, i64* %x1
-  %x5 = load i64, i64* %x1
+  %x4 = load i64, i64* %x
+  %x5 = load i64, i64* %x
   %subtmp = sub i64 %x5, 1
   %1 = call i64 @factorial_factor(i64 %subtmp)
   %multmp = mul i64 %x4, %1

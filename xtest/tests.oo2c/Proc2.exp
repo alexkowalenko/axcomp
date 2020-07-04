@@ -1,12 +1,12 @@
 ; ModuleID = 'Proc2'
 source_filename = "Proc2"
 
-define internal i64 @Proc2_P(i64 %a, i64 %b) {
+define internal i64 @Proc2_P(i64 %a1, i64 %b2) {
 entry:
-  %b2 = alloca i64
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
-  store i64 %b, i64* %b2
+  %b = alloca i64
+  %a = alloca i64
+  store i64 %a1, i64* %a
+  store i64 %b2, i64* %b
   ret void
 }
 

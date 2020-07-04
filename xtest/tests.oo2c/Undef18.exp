@@ -18,11 +18,11 @@ entry:
   ret i64 %1
 }
 
-define internal i64 @Undef18_P_N(i64* %z) {
+define internal i64 @Undef18_P_N(i64* %z1) {
 entry:
-  %z1 = alloca i64*
-  store i64* %z, i64** %z1
-  %z2 = load i64*, i64** %z1
+  %z = alloca i64*
+  store i64* %z1, i64** %z
+  %z2 = load i64*, i64** %z
   %z3 = load i64, i64* %z2
   ret i64 %z3
 }

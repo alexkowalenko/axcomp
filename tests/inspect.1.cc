@@ -534,6 +534,56 @@ TEST(Inspector, NestedProcs) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ProcReciever) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            PROCEDURE (VAR a : pt) clear();
+            BEGIN
+                a.x := 0; a.y := 0;
+            END clear;
+
+            PROCEDURE (VAR a : pt) set(x, y: INTEGER);
+            BEGIN
+                a.x := x; a.y := y;
+            END set;
+
+            END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nPROCEDURE (a : pt) "
+         "print;\nEND print;\nPROCEDURE (VAR a : pt) clear;\nBEGIN\na.x := 0;\na.y := 0\nEND "
+         "clear;\nPROCEDURE (VAR a : pt) set(x : INTEGER; y : INTEGER);\nBEGIN\na.x := x;\na.y := "
+         "y\nEND set;\nEND alpha.",
+         ""},
+
+        // Errors
+
+        {R"(MODULE alpha; (* Procedures with receivers *)
+            PROCEDURE (a : INTEGER) print();
+            BEGIN
+            END print;
+
+            END alpha.)",
+         "",
+         "2,26: bound type INTEGER must be a RECORD or POINTER TO RECORD in type-bound PROCEDURE"},
+
+        {R"(MODULE alpha; (* Procedures with receivers *)
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            END alpha.)",
+         "", "2,26: bound type pt not found for type-bound PROCEDURE"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Assignment) {
     std::vector<ParseTests> tests = {
 

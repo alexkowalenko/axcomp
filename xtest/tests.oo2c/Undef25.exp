@@ -11,14 +11,14 @@ entry:
   ret void
 }
 
-define internal void @Undef25_P_N(%R* %x) {
+define internal void @Undef25_P_N(%R* %x1) {
 entry:
-  %x1 = alloca %R*
-  store %R* %x, %R** %x1
-  %x2 = load %R*, %R** %x1
-  %x3 = load %R*, %R** %x1
-  %x4 = load %R*, %R** %x1
-  %0 = load %R*, %R** %x1
+  %x = alloca %R*
+  store %R* %x1, %R** %x
+  %x2 = load %R*, %R** %x
+  %x3 = load %R*, %R** %x
+  %x4 = load %R*, %R** %x
+  %0 = load %R*, %R** %x
   %idx = getelementptr %R, %R* %0, i64 0, i32 0
   store i64 1, i64* %idx
   ret void

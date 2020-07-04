@@ -139,6 +139,31 @@ void Inspector::visit_ASTVar(ASTVarPtr ast) {
     pointer_types.clear();
 }
 
+void Inspector::do_receiver(RecVar &r) {
+    if (!r.first) {
+        return;
+    }
+    auto t = types.resolve(r.second->value);
+    if (!t) {
+        auto e = TypeError(
+            llvm::formatv("bound type {0} not found for type-bound PROCEDURE", r.second->value),
+            r.second->get_location());
+        errors.add(e);
+        return;
+    }
+    if (t->id != TypeId::record && !is_ptr_to_record(t)) {
+        auto e = TypeError(
+            llvm::formatv(
+                "bound type {0} must be a RECORD or POINTER TO RECORD in type-bound PROCEDURE",
+                r.second->value),
+            r.second->get_location());
+        errors.add(e);
+        return;
+    }
+    r.second->set_type(t);
+    return;
+}
+
 std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
     // Check name if not defined;
     if (auto name_check = symboltable.find(ast.name->value);
@@ -162,6 +187,9 @@ std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
                            ast.get_location());
         errors.add(e);
     }
+
+    // Check receiver
+    do_receiver(ast.receiver);
 
     // Check parameter types
     debug("ASTProcedure check parameter types");
@@ -190,6 +218,14 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     // new symbol table
     symboltable.push_frame(ast->name->value);
+
+    // do receiver
+    if (ast->receiver.first) {
+        symboltable.put(ast->receiver.first->value,
+                        mkSym(ast->receiver.second->get_type(),
+                              ast->receiver.first->is(Attr::var) ? Attr::var : Attr::null));
+    }
+
     int count = 0;
     for (auto const &[p, type] : ast->params) {
         auto const &param = p;
@@ -356,13 +392,17 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
     auto res = symboltable.find(name);
     if (!res) {
         std::replace(begin(name), end(name), '_', '.');
-        throw CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name),
-                               ast->get_location());
+        auto e =
+            CodeGenException(llvm::formatv("undefined PROCEDURE {0}", name), ast->get_location());
+        errors.add(e);
+        return;
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(res->type);
     if (!procType) {
         std::replace(begin(name), end(name), '_', '.');
-        throw TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
+        auto e = TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
+        errors.add(e);
+        return;
     }
 
     // Check if procedure argument is a AnyType - then skip check argument types
@@ -370,10 +410,12 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
 
         if (ast->args.size() != procType->params.size()) {
             std::replace(begin(name), end(name), '_', '.');
-            throw TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
-                                          "arguments: {1} instead of {2}",
-                                          name, ast->args.size(), procType->params.size()),
-                            ast->get_location());
+            auto e = TypeError(llvm::formatv("calling PROCEDURE {0}, incorrect number of "
+                                             "arguments: {1} instead of {2}",
+                                             name, ast->args.size(), procType->params.size()),
+                               ast->get_location());
+            errors.add(e);
+            return;
         }
     } else {
         debug("ASTCall: {0} AnyType args", name);
@@ -983,8 +1025,10 @@ void Inspector::visit_ASTIdentifier(ASTIdentifierPtr ast) {
                 return;
             }
 
-            throw CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
-                                   ast->get_location());
+            auto e = CodeGenException(llvm::formatv("undefined identifier {0}", ast->value),
+                                      ast->get_location());
+            errors.add(e);
+            return;
         } else {
             qualid_error = true;
             return;

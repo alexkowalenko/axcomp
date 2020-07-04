@@ -28,6 +28,7 @@
 #include <llvm/Target/TargetOptions.h>
 
 #include "ast.hh"
+#include "astvisitor.hh"
 #include "builtin.hh"
 #include "error.hh"
 #include "parser.hh"
@@ -275,6 +276,16 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     std::vector<std::pair<int, llvm::Attribute::AttrKind>> argAttr;
     auto                                                   index{0};
 
+    // Do receiver first
+    if (ast->receiver.first) {
+        auto [name, typeName] = ast->receiver;
+        auto *type = typeName->get_type()->get_llvm();
+        if (name->is(Attr::var)) {
+            type = type->getPointerTo();
+        }
+        proto.push_back(type);
+    }
+
     for (auto const &[var, t_type] : ast->params) {
         auto *            type = getType(t_type);
         llvm::AttrBuilder attrs;
@@ -326,7 +337,19 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     symboltable.push_frame(ast->name->value);
 
     // Set parameter names
+
+    if (ast->receiver.first) {
+        auto [name, typeName] = ast->receiver;
+        auto *type = typeName->get_type()->get_llvm();
+        if (name->is(Attr::var)) {
+            type = type->getPointerTo();
+        }
+        proto.push_back(type);
+    }
+
     unsigned i = 0;
+    bool     do_receiver{ast->receiver.first != nullptr};
+
     for (auto &arg : f->args()) {
         debug("ASTProcedure process parameter {0}", i);
         if (i == 0 && sym->is(Attr::closure)) {
@@ -334,16 +357,32 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
             i++;
             continue;
         }
-        auto param_name = ast->params[i].first->value;
-        arg.setName(param_name);
-        auto type_name = ast->params[i].second;
 
-        Attr attr = Attr::null;
-        if (ast->params[i].first->is(Attr::var)) {
-            attr = Attr::var;
+        std::string param_name;
+        AllocaInst *alloca{nullptr};
+        Attr        attr = Attr::null;
+        if (i == 0 && do_receiver) {
+            auto [name, typeName] = ast->receiver;
+            param_name = name->value;
+            auto *type = typeName->get_type()->get_llvm();
+            if (name->is(Attr::var)) {
+                type = type->getPointerTo();
+                attr = Attr::var;
+            }
+            arg.setName(name->value);
+            alloca = createEntryBlockAlloca(f, name->value, type);
+            i--; // go back
+            do_receiver = false;
+        } else {
+            param_name = ast->params[i].first->value;
+            auto type_name = ast->params[i].second;
+            attr = Attr::null;
+            if (ast->params[i].first->is(Attr::var)) {
+                attr = Attr::var;
+            }
+            alloca = createEntryBlockAlloca(f, param_name, type_name, attr == Attr::var);
         }
-        // Create an alloca for this variable.
-        AllocaInst *alloca = createEntryBlockAlloca(f, param_name, type_name, attr == Attr::var);
+        arg.setName(param_name);
 
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);

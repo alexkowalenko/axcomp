@@ -1,11 +1,11 @@
 ; ModuleID = 'Case5'
 source_filename = "Case5"
 
-define internal void @Case5_P(i64 %i) {
+define internal void @Case5_P(i64 %i1) {
 entry:
-  %i1 = alloca i64
-  store i64 %i, i64* %i1
-  %i2 = load i64, i64* %i1
+  %i = alloca i64
+  store i64 %i1, i64* %i
+  %i2 = load i64, i64* %i
   switch i64 %i2, label %case.range [
     i64 128, label %case.element0
   ]

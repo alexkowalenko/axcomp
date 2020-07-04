@@ -7,17 +7,17 @@ declare void @Out_Int(i64, i64)
 
 declare void @Out_Bool(i1)
 
-define internal void @Odd1_Odd(i64 %x, i1 %odd) {
+define internal void @Odd1_Odd(i64 %x1, i1 %odd2) {
 entry:
-  %odd2 = alloca i1
-  %x1 = alloca i64
-  store i64 %x, i64* %x1
-  store i1 %odd, i1* %odd2
-  %x3 = load i64, i64* %x1
+  %odd = alloca i1
+  %x = alloca i64
+  store i64 %x1, i64* %x
+  store i1 %odd2, i1* %odd
+  %x3 = load i64, i64* %x
   call void @Out_Int(i64 %x3, i64 4)
-  %odd4 = load i1, i1* %odd2
+  %odd4 = load i1, i1* %odd
   call void @Out_Bool(i1 %odd4)
-  %odd5 = load i1, i1* %odd2
+  %odd5 = load i1, i1* %odd
   call void @Out_Bool(i1 %odd5)
   call void @Out_Ln()
   ret void

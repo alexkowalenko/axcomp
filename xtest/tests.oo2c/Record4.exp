@@ -9,15 +9,15 @@ declare void @Out_Ln()
 
 declare void @Out_Int(i64, i64)
 
-define internal void @Record4_Set(i64 %a, i64 %b) {
+define internal void @Record4_Set(i64 %a1, i64 %b2) {
 entry:
-  %b2 = alloca i64
-  %a1 = alloca i64
-  store i64 %a, i64* %a1
-  store i64 %b, i64* %b2
-  %a3 = load i64, i64* %a1
+  %b = alloca i64
+  %a = alloca i64
+  store i64 %a1, i64* %a
+  store i64 %b2, i64* %b
+  %a3 = load i64, i64* %a
   store i64 %a3, i64* getelementptr inbounds (%R, %R* @Record4_r, i64 0, i32 0)
-  %b4 = load i64, i64* %b2
+  %b4 = load i64, i64* %b
   store i64 %b4, i64* getelementptr inbounds (%R, %R* @Record4_r, i64 0, i32 1)
   ret void
 }

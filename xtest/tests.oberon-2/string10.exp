@@ -19,14 +19,14 @@ declare void @Out_Char(i32)
 
 declare void @Out_String([0 x i32]*)
 
-define internal void @string10_print([0 x i32]* %s) {
+define internal void @string10_print([0 x i32]* %s1) {
 entry:
-  %s1 = alloca [0 x i32]*
-  store [0 x i32]* %s, [0 x i32]** %s1
-  %s2 = load [0 x i32]*, [0 x i32]** %s1
+  %s = alloca [0 x i32]*
+  store [0 x i32]* %s1, [0 x i32]** %s
+  %s2 = load [0 x i32]*, [0 x i32]** %s
   call void @Out_String([0 x i32]* %s2)
   call void @Out_Char(i32 32)
-  %s3 = load [0 x i32]*, [0 x i32]** %s1
+  %s3 = load [0 x i32]*, [0 x i32]** %s
   %0 = call i64 @Strings_Length([0 x i32]* %s3)
   call void @Out_Int(i64 %0, i64 0)
   call void @Out_Ln()

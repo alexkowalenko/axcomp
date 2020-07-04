@@ -5,25 +5,25 @@ source_filename = "g12"
 
 @g12_pt = internal global %0 zeroinitializer
 
-define internal %0 @g12_identity(%0 %a) {
+define internal %0 @g12_identity(%0 %a1) {
 entry:
-  %a1 = alloca %0
-  store %0 %a, %0* %a1
-  %a2 = load %0, %0* %a1
+  %a = alloca %0
+  store %0 %a1, %0* %a
+  %a2 = load %0, %0* %a
   ret %0 %a2
 }
 
-define internal i64 @g12_sum(%0 %a) {
+define internal i64 @g12_sum(%0 %a1) {
 entry:
   %total = alloca i64
-  %a1 = alloca %0
-  store %0 %a, %0* %a1
+  %a = alloca %0
+  store %0 %a1, %0* %a
   store i64 0, i64* %total
-  %a2 = load %0, %0* %a1
-  %idx = getelementptr %0, %0* %a1, i64 0, i32 0
+  %a2 = load %0, %0* %a
+  %idx = getelementptr %0, %0* %a, i64 0, i32 0
   %idx3 = load i64, i64* %idx
-  %a4 = load %0, %0* %a1
-  %idx5 = getelementptr %0, %0* %a1, i64 0, i32 1
+  %a4 = load %0, %0* %a
+  %idx5 = getelementptr %0, %0* %a, i64 0, i32 1
   %idx6 = load i64, i64* %idx5
   %addtmp = add i64 %idx3, %idx6
   ret i64 %addtmp
