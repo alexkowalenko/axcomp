@@ -63,12 +63,12 @@ bool Type::equiv(TypePtr const &t) {
     return true;
 }
 
-llvm::Value *Type::min() {
+llvm::Value *Type::min() const {
     return llvm::ConstantPointerNull::get(
         dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
 
-llvm::Value *Type::max() {
+llvm::Value *Type::max() const {
     return llvm::ConstantPointerNull::get(
         dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
@@ -77,15 +77,15 @@ SimpleType::operator std::string() {
     return name;
 }
 
-llvm::Constant *IntegerType::make_value(long i) {
+llvm::Constant *IntegerType::make_value(long i) const {
     return ConstantInt::get(get_llvm(), i);
 }
 
-llvm::Constant *BooleanType::make_value(bool b) {
+llvm::Constant *BooleanType::make_value(bool b) const {
     return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
 }
 
-llvm::Constant *CharacterType::make_value(Char c) {
+llvm::Constant *CharacterType::make_value(Char c) const {
     return ConstantInt::get(get_llvm(), static_cast<Char>(c));
 }
 
@@ -113,7 +113,11 @@ llvm::Type *StringType::make_type_ptr() {
 }
 
 std::string ProcedureType::get_print(bool forward) {
-    std::string res = llvm::formatv("{0}(", forward ? "^" : "");
+    std::string res{forward ? "^" : ""};
+    if (receiver) {
+        res += llvm::formatv("({0})", std::string(*receiver));
+    }
+    res += '(';
     const auto *insert = "";
     for (auto [name, attr] : params) {
         res += insert;
@@ -134,7 +138,7 @@ ProcedureType::operator std::string() {
     return get_print(false);
 }
 
-llvm::Type *ProcedureType::get_llvm() {
+llvm::Type *ProcedureType::get_llvm() const {
     std::vector<llvm::Type *> proto;
     std::for_each(cbegin(params), cend(params),
                   [this, &proto](auto const &t) { proto.push_back(t.first->get_llvm()); });
@@ -165,7 +169,7 @@ ArrayType::operator std::string() {
     return result;
 }
 
-llvm::Type *ArrayType::get_llvm() {
+llvm::Type *ArrayType::get_llvm() const {
     if (dimensions.empty()) {
         return llvm::ArrayType::get(base_type->get_llvm(), 0);
     }
@@ -177,7 +181,7 @@ llvm::Type *ArrayType::get_llvm() {
     return array_type;
 }
 
-llvm::Constant *ArrayType::get_init() {
+llvm::Constant *ArrayType::get_init() const {
     if (dimensions.empty()) {
         auto const_array = std::vector<Constant *>(0, base_type->get_init());
         return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
@@ -192,11 +196,11 @@ OpenArrayType::operator std::string() {
     return llvm::formatv("{0}[]", std::string(*base_type));
 }
 
-llvm::Type *OpenArrayType::get_llvm() {
+llvm::Type *OpenArrayType::get_llvm() const {
     return ArrayType::get_llvm()->getPointerTo();
 }
 
-llvm::Constant *OpenArrayType::get_init() {
+llvm::Constant *OpenArrayType::get_init() const {
     return Constant::getNullValue(get_llvm());
 }
 
@@ -215,14 +219,14 @@ RecordType::operator std::string() {
     return str;
 }
 
-std::vector<llvm::Type *> RecordType::get_fieldTypes() {
+std::vector<llvm::Type *> RecordType::get_fieldTypes() const {
     std::vector<llvm::Type *> fs;
     if (base) {
         auto b_fs = base->get_fieldTypes();
         fs.insert(cbegin(fs), cbegin(b_fs), cend(b_fs));
     }
     std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
-        auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
+        auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
         fs.push_back(res->get_llvm());
     });
     if (fs.empty()) {
@@ -232,7 +236,7 @@ std::vector<llvm::Type *> RecordType::get_fieldTypes() {
     return fs;
 }
 
-llvm::Type *RecordType::get_llvm() {
+llvm::Type *RecordType::get_llvm() const {
     if (cache) {
         return cache;
     }
@@ -245,14 +249,14 @@ llvm::Type *RecordType::get_llvm() {
     return cache;
 }
 
-std::vector<llvm::Constant *> RecordType::get_fieldInit() {
+std::vector<llvm::Constant *> RecordType::get_fieldInit() const {
     std::vector<llvm::Constant *> fs;
     if (base) {
         auto b_fs = base->get_fieldInit();
         fs.insert(cbegin(fs), cbegin(b_fs), cend(b_fs));
     }
     std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
-        auto res = TypeTable::sgl()->resolve(fields[name]->get_name());
+        auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
         fs.push_back(res->get_init());
     });
     if (fs.empty()) {
@@ -261,7 +265,7 @@ std::vector<llvm::Constant *> RecordType::get_fieldInit() {
     return fs;
 }
 
-llvm::Constant *RecordType::get_init() {
+llvm::Constant *RecordType::get_init() const {
     auto fs = get_fieldInit();
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 }
@@ -281,7 +285,7 @@ bool RecordType::has_field(std::string const &field) {
     return false;
 }
 
-size_t RecordType::get_size() {
+size_t RecordType::get_size() const {
     return std::accumulate(cbegin(fields), cend(fields), cbegin(fields)->second->get_size(),
                            [](size_t x, auto &y) { return x + y.second->get_size(); });
 }
@@ -339,27 +343,27 @@ bool RecordType::equiv(std::shared_ptr<RecordType> const &r) {
     return true;
 }
 
-llvm::Type *PointerType::get_llvm() {
+llvm::Type *PointerType::get_llvm() const {
     return reference->get_llvm()->getPointerTo();
 }
 
-llvm::Constant *PointerType::get_init() {
+llvm::Constant *PointerType::get_init() const {
     return Constant::getNullValue(get_llvm());
 }
 
-llvm::Type *SetCType::get_llvm() {
+llvm::Type *SetCType::get_llvm() const {
     return TypeTable::IntType->get_llvm(); // 64-bit set
 };
 
-llvm::Constant *SetCType::get_init() {
+llvm::Constant *SetCType::get_init() const {
     return TypeTable::IntType->get_init(); // 64-bit set
 };
 
-llvm::Value *SetCType::min() {
+llvm::Value *SetCType::min() const {
     return TypeTable::IntType->get_init();
 };
 
-llvm::Value *SetCType::max() {
+llvm::Value *SetCType::max() const {
     return TypeTable::IntType->make_value(SET_MAX);
 };
 

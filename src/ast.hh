@@ -283,6 +283,8 @@ class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDes
 
     void accept(ASTVisitor *v) override { v->visit_ASTDesignator(shared_from_this()); };
 
+    ASTIdentifierPtr first_field() const;
+
     ASTQualidentPtr                                           ident;
     std::vector<std::variant<ArrayRef, FieldRef, PointerRef>> selectors;
 };

@@ -24,6 +24,7 @@
 #include "importer.hh"
 #include "options.hh"
 #include "symboltable.hh"
+#include "type.hh"
 #include "typetable.hh"
 
 using namespace llvm;
@@ -72,6 +73,10 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTAssignment(ASTAssignmentPtr ast) override;
     void visit_ASTReturn(ASTReturnPtr ast) override;
     void visit_ASTExit(ASTExitPtr ast) override;
+
+    std::tuple<std::shared_ptr<ProcedureType>, std::string, bool>
+    do_find_proc(ASTCallPtr const &ast);
+
     void visit_ASTCall(ASTCallPtr ast) override;
     void visit_ASTIf(ASTIfPtr ast) override;
     void visit_ASTCase(ASTCasePtr ast) override;

@@ -584,6 +584,96 @@ TEST(Inspector, ProcReciever) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ProcRecieverCall) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+            VAR x : pt;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            PROCEDURE (VAR a : pt) clear();
+            BEGIN
+                a.x := 0; a.y := 0;
+            END clear;
+
+            PROCEDURE (VAR a : pt) set(x, y: INTEGER);
+            BEGIN
+                a.x := x; a.y := y;
+            END set;
+
+            BEGIN
+                x.clear;
+                x.set(1, 2);
+                x.print;
+            END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\nVAR\nx: pt;\nPROCEDURE "
+         "(a : pt) print;\nEND print;\nPROCEDURE (VAR a : pt) clear;\nBEGIN\na.x := 0;\na.y := "
+         "0\nEND clear;\nPROCEDURE (VAR a : pt) set(x : INTEGER; y : INTEGER);\nBEGIN\na.x := "
+         "x;\na.y := y\nEND set;\nBEGIN\nx.clear();\nx.set(1, 2);\nx.print()\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+            VAR x : INTEGER;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            BEGIN
+                x.print;
+            END alpha.)",
+         "", "10,24: base type: INTEGER does not match bound procedure print, type: {x,y}"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+            VAR x : INTEGER;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            BEGIN
+                print(x);
+            END alpha.)",
+         "", "10,22: calling PROCEDURE print, incorrect number of arguments: 1 instead of 0"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+            VAR x : pt;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            BEGIN
+                x.jones;
+            END alpha.)",
+         "", "10,24: jones is not a PROCEDURE"},
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+            TYPE pt = RECORD x, y : INTEGER; END;
+            VAR x : pt;
+
+            PROCEDURE (a : pt) print();
+            BEGIN
+            END print;
+
+            BEGIN
+                x.x := 1;
+                x.x();
+            END alpha.)",
+         "", "11,20: x is not a PROCEDURE"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Assignment) {
     std::vector<ParseTests> tests = {
 

@@ -520,17 +520,45 @@ void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
     }
 }
 
-std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
+std::tuple<std::shared_ptr<ProcedureType>, std::string, bool>
+CodeGenerator::do_find_proc(ASTCallPtr const &ast) {
+
     // Look up the name in the global module table.
+
     auto name = ast->name->ident->make_coded_id();
     auto res = symboltable.find(name);
-    assert(res); // NOLINT
+    bool bound_proc{false};
 
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
-    assert(typeFunction); // NOLINT
+    if (!typeFunction) {
+        // check bound procedure
+        auto field = ast->name->first_field();
+        name = field->value;
+        res = symboltable.find(name);
+        typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
+        bound_proc = true;
+    }
+    return std::make_tuple(typeFunction, name, bound_proc);
+}
+
+std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
+
+    auto [typeFunction, _, bound_proc] = do_find_proc(ast);
 
     std::vector<Value *> args;
-    auto                 i = 0;
+    if (bound_proc) {
+        auto varname = ast->name->ident->id->value;
+        debug("do_arguments reciever {0}", varname);
+        auto var = symboltable.find(varname);
+        // llvm::dbgs() << *var->value << '\n';
+        last_value = var->value;
+        if (typeFunction->receiver_type != Attr::var) {
+            last_value = builder.CreateLoad(last_value);
+        }
+        args.push_back(last_value);
+        // llvm::dbgs() << *last_value << '\n';
+    }
+    auto i = 0;
     for (auto const &a : ast->args) {
         if (typeFunction->params[i].second == Attr::var) {
             debug("ASTCall VAR parameter");
@@ -574,7 +602,9 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     debug("ASTCall: global {0}", name);
     auto args = do_arguments(ast);
     assert(res->value && "did not find function to call!"); // NOLINT
-    auto  callee_type = std::dynamic_pointer_cast<ProcedureType>(res->type);
+    auto [callee_type, fname, _] = do_find_proc(ast);
+    res = symboltable.find(fname);
+    callee_type = std::dynamic_pointer_cast<ProcedureType>(res->type);
     auto *callee = llvm::dyn_cast<Function>(res->value);
     if (res->is(Attr::closure)) {
         debug("ASTCall: {0} call closure", name);

@@ -221,9 +221,14 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
 
     // do receiver
     if (ast->receiver.first) {
-        symboltable.put(ast->receiver.first->value,
-                        mkSym(ast->receiver.second->get_type(),
-                              ast->receiver.first->is(Attr::var) ? Attr::var : Attr::null));
+        auto attr = ast->receiver.first->is(Attr::var) ? Attr::var : Attr::null;
+        symboltable.put(ast->receiver.first->value, mkSym(ast->receiver.second->get_type(), attr));
+        if (ast->receiver.second->get_type()) {
+            debug("ASTProcedure: receiver type {0}",
+                  std::string(*ast->receiver.second->get_type()));
+            proc_type->receiver = ast->receiver.second->get_type();
+            proc_type->receiver_type = attr;
+        }
     }
 
     int count = 0;
@@ -399,10 +404,44 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
     }
     auto procType = std::dynamic_pointer_cast<ProcedureType>(res->type);
     if (!procType) {
-        std::replace(begin(name), end(name), '_', '.');
-        auto e = TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
-        errors.add(e);
-        return;
+
+        // check bound procedure
+        auto field = ast->name->first_field();
+        if (!field) {
+            std::replace(begin(name), end(name), '_', '.');
+            auto e = TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
+            errors.add(e);
+            return;
+        }
+
+        name = field->value;
+        if (res = symboltable.find(name); !res) {
+            std::replace(begin(name), end(name), '_', '.');
+            auto e = TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
+            errors.add(e);
+            return;
+        }
+
+        procType = std::dynamic_pointer_cast<ProcedureType>(res->type);
+        if (!procType) {
+            auto e = TypeError(llvm::formatv("{0} is not a PROCEDURE", name), ast->get_location());
+            errors.add(e);
+            return;
+        }
+
+        debug("ASTCall found bound procedure {0}", name);
+        ast->name->ident->accept(this); // type of only the identifier
+        auto base_type = last_type;
+        ast->name->ident->set_type(base_type);
+        debug("ASTCall type {0}", std::string(*base_type));
+        if (!base_type->equiv(procType->receiver)) {
+            auto e = TypeError(
+                llvm::formatv("base type: {0} does not match bound procedure {1}, type: {2}",
+                              string(base_type), name, string(procType->receiver)),
+                ast->get_location());
+            errors.add(e);
+            return;
+        }
     }
 
     // Check if procedure argument is a AnyType - then skip check argument types

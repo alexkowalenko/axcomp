@@ -1,0 +1,92 @@
+; ModuleID = 'record17'
+source_filename = "record17"
+
+%pt = type { i64, i64 }
+
+@record17_x = internal global %pt zeroinitializer
+
+declare void @Out_Ln()
+
+declare void @Out_Int(i64, i64)
+
+declare void @Out_Char(i32)
+
+define internal void @record17_print(%pt %a1) {
+entry:
+  %a = alloca %pt
+  store %pt %a1, %pt* %a
+  call void @Out_Char(i32 40)
+  %a2 = load %pt, %pt* %a
+  %idx = getelementptr %pt, %pt* %a, i64 0, i32 0
+  %idx3 = load i64, i64* %idx
+  call void @Out_Int(i64 %idx3, i64 0)
+  call void @Out_Char(i32 44)
+  %a4 = load %pt, %pt* %a
+  %idx5 = getelementptr %pt, %pt* %a, i64 0, i32 1
+  %idx6 = load i64, i64* %idx5
+  call void @Out_Int(i64 %idx6, i64 0)
+  call void @Out_Char(i32 41)
+  ret void
+}
+
+define internal void @record17_clear(%pt* %a1) {
+entry:
+  %a = alloca %pt*
+  store %pt* %a1, %pt** %a
+  %a2 = load %pt*, %pt** %a
+  %a3 = load %pt*, %pt** %a
+  %a4 = load %pt*, %pt** %a
+  %0 = load %pt*, %pt** %a
+  %idx = getelementptr %pt, %pt* %0, i64 0, i32 0
+  store i64 0, i64* %idx
+  %a5 = load %pt*, %pt** %a
+  %a6 = load %pt*, %pt** %a
+  %a7 = load %pt*, %pt** %a
+  %1 = load %pt*, %pt** %a
+  %idx8 = getelementptr %pt, %pt* %1, i64 0, i32 1
+  store i64 0, i64* %idx8
+  ret void
+}
+
+define internal void @record17_set(%pt* %a1, i64 %x2, i64 %y3) {
+entry:
+  %y = alloca i64
+  %x = alloca i64
+  %a = alloca %pt*
+  store %pt* %a1, %pt** %a
+  store i64 %x2, i64* %x
+  store i64 %y3, i64* %y
+  %x4 = load i64, i64* %x
+  %a5 = load %pt*, %pt** %a
+  %a6 = load %pt*, %pt** %a
+  %a7 = load %pt*, %pt** %a
+  %0 = load %pt*, %pt** %a
+  %idx = getelementptr %pt, %pt* %0, i64 0, i32 0
+  store i64 %x4, i64* %idx
+  %y8 = load i64, i64* %y
+  %a9 = load %pt*, %pt** %a
+  %a10 = load %pt*, %pt** %a
+  %a11 = load %pt*, %pt** %a
+  %1 = load %pt*, %pt** %a
+  %idx12 = getelementptr %pt, %pt* %1, i64 0, i32 1
+  store i64 %y8, i64* %idx12
+  ret void
+}
+
+define i64 @output() {
+entry:
+  store i64 1, i64* getelementptr inbounds (%pt, %pt* @record17_x, i64 0, i32 0)
+  store i64 2, i64* getelementptr inbounds (%pt, %pt* @record17_x, i64 0, i32 1)
+  %x = load %pt, %pt* @record17_x
+  call void @record17_print(%pt %x)
+  call void @Out_Ln()
+  call void @record17_clear(%pt* @record17_x)
+  %x1 = load %pt, %pt* @record17_x
+  call void @record17_print(%pt %x1)
+  call void @Out_Ln()
+  call void @record17_set(%pt* @record17_x, i64 4, i64 3)
+  %x2 = load %pt, %pt* @record17_x
+  call void @record17_print(%pt %x2)
+  call void @Out_Ln()
+  ret i64 0
+}

@@ -20,4 +20,14 @@ ASTBase::operator std::string() {
     return s_out.str();
 }
 
+ASTIdentifierPtr ASTDesignator::first_field() const {
+    if (selectors.empty()) {
+        return nullptr;
+    }
+    if (const auto *val = std::get_if<FieldRef>(&selectors[0]); val) {
+        return val->first;
+    }
+    return nullptr;
+}
+
 } // namespace ax

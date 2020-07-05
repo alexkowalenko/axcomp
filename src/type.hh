@@ -16,18 +16,21 @@
 #include <utility>
 #include <vector>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <llvm/ADT/StringMap.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
+#pragma clang diagnostic pop
 
 #include "astvisitor.hh"
 #include "attr.hh"
 #include "ax.hh"
 
 namespace ax {
-
-class Type;
-using TypePtr = std::shared_ptr<Type>;
 
 enum class TypeId {
     null, // void
@@ -51,6 +54,9 @@ enum class TypeId {
 
 std::string string(TypeId t);
 
+class Type;
+using TypePtr = std::shared_ptr<Type>;
+
 class Type {
   public:
     explicit Type(TypeId i) : id(i){};
@@ -73,21 +79,25 @@ class Type {
         return !(id == TypeId::procedure || id == TypeId::alias || id == TypeId::module);
     }
 
-    void                set_llvm(llvm::Type *t) { llvm_type = t; };
-    virtual llvm::Type *get_llvm() { return llvm_type; };
+    void                              set_llvm(llvm::Type *t) { llvm_type = t; };
+    [[nodiscard]] virtual llvm::Type *get_llvm() const { return llvm_type; };
 
-    void                    set_init(llvm::Constant *t) { llvm_init = t; };
-    virtual llvm::Constant *get_init() { return llvm_init; };
+    void                                  set_init(llvm::Constant *t) { llvm_init = t; };
+    [[nodiscard]] virtual llvm::Constant *get_init() const { return llvm_init; };
 
-    virtual size_t get_size() { return 0; };
+    [[nodiscard]] virtual size_t get_size() const { return 0; };
 
-    virtual llvm::Value *min();
-    virtual llvm::Value *max();
+    [[nodiscard]] virtual llvm::Value *min() const;
+    [[nodiscard]] virtual llvm::Value *max() const;
 
   private:
     llvm::Type *    llvm_type{nullptr};
     llvm::Constant *llvm_init{nullptr};
 };
+
+inline std::string string(TypePtr const &t) {
+    return std::string(*t);
+}
 
 class SimpleType : public Type {
   public:
@@ -105,13 +115,13 @@ class IntegerType : public SimpleType {
 
     [[nodiscard]] bool is_numeric() const override { return true; };
 
-    llvm::Constant *make_value(Int i);
-    size_t          get_size() override {
+    [[nodiscard]] llvm::Constant *make_value(Int i) const;
+    [[nodiscard]] size_t          get_size() const override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
-    llvm::Value *min() override { return make_value(INT64_MIN); };
-    llvm::Value *max() override { return make_value(INT64_MAX); };
+    [[nodiscard]] llvm::Value *min() const override { return make_value(INT64_MIN); };
+    [[nodiscard]] llvm::Value *max() const override { return make_value(INT64_MAX); };
 };
 
 class BooleanType : public SimpleType {
@@ -119,13 +129,13 @@ class BooleanType : public SimpleType {
     explicit BooleanType() : SimpleType("BOOLEAN", TypeId::boolean){};
     ~BooleanType() override = default;
 
-    llvm::Constant *make_value(Bool b);
-    size_t          get_size() override {
+    [[nodiscard]] llvm::Constant *make_value(Bool b) const;
+    [[nodiscard]] size_t          get_size() const override {
         return 1; // llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
-    llvm::Value *min() override { return make_value(false); };
-    llvm::Value *max() override { return make_value(true); };
+    [[nodiscard]] llvm::Value *min() const override { return make_value(false); };
+    [[nodiscard]] llvm::Value *max() const override { return make_value(true); };
 };
 
 class RealCType : public SimpleType {
@@ -133,11 +143,13 @@ class RealCType : public SimpleType {
     explicit RealCType() : SimpleType("REAL", TypeId::real){};
     ~RealCType() override = default;
 
-    llvm::Constant *make_value(Real f) { return llvm::ConstantFP::get(get_llvm(), f); }
-    size_t          get_size() override { return sizeof(Real); } // 64 bit floats;
+    [[nodiscard]] llvm::Constant *make_value(Real f) const {
+        return llvm::ConstantFP::get(get_llvm(), f);
+    }
+    [[nodiscard]] size_t get_size() const override { return sizeof(Real); } // 64 bit floats;
 
-    llvm::Value *min() override { return make_value(DBL_MIN); };
-    llvm::Value *max() override { return make_value(DBL_MAX); };
+    [[nodiscard]] llvm::Value *min() const override { return make_value(DBL_MIN); };
+    [[nodiscard]] llvm::Value *max() const override { return make_value(DBL_MAX); };
 };
 
 class CharacterType : public SimpleType {
@@ -145,13 +157,13 @@ class CharacterType : public SimpleType {
     explicit CharacterType() : SimpleType("CHAR", TypeId::chr){};
     ~CharacterType() override = default;
 
-    llvm::Constant *make_value(Char c);
-    size_t          get_size() override {
+    [[nodiscard]] llvm::Constant *make_value(Char c) const;
+    [[nodiscard]] size_t          get_size() const override {
         return llvm::dyn_cast<llvm::IntegerType>(get_llvm())->getBitWidth() / CHAR_BIT;
     }
 
-    llvm::Value *min() override { return make_value(WCHAR_MIN); };
-    llvm::Value *max() override { return make_value(WCHAR_MAX); };
+    [[nodiscard]] llvm::Value *min() const override { return make_value(WCHAR_MIN); };
+    [[nodiscard]] llvm::Value *max() const override { return make_value(WCHAR_MAX); };
 };
 
 class ProcedureType : public Type {
@@ -165,11 +177,13 @@ class ProcedureType : public Type {
 
     [[nodiscard]] bool is_assignable() const override { return false; };
 
-    llvm::Type *get_llvm() override;
+    [[nodiscard]] llvm::Type *get_llvm() const override;
 
     [[nodiscard]] TypePtr get_closure_struct() const;
 
     TypePtr ret{nullptr};
+    TypePtr receiver{nullptr};
+    Attr    receiver_type{Attr::null};
     using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
     ParamsList params{};
     using FreeList = std::vector<std::pair<std::string, TypePtr>>;
@@ -196,10 +210,10 @@ class ArrayType : public Type {
 
     [[nodiscard]] bool is_assignable() const override { return false; };
 
-    llvm::Type *    get_llvm() override;
-    llvm::Constant *get_init() override;
+    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Constant *get_init() const override;
 
-    size_t get_size() override {
+    [[nodiscard]] size_t get_size() const override {
         return std::accumulate(begin(dimensions), end(dimensions), size_t(1),
                                std::multiplies<>()) *
                base_type->get_size();
@@ -218,8 +232,8 @@ class OpenArrayType : public ArrayType {
 
     [[nodiscard]] bool is_assignable() const override { return true; };
 
-    llvm::Type *    get_llvm() override;
-    llvm::Constant *get_init() override;
+    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Constant *get_init() const override;
 };
 
 class StringType : public SimpleType {
@@ -241,11 +255,11 @@ class RecordType : public Type {
 
     [[nodiscard]] bool is_assignable() const override { return false; };
 
-    std::vector<llvm::Type *>     get_fieldTypes();
-    std::vector<llvm::Constant *> get_fieldInit();
+    std::vector<llvm::Type *>     get_fieldTypes() const;
+    std::vector<llvm::Constant *> get_fieldInit() const;
 
-    llvm::Type *    get_llvm() override;
-    llvm::Constant *get_init() override;
+    llvm::Type *    get_llvm() const override;
+    llvm::Constant *get_init() const override;
 
     void   insert(std::string const &field, TypePtr type);
     bool   has_field(std::string const &field);
@@ -258,7 +272,7 @@ class RecordType : public Type {
     std::optional<TypePtr> get_type(std::string const &field);
     int                    get_index(std::string const &field);
 
-    size_t get_size() override;
+    size_t get_size() const override;
 
     void        set_identified(std::string const &s) { identified = s; };
     std::string get_identified() { return identified; };
@@ -271,7 +285,7 @@ class RecordType : public Type {
     llvm::StringMap<TypePtr>    fields;
     std::vector<std::string>    index;
 
-    llvm::Type *cache{nullptr};
+    mutable llvm::Type *cache{nullptr};
 };
 
 class TypeAlias : public Type {
@@ -280,8 +294,8 @@ class TypeAlias : public Type {
         : Type(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
-    explicit operator std::string() override { return name; };
-    size_t   get_size() override { return alias->get_size(); };
+    explicit             operator std::string() override { return name; };
+    [[nodiscard]] size_t get_size() const override { return alias->get_size(); };
 
     TypePtr get_alias() { return alias; }
 
@@ -299,13 +313,13 @@ class PointerType : public Type {
 
     ~PointerType() override = default;
 
-    explicit operator std::string() override { return '^' + ref_name; };
-    size_t   get_size() override {
+    explicit             operator std::string() override { return '^' + ref_name; };
+    [[nodiscard]] size_t get_size() const override {
         return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / CHAR_BIT;
     };
 
-    llvm::Type *    get_llvm() override;
-    llvm::Constant *get_init() override;
+    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Constant *get_init() const override;
 
     TypePtr get_reference() { return reference; }
     void    set_reference(TypePtr &r) { reference = r; }
@@ -332,11 +346,11 @@ class SetCType : public SimpleType {
     SetCType() : SimpleType("SET", TypeId::set){};
     ~SetCType() override = default;
 
-    llvm::Type *    get_llvm() override;
-    llvm::Constant *get_init() override;
+    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Constant *get_init() const override;
 
-    llvm::Value *min() override;
-    llvm::Value *max() override;
+    [[nodiscard]] llvm::Value *min() const override;
+    [[nodiscard]] llvm::Value *max() const override;
 };
 
 class ModuleType : public Type {
