@@ -115,7 +115,7 @@ llvm::Type *StringType::make_type_ptr() {
 std::string ProcedureType::get_print(bool forward) {
     std::string res{forward ? "^" : ""};
     if (receiver) {
-        res += llvm::formatv("({0})", std::string(*receiver));
+        res += llvm::formatv("({0})", string(receiver));
     }
     res += '(';
     const auto *insert = "";
@@ -124,12 +124,12 @@ std::string ProcedureType::get_print(bool forward) {
         if (attr == Attr::var) {
             res += " VAR ";
         }
-        res += std::string(*name);
+        res += string(name);
         insert = ", ";
     }
     res += ")";
     if (ret) {
-        res += ":" + std::string(*ret);
+        res += ":" + string(ret);
     }
     return res;
 }
@@ -158,7 +158,7 @@ ProcedureFwdType::operator std::string() {
 }
 
 ArrayType::operator std::string() {
-    std::string result = llvm::formatv("{0}[", std::string(*base_type));
+    std::string result = llvm::formatv("{0}[", string(base_type));
     for (auto iter = dimensions.cbegin(); iter != dimensions.cend(); iter++) {
         result += llvm::formatv("{0}", *iter);
         if ((iter + 1) != dimensions.end()) {
@@ -193,7 +193,7 @@ llvm::Constant *ArrayType::get_init() const {
 }
 
 OpenArrayType::operator std::string() {
-    return llvm::formatv("{0}[]", std::string(*base_type));
+    return llvm::formatv("{0}[]", string(base_type));
 }
 
 llvm::Type *OpenArrayType::get_llvm() const {
@@ -207,7 +207,7 @@ llvm::Constant *OpenArrayType::get_init() const {
 RecordType::operator std::string() {
     std::string str{"{"};
     if (base) {
-        str += "(" + std::string(*base) + ")";
+        str += "(" + string(base) + ")";
     }
     for (auto iter = index.cbegin(); iter != index.cend(); ++iter) {
         str += *iter;
@@ -314,7 +314,7 @@ int RecordType::get_index(std::string const &field) {
     if (it == end(index)) {
         return -1;
     }
-    return base_count + std::distance(cbegin(index), it);
+    return base_count + int(std::distance(cbegin(index), it));
 }
 
 bool RecordType::is_base(TypePtr const &t) {

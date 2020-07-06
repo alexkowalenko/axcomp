@@ -674,6 +674,52 @@ TEST(Inspector, ProcRecieverCall) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, ProcDerivedReciever) {
+    std::vector<ParseTests> tests = {
+
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE    pt = RECORD x, y : INTEGER; END;
+                        pt3 = RECORD(pt) z: INTEGER; END;
+
+                VAR i: pt;
+                    j: pt3;
+
+                PROCEDURE (a : pt) print();
+                BEGIN
+                END print;
+
+                BEGIN
+                    i.print;
+                    j.z := 5;
+                    j.print;
+                END alpha.)",
+         "MODULE alpha;\nTYPE\npt = RECORD\nx: INTEGER;\ny: INTEGER\nEND;\npt3 = RECORD (pt)\nz: "
+         "INTEGER\nEND;\nVAR\ni: pt;\nj: pt3;\nPROCEDURE (a : pt) print;\nEND "
+         "print;\nBEGIN\ni.print();\nj.z := 5;\nj.print()\nEND alpha.",
+         ""},
+
+        // Errors
+        {R"(MODULE alpha; (* Procedures with recievers *)
+                TYPE    pt = RECORD x, y : INTEGER; END;
+                        pts = RECORD x: INTEGER; END;
+
+                VAR i: pt;
+                    k: pts;
+
+                PROCEDURE (a : pt) print();
+                BEGIN
+                END print;
+
+                BEGIN
+                    i.print; 
+                    k.print; 
+                END alpha.)",
+         "", "14,28: base type: {x} does not match bound procedure print, type: {x,y}"},
+
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, Assignment) {
     std::vector<ParseTests> tests = {
 

@@ -161,7 +161,6 @@ void Inspector::do_receiver(RecVar &r) {
         return;
     }
     r.second->set_type(t);
-    return;
 }
 
 std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc &ast) {
@@ -224,8 +223,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
         auto attr = ast->receiver.first->is(Attr::var) ? Attr::var : Attr::null;
         symboltable.put(ast->receiver.first->value, mkSym(ast->receiver.second->get_type(), attr));
         if (ast->receiver.second->get_type()) {
-            debug("ASTProcedure: receiver type {0}",
-                  std::string(*ast->receiver.second->get_type()));
+            debug("ASTProcedure: receiver type {0}", string(ast->receiver.second->get_type()));
             proc_type->receiver = ast->receiver.second->get_type();
             proc_type->receiver_type = attr;
         }
@@ -287,8 +285,8 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
         debug("ASTProcedure: {0} closure function", ast->name->value);
         sym->set(Attr::closure);
         // This defines the closure as an int which is not true, but is corrected in the codegen
-        auto type = std::make_shared<ASTType>();
-        auto c = std::string("INTEGER");
+        auto        type = std::make_shared<ASTType>();
+        std::string c{"INTEGER"};
         type->type = std::make_shared<ASTQualident>(c);
         auto v = std::make_pair(std::make_shared<ASTIdentifier>(closure_arg), type);
         ast->params.insert(ast->params.begin(), v);
@@ -344,7 +342,7 @@ void Inspector::visit_ASTAssignment(ASTAssignmentPtr ast) {
     if (!(types.check(TokenType::assign, last_type, expr_type) ||
           (last_type->is_assignable() && last_type->equiv(expr_type)))) {
         auto e = TypeError(llvm::formatv("Can't assign expression of type {0} to {1}",
-                                         std::string(*expr_type), std::string(*ast->ident)),
+                                         string(expr_type), std::string(*ast->ident)),
                            ast->get_location());
         errors.add(e);
     }
@@ -433,7 +431,7 @@ void Inspector::visit_ASTCall(ASTCallPtr ast) {
         ast->name->ident->accept(this); // type of only the identifier
         auto base_type = last_type;
         ast->name->ident->set_type(base_type);
-        debug("ASTCall type {0}", std::string(*base_type));
+        debug("ASTCall type {0}", string(base_type));
         if (!base_type->equiv(procType->receiver)) {
             auto e = TypeError(
                 llvm::formatv("base type: {0} does not match bound procedure {1}, type: {2}",
@@ -563,11 +561,10 @@ void Inspector::visit_ASTCase(ASTCasePtr ast) {
                 auto casexpr = std::get<ASTSimpleExprPtr>(expr);
                 casexpr->accept(this);
                 if (!last_type->equiv(case_type)) {
-                    auto ex =
-                        TypeError(llvm::formatv("CASE expression mismatch type {0} does not "
-                                                "match CASE expression type {1}",
-                                                std::string(*last_type), std::string(*case_type)),
-                                  casexpr->get_location());
+                    auto ex = TypeError(llvm::formatv("CASE expression mismatch type {0} does not "
+                                                      "match CASE expression type {1}",
+                                                      string(last_type), string(case_type)),
+                                        casexpr->get_location());
                     errors.add(ex);
                 }
             } else if (std::holds_alternative<ASTRangePtr>(expr)) {
@@ -577,7 +574,7 @@ void Inspector::visit_ASTCase(ASTCasePtr ast) {
                     auto ex = TypeError(
                         llvm::formatv("CASE expression range mismatch first type {0} does not "
                                       "match CASE expression type {1}",
-                                      std::string(*last_type), std::string(*case_type)),
+                                      string(last_type), string(case_type)),
                         range->get_location());
                     errors.add(ex);
                 }
@@ -586,7 +583,7 @@ void Inspector::visit_ASTCase(ASTCasePtr ast) {
                     auto ex = TypeError(
                         llvm::formatv("CASE expression range mismatch last type {0} does not "
                                       "match CASE expression type {1}",
-                                      std::string(*last_type), std::string(*case_type)),
+                                      string(last_type), string(case_type)),
                         range->get_location());
                     errors.add(ex);
                 }
@@ -673,10 +670,10 @@ void Inspector::visit_ASTExpr(ASTExprPtr ast) {
         ast->relation_expr->accept(this);
         auto result_type = types.check(*ast->relation, t1, last_type);
         if (!result_type) {
-            auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
-                                             string(*ast->relation), std::string(*t1),
-                                             std::string(*last_type)),
-                               ast->get_location());
+            auto e =
+                TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
+                                        string(*ast->relation), string(t1), string(last_type)),
+                          ast->get_location());
             errors.add(e);
             return;
         }
@@ -697,8 +694,7 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
-                                             string(t.first), std::string(*t1),
-                                             std::string(*last_type)),
+                                             string(t.first), string(t1), string(last_type)),
                                ast->get_location());
             errors.add(e);
             return;
@@ -721,8 +717,7 @@ void Inspector::visit_ASTTerm(ASTTermPtr ast) {
         auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
             auto e = TypeError(llvm::formatv("operator {0} doesn't takes types {1} and {2}",
-                                             string(t.first), std::string(*t1),
-                                             std::string(*last_type)),
+                                             string(t.first), string(t1), string(last_type)),
                                ast->get_location());
             errors.add(e);
             return;

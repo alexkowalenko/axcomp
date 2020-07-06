@@ -552,10 +552,14 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
         auto var = symboltable.find(varname);
         // llvm::dbgs() << *var->value << '\n';
         last_value = var->value;
+        debug("do_arguments receiver {0} send {1}", string(typeFunction->receiver),
+              string(ast->name->ident->id->get_type()));
         if (typeFunction->receiver_type != Attr::var) {
             last_value = builder.CreateLoad(last_value);
         }
+
         args.push_back(last_value);
+
         // llvm::dbgs() << *last_value << '\n';
     }
     auto i = 0;
@@ -1435,7 +1439,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
  *
  * @param ast
  */
-void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr ast, bool ptr) {
+void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast, bool ptr) {
     // debug("ASTDesignator {0}", std::string(*ast));
 
     visit_ASTQualidentPtr(ast->ident, ptr);
@@ -1453,7 +1457,7 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr ast, bool ptr) {
     }
 }
 
-void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr ast, bool ptr) {
+void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast, bool ptr) {
     // debug("ASTQualident");
     if (!ast->qual.empty()) {
         // modify the AST
@@ -1462,7 +1466,7 @@ void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr ast, bool ptr) {
     visit_ASTIdentifierPtr(ast->id, ptr);
 }
 
-void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr ast, bool ptr) {
+void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast, bool ptr) {
     debug("ASTIdentifierPtr {0}", ast->value);
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;

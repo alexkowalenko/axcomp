@@ -91,9 +91,9 @@ class CodeGenerator : ASTVisitor {
     void visit_ASTFactor(ASTFactorPtr ast) override;
     void visit_ASTRange_value(ASTRangePtr const &ast, Value *case_value);
     void get_index(ASTDesignatorPtr const &ast);
-    void visit_ASTDesignatorPtr(ASTDesignatorPtr ast, bool ptr);
-    void visit_ASTQualidentPtr(ASTQualidentPtr ast, bool ptr);
-    void visit_ASTIdentifierPtr(ASTIdentifierPtr ast, bool ptr);
+    void visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast, bool ptr);
+    void visit_ASTQualidentPtr(ASTQualidentPtr const &ast, bool ptr);
+    void visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast, bool ptr);
     void visit_ASTSet(ASTSetPtr ast) override;
     void visit_ASTInteger(ASTIntegerPtr ast) override;
     void visit_ASTReal(ASTRealPtr ast) override;

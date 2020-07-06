@@ -998,7 +998,7 @@ Two variables a and b with types $T_a$ and $T_b$ are of the same type if
 Two types $T_a$ and $T_b$ are equal if
 \begin{itemize}
     \item $T_a$ and $T_b$ are the same type, or
-    \item $T_a$ and $T_b$ are open array types with equal element types, or
+    \item $T_a$ and $T_b$ are open array types with equal element types, % or
     %\item $T_a$ and $T_b$ are procedure types whose formal parameter lists match.
 \end{itemize}
 
@@ -1027,7 +1027,7 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
     \item $T_e$ and $T_v$ are pointer types and $T_e$ is an extension of $T_v$;
     \item  $T_v$ is a pointer % or a procedure type  
     and $e$ is \NIL;
-    \item. $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;
+    \item $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;
     % 7. Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
 \end{itemize}
 
