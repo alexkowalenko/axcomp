@@ -4,6 +4,7 @@ lib/**
 .vscode/***
 .mypy_cache/*
 .clangd
+.cache
 .idea
 compile_commands.json
 *.fail

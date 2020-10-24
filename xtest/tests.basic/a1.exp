@@ -1,7 +1,0 @@
-; ModuleID = 'a1'
-source_filename = "a1"
-
-define i64 @output() {
-entry:
-  ret i64 12
-}

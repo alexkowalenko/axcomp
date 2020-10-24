@@ -27,8 +27,8 @@ See the [_AX Oberon-2/07 Language Report_](report/report.tex) in the [report](re
 
 To build the compiler:
 
-- C++ 17 compiler - tested with Clang++ 10.0.
-- LLVM 10.0.0.
+- C++ 17 compiler - tested with Clang++ 11.0.
+- LLVM 11.0.0.
 - UTFCPP v2.3.4 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
 - CMake - build and test the compiler.
 

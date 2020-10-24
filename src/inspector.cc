@@ -28,7 +28,7 @@ constexpr auto closure_arg{"_closure"};
 
 #define DEBUG_TYPE "inspector"
 
-template <typename... T> static void debug(const T &... msg) {
+template <typename... T> static void debug(const T &...msg) {
     LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
@@ -264,7 +264,7 @@ void Inspector::visit_ASTProcedure(ASTProcedurePtr ast) {
             // skip recursive defintions
             continue;
         }
-        auto sym = symboltable.find(f.first());
+        auto sym = symboltable.find(std::string(f.first()));
         if (sym->is(Attr::global_var)) {
             continue;
         }

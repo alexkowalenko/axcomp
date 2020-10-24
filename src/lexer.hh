@@ -8,9 +8,9 @@
 
 #include <cctype>
 #include <iostream>
+#include <map>
 #include <stack>
 #include <string>
-#include <unordered_map>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
@@ -122,8 +122,8 @@ class Lexer : public LexerImplementation<char, Character8> {
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-extern const std::unordered_map<std::string, Token> keyword_map;
-extern const std::unordered_map<char, Token>        single_tokens;
+extern const std::map<std::string, Token> keyword_map;
+extern const std::map<char, Token>        single_tokens;
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::peek_token() {
     if (next_token.empty()) {

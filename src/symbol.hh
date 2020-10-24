@@ -7,7 +7,7 @@
 #pragma once
 
 #include <memory>
-#include <unordered_set>
+#include <set>
 #include <utility>
 
 #include <llvm/IR/Value.h>
@@ -35,9 +35,9 @@ class Symbol {
     void set(const Attr &a) { attrs.insert(a); };
     bool is(const Attr &a) { return attrs.find(a) != attrs.end(); }
 
-    TypePtr                  type = nullptr;
-    std::unordered_set<Attr> attrs;
-    llvm::Value *            value = nullptr;
+    TypePtr        type = nullptr;
+    std::set<Attr> attrs;
+    llvm::Value *  value = nullptr;
 };
 
 using SymbolPtr = std::shared_ptr<Symbol>;

@@ -6,13 +6,13 @@
 
 #include "token.hh"
 
-#include <unordered_map>
+#include <map>
 
 #include <llvm/Support/FormatVariadic.h>
 
 namespace ax {
 
-static const std::unordered_map<TokenType, std::string> mapping{
+static const std::map<TokenType, std::string> mapping{
     {TokenType::null, "null"},
 
     {TokenType::ident, "indent"},

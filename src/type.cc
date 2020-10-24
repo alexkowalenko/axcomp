@@ -17,7 +17,7 @@ namespace ax {
 
 using namespace llvm;
 
-static std::unordered_map<TypeId, std::string> mapping{
+static std::map<TypeId, std::string> mapping{
     {TypeId::null, "null"},           {TypeId::any, "any"},         {TypeId::integer, "integer"},
     {TypeId::real, "real"},           {TypeId::boolean, "boolean"}, {TypeId::chr, "chr"},
     {TypeId::procedure, "procedure"}, {TypeId::array, "array"},     {TypeId::string, "string"},
@@ -78,7 +78,7 @@ SimpleType::operator std::string() {
 }
 
 llvm::Constant *IntegerType::make_value(long i) const {
-    return ConstantInt::get(get_llvm(), i);
+    return ConstantInt::get(get_llvm(), i); // Todo: getSigned?
 }
 
 llvm::Constant *BooleanType::make_value(bool b) const {

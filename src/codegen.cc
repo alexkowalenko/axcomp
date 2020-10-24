@@ -11,7 +11,6 @@
 #include <iostream>
 #include <memory>
 
-#include "llvm/Support/FormatVariadic.h"
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
@@ -21,6 +20,7 @@
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/Host.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
@@ -42,7 +42,7 @@ namespace ax {
 
 #define DEBUG_TYPE "codegen"
 
-template <typename... T> static void debug(const T &... msg) {
+template <typename... T> static void debug(const T &...msg) {
     LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << formatv(msg...) << '\n'); // NOLINT
 }
 
@@ -128,7 +128,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
 
         // convert table to ValueSymboltable
         std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto &s) {
-            auto name = s.first();
+            auto name = std::string(s.first());
             auto type = s.second->type;
             debug("ASTImport get {0} : {1}", name, type->get_name());
 

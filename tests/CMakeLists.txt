@@ -6,9 +6,9 @@
 
 include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
-
 set(INSTALL_GTEST OFF)
+
+add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
 
 mark_as_advanced(
     # BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS

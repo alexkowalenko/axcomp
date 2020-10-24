@@ -115,28 +115,8 @@ def do_test(t: str) -> int:
         print(red + "compile " + restore, end="")
         return 0
 
-    # Check llvm output
-    exp = stem + ".exp"
     asm = stem + ".ll"
-    if not optimize:
-        cmd = f"diff --strip-trailing-cr {exp} {asm} >  {temp_file}"
-        # print(cmd)
-        ret = os.system(cmd)
-        if(ret != 0):
-            os.rename(asm, fail)
-            os.remove(f"{stem}.o")
-            os.remove(f"{stem}.def")
-        else:
-            if not llir_compile:
-                os.remove(asm)
-            remove_file(fail)
-        os.remove(temp_file)
-        if (ret != 0):
-            print(red + "llir " + restore, end="")
-            return 0
-    else:
-        os.remove(asm)
-        remove_file(fail)
+    remove_file(asm)
 
     # compile
     return do_clang(stem)

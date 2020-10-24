@@ -8,7 +8,7 @@
 
 namespace ax {
 
-const std::unordered_map<std::string, Token> keyword_map = {
+const std::map<std::string, Token> keyword_map = {
     {"MODULE", Token(TokenType::module, "MODULE")},
     {"BEGIN", Token(TokenType::begin, "BEGIN")},
     {"END", Token(TokenType::end, "END")},
@@ -46,7 +46,7 @@ const std::unordered_map<std::string, Token> keyword_map = {
     {"IN", Token(TokenType::in, "IN")},
 };
 
-const std::unordered_map<char, Token> single_tokens = {
+const std::map<char, Token> single_tokens = {
     {-1, Token(TokenType::eof)},
     {';', Token(TokenType::semicolon, ";")},
     {',', Token(TokenType::comma, ",")},
