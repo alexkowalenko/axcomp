@@ -118,7 +118,7 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto *arg = args[0];
     if (arg->getType()->isPointerTy() && arg->getType()->getPointerElementType()->isIntegerTy()) {
         // debug("builtin INC/DEC 2");
-        Value *val = codegen->get_builder().CreateLoad(arg);
+        Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
         Value *inc = nullptr;
         if (args.size() == 1) {
             inc = TypeTable::IntType->make_value(1);
@@ -201,7 +201,7 @@ BIFunctor incl{[](CodeGenerator *codegen, ASTCallPtr const &ast) -> Value * {
     auto   args = codegen->do_arguments(ast);
     auto * set = args[0];
     auto * index = codegen->get_builder().CreateShl(TypeTable::IntType->make_value(1), args[1]);
-    Value *val = codegen->get_builder().CreateLoad(set);
+    Value *val = codegen->get_builder().CreateLoad(set->getType(), set);
     if (inc) {
         val = codegen->get_builder().CreateOr(val, index);
     } else {

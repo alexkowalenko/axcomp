@@ -410,7 +410,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
             ind[1] = TypeTable::IntType->make_value(i);
 
             llvm::Value *a = builder.CreateGEP(&*cls_arg, ind, cls_var);
-            a = builder.CreateLoad(a, cls_var);
+            a = builder.CreateLoad(a->getType(), a, cls_var);
 
             // put into symbol table
             // * this is meant to shadow the variable in the outer scope otherwise the outer scope
