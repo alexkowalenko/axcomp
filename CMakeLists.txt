@@ -7,11 +7,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Change compiler here
-set(AX_BASE_CLANG /usr/local/opt/llvm)
+set(AX_BASE_CLANG /usr/local/opt/llvm@11)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
 project (axcomp VERSION 0.1
-                LANGUAGES CXX)
+                LANGUAGES CXX C)
 include(cmake/StandardProjectSettings.cmake)
 
 # Link this 'library' to set the c++ standard / compile-time options requested

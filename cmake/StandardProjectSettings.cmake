@@ -43,7 +43,7 @@ if(EXISTS "${LOC_PATH}")
 endif()
 
 # LLVM
-set(CMAKE_PREFIX_PATH /usr/local/opt/llvm)
+set(CMAKE_PREFIX_PATH  /usr/local/opt/llvm@11/lib/cmake)
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
