@@ -2,8 +2,6 @@
 
 Compiler for the Oberon-0 language and progressing towards implementing Oberon-2, implemented in C++17, using the LLVM compiler infrastructure for code generation.
 
-![C/C++ CI](https://github.com/alexkowalenko/axcomp/workflows/C/C++%20CI/badge.svg)
-
 Supports at the moment:
 
 - The Oberon0 definition in Writh's _Compiler Construction_ (1996, 2017).
@@ -45,7 +43,7 @@ How to run the compiler is explained in the [_AX Oberon-2/07 Language Report_](r
 
 ## Known issues
 
-Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex). Bugs listed in the issue tracker [![https://github.com/alexkowalenko/axcomp/issues](https://img.shields.io/github/issues/alexkowalenko/axcomp)](https://github.com/alexkowalenko/axcomp/issues). 
+Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex).
 
 ## Open Source Licensing information
 

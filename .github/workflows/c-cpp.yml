@@ -9,14 +9,14 @@ on:
 jobs:
   build:
 
-    runs-on: macos-10.14
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
     - name: homebrew
-      run: brew install bdw-gc graphviz doxygen
+      run: brew install bdw-gc graphviz doxygen llvm@11
     - name: python
       run: pip3 install colored
     - name: cmake
