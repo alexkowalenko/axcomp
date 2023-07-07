@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Change compiler here
-set(AX_BASE_CLANG /usr/local/opt/llvm@11)
+set(AX_BASE_CLANG /opt/homebrew/opt/llvm@11)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
 project (axcomp VERSION 0.1
@@ -45,7 +45,6 @@ set(ENABLE_CLANG_TIDY OFF)
 set(ENABLE_CPPCHECK OFF)
 include(cmake/StaticAnalyzers.cmake)
 
-
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)
 
@@ -59,14 +58,22 @@ if (ENABLE_PCH)
 endif()
 
 # Testing
-option(PACKAGE_TESTS "Build the tests" ON)
-if(PACKAGE_TESTS)
+if(ENABLE_TESTING)
   message("Enabling testing")
   enable_testing()
   
-  include(GoogleTest)
-  set(INSTALL_GTEST OFF)
-  set(BUILD_GMOCK OFF)
+  CPMAddPackage(
+    NAME googletest
+    GITHUB_REPOSITORY google/googletest
+    GIT_TAG v1.13.0
+    VERSION 1.13.0
+    OPTIONS
+      "INSTALL_GTEST OFF"
+      "BUILD_GMOCK OFF"
+      "gtest_force_shared_crt ON"
+      "gtest_disable_pthreads ON" 
+      "gtest_hide_internal_symbols ON"
+  )
 
   add_subdirectory(tests)
   add_subdirectory(xtest)
@@ -82,40 +89,11 @@ endif()
 # Doxygen docs
 add_subdirectory(docs)
 
-set (CMAKE_CXX_FLAGS "-DLLVM_ENABLE_STATS=1")
-
-# src dir
-add_library(libax STATIC 
-  src/ast.cc
-  src/error.cc 
-  src/printer.cc
-  src/parser.cc
-  src/inspector.cc 
-  src/lexer.cc
-  src/lexerUTF8.cc 
-  src/location.cc
-  src/parser.cc
-  src/token.cc
-  src/type.cc
-  src/typetable.cc
-  src/builtin.cc
-  src/astvisitor.cc
-  src/inspector.cc 
-  src/codegen.cc
-  src/defprinter.cc
-  src/defparser.cc
-  src/importer.cc
-)
-include_directories(src)
-
-# ax compiler executable
-add_executable(axcomp cmd/axcomp.cc)
-target_link_libraries(axcomp PRIVATE project_options project_warnings libax ${llvm_libs} ${ICU_LIBRARIES})
+add_subdirectory(src)
+add_subdirectory(cmd)
 
 # ax runtime library
 add_subdirectory(runtime)
 
 # install
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
-install(TARGETS axcomp DESTINATION bin)
-install(FILES cmd/ax DESTINATION bin)

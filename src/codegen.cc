@@ -173,7 +173,7 @@ void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
         debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name(),
               c.second->get_type()->get_llvm());
 
-        llvm::Type *    type = getType(c.second);
+        llvm::Type     *type = getType(c.second);
         auto            var_name = gen_module_id(c.first->value);
         GlobalVariable *gVar = generate_global(var_name, type);
 
@@ -192,7 +192,7 @@ void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
     debug("doTopConsts");
     for (auto const &c : ast->consts) {
         debug("doTopConsts type: {0}", c.type->get_type()->get_name());
-        auto *          type = getType(c.type);
+        auto           *type = getType(c.type);
         auto            const_name = gen_module_id(c.ident->value);
         GlobalVariable *gVar = generate_global(const_name, type);
 
@@ -251,10 +251,10 @@ void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
         auto name = c.first->value;
         debug("create var: {}", name);
 
-        auto *      function = builder.GetInsertBlock()->getParent();
+        auto       *function = builder.GetInsertBlock()->getParent();
         auto        type = c.second;
         AllocaInst *alloc = createEntryBlockAlloca(function, name, type);
-        auto *      init = getType_init(type);
+        auto       *init = getType_init(type);
         builder.CreateStore(init, alloc);
 
         alloc->setName(name);
@@ -287,7 +287,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     }
 
     for (auto const &[var, t_type] : ast->params) {
-        auto *            type = getType(t_type);
+        auto             *type = getType(t_type);
         llvm::AttrBuilder attrs;
         index++;
         if (index == 1 && sym->is(Attr::closure)) {
@@ -315,7 +315,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     }
 
     auto                      proc_name = gen_module_id(get_nested_name());
-    FunctionType *            ft = FunctionType::get(returnType, proto, false);
+    FunctionType             *ft = FunctionType::get(returnType, proto, false);
     GlobalValue::LinkageTypes linkage = Function::InternalLinkage;
     if (ast->name->is(Attr::global)) {
         linkage = Function::ExternalLinkage;
@@ -404,7 +404,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
 
         std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
         unsigned                   i = 0;
-        auto *                     cls_arg = f->arg_begin();
+        auto                      *cls_arg = f->arg_begin();
         for (auto const &[cls_var, cls_type] :
              std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
             ind[1] = TypeTable::IntType->make_value(i);
@@ -615,9 +615,9 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
 
         // From lacsap ClosureAST::CodeGen
 
-        auto *                     cls_ty = callee_type->get_closure_struct()->get_llvm();
+        auto                      *cls_ty = callee_type->get_closure_struct()->get_llvm();
         std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
-        auto *                     current_func = builder.GetInsertBlock()->getParent();
+        auto                      *current_func = builder.GetInsertBlock()->getParent();
         llvm::Value *closure = createEntryBlockAlloca(current_func, "closure_struct", cls_ty);
         int          index = 0;
         for (auto const &[name, f_ty] : callee_type->free_vars) {
@@ -645,9 +645,9 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     ast->if_clause.expr->accept(this);
 
     // Create blocks, insert then block
-    auto *                    funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *              then_block = BasicBlock::Create(context, "then", funct);
-    BasicBlock *              else_block = BasicBlock::Create(context, "else");
+    auto                     *funct = builder.GetInsertBlock()->getParent();
+    BasicBlock               *then_block = BasicBlock::Create(context, "then", funct);
+    BasicBlock               *else_block = BasicBlock::Create(context, "else");
     std::vector<BasicBlock *> elsif_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
@@ -728,8 +728,8 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     debug("ASTCase");
 
     // Create blocks, insert then block
-    auto *                    funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *              else_block = nullptr;
+    auto                     *funct = builder.GetInsertBlock()->getParent();
+    BasicBlock               *else_block = nullptr;
     std::vector<BasicBlock *> element_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
@@ -857,7 +857,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
 
     // Make the new basic block for the loop header, inserting after current
     // block.
-    auto *      funct = builder.GetInsertBlock()->getParent();
+    auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
     BasicBlock *forpos = BasicBlock::Create(context, "forpos", funct);
     BasicBlock *forneg = BasicBlock::Create(context, "forneg", funct);
@@ -883,7 +883,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     } else {
         step = TypeTable::IntType->make_value(1);
     }
-    auto * tmp = builder.CreateLoad(index, "index");
+    auto  *tmp = builder.CreateLoad(index, "index");
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
 
@@ -919,7 +919,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
     debug("ASTWhile");
 
     // Create blocks
-    auto *      funct = builder.GetInsertBlock()->getParent();
+    auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *while_block = BasicBlock::Create(context, "while", funct);
     BasicBlock *loop = BasicBlock::Create(context, "loop");
     BasicBlock *end_block = BasicBlock::Create(context, "end");
@@ -951,7 +951,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
     debug("ASTRepeat");
 
     // Create blocks
-    auto *      funct = builder.GetInsertBlock()->getParent();
+    auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *repeat_block = BasicBlock::Create(context, "repeat", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -976,7 +976,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
     debug("ASTLoop");
 
     // Create blocks
-    auto *      funct = builder.GetInsertBlock()->getParent();
+    auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop_block = BasicBlock::Create(context, "loop", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -999,7 +999,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
     debug("ASTBlock");
 
     // Create blocks
-    auto *      funct = builder.GetInsertBlock()->getParent();
+    auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *begin_block = BasicBlock::Create(context, "begin", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end = end_block;
@@ -1165,7 +1165,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
         if (op == TokenType::or_k && builder.GetInsertBlock()) {
             // Lazy evaluation of OR, only when we are in a block
             next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-            auto *      funct = builder.GetInsertBlock()->getParent();
+            auto       *funct = builder.GetInsertBlock()->getParent();
             BasicBlock *or_next_block = BasicBlock::Create(context, "or_next", funct);
             builder.CreateCondBr(last_value, or_end_block, or_next_block);
             use_end = true;
@@ -1274,7 +1274,7 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
         if (op == TokenType::ampersand && builder.GetInsertBlock()) {
             // Lazy evaluation of & AND, only when we are in a block
             next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-            auto *      funct = builder.GetInsertBlock()->getParent();
+            auto       *funct = builder.GetInsertBlock()->getParent();
             BasicBlock *next_block = BasicBlock::Create(context, "and_next", funct);
             builder.CreateCondBr(last_value, next_block, end_block);
             use_end = true;
@@ -1391,7 +1391,7 @@ void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_val
 void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
     debug("get_index");
     visit_ASTQualidentPtr(ast->ident, true);
-    auto *               arg_ptr = last_value;
+    auto                *arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
 
     for (auto const &s : ast->selectors) {
@@ -1488,7 +1488,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast, bool ptr
 
 void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
     Value *set_value = TypeTable::SetType->get_init();
-    auto * one = TypeTable::IntType->make_value(1);
+    auto  *one = TypeTable::IntType->make_value(1);
     for (auto const &exp : ast->values) {
         std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExprPtr const &exp) {
                                   debug("ASTSet exp");

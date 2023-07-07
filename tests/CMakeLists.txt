@@ -4,32 +4,23 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
+include(GoogleTest)
 
-set(INSTALL_GTEST OFF)
-
-add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
-
-mark_as_advanced(
-    # BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-    BUILD_GTEST BUILD_SHARED_LIBS
-    # gmock_build_tests gtest_build_samples gtest_build_tests
-    gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
-)
-
-set_target_properties(gtest PROPERTIES FOLDER extern)
-set_target_properties(gtest_main PROPERTIES FOLDER extern)
+set_target_properties(gtest PROPERTIES FOLDER _deps)
+set_target_properties(gtest_main PROPERTIES FOLDER _deps)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 macro(package_add_test TESTNAME)
     # create an exectuable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})
+
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} libax axtest gtest gtest_main ${llvm_libs} ${ICU_LIBRARIES})
+    target_link_libraries(${TESTNAME} PRIVATE project_options project_warnings 
+                            libax axtest gtest gtest_main ${llvm_libs} ${ICU_LIBRARIES})
+    
     # gtest_discover_tests replaces gtest_add_tests,
-    # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}
         # set a working directory so your project root so that you can find test data via paths relative to the project root
         WORKING_DIRECTORY ${PROJECT_DIR}
@@ -39,10 +30,12 @@ macro(package_add_test TESTNAME)
 endmacro()              
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
+include_directories("${utfcpp_SOURCE_DIR}/source")
+include_directories("${gtest_SOURCE_DIR}/include")
 
 
-add_library(axtest STATIC lib_test.cc fake_importer.cc) 
+add_library(axtest STATIC lib_test.cc 
+                          fake_importer.cc) 
 
 package_add_test(lex.1 lex.1.cc)
 package_add_test(lex.2 lex.2.cc)

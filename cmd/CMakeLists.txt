@@ -1,0 +1,15 @@
+
+# AX compiler
+#
+# Copyright © 2020 Alex Kowalenko
+#
+
+include_directories(../src)
+
+# ax compiler executable
+add_executable(axcomp axcomp.cc)
+
+target_link_libraries(axcomp PRIVATE project_options project_warnings libax ${llvm_libs} ${ICU_LIBRARIES})
+
+install(TARGETS axcomp DESTINATION bin)
+install(FILES ax DESTINATION bin)

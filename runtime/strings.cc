@@ -13,6 +13,8 @@
 
 #include <gc.h>
 
+#pragma clang diagnostic ignored "-Wold-style-cast"
+
 namespace ax {
 
 extern "C" Char CAP(Char x) {
@@ -28,7 +30,7 @@ extern "C" Int ORD(Char x) {
 }
 
 extern "C" Int Strings_Length(String x) {
-    return std::wcslen(x);
+    return static_cast<Int>(std::wcslen(x));
 }
 
 static bool init_gc{false};
@@ -42,13 +44,15 @@ void *my_malloc(size_t size) {
 }
 
 extern "C" void NEW_String(String **ptr, Int x) {
-    *ptr = static_cast<String *>(my_malloc(x));
-    memset(*ptr, 0, x);
+    auto size = static_cast<size_t>(x);
+    *ptr = static_cast<String *>(my_malloc(size));
+    memset(*ptr, 0, size);
 }
 
 extern "C" void NEW_ptr(void **ptr, Int x) {
-    *ptr = my_malloc(x);
-    memset(*ptr, 0, x);
+    auto size = static_cast<size_t>(x);
+    *ptr = my_malloc(size);
+    memset(*ptr, 0, size);
 }
 
 extern "C" void COPY(String x, String **v) {
@@ -58,7 +62,8 @@ extern "C" void COPY(String x, String **v) {
     std::wcscpy(*(String *)v, x);
 }
 
-extern "C" void *NEW_Array(Int size) {
+extern "C" void *NEW_Array(Int x) {
+    auto size = static_cast<size_t>(x);
     auto ptr = static_cast<void *>(my_malloc(size));
     memset(ptr, 0, size);
     return ptr;
@@ -66,7 +71,7 @@ extern "C" void *NEW_Array(Int size) {
 
 extern "C" String Strings_Concat(String s1, String s2) {
     // printf("Strings_Concat :%S(%ld) :%S(%ld)\n", s1, std::wcslen(s1), s2, std::wcslen(s2));
-    Int   len = std::wcslen(s1) + std::wcslen(s2) + 1;
+    auto  len = std::wcslen(s1) + std::wcslen(s2) + 1u;
     auto *res = static_cast<String>(my_malloc(len * sizeof(String &)));
     std::wcscpy(res, s1);
     std::wcscat(res, s2);
@@ -74,7 +79,7 @@ extern "C" String Strings_Concat(String s1, String s2) {
 }
 
 extern "C" String Strings_ConcatChar(String s, Char c) {
-    Int   len = std::wcslen(s);
+    auto  len = std::wcslen(s);
     auto *res = static_cast<String>(my_malloc((len + 2) * sizeof(String &)));
     std::wcscpy(res, s);
     res[len] = c;
@@ -83,7 +88,7 @@ extern "C" String Strings_ConcatChar(String s, Char c) {
 }
 
 extern "C" String Strings_AppendChar(Char c, String s) {
-    Int   len = std::wcslen(s);
+    auto  len = std::wcslen(s);
     auto *res = static_cast<String>(my_malloc((len + 2) * sizeof(String &)));
     res[0] = c;
     std::wcscpy(res + 1, s);

@@ -4,15 +4,15 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-#Boehm Garbage collector
-message("Using Boehm Garbage collector")
-set(BOEHM_INCLUDE_DIRS /usr/local/opt/bdw-gc/include)
-set(BOEHM_LIBRARY_DIRS /usr/local/opt/bdw-gc/lib)
-set(BOEHM_LIBRARIES gc gccpp)
-include_directories(${BOEHM_INCLUDE_DIRS})
-link_directories(${BOEHM_LIBRARY_DIRS})
+include_directories(../src)
+
+include_directories(Ax PUBLIC "${gc_SOURCE_DIR}/include")
 
 add_library(Ax io.cc math.cc strings.cc)
+
+target_link_libraries(Ax
+                    PRIVATE project_options project_warnings
+                    gc)
 
 install(FILES Out.def DESTINATION lib)
 install(FILES Math.def DESTINATION lib)

@@ -44,18 +44,18 @@ extern "C" void Out_Real(Real x, Int n) {
 extern "C" void Out_LongReal(Real x, Int n) {
     Out_Real(x, n);
 }
-    
+
 extern "C" void Out_Set(Set x) {
     std::stringstream result;
     result << '{';
     for (auto i = 0; i < SET_MAX; i++) {
-        if( x & (1UL << i)) {
+        if (x & (1UL << i)) {
             result << i << ',';
         }
     }
     auto str = result.str();
-    if(str.size() > 1) {
-        str.erase(str.end() -1);
+    if (str.size() > 1) {
+        str.erase(str.end() - 1);
     }
     str += '}';
     std::printf("%s", str.c_str());
@@ -86,7 +86,7 @@ extern "C" void WriteBoolean(Bool x) {
 }
 
 extern "C" void HALT(Int x) {
-    exit(x);
+    exit(static_cast<int>(x));
 }
 
 } // namespace ax

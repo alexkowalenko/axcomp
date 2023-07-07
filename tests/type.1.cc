@@ -7,8 +7,11 @@
 #include "gtest/gtest.h"
 #include <memory>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include "type.hh"
 #include "typetable.hh"
+#pragma clang diagnostic pop
 
 using namespace ax;
 

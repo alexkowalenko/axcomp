@@ -8,10 +8,15 @@
 
 #include "gtest/gtest.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wshadow"
 #include "error.hh"
 #include "lexer.hh"
 #include "lexerUTF8.hh"
 #include "token.hh"
+#pragma clang diagnostic pop
 
 using namespace ax;
 

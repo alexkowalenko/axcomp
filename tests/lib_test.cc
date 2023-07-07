@@ -7,7 +7,7 @@
 #include <exception>
 #include <sstream>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include <string_view>
 
 #include "builtin.hh"

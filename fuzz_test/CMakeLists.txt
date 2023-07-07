@@ -4,8 +4,6 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
-
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # Allow short runs during automated testing to see if something new breaks

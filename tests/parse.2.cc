@@ -8,6 +8,8 @@
 
 #include "parse_test.hh"
 
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+
 TEST(Parser, Const) {
     std::vector<ParseTests> tests = {
 

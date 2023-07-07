@@ -4,8 +4,6 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include(${PROJECT_SOURCE_DIR}/cmake/StandardProjectSettings.cmake)
-
 # enable doxygen
 include(../cmake/Doxygen.cmake)
 

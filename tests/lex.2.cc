@@ -7,6 +7,8 @@
 
 #include "parse_test.hh"
 
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+
 using namespace ax;
 std::vector<LexTests> tests = {
     {"\n", TokenType::eof, ""},
@@ -128,7 +130,7 @@ TEST(LexerUTF8, Lexer) {
 
 TEST(LexerUTF8, UTF8) {
 
-    std::vector<LexTests> tests = {
+    std::vector<LexTests> tests1 = {
 
         // comments
         {"(* χαῖρε *)1", TokenType::integer, "1"},
@@ -171,7 +173,7 @@ TEST(LexerUTF8, UTF8) {
 
 TEST(Lexer, REAL) {
 
-    std::vector<LexTests> tests = {
+    std::vector<LexTests> tests1 = {
 
         // integer
         {"1", TokenType::integer, "1"},

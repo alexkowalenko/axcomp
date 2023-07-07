@@ -43,7 +43,7 @@ if(EXISTS "${LOC_PATH}")
 endif()
 
 # LLVM
-set(CMAKE_PREFIX_PATH  /usr/local/opt/llvm@11/lib/cmake)
+set(CMAKE_PREFIX_PATH  ${AX_BASE_CLANG}/lib/cmake)
 find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 
@@ -62,14 +62,14 @@ set(LLVM_ENABLE_RTTI ON)
 
 message(STATUS "Using LLVM libs: ${llvm_libs}")
 
-# utfcpp library
-message("Using utfcpp")
-include_directories("${PROJECT_SOURCE_DIR}/extern/utfcpp/source")
-
 # Unicode library
 message("Using icu4c")
-set(ICU_INCLUDE_DIRS /usr/local/opt/icu4c/include)
-set(ICU_LIBRARY_DIRS /usr/local/opt/icu4c/lib)
+set(ICU_INCLUDE_DIRS /opt/homebrew/opt/icu4c/include)
+set(ICU_LIBRARY_DIRS /opt/homebrew/opt/icu4c/lib)
 set(ICU_LIBRARIES icuuc)
 include_directories(${ICU_INCLUDE_DIRS})
 link_directories(${ICU_LIBRARY_DIRS})
+
+include(cmake/CPM.cmake)
+CPMAddPackage("gh:nemtrif/utfcpp#v3.2.1")
+CPMAddPackage("gh:ivmai/bdwgc#v8.2.4")
