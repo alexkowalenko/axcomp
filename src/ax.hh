@@ -13,7 +13,7 @@
 
 namespace ax {
 
-constexpr int MAX_STR_LITTERAL = 65536;
+constexpr int MAX_STR_LITERAL = 65536;
 
 // Types used in implementation
 

@@ -130,7 +130,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
         Token t{get_token()};
         next_token.push(t);
         return t;
-    } // namespace ax
+    }
     return next_token.top();
 }
 
@@ -311,10 +311,9 @@ Token LexerImplementation<C, CharClass>::scan_string(C start) {
             throw LexicalException("Unterminated string", get_location());
         }
         CharClass::add_string(str, c);
-        if (str.length() > MAX_STR_LITTERAL) {
+        if (str.length() > MAX_STR_LITERAL) {
             throw LexicalException(
-                llvm::formatv("String literal greater than {0}", MAX_STR_LITTERAL),
-                get_location());
+                llvm::formatv("String literal greater than {0}", MAX_STR_LITERAL), get_location());
         }
         c = get();
     };

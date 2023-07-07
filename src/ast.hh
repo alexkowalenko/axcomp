@@ -22,16 +22,16 @@
 
 namespace ax {
 
-class ASTBase {
+class ASTBase_ {
   public:
-    ASTBase() = default;
-    virtual ~ASTBase() = default;
+    ASTBase_() = default;
+    virtual ~ASTBase_() = default;
 
-    ASTBase(ASTBase const &) = default;
-    ASTBase &operator=(ASTBase const &) = default;
+    ASTBase_(ASTBase_ const &) = default;
+    ASTBase_ &operator=(ASTBase_ const &) = default;
 
-    ASTBase(ASTBase &&) = default;
-    ASTBase &operator=(ASTBase &&) = default;
+    ASTBase_(ASTBase_ &&) = default;
+    ASTBase_ &operator=(ASTBase_ &&) = default;
 
     virtual void accept(ASTVisitor *v) = 0;
 
@@ -47,7 +47,7 @@ class ASTBase {
     Location location;
     TypePtr  type_info{nullptr}; // store information about the type
 };
-using ASTBasePtr = std::shared_ptr<ASTBase>;
+using ASTBase = std::shared_ptr<ASTBase_>;
 
 template <class T, typename... Rest> auto make(Rest... rest) {
     return std::make_shared<T>(rest...);
@@ -56,7 +56,7 @@ template <class T, typename... Rest> auto make(Rest... rest) {
 ////////////////
 // Basic Objects
 
-class ASTNil : public ASTBase, public std::enable_shared_from_this<ASTNil> {
+class ASTNil : public ASTBase_, public std::enable_shared_from_this<ASTNil> {
   public:
     ~ASTNil() override = default;
 
@@ -64,7 +64,7 @@ class ASTNil : public ASTBase, public std::enable_shared_from_this<ASTNil> {
 };
 using ASTNilPtr = std::shared_ptr<ASTNil>;
 
-class ASTInteger : public ASTBase, public std::enable_shared_from_this<ASTInteger> {
+class ASTInteger : public ASTBase_, public std::enable_shared_from_this<ASTInteger> {
   public:
     ~ASTInteger() override = default;
 
@@ -75,7 +75,7 @@ class ASTInteger : public ASTBase, public std::enable_shared_from_this<ASTIntege
 };
 using ASTIntegerPtr = std::shared_ptr<ASTInteger>;
 
-class ASTReal : public ASTBase, public std::enable_shared_from_this<ASTReal> {
+class ASTReal : public ASTBase_, public std::enable_shared_from_this<ASTReal> {
   public:
     ~ASTReal() override = default;
 
@@ -86,7 +86,7 @@ class ASTReal : public ASTBase, public std::enable_shared_from_this<ASTReal> {
 };
 using ASTRealPtr = std::shared_ptr<ASTReal>;
 
-class ASTBool : public ASTBase, public std::enable_shared_from_this<ASTBool> {
+class ASTBool : public ASTBase_, public std::enable_shared_from_this<ASTBool> {
   public:
     ~ASTBool() override = default;
 
@@ -100,7 +100,7 @@ using ASTBoolPtr = std::shared_ptr<ASTBool>;
  * @brief digit {hexDigit} "X" | "’" char "’"
  *
  */
-class ASTChar : public ASTBase, public std::enable_shared_from_this<ASTChar> {
+class ASTChar : public ASTBase_, public std::enable_shared_from_this<ASTChar> {
   public:
     ~ASTChar() override = default;
 
@@ -117,7 +117,7 @@ class ASTChar : public ASTBase, public std::enable_shared_from_this<ASTChar> {
 };
 using ASTBCharPtr = std::shared_ptr<ASTChar>;
 
-class ASTString : public ASTBase, public std::enable_shared_from_this<ASTString> {
+class ASTString : public ASTBase_, public std::enable_shared_from_this<ASTString> {
   public:
     ~ASTString() override = default;
 
@@ -137,7 +137,7 @@ using ASTStringPtr = std::shared_ptr<ASTString>;
  *
  */
 
-class ASTSet : public ASTBase, public std::enable_shared_from_this<ASTSet> {
+class ASTSet : public ASTBase_, public std::enable_shared_from_this<ASTSet> {
   public:
     ~ASTSet() override = default;
 
@@ -147,7 +147,7 @@ class ASTSet : public ASTBase, public std::enable_shared_from_this<ASTSet> {
 };
 using ASTSetPtr = std::shared_ptr<ASTSet>;
 
-class ASTIdentifier : public ASTBase, public std::enable_shared_from_this<ASTIdentifier> {
+class ASTIdentifier : public ASTBase_, public std::enable_shared_from_this<ASTIdentifier> {
   public:
     ASTIdentifier() = default;
     explicit ASTIdentifier(std::string n) : value(std::move(n)){};
@@ -169,7 +169,7 @@ using ASTIdentifierPtr = std::shared_ptr<ASTIdentifier>;
  * @brief Qualident = [ident "."] ident.
  *
  */
-class ASTQualident : public ASTBase, public std::enable_shared_from_this<ASTQualident> {
+class ASTQualident : public ASTBase_, public std::enable_shared_from_this<ASTQualident> {
   public:
     ASTQualident() = default;
     explicit ASTQualident(std::string &n) { id = make<ASTIdentifier>(n); };
@@ -201,7 +201,7 @@ using ASTQualidentPtr = std::shared_ptr<ASTQualident>;
  *
  */
 
-class ASTType : public ASTBase, public std::enable_shared_from_this<ASTType> {
+class ASTType : public ASTBase_, public std::enable_shared_from_this<ASTType> {
   public:
     ~ASTType() override = default;
 
@@ -216,7 +216,7 @@ using ASTTypePtr = std::shared_ptr<ASTType>;
  *
  */
 
-class ASTArray : public ASTBase, public std::enable_shared_from_this<ASTArray> {
+class ASTArray : public ASTBase_, public std::enable_shared_from_this<ASTArray> {
   public:
     ~ASTArray() override = default;
 
@@ -234,7 +234,7 @@ using ASTArrayPtr = std::shared_ptr<ASTArray>;
 
 using VarDec = std::pair<ASTIdentifierPtr, ASTTypePtr>;
 
-class ASTRecord : public ASTBase, public std::enable_shared_from_this<ASTRecord> {
+class ASTRecord : public ASTBase_, public std::enable_shared_from_this<ASTRecord> {
   public:
     ~ASTRecord() override = default;
 
@@ -250,7 +250,7 @@ using ASTRecordPtr = std::shared_ptr<ASTRecord>;
  *
  */
 
-class ASTPointerType : public ASTBase, public std::enable_shared_from_this<ASTPointerType> {
+class ASTPointerType : public ASTBase_, public std::enable_shared_from_this<ASTPointerType> {
   public:
     ~ASTPointerType() override = default;
 
@@ -276,7 +276,7 @@ using FieldRef = std::pair<ASTIdentifierPtr, int>;
 using ArrayRef = std::vector<ASTSimpleExprPtr>;
 using PointerRef = bool;
 
-class ASTDesignator : public ASTBase, public std::enable_shared_from_this<ASTDesignator> {
+class ASTDesignator : public ASTBase_, public std::enable_shared_from_this<ASTDesignator> {
   public:
     ~ASTDesignator() override = default;
 
@@ -301,7 +301,7 @@ using ASTDesignatorPtr = std::shared_ptr<ASTDesignator>;
  *                  | "~" factor
  *
  */
-class ASTFactor : public ASTBase, public std::enable_shared_from_this<ASTFactor> {
+class ASTFactor : public ASTBase_, public std::enable_shared_from_this<ASTFactor> {
   public:
     ~ASTFactor() override = default;
 
@@ -318,7 +318,7 @@ using ASTFactorPtr = std::shared_ptr<ASTFactor>;
  * @brief term -> factor ( ( '*' | 'DIV' | 'MOD' | "&" ) factor)*
  *
  */
-class ASTTerm : public ASTBase, public std::enable_shared_from_this<ASTTerm> {
+class ASTTerm : public ASTBase_, public std::enable_shared_from_this<ASTTerm> {
   public:
     ~ASTTerm() override = default;
 
@@ -335,7 +335,7 @@ using ASTTermPtr = std::shared_ptr<ASTTerm>;
  * @brief expr -> ('+' | '-' )? term ( ('+' | '-' | "OR") term)*
  *
  */
-class ASTSimpleExpr : public ASTBase, public std::enable_shared_from_this<ASTSimpleExpr> {
+class ASTSimpleExpr : public ASTBase_, public std::enable_shared_from_this<ASTSimpleExpr> {
   public:
     ~ASTSimpleExpr() override = default;
 
@@ -353,7 +353,7 @@ using ASTSimpleExprPtr = std::shared_ptr<ASTSimpleExpr>;
  * @brief range -> simpleExpr .. simpleExpr
  *
  */
-class ASTRange : public ASTBase, public std::enable_shared_from_this<ASTRange> {
+class ASTRange : public ASTBase_, public std::enable_shared_from_this<ASTRange> {
   public:
     ~ASTRange() override = default;
 
@@ -370,7 +370,7 @@ using ASTRangePtr = std::shared_ptr<ASTRange>;
  * relation = "=" | "#" | "<" | "<=" | ">" | ">="
  *
  */
-class ASTExpr : public ASTBase, public std::enable_shared_from_this<ASTExpr> {
+class ASTExpr : public ASTBase_, public std::enable_shared_from_this<ASTExpr> {
   public:
     ~ASTExpr() override = default;
 
@@ -385,7 +385,7 @@ using ASTExprPtr = std::shared_ptr<ASTExpr>;
 ////////////////////
 // Statement objects
 
-class ASTStatement : public ASTBase {};
+class ASTStatement : public ASTBase_ {};
 using ASTStatementPtr = std::shared_ptr<ASTStatement>;
 
 /**
@@ -584,7 +584,7 @@ using ASTBlockPtr = std::shared_ptr<ASTBlock>;
 
 using RecVar = std::pair<ASTIdentifierPtr, ASTIdentifierPtr>;
 
-class ASTProc : public ASTBase {
+class ASTProc : public ASTBase_ {
   public:
     ASTIdentifierPtr    name;
     ASTTypePtr          return_type{nullptr};
@@ -622,7 +622,7 @@ using ASTProcedurePtr = std::shared_ptr<ASTProcedure>;
  * @brief "VAR" (IDENT ":" type ";")*
  *
  */
-class ASTVar : public ASTBase, public std::enable_shared_from_this<ASTVar> {
+class ASTVar : public ASTBase_, public std::enable_shared_from_this<ASTVar> {
   public:
     ~ASTVar() override = default;
 
@@ -636,7 +636,7 @@ using ASTVarPtr = std::shared_ptr<ASTVar>;
  * @brief "TYPE" (IDENT "=" type ";")*
  *
  */
-class ASTTypeDec : public ASTBase, public std::enable_shared_from_this<ASTTypeDec> {
+class ASTTypeDec : public ASTBase_, public std::enable_shared_from_this<ASTTypeDec> {
   public:
     ~ASTTypeDec() override = default;
 
@@ -656,7 +656,7 @@ struct ConstDec {
  * @brief "CONST" (IDENT "=" INTEGER ";")*
  *
  */
-class ASTConst : public ASTBase, public std::enable_shared_from_this<ASTConst> {
+class ASTConst : public ASTBase_, public std::enable_shared_from_this<ASTConst> {
   public:
     ~ASTConst() override = default;
 
@@ -666,7 +666,7 @@ class ASTConst : public ASTBase, public std::enable_shared_from_this<ASTConst> {
 };
 using ASTConstPtr = std::shared_ptr<ASTConst>;
 
-class ASTDeclaration : public ASTBase, public std::enable_shared_from_this<ASTDeclaration> {
+class ASTDeclaration : public ASTBase_, public std::enable_shared_from_this<ASTDeclaration> {
   public:
     ~ASTDeclaration() override = default;
 
@@ -684,7 +684,7 @@ using ASTDeclarationPtr = std::shared_ptr<ASTDeclaration>;
  * Import = = [ident ":="] ident.
  *
  */
-class ASTImport : public ASTBase, public std::enable_shared_from_this<ASTImport> {
+class ASTImport : public ASTBase_, public std::enable_shared_from_this<ASTImport> {
   public:
     ~ASTImport() override = default;
 
@@ -697,7 +697,7 @@ class ASTImport : public ASTBase, public std::enable_shared_from_this<ASTImport>
 };
 using ASTImportPtr = std::shared_ptr<ASTImport>;
 
-class ASTModule : public ASTBase, public std::enable_shared_from_this<ASTModule> {
+class ASTModule : public ASTBase_, public std::enable_shared_from_this<ASTModule> {
   public:
     ~ASTModule() override = default;
     void accept(ASTVisitor *v) override { v->visit_ASTModule(shared_from_this()); };
@@ -710,7 +710,9 @@ class ASTModule : public ASTBase, public std::enable_shared_from_this<ASTModule>
 };
 using ASTModulePtr = std::shared_ptr<ASTModule>;
 
-template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> struct overloaded : Ts... {
+    using Ts::operator()...;
+};
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 } // namespace ax

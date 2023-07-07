@@ -14,7 +14,9 @@ compiler = "axcomp"
 linker = "clang++"
 
 lib_dir = os.environ['AXLIB_PATH']
-libs = " -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
+libs = " -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc "
+
+compiler = f"{lib_dir}/../bin/axcomp"
 
 
 def main():

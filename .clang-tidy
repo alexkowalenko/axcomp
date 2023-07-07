@@ -1,7 +1,7 @@
 ---
-Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-modernize-use-trailing-return-type,-llvm-*,-misc-non-private-member-variables-in-classes,-misc-non-private-member-variables-in-classes,-hicpp-special-member-functions,-cppcoreguidelines-special-member-functions,-readability-implicit-bool-conversion,-cert-err58-cpp,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-hicpp-no-array-decay'
+Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-modernize-use-trailing-return-type,-llvm-*,-llvmlibc-*,-misc-non-private-member-variables-in-classes,-misc-non-private-member-variables-in-classes,-hicpp-special-member-functions,-cppcoreguidelines-special-member-functions,-readability-implicit-bool-conversion,-cert-err58-cpp,-cppcoreguidelines-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-magic-numbers,-hicpp-no-array-decay,-misc-no-recursion,-readability-identifier-length,-altera-*,-concurrency-mt-unsafe,-cppcoreguidelines-pro-bounds-pointer-arithmetic'
 WarningsAsErrors: '1'
-HeaderFilterRegex: './src/'
+HeaderFilterRegex: 'src/.*\.hh'
 FormatStyle:     none
 
 

@@ -4,14 +4,14 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 
 # Change compiler here
 set(AX_BASE_CLANG /opt/homebrew/opt/llvm@11)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
-project (axcomp VERSION 0.1
-                LANGUAGES CXX C)
+project (axcomp VERSION 0.2
+                LANGUAGES CXX)
 include(cmake/StandardProjectSettings.cmake)
 
 # Link this 'library' to set the c++ standard / compile-time options requested

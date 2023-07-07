@@ -30,7 +30,7 @@ exclude = ""
 c_flags = ""
 
 compiler = f"{install_dir}/axcomp"
-linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/usr/local/opt/bdw-gc/lib -lgc"
+linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc"
 optimize = False
 llir_compile = False
 opt_flag = "-O3"

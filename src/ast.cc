@@ -12,7 +12,7 @@
 
 namespace ax {
 
-ASTBase::operator std::string() {
+ASTBase_::operator std::string() {
     std::ostrstream s_out;
     ax::ASTPrinter  printer(s_out);
     this->accept(&printer);
