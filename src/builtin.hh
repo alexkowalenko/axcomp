@@ -17,7 +17,7 @@
 
 namespace ax {
 
-using BIFunctor = std::function<Value *(CodeGenerator *, ASTCallPtr const &ast)>;
+using BIFunctor = std::function<Value *(CodeGenerator *, ASTCall const &ast)>;
 
 class Builtin {
   public:

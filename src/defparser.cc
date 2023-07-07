@@ -20,8 +20,8 @@ namespace ax {
  *
  * @return ASTModulePtr
  */
-ASTModulePtr DefParser::parse_module() {
-    auto module = makeAST<ASTModule>(lexer);
+ASTModule DefParser::parse_module() {
+    auto module = makeAST<ASTModule_>(lexer);
 
     // MODULE ident BEGIN (expr)+ END ident.
     get_token(TokenType::definition);
@@ -55,8 +55,8 @@ ASTModulePtr DefParser::parse_module() {
  *
  * @return ASTProcedurePtr
  */
-ASTProcedurePtr DefParser::parse_procedure() {
-    auto proc = makeAST<ASTProcedure>(lexer);
+ASTProcedure DefParser::parse_procedure() {
+    auto proc = makeAST<ASTProcedure_>(lexer);
 
     lexer.get_token(); // PROCEDURE
     proc->name = parse_identifier();
@@ -79,7 +79,7 @@ ASTProcedurePtr DefParser::parse_procedure() {
     return proc;
 }
 
-ASTModulePtr DefParser::parse() {
+ASTModule DefParser::parse() {
     return parse_module();
 }
 

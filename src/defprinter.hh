@@ -18,15 +18,15 @@ class DefPrinter : ASTPrinter {
   public:
     explicit DefPrinter(std::ostream &ostream) : ASTPrinter(ostream){};
 
-    void print(ASTModulePtr const &ast) { ast->accept(this); };
+    void print(ASTModule const &ast) { ast->accept(this); };
 
   private:
-    void visit_ASTModule(ASTModulePtr ast) override;
+    void visit_ASTModule(ASTModule ast) override;
 
-    void visit_ASTConst(ASTConstPtr ast) override;
-    void visit_ASTTypeDec(ASTTypeDecPtr ast) override;
-    void visit_ASTVar(ASTVarPtr ast) override;
-    void visit_ASTProcedure(ASTProcedurePtr ast) override;
+    void visit_ASTConst(ASTConst ast) override;
+    void visit_ASTTypeDec(ASTTypeDec ast) override;
+    void visit_ASTVar(ASTVar ast) override;
+    void visit_ASTProcedure(ASTProcedure ast) override;
 };
 
 } // namespace ax

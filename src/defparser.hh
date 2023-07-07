@@ -14,11 +14,11 @@ class DefParser : public Parser {
   public:
     DefParser(Lexer &l, SymbolFrameTable &s, TypeTable &t, ErrorManager &e) : Parser(l, s, t, e){};
 
-    ASTModulePtr parse();
+    ASTModule parse();
 
   private:
-    ASTModulePtr    parse_module();
-    ASTProcedurePtr parse_procedure();
+    ASTModule    parse_module();
+    ASTProcedure parse_procedure();
 };
 
 } // namespace ax

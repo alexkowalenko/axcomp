@@ -57,7 +57,7 @@ CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Impo
     TypeTable::setTypes(context);
 }
 
-void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
+void CodeGenerator::visit_ASTModule(ASTModule ast) {
     // Set up code generation
     module_name = ast->name;
     init();
@@ -89,7 +89,7 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
     } else if (options.output_main) {
         function_name = filename;
     } else {
-        function_name = ASTQualident::make_coded_id(ast->name, "main");
+        function_name = ASTQualident_::make_coded_id(ast->name, "main");
     }
     Function *f = Function::Create(ft, Function::ExternalLinkage, function_name, module.get());
 
@@ -116,7 +116,7 @@ void CodeGenerator::visit_ASTModule(ASTModulePtr ast) {
     filename = ast->name;
 }
 
-void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
+void CodeGenerator::visit_ASTImport(ASTImport ast) {
     debug("ASTImport");
 
     std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
@@ -158,7 +158,7 @@ void CodeGenerator::visit_ASTImport(ASTImportPtr ast) {
     });
 }
 
-void CodeGenerator::doTopDecs(ASTDeclarationPtr const &ast) {
+void CodeGenerator::doTopDecs(ASTDeclaration const &ast) {
     if (ast->cnst) {
         doTopConsts(ast->cnst);
     }
@@ -167,7 +167,7 @@ void CodeGenerator::doTopDecs(ASTDeclarationPtr const &ast) {
     }
 }
 
-void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
+void CodeGenerator::doTopVars(ASTVar const &ast) {
     debug("doTopVars");
     for (auto const &c : ast->vars) {
         debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name(),
@@ -188,7 +188,7 @@ void CodeGenerator::doTopVars(ASTVarPtr const &ast) {
     }
 }
 
-void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
+void CodeGenerator::doTopConsts(ASTConst const &ast) {
     debug("doTopConsts");
     for (auto const &c : ast->consts) {
         debug("doTopConsts type: {0}", c.type->get_type()->get_name());
@@ -212,11 +212,11 @@ void CodeGenerator::doTopConsts(ASTConstPtr const &ast) {
     }
 }
 
-void CodeGenerator::doProcedures(std::vector<ASTProcPtr> const &procs) {
+void CodeGenerator::doProcedures(std::vector<ASTProc> const &procs) {
     std::for_each(procs.begin(), procs.end(), [this](auto const &proc) { proc->accept(this); });
 }
 
-void CodeGenerator::visit_ASTDeclaration(ASTDeclarationPtr ast) {
+void CodeGenerator::visit_ASTDeclaration(ASTDeclaration ast) {
     if (ast->cnst && !top_level) {
         ast->cnst->accept(this);
     }
@@ -225,7 +225,7 @@ void CodeGenerator::visit_ASTDeclaration(ASTDeclarationPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTConst(ASTConstPtr ast) {
+void CodeGenerator::visit_ASTConst(ASTConst ast) {
     debug("ASTConst");
     for (auto const &c : ast->consts) {
         c.value->accept(this);
@@ -243,7 +243,7 @@ void CodeGenerator::visit_ASTConst(ASTConstPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
+void CodeGenerator::visit_ASTVar(ASTVar ast) {
     debug("ASTVar");
     for (auto const &c : ast->vars) {
 
@@ -264,7 +264,7 @@ void CodeGenerator::visit_ASTVar(ASTVarPtr ast) {
     debug("finish var");
 }
 
-void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
+void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
     debug("ASTProcedure {0}", ast->name->value);
 
     nested_procs.push_back(ast->name->value);
@@ -453,7 +453,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedurePtr ast) {
     verifyFunction(*f);
 }
 
-void CodeGenerator::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
+void CodeGenerator::visit_ASTProcedureForward(ASTProcedureForward ast) {
 
     auto  res = symboltable.find(ast->name->value);
     auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
@@ -465,7 +465,7 @@ void CodeGenerator::visit_ASTProcedureForward(ASTProcedureForwardPtr ast) {
     symboltable.set_value(ast->name->value, func);
 }
 
-void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
+void CodeGenerator::visit_ASTAssignment(ASTAssignment ast) {
     debug("ASTAssignment {0}", std::string(*(ast->ident)));
     ast->expr->accept(this);
     auto *val = last_value;
@@ -498,7 +498,7 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignmentPtr ast) {
     is_var = false;
 }
 
-void CodeGenerator::visit_ASTReturn(ASTReturnPtr ast) {
+void CodeGenerator::visit_ASTReturn(ASTReturn ast) {
     if (ast->expr) {
         ast->expr->accept(this);
         if (top_level && last_value->getType() != llvm::Type::getInt64Ty(context)) {
@@ -511,7 +511,7 @@ void CodeGenerator::visit_ASTReturn(ASTReturnPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
+void CodeGenerator::visit_ASTExit(ASTExit ast) {
     debug("ASTExit");
     if (last_end) {
         builder.CreateBr(last_end);
@@ -521,7 +521,7 @@ void CodeGenerator::visit_ASTExit(ASTExitPtr ast) {
 }
 
 std::tuple<std::shared_ptr<ProcedureType>, std::string, bool>
-CodeGenerator::do_find_proc(ASTCallPtr const &ast) {
+CodeGenerator::do_find_proc(ASTCall const &ast) {
 
     // Look up the name in the global module table.
 
@@ -541,7 +541,7 @@ CodeGenerator::do_find_proc(ASTCallPtr const &ast) {
     return std::make_tuple(typeFunction, name, bound_proc);
 }
 
-std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
+std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
 
     auto [typeFunction, _, bound_proc] = do_find_proc(ast);
 
@@ -573,7 +573,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
             // This works, since the Inspector checks that VAR arguments are
             // only identifiers
             auto ptr = a->expr->term->factor->factor;
-            auto p2 = std::get<ASTDesignatorPtr>(ptr)->ident;
+            auto p2 = std::get<ASTDesignator>(ptr)->ident;
 
             debug("ASTCall identifier {0}", p2->id->value);
             visit_ASTIdentifierPtr(p2->id, true);
@@ -592,7 +592,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCallPtr const &ast) {
     return args;
 }
 
-void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
+void CodeGenerator::visit_ASTCall(ASTCall ast) {
     auto name = ast->name->ident->make_coded_id();
     debug("ASTCall: {0}", name);
     auto res = symboltable.find(name);
@@ -638,7 +638,7 @@ void CodeGenerator::visit_ASTCall(ASTCallPtr ast) {
     last_value = inst;
 }
 
-void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
+void CodeGenerator::visit_ASTIf(ASTIf ast) {
     debug("ASTIf");
 
     // IF
@@ -724,7 +724,7 @@ void CodeGenerator::visit_ASTIf(ASTIfPtr ast) {
     builder.SetInsertPoint(merge_block);
 }
 
-void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
+void CodeGenerator::visit_ASTCase(ASTCase ast) {
     debug("ASTCase");
 
     // Create blocks, insert then block
@@ -748,7 +748,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     ast->expr->accept(this);
     auto *case_value = last_value;
 
-    std::vector<std::pair<ASTRangePtr, int>> range_list;
+    std::vector<std::pair<ASTRange, int>> range_list;
 
     // CASE elements
     auto *switch_inst = builder.CreateSwitch(case_value, range_block);
@@ -758,15 +758,15 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
         debug("ASTCase {0}", i);
         std::for_each(begin(element->exprs), end(element->exprs),
                       [this, switch_inst, element_blocks, i, &range_list](auto &expr) {
-                          if (std::holds_alternative<ASTSimpleExprPtr>(expr)) {
+                          if (std::holds_alternative<ASTSimpleExpr>(expr)) {
                               debug("ASTCase {0} expr", i);
-                              std::get<ASTSimpleExprPtr>(expr)->accept(this);
+                              std::get<ASTSimpleExpr>(expr)->accept(this);
                               assert(llvm::dyn_cast<llvm::ConstantInt>(last_value)); // NOLINT
                               switch_inst->addCase(llvm::dyn_cast<llvm::ConstantInt>(last_value),
                                                    element_blocks[i]);
-                          } else if (std::holds_alternative<ASTRangePtr>(expr)) {
+                          } else if (std::holds_alternative<ASTRange>(expr)) {
                               debug("ASTCase {0} range", i);
-                              auto range = std::get<ASTRangePtr>(expr);
+                              auto range = std::get<ASTRange>(expr);
                               range_list.push_back({range, i});
                           }
                       });
@@ -848,7 +848,7 @@ void CodeGenerator::visit_ASTCase(ASTCasePtr ast) {
     end_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 }
 
-void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
+void CodeGenerator::visit_ASTFor(ASTFor ast) {
     debug("ASTFor");
 
     // do start expr
@@ -915,7 +915,7 @@ void CodeGenerator::visit_ASTFor(ASTForPtr ast) {
     debug("ASTFor after:{0}", last_end);
 }
 
-void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
+void CodeGenerator::visit_ASTWhile(ASTWhile ast) {
     debug("ASTWhile");
 
     // Create blocks
@@ -947,7 +947,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhilePtr ast) {
     builder.SetInsertPoint(end_block);
 }
 
-void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
+void CodeGenerator::visit_ASTRepeat(ASTRepeat ast) {
     debug("ASTRepeat");
 
     // Create blocks
@@ -972,7 +972,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeatPtr ast) {
     builder.SetInsertPoint(end_block);
 }
 
-void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
+void CodeGenerator::visit_ASTLoop(ASTLoop ast) {
     debug("ASTLoop");
 
     // Create blocks
@@ -995,7 +995,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoopPtr ast) {
     // end_block = builder.GetInsertBlock();
 }
 
-void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
+void CodeGenerator::visit_ASTBlock(ASTBlock ast) {
     debug("ASTBlock");
 
     // Create blocks
@@ -1019,7 +1019,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlockPtr ast) {
     builder.SetInsertPoint(end_block);
 }
 
-void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
+void CodeGenerator::visit_ASTExpr(ASTExpr ast) {
     debug("ASTExpr");
     ast->expr->accept(this);
 
@@ -1143,7 +1143,7 @@ void CodeGenerator::visit_ASTExpr(ASTExprPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
+void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
     ast->term->accept(this);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
@@ -1260,7 +1260,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExprPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
+void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
     // debug("ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
@@ -1361,25 +1361,24 @@ void CodeGenerator::visit_ASTTerm(ASTTermPtr ast) {
     }
 }
 
-void CodeGenerator::visit_ASTFactor(ASTFactorPtr ast) {
+void CodeGenerator::visit_ASTFactor(ASTFactor ast) {
     // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
-    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
-                          [this, ast](ASTDesignatorPtr const &arg) {
-                              visit_ASTDesignatorPtr(arg, false);
-                          },
-                          [this, ast](ASTFactorPtr const &arg) {
-                              debug("visit_ASTFactor: not ");
-                              if (ast->is_not) {
-                                  debug("visit_ASTFactor: not do");
-                                  arg->accept(this);
-                                  last_value = builder.CreateNot(last_value);
-                              }
-                          }},
-               ast->factor);
+    std::visit(
+        overloaded{[this](auto arg) { arg->accept(this); },
+                   [this, ast](ASTDesignator const &arg) { visit_ASTDesignatorPtr(arg, false); },
+                   [this, ast](ASTFactor const &arg) {
+                       debug("visit_ASTFactor: not ");
+                       if (ast->is_not) {
+                           debug("visit_ASTFactor: not do");
+                           arg->accept(this);
+                           last_value = builder.CreateNot(last_value);
+                       }
+                   }},
+        ast->factor);
 }
 
-void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_value) {
+void CodeGenerator::visit_ASTRange_value(ASTRange const &ast, Value *case_value) {
     debug("ASTRange");
     ast->first->accept(this);
     auto *low = builder.CreateICmpSLE(last_value, case_value);
@@ -1388,7 +1387,7 @@ void CodeGenerator::visit_ASTRange_value(ASTRangePtr const &ast, Value *case_val
     last_value = builder.CreateAnd(low, high);
 }
 
-void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
+void CodeGenerator::get_index(ASTDesignator const &ast) {
     debug("get_index");
     visit_ASTQualidentPtr(ast->ident, true);
     auto                *arg_ptr = last_value;
@@ -1439,7 +1438,7 @@ void CodeGenerator::get_index(ASTDesignatorPtr const &ast) {
  *
  * @param ast
  */
-void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast, bool ptr) {
+void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator const &ast, bool ptr) {
     // debug("ASTDesignator {0}", std::string(*ast));
 
     visit_ASTQualidentPtr(ast->ident, ptr);
@@ -1457,7 +1456,7 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignatorPtr const &ast, bool ptr
     }
 }
 
-void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast, bool ptr) {
+void CodeGenerator::visit_ASTQualidentPtr(ASTQualident const &ast, bool ptr) {
     // debug("ASTQualident");
     if (!ast->qual.empty()) {
         // modify the AST
@@ -1466,7 +1465,7 @@ void CodeGenerator::visit_ASTQualidentPtr(ASTQualidentPtr const &ast, bool ptr) 
     visit_ASTIdentifierPtr(ast->id, ptr);
 }
 
-void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast, bool ptr) {
+void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
     debug("ASTIdentifierPtr {0}", ast->value);
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;
@@ -1486,17 +1485,17 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifierPtr const &ast, bool ptr
     }
 }
 
-void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
+void CodeGenerator::visit_ASTSet(ASTSet ast) {
     Value *set_value = TypeTable::SetType->get_init();
     auto  *one = TypeTable::IntType->make_value(1);
     for (auto const &exp : ast->values) {
-        std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExprPtr const &exp) {
+        std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExpr const &exp) {
                                   debug("ASTSet exp");
                                   exp->accept(this);
                                   auto *index = builder.CreateShl(one, last_value);
                                   set_value = builder.CreateOr(set_value, index);
                               },
-                              [this, &set_value, ast, one](ASTRangePtr const &exp) {
+                              [this, &set_value, ast, one](ASTRange const &exp) {
                                   debug("ASTSet range");
                                   exp->first->accept(this);
                                   auto *first = last_value;
@@ -1511,11 +1510,11 @@ void CodeGenerator::visit_ASTSet(ASTSetPtr ast) {
     last_value = set_value;
 }
 
-void CodeGenerator::visit_ASTInteger(ASTIntegerPtr ast) {
+void CodeGenerator::visit_ASTInteger(ASTInteger ast) {
     last_value = TypeTable::IntType->make_value(ast->value);
 }
 
-void CodeGenerator::visit_ASTReal(ASTRealPtr ast) {
+void CodeGenerator::visit_ASTReal(ASTReal ast) {
     last_value = TypeTable::RealType->make_value(ast->value);
 }
 
@@ -1523,7 +1522,7 @@ void CodeGenerator::visit_ASTChar(ASTCharPtr ast) {
     last_value = TypeTable::CharType->make_value(ast->value);
 }
 
-void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
+void CodeGenerator::visit_ASTString(ASTString ast) {
     debug("ASTString {0}", ast->value);
 
     if (do_strchar_conv) {
@@ -1545,16 +1544,16 @@ void CodeGenerator::visit_ASTString(ASTStringPtr ast) {
     last_value = builder.CreateBitCast(var, TypeTable::StrType->make_type_ptr());
 }
 
-void CodeGenerator::visit_ASTBool(ASTBoolPtr ast) {
+void CodeGenerator::visit_ASTBool(ASTBool ast) {
     last_value = TypeTable::BoolType->make_value(ast->value);
 }
 
-void CodeGenerator::visit_ASTNil(ASTNilPtr /*not used*/) {
+void CodeGenerator::visit_ASTNil(ASTNil /*not used*/) {
     last_value = TypeTable::VoidType->get_init();
 }
 
 std::string CodeGenerator::gen_module_id(std::string const &id) const {
-    return ASTQualident::make_coded_id(module_name, id);
+    return ASTQualident_::make_coded_id(module_name, id);
 }
 
 /**
@@ -1593,7 +1592,7 @@ Value *CodeGenerator::call_function(std::string const &name, llvm::Type *ret,
  * @return AllocaInst*
  */
 AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::string const &name,
-                                                  ASTTypePtr type, bool var) {
+                                                  ASTType type, bool var) {
     AllocaInst *res = nullptr;
     IRBuilder<> TmpB(&function->getEntryBlock(), function->getEntryBlock().begin());
 
@@ -1615,10 +1614,10 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
+TypePtr CodeGenerator::resolve_type(ASTType const &t) {
     // debug("resolve_type {0}", std::string(*t));
     TypePtr result;
-    std::visit(overloaded{[this, &result](ASTQualidentPtr const &type) {
+    std::visit(overloaded{[this, &result](ASTQualident const &type) {
                               result = types.resolve(type->id->value);
 
                               // should be a resloved type this far down
@@ -1632,12 +1631,12 @@ TypePtr CodeGenerator::resolve_type(ASTTypePtr const &t) {
     return result;
 }
 
-llvm::Type *CodeGenerator::getType(ASTTypePtr const &t) {
+llvm::Type *CodeGenerator::getType(ASTType const &t) {
     // debug("getType {0}", std::string(*t));
     return resolve_type(t)->get_llvm();
 }
 
-Constant *CodeGenerator::getType_init(ASTTypePtr const &t) {
+Constant *CodeGenerator::getType_init(ASTType const &t) {
     // debug("getType_init {0}", std::string(*t));
     return resolve_type(t)->get_init();
 }
@@ -1665,7 +1664,7 @@ void CodeGenerator::setup_builtins() {
  * not a BR or RET instruction
  *
  */
-void CodeGenerator::ejectBranch(std::vector<ASTStatementPtr> const &stats, BasicBlock *block,
+void CodeGenerator::ejectBranch(std::vector<ASTStatement> const &stats, BasicBlock *block,
                                 BasicBlock *where) {
     debug("ejectBranch");
     if (stats.empty() || (block->back().getOpcode() != llvm::Instruction::Br &&

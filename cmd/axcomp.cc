@@ -39,7 +39,7 @@ std::string getEnvVar(std::string const &key) {
     return val == nullptr ? std::string("") : std::string(val);
 }
 
-void output_defs(std::shared_ptr<ASTModule> const &ast, Options const &options) {
+void output_defs(std::shared_ptr<ASTModule_> const &ast, Options const &options) {
     std::string def_file{"out.def"};
     if (!options.file_name.empty()) {
         auto filename = options.file_name;

@@ -20,7 +20,7 @@ ASTBase_::operator std::string() {
     return s_out.str();
 }
 
-ASTIdentifierPtr ASTDesignator::first_field() const {
+ASTIdentifier ASTDesignator_::first_field() const {
     if (selectors.empty()) {
         return nullptr;
     }
