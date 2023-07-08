@@ -24,10 +24,10 @@
 
 namespace ax {
 
-#define DEBUG_TYPE "parser"
+constexpr auto DEBUG_TYPE{"parser "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 // module identifier markers

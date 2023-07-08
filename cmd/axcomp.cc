@@ -55,7 +55,7 @@ void dump_symbols(SymbolFrameTable &symbols, TypeTable &types) {
     symbols.dump(std::cout);
     std::cout << "- Types -------------------------------\n";
     std::for_each(types.begin(), types.end(), [](auto &t) {
-        std::cout << std::string(t.first()) << " : " << string(t.second->id) << "\n";
+        std::cout << std::string(t.first) << " : " << string(t.second->id) << "\n";
     });
 }
 

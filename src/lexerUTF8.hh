@@ -23,8 +23,7 @@ namespace ax {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
-
-#pragma clang diagnostic pop
+#pragma clang diagnostic                                         pop
 
 // Custom emoji checker
 // This is a hack.

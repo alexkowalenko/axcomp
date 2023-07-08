@@ -16,13 +16,11 @@
 namespace ax {
 
 // builtin procedures
-std::vector<std::pair<std::string, Symbol>> Builtin::global_functions;
-llvm::StringMap<BIFunctor>                  Builtin::compile_functions;
 
-#define DEBUG_TYPE "builtin"
+constexpr auto DEBUG_TYPE{"builtin "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << formatv(msg...) << '\n'); // NOLINT
 }
 
 BIFunctor abs{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {

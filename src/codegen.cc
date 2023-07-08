@@ -40,10 +40,10 @@
 
 namespace ax {
 
-#define DEBUG_TYPE "codegen"
+constexpr auto DEBUG_TYPE{"codegen "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << formatv(msg...) << '\n'); // NOLINT
 }
 
 using namespace llvm::sys;
@@ -128,7 +128,7 @@ void CodeGenerator::visit_ASTImport(ASTImport ast) {
 
         // convert table to ValueSymboltable
         std::for_each(std::begin(symbols), std::end(symbols), [this, i](auto &s) {
-            auto name = std::string(s.first());
+            auto name = std::string(s.first);
             auto type = s.second->type;
             debug("ASTImport get {0} : {1}", name, type->get_name());
 

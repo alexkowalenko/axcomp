@@ -28,10 +28,10 @@
 
 namespace ax {
 
-#define DEBUG_TYPE "importer"
+constexpr auto DEBUG_TYPE{"importer "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 STATISTIC(st_imports, "Number of imports");
@@ -106,7 +106,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
     for (const auto &iter : from) {
-        std::string n = ASTQualident_::make_coded_id(module_name, std::string(iter.first()));
+        std::string n = ASTQualident_::make_coded_id(module_name, std::string(iter.first));
         iter.second->set(Attr::global_var);
         to.put(n, iter.second);
     }

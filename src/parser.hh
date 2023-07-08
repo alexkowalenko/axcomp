@@ -6,10 +6,6 @@
 
 #pragma once
 
-#include <set>
-#include <variant>
-#include <vector>
-
 #include "ast.hh"
 #include "astvisitor.hh"
 #include "lexer.hh"

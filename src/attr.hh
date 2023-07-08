@@ -6,9 +6,8 @@
 
 #pragma once
 
+#include <set>
 #include <string>
-
-#include <llvm/ADT/SmallSet.h>
 
 namespace ax {
 
@@ -34,7 +33,7 @@ enum class Attr {
 constexpr auto attr_star{"*"};
 constexpr auto attr_dash{"-"};
 
-class Attrs : llvm::SmallSet<Attr, 4> {
+class Attrs : std::set<Attr> {
   public:
     Attrs() = default;
     ~Attrs() = default;

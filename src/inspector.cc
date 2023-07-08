@@ -26,10 +26,10 @@ namespace ax {
 
 constexpr auto closure_arg{"_closure"};
 
-#define DEBUG_TYPE "inspector"
+#define DEBUG_TYPE "inspector "
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << llvm::formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << llvm::formatv(msg...) << '\n'); // NOLINT
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)
@@ -260,11 +260,11 @@ void Inspector::visit_ASTProcedure(ASTProcedure ast) {
                   [this, ast](auto const &x) { x->accept(this); });
     auto free_variables = symboltable.get_free_variables();
     for (auto const &f : free_variables) {
-        if (f.first() == ast->name->value) {
+        if (f == ast->name->value) {
             // skip recursive defintions
             continue;
         }
-        auto sym = symboltable.find(std::string(f.first()));
+        auto sym = symboltable.find(f);
         if (sym->is(Attr::global_var)) {
             continue;
         }
@@ -274,12 +274,12 @@ void Inspector::visit_ASTProcedure(ASTProcedure ast) {
         if (sym->is(Attr::modified)) {
             attrs.set(Attr::modified);
         }
-        debug("ASTProcedure {0}: Free variable {1} {2}", ast->name->value, f.first(),
+        debug("ASTProcedure {0}: Free variable {1} {2}", ast->name->value, f,
               attrs.contains(Attr::modified) ? "Modified" : "");
-        ast->free_variables.emplace_back(std::string(f.first()), attrs);
+        ast->free_variables.emplace_back(f, attrs);
 
         // add to type def
-        proc_type->free_vars.emplace_back(f.first(), sym->type);
+        proc_type->free_vars.emplace_back(f, sym->type);
     };
     if (!ast->free_variables.empty()) {
         debug("ASTProcedure: {0} closure function", ast->name->value);

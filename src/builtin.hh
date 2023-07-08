@@ -6,10 +6,10 @@
 
 #pragma once
 
+#include <map>
+#include <string>
 #include <utility>
 #include <vector>
-
-#include <llvm/ADT/StringMap.h>
 
 #include "codegen.hh"
 #include "symboltable.hh"
@@ -23,8 +23,8 @@ class Builtin {
   public:
     static void initialise(SymbolFrameTable &symbols);
 
-    static std::vector<std::pair<std::string, Symbol>> global_functions;
-    static llvm::StringMap<BIFunctor>                  compile_functions;
+    inline static std::vector<std::pair<std::string, Symbol>> global_functions;
+    inline static std::map<std::string, BIFunctor>            compile_functions;
 };
 
 } // namespace ax

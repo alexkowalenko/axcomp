@@ -11,11 +11,10 @@
 #include <memory>
 #include <optional>
 #include <ostream>
+#include <set>
 #include <stack>
 #include <string>
 
-#include <llvm/ADT/StringMap.h>
-#include <llvm/ADT/StringSet.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FormatVariadic.h>
 
@@ -47,11 +46,11 @@ template <typename T> class TableInterface {
     virtual bool set(const std::string &name, T const &val) = 0;
     virtual void remove(const std::string &name) = 0;
 
-    [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator begin() const = 0;
-    [[nodiscard]] virtual typename llvm::StringMap<T>::const_iterator end() const = 0;
+    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator begin() const = 0;
+    [[nodiscard]] virtual typename std::map<std::string, T>::const_iterator end() const = 0;
 
-    virtual void                             reset_free_variables() = 0;
-    [[nodiscard]] virtual llvm::StringSet<> &get_free_variables() const = 0;
+    virtual void                                 reset_free_variables() = 0;
+    [[nodiscard]] virtual std::set<std::string> &get_free_variables() const = 0;
 };
 
 template <typename T> class SymbolTable : public TableInterface<T> {
@@ -67,10 +66,10 @@ template <typename T> class SymbolTable : public TableInterface<T> {
     bool set(const std::string &name, T const &val) override;
     void remove(const std::string &name) override;
 
-    [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
         return table.begin();
     }
-    [[nodiscard]] typename llvm::StringMap<T>::const_iterator end() const override {
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
         return table.end();
     }
 
@@ -82,15 +81,17 @@ template <typename T> class SymbolTable : public TableInterface<T> {
             next->reset_free_variables();
         }
     }
-    llvm::StringSet<> &get_free_variables() const override { return free_variables; }
+    [[nodiscard]] std::set<std::string> &get_free_variables() const override {
+        return free_variables;
+    }
 
     void dump(std::ostream &os) const;
 
   private:
-    llvm::StringMap<T>           table;
+    std::map<std::string, T>     table{};
     std::shared_ptr<SymbolTable> next = nullptr;
 
-    mutable llvm::StringSet<> free_variables;
+    mutable std::set<std::string> free_variables{};
 };
 
 template <typename T> T SymbolTable<T>::find(const std::string &name) const {
@@ -160,17 +161,17 @@ template <typename T> class FrameTable : public TableInterface<T> {
 
     void remove(const std::string &name) override { current_table->remove(name); };
 
-    [[nodiscard]] typename llvm::StringMap<T>::const_iterator begin() const override {
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator begin() const override {
         return current_table->begin();
     };
-    [[nodiscard]] typename llvm::StringMap<T>::const_iterator end() const override {
+    [[nodiscard]] typename std::map<std::string, T>::const_iterator end() const override {
         return current_table->end();
     };
 
     // Free variables
 
     void reset_free_variables() override { current_table->reset_free_variables(); };
-    [[nodiscard]] llvm::StringSet<> &get_free_variables() const override {
+    [[nodiscard]] std::set<std::string> &get_free_variables() const override {
         return current_table->get_free_variables();
     };
 
@@ -211,7 +212,7 @@ template <typename T> void FrameTable<T>::dump(std::ostream &os) {
     std::for_each(std::begin(frame_map), std::end(frame_map), [&os](auto &f) {
         os << f.first << "  ------------------------------\n";
         std::for_each(f.second->begin(), f.second->end(), [&os](auto &s) {
-            os << std::string(s.first()) << " : " << s.second->type->get_name() << '\n';
+            os << std::string(s.first) << " : " << s.second->type->get_name() << '\n';
         });
     });
 }
