@@ -9,7 +9,6 @@
 
 #include <climits>
 #include <llvm/Support/Debug.h>
-#include <llvm/Support/FormatVariadic.h>
 
 #include "utf8.h"
 
@@ -115,7 +114,7 @@ llvm::Type *StringType::make_type_ptr() {
 std::string ProcedureType::get_print(bool forward) {
     std::string res{forward ? "^" : ""};
     if (receiver) {
-        res += llvm::formatv("({0})", string(receiver));
+        res += fmt::format("({0})", string(receiver));
     }
     res += '(';
     const auto *insert = "";
@@ -158,9 +157,9 @@ ProcedureFwdType::operator std::string() {
 }
 
 ArrayType::operator std::string() {
-    std::string result = llvm::formatv("{0}[", string(base_type));
+    std::string result = fmt::format("{0}[", string(base_type));
     for (auto iter = dimensions.cbegin(); iter != dimensions.cend(); iter++) {
-        result += llvm::formatv("{0}", *iter);
+        result += fmt::format("{0}", *iter);
         if ((iter + 1) != dimensions.end()) {
             result += ',';
         }
@@ -193,7 +192,7 @@ llvm::Constant *ArrayType::get_init() const {
 }
 
 OpenArrayType::operator std::string() {
-    return llvm::formatv("{0}[]", string(base_type));
+    return fmt::format("{0}[]", string(base_type));
 }
 
 llvm::Type *OpenArrayType::get_llvm() const {

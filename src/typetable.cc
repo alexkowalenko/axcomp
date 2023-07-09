@@ -6,6 +6,8 @@
 #include "typetable.hh"
 #include "type.hh"
 
+#include <fmt/core.h>
+
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/Debug.h>
@@ -17,8 +19,8 @@ using namespace llvm;
 
 #define DEBUG_TYPE "types"
 
-template <typename... T> static void debug(const T &... msg) {
-    LLVM_DEBUG(llvm::dbgs() << llvm::formatv(msg...) << '\n'); // NOLINT
+template <typename... T> static void debug(const T &...msg) {
+    LLVM_DEBUG(llvm::dbgs() << fmt::format(msg...) << '\n'); // NOLINT
 }
 
 void TypeTable::set_type_alias(char const *name, TypePtr const &t) {

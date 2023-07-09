@@ -13,11 +13,11 @@
 #include <sstream>
 
 #include <dirent.h>
+#include <fmt/core.h>
 #include <sys/types.h>
 
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Debug.h>
-#include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "defparser.hh"
@@ -31,7 +31,7 @@ namespace ax {
 constexpr auto DEBUG_TYPE{"importer "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << llvm::formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(msg...) << '\n'); // NOLINT
 }
 
 STATISTIC(st_imports, "Number of imports");
@@ -66,7 +66,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 
         auto *dp = opendir(path.c_str());
         if (dp == nullptr) {
-            throw CodeGenException(llvm::formatv("Can't open {0}", path));
+            throw CodeGenException(fmt::format("Can't open {0}", path));
         }
         std::unique_ptr<DIR, DirCloser> dir(dp);
 
@@ -91,8 +91,8 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
                         inpect.check(ast);
                     } catch (AXException const &e) {
                         throw CodeGenException(
-                            llvm::formatv("Importer MODULE {0} error: {1} at: {2}", name,
-                                          e.error_msg(), full_path));
+                            fmt::format("Importer MODULE {0} error: {1} at: {2}", name,
+                                        e.error_msg(), full_path));
                     }
                     st_imports++;
                     return module_symbols;

@@ -6,6 +6,7 @@
 
 #include "builtin.hh"
 
+#include <fmt/core.h>
 #include <llvm/Support/Debug.h>
 #include <memory>
 
@@ -20,7 +21,7 @@ namespace ax {
 constexpr auto DEBUG_TYPE{"builtin "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(msg...) << '\n'); // NOLINT
 }
 
 BIFunctor abs{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
@@ -92,9 +93,9 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
         auto *ptr = codegen->call_function("NEW_Array", array_type->get_llvm(), {value});
         return codegen->get_builder().CreateStore(ptr, args[0]);
     }
-    throw CodeGenException(llvm::formatv("Variable with type {0} passed to NEW",
-                                         ast->args[0]->get_type()->get_name()),
-                           ast->get_location());
+    throw CodeGenException(
+        fmt::format("Variable with type {0} passed to NEW", ast->args[0]->get_type()->get_name()),
+        ast->get_location());
 }};
 
 template <bool max_f>
@@ -103,7 +104,7 @@ BIFunctor max{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     auto type = codegen->get_types().resolve(name);
     if (!type) {
         throw CodeGenException(
-            llvm::formatv("{0}: {1} is not a type name", max_f ? "MAX" : "MIN", name),
+            fmt::format("{0}: {1} is not a type name", max_f ? "MAX" : "MIN", name),
             ast->get_location());
     }
     return max_f ? type->max() : type->min();
@@ -124,9 +125,9 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
             if (args[1]->getType()->isIntegerTy()) {
                 inc = args[1];
             } else {
-                throw CodeGenException(llvm::formatv("Type {0} passed to {1} as increment",
-                                                     ast->args[1]->get_type()->get_name(),
-                                                     inc_f ? "INC" : "DEC"),
+                throw CodeGenException(fmt::format("Type {0} passed to {1} as increment",
+                                                   ast->args[1]->get_type()->get_name(),
+                                                   inc_f ? "INC" : "DEC"),
                                        ast->get_location());
             }
         }
@@ -137,9 +138,9 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
         }
         return codegen->get_builder().CreateStore(val, arg);
     }
-    throw CodeGenException(llvm::formatv("Type {0} passed to {1}",
-                                         ast->args[0]->get_type()->get_name(),
-                                         inc_f ? "INC" : "DEC"),
+    throw CodeGenException(fmt::format("Type {0} passed to {1}",
+                                       ast->args[0]->get_type()->get_name(),
+                                       inc_f ? "INC" : "DEC"),
                            ast->get_location());
 }};
 
@@ -190,7 +191,7 @@ BIFunctor long_func{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
         return args[0];
     }
     throw CodeGenException(
-        llvm::formatv("Type {0} passed to LONG", ast->args[0]->get_type()->get_name()),
+        fmt::format("Type {0} passed to LONG", ast->args[0]->get_type()->get_name()),
         ast->get_location());
 }};
 

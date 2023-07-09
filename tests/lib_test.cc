@@ -7,6 +7,7 @@
 #include <exception>
 #include <sstream>
 
+#include <fmt/core.h>
 #include <gtest/gtest.h>
 #include <string_view>
 
@@ -38,7 +39,7 @@ template <class L> void do_l_tests(std::vector<LexTests> &tests) {
 
         try {
             auto token = lex.get_token();
-            std::cout << std::string(llvm::formatv("Scan {0} get {1}", t.input, token.val))
+            std::cout << std::string(fmt::format("Scan {0} get {1}", t.input, token.val))
                       << std::endl;
             EXPECT_EQ(token.type, t.token);
             if (t.token == TokenType::chr) {

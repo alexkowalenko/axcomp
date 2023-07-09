@@ -7,12 +7,12 @@
 #include "parser.hh"
 
 #include <cstddef>
+#include <fmt/core.h>
 #include <memory>
 #include <optional>
 #include <utility>
 
 #include <llvm/Support/Debug.h>
-#include <llvm/Support/FormatVariadic.h>
 
 #include "ast.hh"
 #include "astvisitor.hh"
@@ -26,8 +26,9 @@ namespace ax {
 
 constexpr auto DEBUG_TYPE{"parser "};
 
-template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << llvm::formatv(msg...) << '\n'); // NOLINT
+template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+                            << '\n'); // NOLINT
 }
 
 // module identifier markers
@@ -54,7 +55,7 @@ Token Parser::get_token(TokenType const &t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
         throw ParseException(
-            llvm::formatv("Unexpected token: {0} - expecting {1}", std::string(tok), string(t)),
+            fmt::format("Unexpected token: {0} - expecting {1}", std::string(tok), string(t)),
             lexer.get_location());
     }
     return tok;
@@ -111,10 +112,9 @@ ASTModule Parser::parse_module() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
-        throw ParseException(
-            llvm::formatv("END identifier name: {0} doesn't match module name: {1}", tok.val,
-                          module->name),
-            lexer.get_location());
+        throw ParseException(fmt::format("END identifier name: {0} doesn't match module name: {1}",
+                                         tok.val, module->name),
+                             lexer.get_location());
     }
     get_token(TokenType::period);
     return module;
@@ -206,8 +206,7 @@ ASTDeclaration Parser::parse_declaration() {
             break;
         }
         default:
-            throw ParseException(llvm::formatv("unimplemented {0}", tok.val),
-                                 lexer.get_location());
+            throw ParseException(fmt::format("unimplemented {0}", tok.val), lexer.get_location());
         }
         tok = lexer.peek_token();
     }
@@ -412,8 +411,8 @@ ASTProcedure Parser::parse_procedure() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name->value) {
-        throw ParseException(llvm::formatv("END name: {0} doesn't match procedure name: {1}",
-                                           tok.val, proc->name->value),
+        throw ParseException(fmt::format("END name: {0} doesn't match procedure name: {1}",
+                                         tok.val, proc->name->value),
                              lexer.get_location());
     }
     get_token(TokenType::semicolon);
@@ -545,7 +544,7 @@ ASTStatement Parser::parse_statement() {
         return parse_assignment(designator);
     }
     default:
-        throw ParseException(llvm::formatv("Unexpected token: {0}", std::string(tok)),
+        throw ParseException(fmt::format("Unexpected token: {0}", std::string(tok)),
                              lexer.get_location());
     }
 }
@@ -632,7 +631,7 @@ ASTCall Parser::parse_call(ASTDesignator d) {
                 lexer.get_token(); // get ,
                 continue;
             }
-            throw ParseException(llvm::formatv("Unexpected {0} expecting , or )", tok.val),
+            throw ParseException(fmt::format("Unexpected {0} expecting , or )", tok.val),
                                  lexer.get_location());
         }
         get_token(TokenType::r_paren);
@@ -1026,7 +1025,7 @@ ASTFactor Parser::parse_factor() {
         return ast;
     }
     default:
-        throw ParseException(llvm::formatv("Unexpected token: {0}", std::string(tok)),
+        throw ParseException(fmt::format("Unexpected token: {0}", std::string(tok)),
                              lexer.get_location());
     }
     return nullptr; // Not factor
@@ -1304,7 +1303,7 @@ ASTInteger Parser::parse_integer() {
         return ast;
     }
     throw ParseException(
-        llvm::formatv("Unexpected token: {0} - expecting integer", std::string(tok)),
+        fmt::format("Unexpected token: {0} - expecting integer", std::string(tok)),
         lexer.get_location());
 }
 
@@ -1321,10 +1320,10 @@ ASTReal Parser::parse_real() {
     try {
         ast->value = std::stod(str);
     } catch (std::invalid_argument &) {
-        throw ParseException(llvm::formatv("REAL number invalid argument: {0} ", tok.val),
+        throw ParseException(fmt::format("REAL number invalid argument: {0} ", tok.val),
                              lexer.get_location());
     } catch (std::out_of_range &) {
-        throw ParseException(llvm::formatv("REAL number out of range: {0} ", tok.val),
+        throw ParseException(fmt::format("REAL number out of range: {0} ", tok.val),
                              lexer.get_location());
     }
     return ast;
@@ -1350,7 +1349,7 @@ ASTCharPtr Parser::parse_char() {
         return ast;
     }
     ast->value = tok.val_int;
-    debug("parse_char: x {0} {1}", ast->value, ast->str());
+    // debug("parse_char: x {0} {1}", ast->value, ast->str());
     return ast;
 }
 

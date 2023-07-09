@@ -7,8 +7,7 @@
 #include "defprinter.hh"
 
 #include <algorithm>
-
-#include <llvm/Support/FormatVariadic.h>
+#include <fmt/core.h>
 
 #include "ast.hh"
 #include "token.hh"
@@ -16,14 +15,14 @@
 namespace ax {
 
 void DefPrinter::visit_ASTModule(ASTModule ast) {
-    os << std::string(llvm::formatv("DEFINITION {0};\n", ast->name));
+    os << std::string(fmt::format("DEFINITION {0};\n", ast->name));
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(), [this](auto const &proc) {
         if (proc->name->is(Attr::global)) {
             proc->accept(this);
         }
     });
-    os << std::string(llvm::formatv("END {0}.\n", ast->name));
+    os << std::string(fmt::format("END {0}.\n", ast->name));
 }
 
 void DefPrinter::visit_ASTConst(ASTConst ast) {
@@ -81,7 +80,7 @@ void DefPrinter::visit_ASTVar(ASTVar ast) {
 }
 
 void DefPrinter::visit_ASTProcedure(ASTProcedure ast) {
-    os << std::string(llvm::formatv("PROCEDURE {0}", ast->name->value))
+    os << std::string(fmt::format("PROCEDURE {0}", ast->name->value))
        << std::string(ast->name->attrs);
     if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";

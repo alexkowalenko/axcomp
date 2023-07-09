@@ -11,6 +11,8 @@
 #include <iostream>
 #include <memory>
 
+#include <fmt/core.h>
+
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
@@ -19,7 +21,6 @@
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/Host.h>
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
@@ -43,7 +44,7 @@ namespace ax {
 constexpr auto DEBUG_TYPE{"codegen "};
 
 template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << formatv(msg...) << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(msg...) << '\n'); // NOLINT
 }
 
 using namespace llvm::sys;
@@ -170,8 +171,7 @@ void CodeGenerator::doTopDecs(ASTDeclaration const &ast) {
 void CodeGenerator::doTopVars(ASTVar const &ast) {
     debug("doTopVars");
     for (auto const &c : ast->vars) {
-        debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name(),
-              c.second->get_type()->get_llvm());
+        debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name());
 
         llvm::Type     *type = getType(c.second);
         auto            var_name = gen_module_id(c.first->value);
@@ -415,7 +415,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
             // put into symbol table
             // * this is meant to shadow the variable in the outer scope otherwise the outer scope
             // * variable changes.
-            debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(), a->getName());
+            // debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(), a->getName());
             auto sym = mkSym(cls_type);
             sym->value = a;
             symboltable.put(cls_var, sym);
@@ -485,7 +485,7 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment ast) {
     } else {
         visit_ASTDesignatorPtr(ast->ident, true);
     }
-    debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
+    // debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
 
     // Do LLIR Type adjustments for the final assignment
     if (auto *ty = dyn_cast<llvm::PointerType>(last_value->getType()); ty) {
@@ -625,7 +625,7 @@ void CodeGenerator::visit_ASTCall(ASTCall ast) {
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
             llvm::Value *ptr = builder.CreateGEP(closure, ind, "cls");
-            debug("ASTCall closure call {0} : {1}", v->getName(), name);
+            // debug("ASTCall closure call {0} : {1}", v->getName(), name);
             builder.CreateStore(v, ptr);
             index++;
         }
@@ -652,7 +652,7 @@ void CodeGenerator::visit_ASTIf(ASTIf ast) {
     int                       i = 0;
     std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
                   [&](auto const & /*not used*/) {
-                      auto *e_block = BasicBlock::Create(context, formatv("elsif{0}", i++));
+                      auto *e_block = BasicBlock::Create(context, fmt::format("elsif{0}", i++));
                       elsif_blocks.push_back(e_block);
                   });
     BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
@@ -733,7 +733,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
     std::vector<BasicBlock *> element_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
-        auto *block = BasicBlock::Create(context, formatv("case.element{0}", i));
+        auto *block = BasicBlock::Create(context, fmt::format("case.element{0}", i));
         element_blocks.push_back(block);
         i++;
     });
@@ -781,7 +781,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
         std::vector<BasicBlock *> range_blocks;
         i = 0;
         std::for_each(begin(range_list), end(range_list), [&](auto const & /*not used*/) {
-            auto *block = BasicBlock::Create(context, formatv("case.range{0}", i));
+            auto *block = BasicBlock::Create(context, fmt::format("case.range{0}", i));
             range_blocks.push_back(block);
             i++;
         });
@@ -912,7 +912,7 @@ void CodeGenerator::visit_ASTFor(ASTFor ast) {
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
 
-    debug("ASTFor after:{0}", last_end);
+    // debug("ASTFor after:{0}", last_end);
 }
 
 void CodeGenerator::visit_ASTWhile(ASTWhile ast) {
@@ -1535,7 +1535,7 @@ void CodeGenerator::visit_ASTString(ASTString ast) {
     if (auto res = global_strings.find(ast->value); res != global_strings.end()) {
         var = res->second;
     } else {
-        std::string name = llvm::formatv("STRING_{0}", string_const++);
+        std::string name = fmt::format("STRING_{0}", string_const++);
         var = generate_global(name, TypeTable::StrType->make_type(ast->value));
         var->setInitializer(TypeTable::StrType->make_value(ast->value));
         var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);

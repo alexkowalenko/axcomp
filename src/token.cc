@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include <llvm/Support/FormatVariadic.h>
+#include <fmt/core.h>
 
 namespace ax {
 
@@ -101,13 +101,13 @@ std::string string(TokenType t) {
 Token::operator std::string() {
     switch (type) {
     case TokenType::integer:
-        return llvm::formatv("integer({0})", val);
+        return fmt::format("integer({0})", val);
     case TokenType::hexinteger:
-        return llvm::formatv("hexinteger({0})", val);
+        return fmt::format("hexinteger({0})", val);
     case TokenType::chr:
-        return llvm::formatv("'{0}'", val_int);
+        return fmt::format("'{0}'", val_int);
     case TokenType::hexchr:
-        return llvm::formatv("hexchar({0})", val);
+        return fmt::format("hexchar({0})", val);
     case TokenType::ident:
         return val;
 

@@ -4,13 +4,12 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
-#include "lexerUTF8.hh"
-
 #include <exception>
 
-#include "utf8.h"
+#include <utf8.h>
 
 #include "error.hh"
+#include "lexerUTF8.hh"
 
 namespace ax {
 

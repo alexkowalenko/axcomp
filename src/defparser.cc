@@ -6,9 +6,8 @@
 
 #include "defparser.hh"
 
+#include <fmt/core.h>
 #include <optional>
-
-#include <llvm/Support/FormatVariadic.h>
 
 #include "error.hh"
 #include "typetable.hh"
@@ -41,10 +40,9 @@ ASTModule DefParser::parse_module() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
-        throw ParseException(
-            llvm::formatv("END identifier name: {0} doesn't match module name: {1}", tok.val,
-                          module->name),
-            lexer.get_location());
+        throw ParseException(fmt::format("END identifier name: {0} doesn't match module name: {1}",
+                                         tok.val, module->name),
+                             lexer.get_location());
     }
     get_token(TokenType::period);
     return module;
