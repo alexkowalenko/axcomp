@@ -95,7 +95,7 @@ class Character8 : CharacterClass<char> {
     static bool isalnum(char c) { return std::isalnum(c); };
     static bool isalpha(char c) { return std::isalpha(c); };
 
-    static std::string to_string(char c) { return std::string(1, c); }
+    static std::string to_string(char c) { return {1, c}; }
     static void        add_string(std::string &s, char c) { s.push_back(c); }
 };
 
@@ -152,27 +152,27 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     case ':':
         if (peek() == '=') {
             get_char();
-            return Token(TokenType::assign, ":=");
+            return {TokenType::assign, ":="};
         }
-        return Token(TokenType::colon, ":");
+        return {TokenType::colon, ":"};
     case '<':
         if (peek() == '=') {
             get_char();
-            return Token(TokenType::leq, "<=");
+            return {TokenType::leq, "<="};
         }
-        return Token(TokenType::less, "<");
+        return {TokenType::less, "<"};
     case '>':
         if (peek() == '=') {
             get_char();
-            return Token(TokenType::gteq, ">=");
+            return {TokenType::gteq, ">="};
         }
-        return Token(TokenType::greater, ">");
+        return {TokenType::greater, ">"};
     case '.':
         if (peek() == '.') {
             get_char();
-            return Token(TokenType::dotdot, "..");
+            return {TokenType::dotdot, ".."};
         }
-        return Token(TokenType::period, ".");
+        return {TokenType::period, "."};
     case '\'':
     case '\"':
         return scan_string(c);
@@ -197,7 +197,7 @@ template <typename C, class CharClass> void LexerImplementation<C, CharClass>::g
             return;
         }
         if (c == '(' && peek() == '*') {
-            // suport nested comments, call
+            // support nested comments, call
             // recursively
             this->get_comment();
         }
@@ -220,7 +220,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     if (c == 'H') {
         // Numbers in this format 0cafeH
         get();
-        return Token(TokenType::hexinteger, digit);
+        return {TokenType::hexinteger, digit};
     }
     if (c == '.') {
         // may be float
@@ -232,7 +232,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
             // put back '.'
             push('.');
             // is integer
-            return Token(TokenType::integer, digit);
+            return {TokenType::integer, digit};
         }
         digit += '.';
         while (CharClass::isdigit(c)) {
@@ -255,14 +255,14 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
             digit += char(c);
             c = peek();
         }
-        return Token(TokenType::real, digit);
+        return {TokenType::real, digit};
     }
     if (c == 'X') {
         // Characters in this format 0d34X
         get();
-        return Token(TokenType::hexchr, digit);
+        return {TokenType::hexchr, digit};
     };
-    return Token(TokenType::integer, digit);
+    return {TokenType::integer, digit};
 }
 
 template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::scan_ident(C c) {
@@ -279,7 +279,7 @@ template <typename C, class CharClass> Token LexerImplementation<C, CharClass>::
     if (auto res = keyword_map.find(ident); res != keyword_map.end()) {
         return res->second;
     }
-    return Token(TokenType::ident, ident);
+    return {TokenType::ident, ident};
 }
 
 template <typename C, class CharClass>
@@ -290,15 +290,15 @@ Token LexerImplementation<C, CharClass>::scan_string(C start) {
     C c = get();
     if (c == start) {
         // empty string
-        return Token(TokenType::string, str);
+        return {TokenType::string, str};
     }
     CharClass::add_string(str, c);
     C final = get();
     if (final == '\'' && start == '\'') {
-        return Token(TokenType::chr, long(c));
+        return {TokenType::chr, long(c)};
     };
     if (final == start) {
-        return Token(TokenType::string, str);
+        return {TokenType::string, str};
     };
     CharClass::add_string(str, final);
     c = get();
@@ -314,8 +314,8 @@ Token LexerImplementation<C, CharClass>::scan_string(C start) {
         }
         c = get();
     };
-    return Token(TokenType::string, str);
-} // namespace ax
+    return {TokenType::string, str};
+}
 
 /**
  * @brief get first non whitespace or comment character

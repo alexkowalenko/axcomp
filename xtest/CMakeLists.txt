@@ -11,7 +11,7 @@ set(ENV{AXLIB_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 macro(xtest_add_test TESTNAME)
     add_test(NAME xtest.${TESTNAME}
-            COMMAND ${PYTHON_EXECUTABLE} ./tester.py -t tests.${TESTNAME}
+            COMMAND ${PYTHON_EXECUTABLE} ./tester.py -t ${TESTNAME}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endmacro()       
 
@@ -26,4 +26,18 @@ xtest_add_test(import)
 xtest_add_test(demo)
 xtest_add_test(extra)
 xtest_add_test(oo2c)
+
+xtest_add_test(lang/const)
+xtest_add_test(lang/type)
+xtest_add_test(lang/var)
+
+xtest_add_test(lang/record)
+
+xtest_add_test(lang/bool)
+xtest_add_test(lang/expr)
+xtest_add_test(lang/conditional)
+
+xtest_add_test(lib/maths)
+
+xtest_add_test(lang/return)
 

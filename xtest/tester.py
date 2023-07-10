@@ -16,9 +16,9 @@ from colored import fg, bg, attr
 
 import argparse
 
-install_dir = "../../bin"
 lib_dir = os.environ['AXLIB_PATH']
 axlib_dir = lib_dir + ":."
+install_dir = f"{lib_dir}/../bin"
 
 # Config paramaters
 test_cfg = "test.ini"
@@ -30,7 +30,7 @@ exclude = ""
 c_flags = ""
 
 compiler = f"{install_dir}/axcomp"
-linker = f"clang++ ../main.cc -L {lib_dir} -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc"
+linker = f"clang++ {lib_dir}/../xtest/main.cc -L {lib_dir} -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc"
 optimize = False
 llir_compile = False
 opt_flag = "-O3"
@@ -55,6 +55,8 @@ def do_clang(stem: str) -> int:
     exe_file = local_tempdir + next(tempfile._get_candidate_names())
 
     # Link executable
+    fail = stem + ".fail"
+    remove_file(fail)
     if llir_compile:
         obj = stem + ".ll"
     else:
@@ -66,7 +68,6 @@ def do_clang(stem: str) -> int:
         print(red + "link " + restore, end="")
         remove_file(exe_file)
         os.remove(f"{stem}.def")
-        fail = stem + ".fail"
         os.rename(temp_file, fail)
         remove_file(stem + ".o")
         return (ret == 0)

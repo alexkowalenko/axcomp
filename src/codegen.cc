@@ -548,7 +548,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
     std::vector<Value *> args;
     if (bound_proc) {
         auto varname = ast->name->ident->id->value;
-        debug("do_arguments reciever {0}", varname);
+        debug("do_arguments receiver {0}", varname);
         auto var = symboltable.find(varname);
         // llvm::dbgs() << *var->value << '\n';
         last_value = var->value;

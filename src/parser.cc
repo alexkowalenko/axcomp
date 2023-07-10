@@ -140,11 +140,11 @@ ASTImport Parser::parse_import() {
         if (tok.type == TokenType::assign) {
             lexer.get_token(); // :=
             auto second = parse_identifier();
-            ast->imports.emplace_back(ASTImport_::Pair{second, ident});
+            ast->imports.emplace_back(second, ident);
             auto module = std::make_shared<ModuleType>(second->value);
             symbols.put(ident->value, mkSym(module, Attr::global_var));
         } else {
-            ast->imports.emplace_back(ASTImport_::Pair{ident, nullptr});
+            ast->imports.emplace_back(ident, nullptr);
             auto module = std::make_shared<ModuleType>(ident->value);
             symbols.put(ident->value, mkSym(module, Attr::global_var));
         }
@@ -317,7 +317,7 @@ ASTVar Parser::parse_var() {
 }
 
 /**
- * @brief ( [VAR] identifier : indentifier)
+ * @brief ( [VAR] identifier : identifier)
  *
  * @return VarDec
  */
@@ -702,11 +702,11 @@ std::variant<ASTSimpleExpr, ASTRange> Parser::parse_caseLabel() {
         range->first = e;
         range->last = parse_simpleexpr();
         debug("parse_caseLabel range {0}..{1}", std::string(*e), std::string(*(range->last)));
-        return std::variant<ASTSimpleExpr, ASTRange>(range);
+        return {range};
     }
 
     debug("parse_caseLabel {0}", std::string(*e));
-    return std::variant<ASTSimpleExpr, ASTRange>(e);
+    return {e};
 }
 
 inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::else_k,
