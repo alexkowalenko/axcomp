@@ -19,8 +19,6 @@ endmacro()
 xtest_add_test(parse.oo2c)
 xtest_add_test(parse.ETHZ)
 
-xtest_add_test(basic)
-xtest_add_test(oberon0)
 xtest_add_test(oberon-2)
 xtest_add_test(import)
 xtest_add_test(demo)
@@ -32,12 +30,28 @@ xtest_add_test(lang/type)
 xtest_add_test(lang/var)
 
 xtest_add_test(lang/record)
+xtest_add_test(lang/array)
 
+xtest_add_test(lang/literals)
 xtest_add_test(lang/bool)
+xtest_add_test(lang/char)
 xtest_add_test(lang/expr)
 xtest_add_test(lang/conditional)
 
-xtest_add_test(lib/maths)
+xtest_add_test(lang/procedure)
+xtest_add_test(lang/closures)
 
+xtest_add_test(lang/if)
+xtest_add_test(lang/while)
+xtest_add_test(lang/for)
+xtest_add_test(lang/case)
 xtest_add_test(lang/return)
+
+xtest_add_test(lib/assert)
+xtest_add_test(lib/inc)
+xtest_add_test(lib/char)
+xtest_add_test(lib/halt)
+xtest_add_test(lib/maths)
+xtest_add_test(lib/write)
+
 

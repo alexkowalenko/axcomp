@@ -5,6 +5,7 @@ PROCEDURE Test*;
     x: SHORTINT;
   BEGIN
     FOR x := 128 TO 127 DO
+      WriteInt(x); WriteLn;
     END;
   END Test;
   

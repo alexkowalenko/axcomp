@@ -2,7 +2,7 @@ MODULE Abs3;
 
 PROCEDURE Test* ();
   BEGIN
-    ABS(-1);
+    WriteInt(ABS(-1)); WriteLn;
   END Test;
 
 BEGIN
