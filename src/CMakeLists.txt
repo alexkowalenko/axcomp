@@ -13,7 +13,6 @@ add_library(libax STATIC
   printer.cc
   parser.cc
   inspector.cc 
-  lexer.cc
   lexerUTF8.cc 
   location.cc
   parser.cc

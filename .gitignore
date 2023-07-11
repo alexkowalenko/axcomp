@@ -9,6 +9,9 @@ lib/**
 compile_commands.json
 *.fail
 
+**/*.o
+**/*.ll
+
 *.aux
 *.log
 *.out

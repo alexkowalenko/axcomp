@@ -33,7 +33,7 @@ namespace ax {
 
 class CodeGenerator : ASTVisitor {
   public:
-    explicit CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i);
+    CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i);
 
     void generate(ASTModule const &ast) { ast->accept(this); };
 

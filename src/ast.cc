@@ -16,7 +16,6 @@ ASTBase_::operator std::string() {
     std::ostringstream s_out;
     ax::ASTPrinter     printer(s_out);
     this->accept(&printer);
-    s_out.put(0); // needs a zero to terminate the string.
     return s_out.str();
 }
 

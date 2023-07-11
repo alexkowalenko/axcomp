@@ -1,0 +1,4 @@
+MODULE bool1;
+BEGIN
+    RETURN TRUE;
+END bool1.

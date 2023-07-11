@@ -1,0 +1,4 @@
+MODULE int1;
+BEGIN
+    RETURN 7;
+END int1.

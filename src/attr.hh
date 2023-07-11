@@ -33,13 +33,12 @@ enum class Attr {
 constexpr auto attr_star{"*"};
 constexpr auto attr_dash{"-"};
 
-class Attrs : std::set<Attr> {
+class Attrs : public std::set<Attr> {
   public:
     Attrs() = default;
     ~Attrs() = default;
 
-    void               set(Attr const &t) { insert(t); };
-    [[nodiscard]] bool contains(Attr const &t) const { return (this->count(t) == 1); }
+    void set(Attr const &t) { insert(t); };
 
     explicit operator std::string() const {
         if (contains(Attr::global)) {

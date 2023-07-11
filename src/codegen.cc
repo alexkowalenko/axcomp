@@ -41,10 +41,11 @@
 
 namespace ax {
 
-constexpr auto DEBUG_TYPE{"codegen "};
+// this has to be a #define for it work properly
+#define DEBUG_TYPE "codegen"
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << fmt::format(fmt::runtime(format), msg...)
                             << '\n'); // NOLINT
 }
 
@@ -1342,7 +1343,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
                 last_value = builder.CreateFDiv(L, R, "divtmp");
                 break;
             default:
-                throw CodeGenException("ASTTerm float with sign" + string(op),
+                throw CodeGenException("ASTTerm float with sign " + string(op),
                                        ast->get_location());
             }
         }
@@ -1700,7 +1701,7 @@ FunctionCallee CodeGenerator::generate_function(std::string const &name, llvm::T
 
 void CodeGenerator::init() {
     module = std::make_unique<Module>(module_name, context);
-    module->setSourceFileName(module_name);
+    module->setSourceFileName(options.file_name);
 }
 
 void CodeGenerator::optimize() {

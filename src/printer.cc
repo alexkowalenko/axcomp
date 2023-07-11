@@ -18,7 +18,7 @@ namespace ax {
 
 void ASTPrinter::visit_ASTModule(ASTModule ast) {
 
-    os << std::string(fmt::format("MODULE {0};\n", ast->name));
+    os << fmt::format("MODULE {0};\n", ast->name);
     if (ast->import) {
         ast->import->accept(this);
     }

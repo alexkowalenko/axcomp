@@ -98,7 +98,7 @@ std::string string(TokenType t) {
     return "Unknown token";
 }
 
-Token::operator std::string() {
+Token::operator std::string() const {
     switch (type) {
     case TokenType::integer:
         return fmt::format("integer({0})", val);

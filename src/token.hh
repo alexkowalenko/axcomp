@@ -98,7 +98,7 @@ class Token {
     Token(Token const &) = default;
     Token &operator=(Token const &) = default;
 
-    explicit             operator std::string();
+    explicit operator std::string() const;
     friend std::ostream &operator<<(std::ostream &os, const Token &t);
 
     TokenType   type;
