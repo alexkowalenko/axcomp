@@ -6,15 +6,15 @@
 
 #include "ast.hh"
 
-#include <strstream>
+#include <sstream>
 
 #include "printer.hh"
 
 namespace ax {
 
 ASTBase_::operator std::string() {
-    std::ostrstream s_out;
-    ax::ASTPrinter  printer(s_out);
+    std::ostringstream s_out;
+    ax::ASTPrinter     printer(s_out);
     this->accept(&printer);
     s_out.put(0); // needs a zero to terminate the string.
     return s_out.str();
@@ -24,7 +24,7 @@ ASTIdentifier ASTDesignator_::first_field() const {
     if (selectors.empty()) {
         return nullptr;
     }
-    if (const auto *val = std::get_if<FieldRef>(&selectors[0]); val) {
+    if (const auto *val = std::get_if<FieldRef>(selectors.data()); val) {
         return val->first;
     }
     return nullptr;

@@ -11,7 +11,10 @@
 
 #include "ax.hh"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
+#pragma clang diagnostic                                         pop
 
 namespace ax {
 

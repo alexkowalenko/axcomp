@@ -303,7 +303,7 @@ ASTVar Parser::parse_var() {
         auto type = parse_type();
         get_token(TokenType::semicolon);
 
-        std::for_each(begin(list), end(list), [=](auto const &i) {
+        std::for_each(begin(list), end(list), [=, this](auto const &i) {
             VarDec dec;
             dec.first = i;
             dec.second = type;

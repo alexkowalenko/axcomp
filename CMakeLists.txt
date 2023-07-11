@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Change compiler here
-set(AX_BASE_CLANG /opt/homebrew/opt/llvm)
+set(AX_BASE_CLANG /opt/homebrew/Cellar/llvm/17.0.0)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
 
 project (axcomp VERSION 0.2
@@ -16,9 +16,9 @@ include(cmake/StandardProjectSettings.cmake)
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
-target_compile_features(project_options INTERFACE cxx_std_17)
+target_compile_features(project_options INTERFACE cxx_std_23)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

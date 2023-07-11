@@ -28,9 +28,9 @@ namespace ax {
 constexpr auto closure_arg{"_closure"};
 
 #define DEBUG_TYPE "inspector "
-
-template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(msg...) << '\n'); // NOLINT
+template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+                            << '\n'); // NOLINT
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)

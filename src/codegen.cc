@@ -22,11 +22,11 @@
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/Host.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
+#include <llvm/TargetParser/Host.h>
 
 #include "ast.hh"
 #include "astvisitor.hh"
@@ -43,8 +43,9 @@ namespace ax {
 
 constexpr auto DEBUG_TYPE{"codegen "};
 
-template <typename... T> static void debug(const T &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(msg...) << '\n'); // NOLINT
+template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+                            << '\n'); // NOLINT
 }
 
 using namespace llvm::sys;
