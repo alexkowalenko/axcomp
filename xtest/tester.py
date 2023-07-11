@@ -73,6 +73,7 @@ def do_clang(stem: str) -> int:
         return (ret == 0)
 
     # Run executable
+    remove_file(obj)
     os.system(f"{exe_file} > {temp_file}")
     res = stem + ".res"
     diff_file = local_tempdir + next(tempfile._get_candidate_names())
@@ -85,7 +86,6 @@ def do_clang(stem: str) -> int:
 
     # Clean up
     remove_file(exe_file)
-    remove_file(obj)
     if llir_compile:
         remove_file(stem + ".o")
     remove_file(f"{stem}.def")
@@ -113,6 +113,7 @@ def do_test(t: str) -> int:
     ret = os.system(cmd)
     if ret:
         os.rename(temp_file, fail)
+        os.remove(stem + ".def")
         print(red + "compile " + restore, end="")
         return 0
 

@@ -1,4 +1,4 @@
-MODULE case6;
+MODULE case_6;
 IMPORT Out;
 VAR i: INTEGER;
 
@@ -15,4 +15,4 @@ BEGIN
         END
     END
     RETURN 0
-END case6.
+END case_6.

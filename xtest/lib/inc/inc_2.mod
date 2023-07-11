@@ -1,4 +1,4 @@
-MODULE inc2; (* INC *)
+MODULE inc_2; (* INC *)
 IMPORT Out;
 VAR x: INTEGER;
 BEGIN
@@ -14,4 +14,4 @@ BEGIN
    DEC(x, x);
    Out.Int(x, 0); Out.Ln;
 
-END inc2.
+END inc_2.

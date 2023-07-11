@@ -1,4 +1,4 @@
-MODULE case4; (* CASE *)
+MODULE case_3; (* CASE *)
 IMPORT Out;
 VAR c: CHAR;
     i: INTEGER;
@@ -8,10 +8,11 @@ BEGIN
         c := CHR(64+ i);
         CASE c OF
             'A' : Out.String("A"); Out.Ln;
-        |   'B', 'C' : Out.String("B,C"); Out.Ln;
+        |   'B' : Out.String("B"); Out.Ln;
+        |   'C' : Out.String("C"); Out.Ln;
         ELSE
             Out.String('D-Z'); Out.Ln;
         END
     END
     RETURN 0;
-END case4.
+END case_3.

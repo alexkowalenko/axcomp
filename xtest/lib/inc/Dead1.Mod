@@ -8,6 +8,7 @@ PROCEDURE P();
     FOR i := 0 TO 9 DO
       INC(j);
     END;
+    WriteInt(j); WriteLn;
   END P;
 
 BEGIN

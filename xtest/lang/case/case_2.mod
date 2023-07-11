@@ -1,4 +1,4 @@
-MODULE case2; (* CASE *)
+MODULE case_2; (* CASE *)
 IMPORT Out;
 VAR i: INTEGER;
 BEGIN
@@ -10,4 +10,4 @@ BEGIN
         END
     END
     RETURN 0;
-END case2.
+END case_2.
