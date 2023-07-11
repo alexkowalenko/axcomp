@@ -115,7 +115,8 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin INC/DEC");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
-    if (arg->getType()->isPointerTy() && arg->getType()->getPointerElementType()->isIntegerTy()) {
+    if (arg->getType()->isPointerTy() &&
+        arg->getType()->getNonOpaquePointerElementType()->isIntegerTy()) {
         // debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
         Value *inc = nullptr;
@@ -179,7 +180,7 @@ BIFunctor assert{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     codegen->call_function("HALT", TypeTable::IntType->get_llvm(), {ret});
     codegen->get_builder().CreateBr(merge_block);
 
-    funct->getBasicBlockList().push_back(merge_block);
+    funct->insert(funct->end(), merge_block);
     codegen->get_builder().SetInsertPoint(merge_block);
     return val;
 }};

@@ -26,8 +26,10 @@ See the [_AX Oberon-2/07 Language Report_](report/report.tex) in the [report](re
 To build the compiler:
 
 - C++ 17 compiler - tested with Clang++ 11.0.
-- LLVM 11.0.0.
+- LLVM 17.0.0.
 - UTFCPP v2.3.4 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
+- Boehm garbage collection
+- fmtlib 10.0.0
 - CMake - build and test the compiler.
 
 To test:
@@ -49,6 +51,6 @@ Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.t
 
 The project is covered by the license in [LICENSE](LICENSE). The following are exempt and have the following licenses:
 
-1. Test code in [xtest/tests.oo2c](xtest/tests.oo2c), [xtest/tests.parse.oo2c](xtest/tests.parse.oo2c) is originally from the oo2c project hosted at _Spirit of Oberon_ (https://github.com/Spirit-of-Oberon/oo2c.git). This is covered by the GNU General Public License v2.0.
+1. Test code in [xtest](xtest), [xtest/tests.parse.oo2c](xtest/tests.parse.oo2c) is originally from the oo2c project hosted at _Spirit of Oberon_ (https://github.com/Spirit-of-Oberon/oo2c.git). This is covered by the GNU General Public License v2.0.
 2. Test code in [xtest/parse.ETHZ](xtest/parse.ETHZ) is from the ProjectOberon2013 hosted at _Spirit of Oberon_ (https://github.com/Spirit-of-Oberon/ProjectOberon.git). Copyright (C)2013 Niklaus Wirth (NW), Juerg Gutknecht (JG), Paul
 Reed (PR/PDR), as listed in [license.txt](https://github.com/Spirit-of-Oberon/ProjectOberon2013/blob/master/license.txt).

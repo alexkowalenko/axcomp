@@ -18,11 +18,11 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Host.h>
-#include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
@@ -288,7 +288,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
 
     for (auto const &[var, t_type] : ast->params) {
         auto             *type = getType(t_type);
-        llvm::AttrBuilder attrs;
+        llvm::AttrBuilder attrs(context);
         index++;
         if (index == 1 && sym->is(Attr::closure)) {
             debug("ASTProcedure {0} is closure function", ast->name->value);
@@ -324,8 +324,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
     if (!f) {
         f = Function::Create(ft, linkage, proc_name, module.get());
     }
-    for (auto const &[index, attr] : argAttr) {
-        f->addAttribute(index, attr);
+    for (auto const &[_, attr] : argAttr) {
+        f->addFnAttr(attr);
     }
 
     // Create a new basic block to start insertion into.
@@ -409,7 +409,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
              std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
             ind[1] = TypeTable::IntType->make_value(i);
 
-            llvm::Value *a = builder.CreateGEP(&*cls_arg, ind, cls_var);
+            llvm::Value *a = builder.CreateGEP(cls_arg->getType(), &*cls_arg, ind, cls_var);
             a = builder.CreateLoad(a->getType(), a, cls_var);
 
             // put into symbol table
@@ -488,12 +488,13 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment ast) {
     // debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
 
     // Do LLIR Type adjustments for the final assignment
-    if (auto *ty = dyn_cast<llvm::PointerType>(last_value->getType()); ty) {
-        auto *base_type = ty->getElementType(); // extract base type
-        if (val->getType() != base_type) {
-            val = builder.CreateBitCast(val, base_type);
-        }
-    }
+    // LLVM has opaque pointer types
+    // if (auto *ty = dyn_cast<llvm::PointerType>(last_value->getType()); ty) {
+    //     auto *base_type = ty->getElementType(); // extract base type
+    //     if (val->getType() != base_type) {
+    //         val = builder.CreateBitCast(val, base_type);
+    //     }
+    // }
     builder.CreateStore(val, last_value);
     is_var = false;
 }
@@ -555,7 +556,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
         debug("do_arguments receiver {0} send {1}", string(typeFunction->receiver),
               string(ast->name->ident->id->get_type()));
         if (typeFunction->receiver_type != Attr::var) {
-            last_value = builder.CreateLoad(last_value);
+            last_value = builder.CreateLoad(last_value->getType(), last_value);
         }
 
         args.push_back(last_value);
@@ -624,7 +625,7 @@ void CodeGenerator::visit_ASTCall(ASTCall ast) {
             auto         r = symboltable.find(name);
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
-            llvm::Value *ptr = builder.CreateGEP(closure, ind, "cls");
+            llvm::Value *ptr = builder.CreateGEP(closure->getType(), closure, ind, "cls");
             // debug("ASTCall closure call {0} : {1}", v->getName(), name);
             builder.CreateStore(v, ptr);
             index++;
@@ -633,7 +634,7 @@ void CodeGenerator::visit_ASTCall(ASTCall ast) {
     }
     auto *inst = builder.CreateCall(callee, args);
     if (res->is(Attr::closure)) {
-        inst->addAttribute(1, llvm::Attribute::Nest);
+        inst->addAttributeAtIndex(1, llvm::Attribute::Nest);
     }
     last_value = inst;
 }
@@ -679,7 +680,7 @@ void CodeGenerator::visit_ASTIf(ASTIf ast) {
     for (auto const &e : ast->elsif_clause) {
 
         // ELSEIF
-        funct->getBasicBlockList().push_back(elsif_blocks[i]);
+        funct->insert(funct->end(), elsif_blocks[i]);
         builder.SetInsertPoint(elsif_blocks[i]);
 
         // do expr
@@ -708,7 +709,7 @@ void CodeGenerator::visit_ASTIf(ASTIf ast) {
     // Emit ELSE block.
 
     if (ast->else_clause) {
-        funct->getBasicBlockList().push_back(else_block);
+        funct->insert(funct->end(), else_block);
         builder.SetInsertPoint(else_block);
         auto elses = *ast->else_clause;
         std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
@@ -720,7 +721,7 @@ void CodeGenerator::visit_ASTIf(ASTIf ast) {
     else_block = builder.GetInsertBlock(); // NOLINT
 
     // Emit merge block.
-    funct->getBasicBlockList().push_back(merge_block);
+    funct->insert(funct->end(), merge_block);
     builder.SetInsertPoint(merge_block);
 }
 
@@ -773,7 +774,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
         i++;
     }
 
-    funct->getBasicBlockList().push_back(range_block);
+    funct->insert(funct->end(), range_block);
     builder.SetInsertPoint(range_block);
 
     // Go through Range values
@@ -788,7 +789,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
         i = 0;
         builder.CreateBr(range_blocks[0]);
         for (auto &p : range_list) {
-            funct->getBasicBlockList().push_back(range_blocks[i]);
+            funct->insert(funct->end(), range_blocks[i]);
             builder.SetInsertPoint(range_blocks[i]);
             visit_ASTRange_value(p.first, case_value);
 
@@ -819,7 +820,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
     for (auto const &element : ast->elements) {
         debug("ASTCase element {0}", i);
 
-        funct->getBasicBlockList().push_back(element_blocks[i]);
+        funct->insert(funct->end(), element_blocks[i]);
         builder.SetInsertPoint(element_blocks[i]);
         std::for_each(begin(element->stats), end(element->stats),
                       [this](auto const &s) { s->accept(this); });
@@ -833,7 +834,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
 
     // ELSE
     if (!ast->else_stats.empty()) {
-        funct->getBasicBlockList().push_back(else_block);
+        funct->insert(funct->end(), else_block);
         builder.SetInsertPoint(else_block);
         std::for_each(begin(ast->else_stats), end(ast->else_stats),
                       [this](auto const &s) { s->accept(this); });
@@ -843,7 +844,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
     }
 
     // END
-    funct->getBasicBlockList().push_back(end_block);
+    funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
     end_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 }
@@ -883,7 +884,7 @@ void CodeGenerator::visit_ASTFor(ASTFor ast) {
     } else {
         step = TypeTable::IntType->make_value(1);
     }
-    auto  *tmp = builder.CreateLoad(index, "index");
+    auto  *tmp = builder.CreateLoad(index->getType(), index, "index");
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
 
@@ -934,7 +935,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhile ast) {
     while_block = builder.GetInsertBlock();
 
     // DO
-    funct->getBasicBlockList().push_back(loop);
+    funct->insert(funct->end(), loop);
     builder.SetInsertPoint(loop);
 
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
@@ -943,7 +944,7 @@ void CodeGenerator::visit_ASTWhile(ASTWhile ast) {
     ejectBranch(ast->stats, loop, while_block);
 
     // END
-    funct->getBasicBlockList().push_back(end_block);
+    funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
 }
 
@@ -968,7 +969,7 @@ void CodeGenerator::visit_ASTRepeat(ASTRepeat ast) {
     repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
-    funct->getBasicBlockList().push_back(end_block);
+    funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
 }
 
@@ -990,7 +991,7 @@ void CodeGenerator::visit_ASTLoop(ASTLoop ast) {
     loop_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
-    funct->getBasicBlockList().push_back(end_block);
+    funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
     // end_block = builder.GetInsertBlock();
 }
@@ -1015,7 +1016,7 @@ void CodeGenerator::visit_ASTBlock(ASTBlock ast) {
     begin_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
     // END
-    funct->getBasicBlockList().push_back(end_block);
+    funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
 }
 
@@ -1249,7 +1250,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
         next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
         builder.CreateBr(or_end_block);
         auto *funct = builder.GetInsertBlock()->getParent();
-        funct->getBasicBlockList().push_back(or_end_block);
+        funct->insert(funct->end(), or_end_block);
         builder.SetInsertPoint(or_end_block);
         auto *phi_node =
             builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "or");
@@ -1350,7 +1351,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
         next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
         builder.CreateBr(end_block);
         auto *funct = builder.GetInsertBlock()->getParent();
-        funct->getBasicBlockList().push_back(end_block);
+        funct->insert(funct->end(), end_block);
         builder.SetInsertPoint(end_block);
         auto *phi_node =
             builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "and");
@@ -1416,7 +1417,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                            index.push_back(idx);
                        },
                        [this, &arg_ptr](PointerRef /* unused */) {
-                           arg_ptr = builder.CreateLoad(arg_ptr);
+                           arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
                        }},
             s);
     }
@@ -1426,11 +1427,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     assert(arg_ptr->getType()->isPointerTy()); // NOLINT
     if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
         is_var) {
-        arg_ptr = builder.CreateLoad(arg_ptr);
+        arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
     }
     // debug("get_index: GEP number of indices: {0}", index.size());
     // debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
-    last_value = builder.CreateGEP(arg_ptr, index, "idx");
+    last_value = builder.CreateGEP(arg_ptr->getType(), arg_ptr, index, "idx");
 }
 
 /**
@@ -1452,7 +1453,7 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator const &ast, bool ptr) {
     // debug("ASTDesignator: ptr:{0} is_var:{1}", ptr, is_var);
     if (!ptr && !is_var) {
         // debug("ASTDesignator: load");
-        last_value = builder.CreateLoad(last_value, "idx");
+        last_value = builder.CreateLoad(last_value->getType(), last_value, "idx");
     }
 }
 
@@ -1471,7 +1472,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
         last_value = res->value;
         if (res->is(Attr::var)) {
             debug("ASTIdentifierPtr VAR ");
-            last_value = builder.CreateLoad(last_value, ast->value);
+            last_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
         }
         if (is_var) {
             // This is a write of a VAR variable, preseve this value
@@ -1479,7 +1480,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
         }
         if (!ptr) {
             debug("ASTIdentifierPtr !ptr ");
-            last_value = builder.CreateLoad(last_value, ast->value);
+            last_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
         }
         return;
     }
@@ -1704,7 +1705,7 @@ void CodeGenerator::init() {
 void CodeGenerator::optimize() {
     llvm::PassBuilder passBuilder;
 
-    llvm::LoopAnalysisManager     loopAnalysisManager; // * add contructor true for debug info
+    llvm::LoopAnalysisManager     loopAnalysisManager; // * add constructor true for debug info
     llvm::FunctionAnalysisManager functionAnalysisManager;
     llvm::CGSCCAnalysisManager    cGSCCAnalysisManager;
     llvm::ModuleAnalysisManager   moduleAnalysisManager;
@@ -1717,16 +1718,16 @@ void CodeGenerator::optimize() {
     passBuilder.crossRegisterProxies(loopAnalysisManager, functionAnalysisManager,
                                      cGSCCAnalysisManager, moduleAnalysisManager);
 
-    llvm::PassBuilder::OptimizationLevel opt_level{llvm::PassBuilder::OptimizationLevel::O0};
+    auto opt_level{OptimizationLevel::O0};
     switch (options.optimise) {
     case 1:
-        opt_level = llvm::PassBuilder::OptimizationLevel::O1;
+        opt_level = OptimizationLevel::O1;
         break;
     case 2:
-        opt_level = llvm::PassBuilder::OptimizationLevel::O2;
+        opt_level = OptimizationLevel::O2;
         break;
     case 3:
-        opt_level = llvm::PassBuilder::OptimizationLevel::O3;
+        opt_level = OptimizationLevel::O3;
         break;
     }
 
@@ -1781,7 +1782,7 @@ void CodeGenerator::generate_objectcode() {
     const auto *features = "";
 
     TargetOptions opt;
-    auto          RM = Optional<Reloc::Model>();
+    auto          RM = std::optional<Reloc::Model>();
     auto *targetMachine = target->createTargetMachine(targetTriple, CPU, features, opt, RM);
 
     module->setDataLayout(targetMachine->createDataLayout());
