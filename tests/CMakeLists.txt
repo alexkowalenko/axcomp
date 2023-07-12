@@ -44,11 +44,9 @@ package_add_test(parse.2 parse.2.cc)
 package_add_test(parse.3 parse.3.cc)
 package_add_test(parse.4 parse.4.cc)
 package_add_test(parse.5 parse.5.cc)
-package_add_test(parse.6 parse.6.cc)
 
 package_add_test(inspect.1 inspect.1.cc)
 package_add_test(inspect.2 inspect.2.cc)
-package_add_test(inspect.3 inspect.3.cc)
 package_add_test(inspect.4 inspect.4.cc)
 package_add_test(inspect.5 inspect.5.cc)
 

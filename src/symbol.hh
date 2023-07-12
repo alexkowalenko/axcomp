@@ -26,18 +26,18 @@ class Symbol {
     Symbol(Symbol &&) = default;
     Symbol &operator=(Symbol &&) = default;
 
-    explicit Symbol(TypePtr t) : type{std::move(t)} {};
-    Symbol(TypePtr t, Attr const &a) : type{std::move(t)} { attrs.insert(a); };
-    Symbol(TypePtr t, Attr const &a, llvm::Value *v) : type{std::move(t)}, value(v) {
+    explicit Symbol(Type t) : type{std::move(t)} {};
+    Symbol(Type t, Attr const &a) : type{std::move(t)} { attrs.insert(a); };
+    Symbol(Type t, Attr const &a, llvm::Value *v) : type{std::move(t)}, value(v) {
         attrs.insert(a);
     };
 
     void set(const Attr &a) { attrs.insert(a); };
     bool is(const Attr &a) { return attrs.find(a) != attrs.end(); }
 
-    TypePtr        type = nullptr;
+    Type           type = nullptr;
     std::set<Attr> attrs;
-    llvm::Value *  value = nullptr;
+    llvm::Value   *value = nullptr;
 };
 
 using SymbolPtr = std::shared_ptr<Symbol>;

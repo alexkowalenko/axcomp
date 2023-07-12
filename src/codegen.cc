@@ -1626,9 +1626,9 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-TypePtr CodeGenerator::resolve_type(ASTType const &t) {
+Type CodeGenerator::resolve_type(ASTType const &t) {
     // debug("resolve_type {0}", std::string(*t));
-    TypePtr result;
+    Type result;
     std::visit(overloaded{[this, &result](ASTQualident const &type) {
                               result = types.resolve(type->id->value);
 

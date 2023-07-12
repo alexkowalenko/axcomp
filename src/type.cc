@@ -16,7 +16,7 @@ namespace ax {
 
 using namespace llvm;
 
-static std::map<TypeId, std::string> mapping{
+static const std::map<TypeId, std::string> mapping{
     {TypeId::null, "null"},           {TypeId::any, "any"},         {TypeId::integer, "integer"},
     {TypeId::real, "real"},           {TypeId::boolean, "boolean"}, {TypeId::chr, "chr"},
     {TypeId::procedure, "procedure"}, {TypeId::array, "array"},     {TypeId::string, "string"},
@@ -24,11 +24,11 @@ static std::map<TypeId, std::string> mapping{
     {TypeId::module, "module"},
 };
 
-std::string string(TypeId const t) {
-    return mapping[t];
+std::string const &string(TypeId const t) {
+    return mapping.at(t);
 }
 
-bool Type::equiv(TypePtr const &t) {
+bool Type_::equiv(Type const &t) {
     if (t->id == TypeId::str1) {
         // String char strings are the same as STRING or CHAR
         return id == TypeId::string || id == TypeId::chr;
@@ -62,12 +62,12 @@ bool Type::equiv(TypePtr const &t) {
     return true;
 }
 
-llvm::Value *Type::min() const {
+llvm::Value *Type_::min() const {
     return llvm::ConstantPointerNull::get(
         dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
 
-llvm::Value *Type::max() const {
+llvm::Value *Type_::max() const {
     return llvm::ConstantPointerNull::get(
         dyn_cast<llvm::PointerType>(TypeTable::VoidType->get_llvm()));
 }
@@ -145,7 +145,7 @@ llvm::Type *ProcedureType::get_llvm() const {
     return FunctionType::get(ret->get_llvm(), proto, false);
 }
 
-TypePtr ProcedureType::get_closure_struct() const {
+Type ProcedureType::get_closure_struct() const {
     // this should be a struct
     auto cls_str = std::make_shared<ArrayType>(std::make_shared<PointerType>(TypeTable::IntType));
     cls_str->dimensions.push_back(free_vars.size());
@@ -269,7 +269,7 @@ llvm::Constant *RecordType::get_init() const {
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 }
 
-void RecordType::insert(std::string const &field, TypePtr type) {
+void RecordType::insert(std::string const &field, Type type) {
     fields[field] = std::move(type);
     index.push_back(field);
 }
@@ -289,10 +289,10 @@ size_t RecordType::get_size() const {
                            [](size_t x, auto &y) { return x + y.second->get_size(); });
 }
 
-std::optional<TypePtr> RecordType::get_type(std::string const &field) {
+std::optional<Type> RecordType::get_type(std::string const &field) {
     auto res = fields.find(field);
     if (res != fields.end()) {
-        return std::make_optional<TypePtr>(res->second);
+        return std::make_optional<Type>(res->second);
     }
     if (base) {
         return base->get_type(field);
@@ -316,7 +316,7 @@ int RecordType::get_index(std::string const &field) {
     return base_count + int(std::distance(cbegin(index), it));
 }
 
-bool RecordType::is_base(TypePtr const &t) {
+bool RecordType::is_base(Type const &t) {
     if (!t || !base) {
         return false;
     }

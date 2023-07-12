@@ -109,7 +109,7 @@ class CodeGenerator : ASTVisitor {
     static AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
                                               llvm::Type *type);
 
-    TypePtr     resolve_type(ASTType const &t);
+    Type        resolve_type(ASTType const &t);
     llvm::Type *getType(ASTType const &type);
     Constant   *getType_init(ASTType const &type);
 

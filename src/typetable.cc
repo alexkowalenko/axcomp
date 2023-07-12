@@ -24,7 +24,7 @@ template <typename S, typename... Args> static void debug(const S &format, const
                             << '\n'); // NOLINT
 }
 
-void TypeTable::set_type_alias(char const *name, TypePtr const &t) {
+void TypeTable::set_type_alias(char const *name, Type const &t) {
     auto type = std::make_shared<TypeAlias>(name, t);
     put(name, type);
 }
@@ -198,7 +198,7 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     VoidType->set_init(llvm::ConstantPointerNull::get(llvm::Type::getInt8PtrTy(context)));
 }
 
-TypePtr TypeTable::resolve(std::string const &n) {
+Type TypeTable::resolve(std::string const &n) {
 
     // All ARRAY OF CHAR are STRING types
     if (n == "CHAR[]") {
@@ -222,7 +222,7 @@ TypePtr TypeTable::resolve(std::string const &n) {
     }
 }
 
-TypePtr TypeTable::check(TokenType op, TypePtr const &type) {
+Type TypeTable::check(TokenType op, Type const &type) {
     auto range = rules1.equal_range(op);
     for (auto i = range.first; i != range.second; ++i) {
         if (i->second.value == type) {
@@ -232,7 +232,7 @@ TypePtr TypeTable::check(TokenType op, TypePtr const &type) {
     return nullptr;
 }
 
-TypePtr TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr const &Rt) {
+Type TypeTable::check(TokenType op, Type const &Lt, Type const &Rt) {
     auto range = rules2.equal_range(op);
     auto L = resolve(Lt->get_name());
     auto R = resolve(Rt->get_name());
@@ -253,11 +253,11 @@ TypePtr TypeTable::check(TokenType op, TypePtr const &Lt, TypePtr const &Rt) {
     return nullptr;
 }
 
-void TypeTable::reg(TokenType op, TypePtr const &type, TypePtr const &result) {
+void TypeTable::reg(TokenType op, Type const &type, Type const &result) {
     rules1.insert({op, {type, result}});
 }
 
-void TypeTable::reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result) {
+void TypeTable::reg(TokenType op, Type const &L, Type const &R, Type const &result) {
     rules2.insert({op, {L, R, result}});
 }
 

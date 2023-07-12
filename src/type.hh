@@ -52,19 +52,19 @@ enum class TypeId {
     module
 };
 
-std::string string(TypeId t);
+std::string const &string(TypeId t);
 
-class Type;
-using TypePtr = std::shared_ptr<Type>;
+class Type_;
+using Type = std::shared_ptr<Type_>;
 
-class Type {
+class Type_ {
   public:
-    explicit Type(TypeId i) : id(i){};
-    virtual ~Type() = default;
+    explicit Type_(TypeId i) : id(i){};
+    virtual ~Type_() = default;
 
     TypeId id = TypeId::null;
 
-    [[nodiscard]] bool equiv(TypePtr const &t);
+    [[nodiscard]] bool equiv(Type const &t);
 
     virtual explicit operator std::string() = 0;
 
@@ -91,20 +91,20 @@ class Type {
     [[nodiscard]] virtual llvm::Value *max() const;
 
   private:
-    llvm::Type *    llvm_type{nullptr};
+    llvm::Type     *llvm_type{nullptr};
     llvm::Constant *llvm_init{nullptr};
 };
 
-inline std::string string(TypePtr const &t) {
+inline std::string string(Type const &t) {
     return std::string(*t);
 }
 
-class SimpleType : public Type {
+class SimpleType : public Type_ {
   public:
-    explicit SimpleType(std::string n, TypeId id) : Type(id), name(std::move(n)){};
+    explicit SimpleType(std::string n, TypeId id) : Type_(id), name(std::move(n)){};
     ~SimpleType() override = default;
 
-    explicit    operator std::string() override;
+    explicit operator std::string() override;
     std::string name;
 };
 
@@ -166,11 +166,11 @@ class CharacterType : public SimpleType {
     [[nodiscard]] llvm::Value *max() const override { return make_value(WCHAR_MAX); };
 };
 
-class ProcedureType : public Type {
+class ProcedureType : public Type_ {
   public:
-    explicit ProcedureType() : Type(TypeId::procedure){};
-    ProcedureType(TypePtr returns, std::vector<std::pair<TypePtr, Attr>> params)
-        : Type(TypeId::procedure), ret(std::move(returns)), params(std::move(params)){};
+    explicit ProcedureType() : Type_(TypeId::procedure){};
+    ProcedureType(Type returns, std::vector<std::pair<Type, Attr>> params)
+        : Type_(TypeId::procedure), ret(std::move(returns)), params(std::move(params)){};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
@@ -179,14 +179,14 @@ class ProcedureType : public Type {
 
     [[nodiscard]] llvm::Type *get_llvm() const override;
 
-    [[nodiscard]] TypePtr get_closure_struct() const;
+    [[nodiscard]] Type get_closure_struct() const;
 
-    TypePtr ret{nullptr};
-    TypePtr receiver{nullptr};
-    Attr    receiver_type{Attr::null};
-    using ParamsList = std::vector<std::pair<TypePtr, Attr>>;
+    Type ret{nullptr};
+    Type receiver{nullptr};
+    Attr receiver_type{Attr::null};
+    using ParamsList = std::vector<std::pair<Type, Attr>>;
     ParamsList params{};
-    using FreeList = std::vector<std::pair<std::string, TypePtr>>;
+    using FreeList = std::vector<std::pair<std::string, Type>>;
     FreeList free_vars{};
 
   protected:
@@ -201,16 +201,16 @@ class ProcedureFwdType : public ProcedureType {
     explicit operator std::string() override;
 };
 
-class ArrayType : public Type {
+class ArrayType : public Type_ {
   public:
-    explicit ArrayType(TypePtr b) : Type(TypeId::array), base_type(std::move(b)){};
+    explicit ArrayType(Type b) : Type_(TypeId::array), base_type(std::move(b)){};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
 
     [[nodiscard]] bool is_assignable() const override { return false; };
 
-    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Type     *get_llvm() const override;
     [[nodiscard]] llvm::Constant *get_init() const override;
 
     [[nodiscard]] size_t get_size() const override {
@@ -219,20 +219,20 @@ class ArrayType : public Type {
                base_type->get_size();
     }
 
-    TypePtr             base_type;
+    Type                base_type;
     std::vector<size_t> dimensions;
 };
 
 class OpenArrayType : public ArrayType {
   public:
-    explicit OpenArrayType(TypePtr b) : ArrayType(std::move(b)) { id = TypeId::openarray; };
+    explicit OpenArrayType(Type b) : ArrayType(std::move(b)) { id = TypeId::openarray; };
     ~OpenArrayType() override = default;
 
     explicit operator std::string() override;
 
     [[nodiscard]] bool is_assignable() const override { return true; };
 
-    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Type     *get_llvm() const override;
     [[nodiscard]] llvm::Constant *get_init() const override;
 };
 
@@ -242,13 +242,13 @@ class StringType : public SimpleType {
     ~StringType() override = default;
 
     static llvm::Constant *make_value(std::string const &s);
-    static llvm::Type *    make_type(std::string const &s);
-    static llvm::Type *    make_type_ptr();
+    static llvm::Type     *make_type(std::string const &s);
+    static llvm::Type     *make_type_ptr();
 };
 
-class RecordType : public Type {
+class RecordType : public Type_ {
   public:
-    RecordType() : Type(TypeId::record){};
+    RecordType() : Type_(TypeId::record){};
     ~RecordType() override = default;
 
     explicit operator std::string() override;
@@ -258,19 +258,19 @@ class RecordType : public Type {
     std::vector<llvm::Type *>     get_fieldTypes() const;
     std::vector<llvm::Constant *> get_fieldInit() const;
 
-    llvm::Type *    get_llvm() const override;
+    llvm::Type     *get_llvm() const override;
     llvm::Constant *get_init() const override;
 
-    void   insert(std::string const &field, TypePtr type);
+    void   insert(std::string const &field, Type type);
     bool   has_field(std::string const &field);
     size_t count() { return index.size(); };
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
-    bool                        is_base(TypePtr const &t);
+    bool                        is_base(Type const &t);
 
-    std::optional<TypePtr> get_type(std::string const &field);
-    int                    get_index(std::string const &field);
+    std::optional<Type> get_type(std::string const &field);
+    int                 get_index(std::string const &field);
 
     size_t get_size() const override;
 
@@ -282,56 +282,56 @@ class RecordType : public Type {
   private:
     std::string                 identified{}; // identified records
     std::shared_ptr<RecordType> base{nullptr};
-    llvm::StringMap<TypePtr>    fields;
+    llvm::StringMap<Type>       fields;
     std::vector<std::string>    index;
 
     mutable llvm::Type *cache{nullptr};
 };
 
-class TypeAlias : public Type {
+class TypeAlias : public Type_ {
   public:
-    TypeAlias(std::string n, TypePtr t)
-        : Type(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
+    TypeAlias(std::string n, Type t)
+        : Type_(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
-    explicit             operator std::string() override { return name; };
+    explicit operator std::string() override { return name; };
     [[nodiscard]] size_t get_size() const override { return alias->get_size(); };
 
-    TypePtr get_alias() { return alias; }
+    Type get_alias() { return alias; }
 
   private:
     std::string name;
-    TypePtr     alias;
+    Type        alias;
 };
 
-class PointerType : public Type {
+class PointerType : public Type_ {
   public:
-    explicit PointerType(std::string r) : Type(TypeId::pointer), ref_name{std::move(r)} {};
-    explicit PointerType(TypePtr const &r) : Type(TypeId::pointer), reference{r} {
+    explicit PointerType(std::string r) : Type_(TypeId::pointer), ref_name{std::move(r)} {};
+    explicit PointerType(Type const &r) : Type_(TypeId::pointer), reference{r} {
         ref_name = r->get_name();
     };
 
     ~PointerType() override = default;
 
-    explicit             operator std::string() override { return '^' + ref_name; };
+    explicit operator std::string() override { return '^' + ref_name; };
     [[nodiscard]] size_t get_size() const override {
         return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / CHAR_BIT;
     };
 
-    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Type     *get_llvm() const override;
     [[nodiscard]] llvm::Constant *get_init() const override;
 
-    TypePtr get_reference() { return reference; }
-    void    set_reference(TypePtr &r) { reference = r; }
+    Type get_reference() { return reference; }
+    void set_reference(Type &r) { reference = r; }
 
     std::string &get_ref_name() { return ref_name; };
 
   private:
-    TypePtr     reference = nullptr;
+    Type        reference = nullptr;
     std::string ref_name;
 };
 
-inline bool is_ptr_to_record(TypePtr const &t) {
+inline bool is_ptr_to_record(Type const &t) {
     if (t->id == TypeId::pointer) {
         if (auto p = std::dynamic_pointer_cast<PointerType>(t);
             p->get_reference()->id == TypeId::record) {
@@ -346,16 +346,16 @@ class SetCType : public SimpleType {
     SetCType() : SimpleType("SET", TypeId::set){};
     ~SetCType() override = default;
 
-    [[nodiscard]] llvm::Type *    get_llvm() const override;
+    [[nodiscard]] llvm::Type     *get_llvm() const override;
     [[nodiscard]] llvm::Constant *get_init() const override;
 
     [[nodiscard]] llvm::Value *min() const override;
     [[nodiscard]] llvm::Value *max() const override;
 };
 
-class ModuleType : public Type {
+class ModuleType : public Type_ {
   public:
-    explicit ModuleType(std::string n) : Type(TypeId::module), name{std::move(n)} {};
+    explicit ModuleType(std::string n) : Type_(TypeId::module), name{std::move(n)} {};
     ~ModuleType() override = default;
 
     explicit operator std::string() override { return "MODULE: " + name; };

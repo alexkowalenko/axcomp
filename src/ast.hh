@@ -38,14 +38,14 @@ class ASTBase_ {
     void            set_location(Location const &l) { location = l; };
     Location const &get_location() { return location; };
 
-    [[nodiscard]] TypePtr get_type() const { return type_info; };
-    void                  set_type(TypePtr const &t) { type_info = t; }
+    [[nodiscard]] Type get_type() const { return type_info; };
+    void               set_type(Type const &t) { type_info = t; }
 
     explicit operator std::string();
 
   private:
     Location location;
-    TypePtr  type_info{nullptr}; // store information about the type
+    Type     type_info{nullptr}; // store information about the type
 };
 using ASTBase = std::shared_ptr<ASTBase_>;
 

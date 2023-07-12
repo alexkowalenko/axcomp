@@ -20,24 +20,24 @@
 namespace ax {
 
 struct TypeRule1 {
-    TypePtr value;
-    TypePtr result;
+    Type value;
+    Type result;
 };
 
 struct TypeRule2 {
-    TypePtr L;
-    TypePtr R;
-    TypePtr result;
+    Type L;
+    Type R;
+    Type result;
 };
 
-class TypeTable : public SymbolTable<TypePtr> {
+class TypeTable : public SymbolTable<Type> {
   public:
     TypeTable() : SymbolTable(nullptr){};
 
     void        initialise();
     static void setTypes(llvm::LLVMContext &context);
 
-    TypePtr resolve(std::string const &name);
+    Type resolve(std::string const &name);
 
     /**
      * @brief Check one argument operator with a type
@@ -47,7 +47,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return true - operator accepts the this type
      * @return false
      */
-    TypePtr check(TokenType op, TypePtr const &type);
+    Type check(TokenType op, Type const &type);
 
     /**
      * @brief  Check two argument operator with types
@@ -59,7 +59,7 @@ class TypeTable : public SymbolTable<TypePtr> {
      * @return false
      */
 
-    TypePtr check(TokenType op, TypePtr const &L, TypePtr const &R);
+    Type check(TokenType op, Type const &L, Type const &R);
 
     static bool is_int_instruct(llvm::Type *t) {
         return t == IntType->get_llvm() || t == BoolType->get_llvm() || t == CharType->get_llvm();
@@ -74,10 +74,10 @@ class TypeTable : public SymbolTable<TypePtr> {
     inline static std::shared_ptr<StringType>    Str1Type;
     inline static std::shared_ptr<SetCType>      SetType;
 
-    inline static TypePtr VoidType; // For procedures which don't return anything, also arguments
-                                    // which can any type (internal for built-ins)
-    inline static TypePtr AnyType;  // For procedures which can return any time (built-ins), also
-                                    // for non-fixed length types arguments (built-ins).
+    inline static Type VoidType; // For procedures which don't return anything, also arguments
+                                 // which can any type (internal for built-ins)
+    inline static Type AnyType;  // For procedures which can return any time (built-ins), also
+                                 // for non-fixed length types arguments (built-ins).
 
     static TypeTable *sgl() { return singleton; };
 
@@ -85,10 +85,10 @@ class TypeTable : public SymbolTable<TypePtr> {
     // Set singleton
     static void set_singleton(TypeTable *s) { singleton = s; };
 
-    void set_type_alias(char const *name, TypePtr const &t);
+    void set_type_alias(char const *name, Type const &t);
 
-    void reg(TokenType op, TypePtr const &type, TypePtr const &result);
-    void reg(TokenType op, TypePtr const &L, TypePtr const &R, TypePtr const &result);
+    void reg(TokenType op, Type const &type, Type const &result);
+    void reg(TokenType op, Type const &L, Type const &R, Type const &result);
 
     std::multimap<TokenType, TypeRule1> rules1;
     std::multimap<TokenType, TypeRule2> rules2;

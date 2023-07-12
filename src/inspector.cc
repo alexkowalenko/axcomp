@@ -164,7 +164,7 @@ void Inspector::do_receiver(RecVar &r) {
     r.second->set_type(t);
 }
 
-std::pair<TypePtr, ProcedureType::ParamsList> Inspector::do_proc(ASTProc_ &ast) {
+std::pair<Type, ProcedureType::ParamsList> Inspector::do_proc(ASTProc_ &ast) {
     // Check name if not defined;
     if (auto name_check = symboltable.find(ast.name->value);
         name_check && name_check->type->id != TypeId::procedureFwd) {
@@ -351,7 +351,7 @@ void Inspector::visit_ASTAssignment(ASTAssignment ast) {
 
 void Inspector::visit_ASTReturn(ASTReturn ast) {
     debug("ASTReturn");
-    TypePtr expr_type = TypeTable::VoidType;
+    Type expr_type = TypeTable::VoidType;
     if (ast->expr) {
         ast->expr->accept(this);
         if (last_type) {
@@ -553,7 +553,7 @@ void Inspector::visit_ASTCase(ASTCase ast) {
             TypeError("CASE expression has to be INTEGER or CHAR", ast->expr->get_location());
         errors.add(ex);
     }
-    TypePtr case_type = last_type;
+    Type case_type = last_type;
 
     // elements
     for (auto &e : ast->elements) {
@@ -931,7 +931,7 @@ void Inspector::visit_ASTArray(ASTArray ast) {
 
     ast->type->accept(this);
 
-    TypePtr array_type{nullptr};
+    Type array_type{nullptr};
     if (ast->dimensions.empty()) {
         array_type = std::make_shared<ax::OpenArrayType>(last_type);
     } else {

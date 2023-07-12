@@ -32,8 +32,8 @@ class Inspector : ASTVisitor {
     void visit_ASTTypeDec(ASTTypeDec ast) override;
     void visit_ASTVar(ASTVar ast) override;
 
-    void                                          do_receiver(RecVar &r);
-    std::pair<TypePtr, ProcedureType::ParamsList> do_proc(ASTProc_ &ast);
+    void                                       do_receiver(RecVar &r);
+    std::pair<Type, ProcedureType::ParamsList> do_proc(ASTProc_ &ast);
 
     void visit_ASTProcedure(ASTProcedure ast) override;
     void visit_ASTProcedureForward(ASTProcedureForward ast) override;
@@ -79,7 +79,7 @@ class Inspector : ASTVisitor {
     bool         is_lvalue{false};
     bool         is_qualid{false};
     bool         qualid_error{false};
-    TypePtr      last_type{nullptr};
+    Type         last_type{nullptr};
     ASTProcedure last_proc{nullptr};
 
     Attr variable_type{Attr::null};

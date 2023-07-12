@@ -122,8 +122,8 @@ TEST(Type, Records) {
     EXPECT_EQ(std::string(*rec_type), "{a,b}");
 
     // Pointers to RECORD
-    TypePtr pr1 = std::make_shared<PointerType>(rec1);
-    TypePtr pr2 = std::make_shared<PointerType>(rec2);
+    Type pr1 = std::make_shared<PointerType>(rec1);
+    Type pr2 = std::make_shared<PointerType>(rec2);
 
     EXPECT_EQ(pr1->equiv(pr1), true);
     EXPECT_EQ(pr2->equiv(pr2), true);
