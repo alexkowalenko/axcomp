@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.22)
 # Change compiler here
 set(AX_BASE_CLANG /opt/homebrew/Cellar/llvm/17.0.0)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
+message(STATUS "C++ compiler = ${CMAKE_CXX_COMPILER}")
+
+# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 project (axcomp VERSION 0.2
                 LANGUAGES CXX C)

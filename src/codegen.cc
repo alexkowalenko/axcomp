@@ -1264,7 +1264,7 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
 }
 
 void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
-    // debug("ASTTerm {0}", std::string(*ast));
+    debug("ASTTerm {0}", std::string(*ast));
     ast->factor->accept(this);
     Value *L = last_value;
 
@@ -1289,6 +1289,14 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
 
         right->accept(this);
         Value *R = last_value;
+#if 0
+        llvm::dbgs() << "L and R ";
+        L->getType()->print(llvm::dbgs());
+        llvm::dbgs() << " ";
+        R->getType()->print(llvm::dbgs());
+        llvm::dbgs() << '\n';
+#endif
+        // debug("ASTTerm type L {0} R {1}", L->getType(), R->getType());
         if (right->get_type() == TypeTable::SetType) {
             // SET operations
             switch (op) {
@@ -1482,7 +1490,7 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
         }
         if (!ptr) {
             debug("ASTIdentifierPtr !ptr ");
-            last_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
+            last_value = builder.CreateLoad(res->type->get_llvm(), last_value, ast->value);
         }
         return;
     }

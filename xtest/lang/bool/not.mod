@@ -1,5 +1,4 @@
 MODULE not;
-    IMPORT Out;
     VAR x : BOOLEAN;
 BEGIN
     WriteBoolean(~TRUE); WriteLn;
@@ -9,4 +8,5 @@ BEGIN
     WriteBoolean(x); WriteLn;
     x := ~x;
     WriteBoolean(x); WriteLn;
+    RETURN 0;
 END not.
