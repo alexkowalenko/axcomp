@@ -1489,8 +1489,9 @@ void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
             last_value = res->value;
         }
         if (!ptr) {
-            debug("ASTIdentifierPtr !ptr ");
-            last_value = builder.CreateLoad(res->type->get_llvm(), last_value, ast->value);
+            debug("ASTIdentifierPtr !ptr type: {}", res->type->get_name());
+            auto type = types.resolve(res->type->get_name());
+            last_value = builder.CreateLoad(type->get_llvm(), last_value, ast->value);
         }
         return;
     }
