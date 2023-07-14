@@ -116,8 +116,7 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin INC/DEC");
     auto  args = codegen->do_arguments(ast);
     auto *arg = args[0];
-    if (arg->getType()->isPointerTy() &&
-        arg->getType()->getNonOpaquePointerElementType()->isIntegerTy()) {
+    if (arg->getType()->isPointerTy()) {
         // debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
         Value *inc = nullptr;

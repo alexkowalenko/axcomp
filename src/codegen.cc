@@ -1439,9 +1439,9 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
         is_var) {
         arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
     }
-    // debug("get_index: GEP number of indices: {0}", index.size());
-    // debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
-    last_value = builder.CreateGEP(arg_ptr->getType(), arg_ptr, index, "idx");
+    debug("get_index: GEP number of indices: {0}", index.size());
+    debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
+    last_value = builder.CreateGEP(ast->ident->get_type()->get_llvm(), arg_ptr, index, "idx");
 }
 
 /**
