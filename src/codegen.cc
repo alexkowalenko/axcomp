@@ -1147,6 +1147,7 @@ void CodeGenerator::visit_ASTExpr(ASTExpr ast) {
 }
 
 void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
+    debug("ASTSimpleExpr");
     ast->term->accept(this);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
@@ -1180,6 +1181,13 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
 
         right->accept(this);
         Value *R = last_value;
+#if 0
+        llvm::dbgs() << "L and R ";
+        L->getType()->print(llvm::dbgs());
+        llvm::dbgs() << " ";
+        R->getType()->print(llvm::dbgs());
+        llvm::dbgs() << '\n';
+#endif
         if (right->get_type() == TypeTable::SetType) {
             // SET operations
             switch (op) {
@@ -1399,7 +1407,7 @@ void CodeGenerator::visit_ASTRange_value(ASTRange const &ast, Value *case_value)
 }
 
 void CodeGenerator::get_index(ASTDesignator const &ast) {
-    debug("get_index");
+    debug("get_index: {}", std::string(*ast));
     visit_ASTQualidentPtr(ast->ident, true);
     auto                *arg_ptr = last_value;
     std::vector<Value *> index{TypeTable::IntType->make_value(0)};
@@ -1450,7 +1458,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator const &ast, bool ptr) {
-    // debug("ASTDesignator {0}", std::string(*ast));
+    debug("ASTDesignator {0}", std::string(*ast));
 
     visit_ASTQualidentPtr(ast->ident, ptr);
     // Check if has selectors
@@ -1462,13 +1470,13 @@ void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator const &ast, bool ptr) {
     get_index(ast);
     // debug("ASTDesignator: ptr:{0} is_var:{1}", ptr, is_var);
     if (!ptr && !is_var) {
-        // debug("ASTDesignator: load");
-        last_value = builder.CreateLoad(last_value->getType(), last_value, "idx");
+        debug("ASTDesignator: load");
+        last_value = builder.CreateLoad(ast->get_type()->get_llvm(), last_value, "idx");
     }
 }
 
 void CodeGenerator::visit_ASTQualidentPtr(ASTQualident const &ast, bool ptr) {
-    // debug("ASTQualident");
+    debug("ASTQualident");
     if (!ast->qual.empty()) {
         // modify the AST
         ast->id->value = ast->make_coded_id();
