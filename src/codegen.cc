@@ -1445,6 +1445,22 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     assert(arg_ptr->getType()->isPointerTy()); // NOLINT
     if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
         is_var) {
+        debug("Create load");
+#if 0
+        if (ast->ident->get_type()->id == TypeId::openarray) {
+            debug("openarray");
+            auto array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
+            arg_ptr = builder.CreateLoad(array_type->get_llvm(), arg_ptr);
+            debug("arg_ptr ");
+            arg_ptr->print(llvm::dbgs());
+            llvm::dbgs() << "\n";
+            ast->ident->get_type()->get_llvm()->print(llvm::dbgs());
+            llvm::dbgs() << "\n";
+            last_value =
+                builder.CreateGEP(array_type->base_type->get_llvm(), arg_ptr, index, "idx");
+            return;
+        }
+#endif
         arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
     }
     debug("get_index: GEP number of indices: {0}", index.size());
@@ -1458,7 +1474,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
  * @param ast
  */
 void CodeGenerator::visit_ASTDesignatorPtr(ASTDesignator const &ast, bool ptr) {
-    debug("ASTDesignator {0}", std::string(*ast));
+    debug("ASTDesignator {0} {1}", std::string(*ast), ptr);
 
     visit_ASTQualidentPtr(ast->ident, ptr);
     // Check if has selectors
@@ -1485,7 +1501,7 @@ void CodeGenerator::visit_ASTQualidentPtr(ASTQualident const &ast, bool ptr) {
 }
 
 void CodeGenerator::visit_ASTIdentifierPtr(ASTIdentifier const &ast, bool ptr) {
-    debug("ASTIdentifierPtr {0}", ast->value);
+    debug("ASTIdentifierPtr {0} {1}", ast->value, ptr);
     if (auto res = symboltable.find(ast->value); res) {
         last_value = res->value;
         if (res->is(Attr::var)) {
