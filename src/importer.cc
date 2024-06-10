@@ -13,7 +13,7 @@
 #include <sstream>
 
 #include <dirent.h>
-#include <fmt/core.h>
+#include <format>
 #include <sys/types.h>
 
 #include <llvm/ADT/Statistic.h>
@@ -31,7 +31,7 @@ namespace ax {
 constexpr auto DEBUG_TYPE{"importer "};
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
 }
 
@@ -67,7 +67,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 
         auto *dp = opendir(path.c_str());
         if (dp == nullptr) {
-            throw CodeGenException(fmt::format("Can't open {0}", path));
+            throw CodeGenException(std::format("Can't open {0}", path));
         }
         std::unique_ptr<DIR, DirCloser> dir(dp);
 
@@ -92,7 +92,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
                         inpect.check(ast);
                     } catch (AXException const &e) {
                         throw CodeGenException(
-                            fmt::format("Importer MODULE {0} error: {1} at: {2}", name,
+                            std::format("Importer MODULE {0} error: {1} at: {2}", name,
                                         e.error_msg(), full_path));
                     }
                     st_imports++;

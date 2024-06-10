@@ -8,10 +8,9 @@
 
 #include <cstddef>
 #include <exception>
+#include <format>
 #include <iostream>
 #include <memory>
-
-#include <fmt/core.h>
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -45,7 +44,8 @@ namespace ax {
 #define DEBUG_TYPE "codegen"
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' ' << fmt::format(fmt::runtime(format), msg...)
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' '
+                            << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
 }
 
@@ -415,9 +415,11 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
             a = builder.CreateLoad(a->getType(), a, cls_var);
 
             // put into symbol table
-            // * this is meant to shadow the variable in the outer scope otherwise the outer scope
+            // * this is meant to shadow the variable in the outer scope otherwise the
+            // outer scope
             // * variable changes.
-            // debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(), a->getName());
+            // debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(),
+            // a->getName());
             auto sym = mkSym(cls_type);
             sym->value = a;
             symboltable.put(cls_var, sym);
@@ -448,7 +450,8 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
     }
     symboltable.pop_frame();
     debug("ASTProcedure pop frame {0}", get_nested_name());
-    // set function in outer scope, incase function name identical in outer and inner scope
+    // set function in outer scope, incase function name identical in outer and
+    // inner scope
     symboltable.set_value(ast->name->value, f);
     nested_procs.pop_back();
     // Validate the generated code, checking for consistency.
@@ -487,7 +490,8 @@ void CodeGenerator::visit_ASTAssignment(ASTAssignment ast) {
     } else {
         visit_ASTDesignatorPtr(ast->ident, true);
     }
-    // debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
+    // debug("ASTAssignment store {0} in {1}", val->getName(),
+    // last_value->getName());
 
     // Do LLIR Type adjustments for the final assignment
     // LLVM has opaque pointer types
@@ -655,7 +659,7 @@ void CodeGenerator::visit_ASTIf(ASTIf ast) {
     int                       i = 0;
     std::for_each(begin(ast->elsif_clause), end(ast->elsif_clause),
                   [&](auto const & /*not used*/) {
-                      auto *e_block = BasicBlock::Create(context, fmt::format("elsif{0}", i++));
+                      auto *e_block = BasicBlock::Create(context, std::format("elsif{0}", i++));
                       elsif_blocks.push_back(e_block);
                   });
     BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
@@ -736,7 +740,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
     std::vector<BasicBlock *> element_blocks;
     int                       i = 0;
     std::for_each(begin(ast->elements), end(ast->elements), [&](auto const & /*not used*/) {
-        auto *block = BasicBlock::Create(context, fmt::format("case.element{0}", i));
+        auto *block = BasicBlock::Create(context, std::format("case.element{0}", i));
         element_blocks.push_back(block);
         i++;
     });
@@ -784,7 +788,7 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
         std::vector<BasicBlock *> range_blocks;
         i = 0;
         std::for_each(begin(range_list), end(range_list), [&](auto const & /*not used*/) {
-            auto *block = BasicBlock::Create(context, fmt::format("case.range{0}", i));
+            auto *block = BasicBlock::Create(context, std::format("case.range{0}", i));
             range_blocks.push_back(block);
             i++;
         });
@@ -842,7 +846,8 @@ void CodeGenerator::visit_ASTCase(ASTCase ast) {
                       [this](auto const &s) { s->accept(this); });
 
         builder.CreateBr(end_block);
-        else_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
+        else_block = builder.GetInsertBlock(); // necessary for correct generation
+                                               // of code NOLINT
     }
 
     // END
@@ -1571,7 +1576,7 @@ void CodeGenerator::visit_ASTString(ASTString ast) {
     if (auto res = global_strings.find(ast->value); res != global_strings.end()) {
         var = res->second;
     } else {
-        std::string name = fmt::format("STRING_{0}", string_const++);
+        std::string name = std::format("STRING_{0}", string_const++);
         var = generate_global(name, TypeTable::StrType->make_type(ast->value));
         var->setInitializer(TypeTable::StrType->make_value(ast->value));
         var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
@@ -1593,8 +1598,8 @@ std::string CodeGenerator::gen_module_id(std::string const &id) const {
 }
 
 /**
- * @brief like AST_Call but arguments already compiled, used from builtins to call other
- * functions, like LEN(STRING)
+ * @brief like AST_Call but arguments already compiled, used from builtins to
+ * call other functions, like LEN(STRING)
  *
  * @param name
  * @param ret
@@ -1696,8 +1701,8 @@ void CodeGenerator::setup_builtins() {
 }
 
 /**
- * @brief eject a BR instruction in a block if the statements where empty, or the previous is
- * not a BR or RET instruction
+ * @brief eject a BR instruction in a block if the statements where empty, or
+ * the previous is not a BR or RET instruction
  *
  */
 void CodeGenerator::ejectBranch(std::vector<ASTStatement> const &stats, BasicBlock *block,

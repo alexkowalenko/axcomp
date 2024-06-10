@@ -6,9 +6,8 @@
 
 #include "token.hh"
 
+#include <format>
 #include <map>
-
-#include <fmt/core.h>
 
 namespace ax {
 
@@ -101,13 +100,13 @@ std::string string(TokenType t) {
 Token::operator std::string() const {
     switch (type) {
     case TokenType::integer:
-        return fmt::format("integer({0})", val);
+        return std::format("integer({0})", val);
     case TokenType::hexinteger:
-        return fmt::format("hexinteger({0})", val);
+        return std::format("hexinteger({0})", val);
     case TokenType::chr:
-        return fmt::format("'{0}'", val_int);
+        return std::format("'{0}'", val_int);
     case TokenType::hexchr:
-        return fmt::format("hexchar({0})", val);
+        return std::format("hexchar({0})", val);
     case TokenType::ident:
         return val;
 

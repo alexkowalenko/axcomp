@@ -31,4 +31,3 @@ add_library(libax STATIC
 include_directories(src)
 
 target_include_directories(libax PUBLIC "${utfcpp_SOURCE_DIR}/source")
-target_link_libraries(libax PUBLIC fmt)

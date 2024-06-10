@@ -6,7 +6,7 @@
 #include "typetable.hh"
 #include "type.hh"
 
-#include <fmt/core.h>
+#include <format>
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/LLVMContext.h>
@@ -20,7 +20,7 @@ using namespace llvm;
 #define DEBUG_TYPE "types"
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
 }
 

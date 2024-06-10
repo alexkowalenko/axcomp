@@ -7,11 +7,10 @@
 #include "inspector.hh"
 
 #include <algorithm>
+#include <format>
 #include <iostream>
 #include <iterator>
 #include <memory>
-
-#include <fmt/core.h>
 
 #include <llvm/Support/Debug.h>
 
@@ -29,12 +28,12 @@ constexpr auto closure_arg{"_closure"};
 
 #define DEBUG_TYPE "inspector "
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << fmt::format(fmt::runtime(format), msg...)
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
 }
 
 Inspector::Inspector(SymbolFrameTable &s, TypeTable &t, ErrorManager &e, Importer &i)
-    : symboltable(s), types(t), errors(e), importer(i){};
+    : symboltable(s), types(t), errors(e), importer(i) {};
 
 void Inspector::visit_ASTModule(ASTModule ast) {
     debug("ASTModule");
@@ -61,7 +60,7 @@ void Inspector::visit_ASTImport(ASTImport ast) {
         const auto &[name, _] = i;
         auto found = importer.find_module(name->value, symboltable, types);
         if (!found) {
-            throw TypeError(fmt::format("MODULE {0} not found", name->value),
+            throw TypeError(std::format("MODULE {0} not found", name->value),
                             name->get_location());
         }
     });
@@ -73,12 +72,12 @@ void Inspector::visit_ASTConst(ASTConst ast) {
         c.value->accept(this);
         if (!is_const) {
             auto e =
-                TypeError(fmt::format("CONST {0} is not a constant expression", c.ident->value),
+                TypeError(std::format("CONST {0} is not a constant expression", c.ident->value),
                           ast->get_location());
             errors.add(e);
         }
         if (c.ident->is(Attr::read_only)) {
-            auto e = TypeError(fmt::format("CONST {0} is always read only", c.ident->value),
+            auto e = TypeError(std::format("CONST {0} is always read only", c.ident->value),
                                ast->get_location());
             errors.add(e);
         }
@@ -96,7 +95,7 @@ void Inspector::visit_ASTTypeDec(ASTTypeDec ast) {
     debug("ASTTypeDec");
     for (auto const &[name, type_expr] : ast->types) {
         if (types.find(name->value)) {
-            auto e = TypeError(fmt::format("TYPE {0} already defined", name->value),
+            auto e = TypeError(std::format("TYPE {0} already defined", name->value),
                                ast->get_location());
             errors.add(e);
             continue;
@@ -130,7 +129,7 @@ void Inspector::visit_ASTVar(ASTVar ast) {
             debug("ASTVar resolve pointer type: {0}", ptr_type->get_ref_name());
             auto ref = types.resolve(ptr_type->get_ref_name());
             if (!ref) {
-                auto e = TypeError(fmt::format("TYPE {0} not found", ptr_type->get_ref_name()),
+                auto e = TypeError(std::format("TYPE {0} not found", ptr_type->get_ref_name()),
                                    ast->get_location());
                 errors.add(e);
             }
@@ -147,14 +146,14 @@ void Inspector::do_receiver(RecVar &r) {
     auto t = types.resolve(r.second->value);
     if (!t) {
         auto e = TypeError(
-            fmt::format("bound type {0} not found for type-bound PROCEDURE", r.second->value),
+            std::format("bound type {0} not found for type-bound PROCEDURE", r.second->value),
             r.second->get_location());
         errors.add(e);
         return;
     }
     if (t->id != TypeId::record && !is_ptr_to_record(t)) {
         auto e = TypeError(
-            fmt::format(
+            std::format(
                 "bound type {0} must be a RECORD or POINTER TO RECORD in type-bound PROCEDURE",
                 r.second->value),
             r.second->get_location());
@@ -169,7 +168,7 @@ std::pair<Type, ProcedureType::ParamsList> Inspector::do_proc(ASTProc_ &ast) {
     if (auto name_check = symboltable.find(ast.name->value);
         name_check && name_check->type->id != TypeId::procedureFwd) {
         auto e =
-            TypeError(fmt::format("PROCEDURE {0}, identifier is already defined", ast.name->value),
+            TypeError(std::format("PROCEDURE {0}, identifier is already defined", ast.name->value),
                       ast.get_location());
         errors.add(e);
     }
@@ -183,7 +182,7 @@ std::pair<Type, ProcedureType::ParamsList> Inspector::do_proc(ASTProc_ &ast) {
 
     // Check global modifiers
     if (ast.name->is(Attr::read_only)) {
-        auto e = TypeError(fmt::format("PROCEDURE {0} is always read only", ast.name->value),
+        auto e = TypeError(std::format("PROCEDURE {0} is always read only", ast.name->value),
                            ast.get_location());
         errors.add(e);
     }
@@ -316,13 +315,13 @@ void Inspector::visit_ASTAssignment(ASTAssignment ast) {
     if (res) {
         if (res->is(Attr::cnst)) {
             auto e = TypeError(
-                fmt::format("Can't assign to CONST variable {0}", std::string(*ast->ident)),
+                std::format("Can't assign to CONST variable {0}", std::string(*ast->ident)),
                 ast->get_location());
             errors.add(e);
             return;
         }
         if (res->is(Attr::read_only)) {
-            auto e = TypeError(fmt::format("Can't assign to read only (-) variable {0}",
+            auto e = TypeError(std::format("Can't assign to read only (-) variable {0}",
                                            std::string(*ast->ident)),
                                ast->get_location());
             errors.add(e);
@@ -342,7 +341,7 @@ void Inspector::visit_ASTAssignment(ASTAssignment ast) {
     last_type = alias;
     if (!(types.check(TokenType::assign, last_type, expr_type) ||
           (last_type->is_assignable() && last_type->equiv(expr_type)))) {
-        auto e = TypeError(fmt::format("Can't assign expression of type {0} to {1}",
+        auto e = TypeError(std::format("Can't assign expression of type {0} to {1}",
                                        string(expr_type), std::string(*ast->ident)),
                            ast->get_location());
         errors.add(e);
@@ -380,7 +379,7 @@ void Inspector::visit_ASTReturn(ASTReturn ast) {
 
         if (!expr_type->equiv(retType)) {
             auto e = TypeError(
-                fmt::format("RETURN type ({1}) does not match return type for function {0}: {2}",
+                std::format("RETURN type ({1}) does not match return type for function {0}: {2}",
                             last_proc->name->value, retType->get_name(), expr_type->get_name()),
                 ast->get_location());
             errors.add(e);
@@ -397,7 +396,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
     if (!res) {
         std::replace(begin(name), end(name), '_', '.');
         auto e =
-            CodeGenException(fmt::format("undefined PROCEDURE {0}", name), ast->get_location());
+            CodeGenException(std::format("undefined PROCEDURE {0}", name), ast->get_location());
         errors.add(e);
         return;
     }
@@ -408,7 +407,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
         auto field = ast->name->first_field();
         if (!field) {
             std::replace(begin(name), end(name), '_', '.');
-            auto e = TypeError(fmt::format("{0} is not a PROCEDURE", name), ast->get_location());
+            auto e = TypeError(std::format("{0} is not a PROCEDURE", name), ast->get_location());
             errors.add(e);
             return;
         }
@@ -416,14 +415,14 @@ void Inspector::visit_ASTCall(ASTCall ast) {
         name = field->value;
         if (res = symboltable.find(name); !res) {
             std::replace(begin(name), end(name), '_', '.');
-            auto e = TypeError(fmt::format("{0} is not a PROCEDURE", name), ast->get_location());
+            auto e = TypeError(std::format("{0} is not a PROCEDURE", name), ast->get_location());
             errors.add(e);
             return;
         }
 
         procType = std::dynamic_pointer_cast<ProcedureType>(res->type);
         if (!procType) {
-            auto e = TypeError(fmt::format("{0} is not a PROCEDURE", name), ast->get_location());
+            auto e = TypeError(std::format("{0} is not a PROCEDURE", name), ast->get_location());
             errors.add(e);
             return;
         }
@@ -435,7 +434,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
         debug("ASTCall type {0}", string(base_type));
         if (!base_type->equiv(procType->receiver)) {
             auto e = TypeError(
-                fmt::format("base type: {0} does not match bound procedure {1}, type: {2}",
+                std::format("base type: {0} does not match bound procedure {1}, type: {2}",
                             string(base_type), name, string(procType->receiver)),
                 ast->get_location());
             errors.add(e);
@@ -448,7 +447,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
 
         if (ast->args.size() != procType->params.size()) {
             std::replace(begin(name), end(name), '_', '.');
-            auto e = TypeError(fmt::format("calling PROCEDURE {0}, incorrect number of "
+            auto e = TypeError(std::format("calling PROCEDURE {0}, incorrect number of "
                                            "arguments: {1} instead of {2}",
                                            name, ast->args.size(), procType->params.size()),
                                ast->get_location());
@@ -471,7 +470,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
             if (!is_lvalue || is_const) {
                 debug("ASTCall is_lvalue: {0} is_const: {0}", is_lvalue, is_const);
                 std::replace(begin(name), end(name), '_', '.');
-                auto e = TypeError(fmt::format("procedure call {0} does not have a variable "
+                auto e = TypeError(std::format("procedure call {0} does not have a variable "
                                                "reference for VAR parameter {2}",
                                                name, last_type->get_name(),
                                                (*proc_iter).first->get_name()),
@@ -503,7 +502,7 @@ void Inspector::visit_ASTCall(ASTCall ast) {
             std::replace(begin(name), end(name), '_', '.');
             debug("incorrect parameter");
             auto e =
-                TypeError(fmt::format("procedure call {0} has incorrect "
+                TypeError(std::format("procedure call {0} has incorrect "
                                       "type {1} for parameter {2}",
                                       name, last_type->get_name(), (*proc_iter).first->get_name()),
                           ast->get_location());
@@ -562,7 +561,7 @@ void Inspector::visit_ASTCase(ASTCase ast) {
                 auto casexpr = std::get<ASTSimpleExpr>(expr);
                 casexpr->accept(this);
                 if (!last_type->equiv(case_type)) {
-                    auto ex = TypeError(fmt::format("CASE expression mismatch type {0} does not "
+                    auto ex = TypeError(std::format("CASE expression mismatch type {0} does not "
                                                     "match CASE expression type {1}",
                                                     string(last_type), string(case_type)),
                                         casexpr->get_location());
@@ -573,7 +572,7 @@ void Inspector::visit_ASTCase(ASTCase ast) {
                 range->first->accept(this);
                 if (!last_type->equiv(case_type)) {
                     auto ex = TypeError(
-                        fmt::format("CASE expression range mismatch first type {0} does not "
+                        std::format("CASE expression range mismatch first type {0} does not "
                                     "match CASE expression type {1}",
                                     string(last_type), string(case_type)),
                         range->get_location());
@@ -582,7 +581,7 @@ void Inspector::visit_ASTCase(ASTCase ast) {
                 range->last->accept(this);
                 if (!last_type->equiv(case_type)) {
                     auto ex = TypeError(
-                        fmt::format("CASE expression range mismatch last type {0} does not "
+                        std::format("CASE expression range mismatch last type {0} does not "
                                     "match CASE expression type {1}",
                                     string(last_type), string(case_type)),
                         range->get_location());
@@ -619,13 +618,13 @@ void Inspector::visit_ASTFor(ASTFor ast) {
 
     auto res = symboltable.find(ast->ident->value);
     if (!res) {
-        auto e = TypeError(fmt::format("FOR index variable {0} not defined", ast->ident->value),
+        auto e = TypeError(std::format("FOR index variable {0} not defined", ast->ident->value),
                            ast->get_location());
         errors.add(e);
     } else {
         auto resType = types.resolve(res->type->get_name());
         if (!resType || !ast->start->get_type()->equiv(resType)) {
-            auto e = TypeError(fmt::format("FOR index variable {0} wrong type", ast->ident->value),
+            auto e = TypeError(std::format("FOR index variable {0} wrong type", ast->ident->value),
                                ast->get_location());
             errors.add(e);
         }
@@ -670,7 +669,7 @@ void Inspector::visit_ASTExpr(ASTExpr ast) {
         ast->relation_expr->accept(this);
         auto result_type = types.check(*ast->relation, t1, last_type);
         if (!result_type) {
-            auto e = TypeError(fmt::format("operator {0} doesn't takes types {1} and {2}",
+            auto e = TypeError(std::format("operator {0} doesn't takes types {1} and {2}",
                                            string(*ast->relation), string(t1), string(last_type)),
                                ast->get_location());
             errors.add(e);
@@ -692,7 +691,7 @@ void Inspector::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
         t.second->accept(this);
         auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
-            auto e = TypeError(fmt::format("operator {0} doesn't takes types {1} and {2}",
+            auto e = TypeError(std::format("operator {0} doesn't takes types {1} and {2}",
                                            string(t.first), string(t1), string(last_type)),
                                ast->get_location());
             errors.add(e);
@@ -715,7 +714,7 @@ void Inspector::visit_ASTTerm(ASTTerm ast) {
         t.second->accept(this);
         auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
-            auto e = TypeError(fmt::format("operator {0} doesn't takes types {1} and {2}",
+            auto e = TypeError(std::format("operator {0} doesn't takes types {1} and {2}",
                                            string(t.first), string(t1), string(last_type)),
                                ast->get_location());
             errors.add(e);
@@ -778,7 +777,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator ast) {
     auto b_type = last_type;
     if (!(is_array || is_record || is_string || is_pointer) && !ast->selectors.empty()) {
         auto e =
-            TypeError(fmt::format("variable {0} is not an indexable type", ast->ident->id->value),
+            TypeError(std::format("variable {0} is not an indexable type", ast->ident->id->value),
                       ast->get_location());
         errors.add(e);
         return;
@@ -819,7 +818,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator ast) {
                 // check index count, zero array dimensions means open array
                 if (!array_type->dimensions.empty() && array_type->dimensions.size() != s.size()) {
                     auto e =
-                        TypeError(fmt::format("array indexes don't match array dimensions of {0}",
+                        TypeError(std::format("array indexes don't match array dimensions of {0}",
                                               ast->ident->id->value),
                                   ast->get_location());
                     errors.add(e);
@@ -837,7 +836,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator ast) {
             debug("ASTDesignator record field");
             auto &s = std::get<FieldRef>(ss);
             if (!is_record) {
-                auto e = TypeError(fmt::format("value not RECORD: {0}", last_type->get_name()),
+                auto e = TypeError(std::format("value not RECORD: {0}", last_type->get_name()),
                                    s.first->get_location());
                 errors.add(e);
                 return;
@@ -846,7 +845,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator ast) {
             auto record_type = std::dynamic_pointer_cast<RecordType>(b_type);
             auto field = record_type->get_type(s.first->value);
             if (!field) {
-                auto e = TypeError(fmt::format("no field <{0}> in RECORD", s.first->value),
+                auto e = TypeError(std::format("no field <{0}> in RECORD", s.first->value),
                                    ast->get_location());
                 errors.add(e);
                 return;
@@ -864,7 +863,7 @@ void Inspector::visit_ASTDesignator(ASTDesignator ast) {
             // Reference
             if (!is_pointer) {
                 auto e = TypeError(
-                    fmt::format("variable {0} is not a pointer ", std::string(*ast->ident)),
+                    std::format("variable {0} is not a pointer ", std::string(*ast->ident)),
                     ast->get_location());
                 errors.add(e);
                 return;
@@ -889,7 +888,7 @@ void Inspector::visit_ASTType(ASTType ast) {
                               auto result = types.find(type->id->value);
                               if (!result) {
                                   throw TypeError(
-                                      fmt::format("Unknown type: {0}", type->id->value),
+                                      std::format("Unknown type: {0}", type->id->value),
                                       ast->get_location());
                               }
                               debug("ASTType 2 {0}", type->id->value);
@@ -917,12 +916,12 @@ void Inspector::visit_ASTArray(ASTArray ast) {
         expr->accept(this);
         if (!is_const) {
             auto e =
-                TypeError(fmt::format("ARRAY expecting constant expression for dimension {0}", i),
+                TypeError(std::format("ARRAY expecting constant expression for dimension {0}", i),
                           ast->get_location());
             errors.add(e);
         }
         if (!last_type->is_numeric()) {
-            auto e = TypeError(fmt::format("ARRAY expecting numeric size for dimension {0}", i),
+            auto e = TypeError(std::format("ARRAY expecting numeric size for dimension {0}", i),
                                ast->get_location());
             errors.add(e);
         }
@@ -955,11 +954,11 @@ void Inspector::visit_ASTRecord(ASTRecord ast) {
         debug("ASTRecord base {0}", baseType_name);
         auto baseType = types.resolve(baseType_name);
         if (!baseType) {
-            auto e = TypeError(fmt::format("RECORD base type {0} not found", baseType_name),
+            auto e = TypeError(std::format("RECORD base type {0} not found", baseType_name),
                                ast->base->get_location());
             errors.add(e);
         } else if (baseType->id != TypeId::record) {
-            auto e = TypeError(fmt::format("RECORD base type {0} is not a record", baseType_name),
+            auto e = TypeError(std::format("RECORD base type {0} is not a record", baseType_name),
                                ast->base->get_location());
             errors.add(e);
         } else {
@@ -974,7 +973,7 @@ void Inspector::visit_ASTRecord(ASTRecord ast) {
 
         // check if not already defined
         if (rec_type->has_field(v.first->value)) {
-            auto e = TypeError(fmt::format("RECORD already has field {0}", v.first->value),
+            auto e = TypeError(std::format("RECORD already has field {0}", v.first->value),
                                v.first->get_location());
             errors.add(e);
         } else {
@@ -1035,7 +1034,7 @@ void Inspector::visit_ASTQualident(ASTQualident ast) {
         visit_ASTIdentifier(new_ast);
         if (qualid_error) {
             auto e = CodeGenException(
-                fmt::format("undefined identifier {0} in MODULE {1}", ast->id->value, ast->qual),
+                std::format("undefined identifier {0} in MODULE {1}", ast->id->value, ast->qual),
                 ast->get_location());
             errors.add(e);
         }
@@ -1057,7 +1056,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier ast) {
                 return;
             }
 
-            auto e = CodeGenException(fmt::format("undefined identifier {0}", ast->value),
+            auto e = CodeGenException(std::format("undefined identifier {0}", ast->value),
                                       ast->get_location());
             errors.add(e);
             return;
@@ -1070,7 +1069,7 @@ void Inspector::visit_ASTIdentifier(ASTIdentifier ast) {
     auto resType = types.resolve(res->type->get_name());
     if (!resType) {
         auto e = TypeError(
-            fmt::format("Unknown type: {0} for identifier {1}", res->type->get_name(), ast->value),
+            std::format("Unknown type: {0} for identifier {1}", res->type->get_name(), ast->value),
             ast->get_location());
         errors.add(e);
         return;
@@ -1096,7 +1095,7 @@ void Inspector::visit_ASTSet(ASTSet ast) {
                     exp->accept(this);
                     if (!TypeTable::IntType->equiv(last_type)) {
                         auto e = TypeError(
-                            fmt::format("Expression {0} is not a integer type", std::string(*exp)),
+                            std::format("Expression {0} is not a integer type", std::string(*exp)),
                             exp->get_location());
                         errors.add(e);
                     }
@@ -1106,7 +1105,7 @@ void Inspector::visit_ASTSet(ASTSet ast) {
                     debug("ASTSet range");
                     exp->first->accept(this);
                     if (!TypeTable::IntType->equiv(last_type)) {
-                        auto e = TypeError(fmt::format("Expression {0} is not a integer type",
+                        auto e = TypeError(std::format("Expression {0} is not a integer type",
                                                        std::string(*exp->first)),
                                            exp->first->get_location());
                         errors.add(e);
@@ -1114,7 +1113,7 @@ void Inspector::visit_ASTSet(ASTSet ast) {
                     set_const &= is_const;
                     exp->last->accept(this);
                     if (!TypeTable::IntType->equiv(last_type)) {
-                        auto e = TypeError(fmt::format("Expression {0} is not a integer type",
+                        auto e = TypeError(std::format("Expression {0} is not a integer type",
                                                        std::string(*exp->last)),
                                            exp->last->get_location());
                         errors.add(e);

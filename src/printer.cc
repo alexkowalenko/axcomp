@@ -8,8 +8,7 @@
 
 #include <algorithm>
 #include <experimental/iterator>
-
-#include <fmt/core.h>
+#include <format>
 
 #include "ast.hh"
 #include "token.hh"
@@ -18,7 +17,7 @@ namespace ax {
 
 void ASTPrinter::visit_ASTModule(ASTModule ast) {
 
-    os << fmt::format("MODULE {0};\n", ast->name);
+    os << std::format("MODULE {0};\n", ast->name);
     if (ast->import) {
         ast->import->accept(this);
     }
@@ -39,7 +38,7 @@ void ASTPrinter::visit_ASTModule(ASTModule ast) {
         os << "BEGIN\n";
         print_stats(ast->stats);
     }
-    os << std::string(fmt::format("END {0}.\n", ast->name));
+    os << std::string(std::format("END {0}.\n", ast->name));
 }
 
 void ASTPrinter::visit_ASTImport(ASTImport ast) {
@@ -161,7 +160,7 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure ast) {
         os << indent() << "BEGIN\n";
         print_stats(ast->stats);
     }
-    os << indent() << std::string(fmt::format("END {0};\n", ast->name->value));
+    os << indent() << std::string(std::format("END {0};\n", ast->name->value));
 }
 
 void ASTPrinter::visit_ASTProcedureForward(ASTProcedureForward ast) {
@@ -324,7 +323,7 @@ void ASTPrinter::visit_ASTBlock(ASTBlock ast) {
 void ASTPrinter::visit_ASTExpr(ASTExpr ast) {
     ast->expr->accept(this);
     if (ast->relation) {
-        os << std::string(fmt::format(" {0} ", string(*ast->relation)));
+        os << std::string(std::format(" {0} ", string(*ast->relation)));
         ast->relation_expr->accept(this);
     }
 }
@@ -342,7 +341,7 @@ void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
     ast->term->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
         if (t.first == TokenType::or_k) {
-            os << std::string(fmt::format(" {0} ", string(t.first)));
+            os << std::string(std::format(" {0} ", string(t.first)));
         } else {
             os << string(t.first);
         }
@@ -356,7 +355,7 @@ void ASTPrinter::visit_ASTTerm(ASTTerm ast) {
         if (t.first == TokenType::asterisk) {
             os << string(t.first);
         } else {
-            os << std::string(fmt::format(" {0} ", string(t.first)));
+            os << std::string(std::format(" {0} ", string(t.first)));
         }
         t.second->accept(this);
     });

@@ -6,7 +6,7 @@
 
 #include "defparser.hh"
 
-#include <fmt/core.h>
+#include <format>
 #include <optional>
 
 #include "error.hh"
@@ -40,7 +40,7 @@ ASTModule DefParser::parse_module() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
-        throw ParseException(fmt::format("END identifier name: {0} doesn't match module name: {1}",
+        throw ParseException(std::format("END identifier name: {0} doesn't match module name: {1}",
                                          tok.val, module->name),
                              lexer.get_location());
     }

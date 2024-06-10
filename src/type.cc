@@ -8,6 +8,7 @@
 #include "typetable.hh"
 
 #include <climits>
+#include <format>
 #include <llvm/Support/Debug.h>
 
 #include "utf8.h"
@@ -114,7 +115,7 @@ llvm::Type *StringType::make_type_ptr() {
 std::string ProcedureType::get_print(bool forward) {
     std::string res{forward ? "^" : ""};
     if (receiver) {
-        res += fmt::format("({0})", string(receiver));
+        res += std::format("({0})", string(receiver));
     }
     res += '(';
     const auto *insert = "";
@@ -157,9 +158,9 @@ ProcedureFwdType::operator std::string() {
 }
 
 ArrayType::operator std::string() {
-    std::string result = fmt::format("{0}[", string(base_type));
+    std::string result = std::format("{0}[", string(base_type));
     for (auto iter = dimensions.cbegin(); iter != dimensions.cend(); iter++) {
-        result += fmt::format("{0}", *iter);
+        result += std::format("{0}", *iter);
         if ((iter + 1) != dimensions.end()) {
             result += ',';
         }
@@ -192,7 +193,7 @@ llvm::Constant *ArrayType::get_init() const {
 }
 
 OpenArrayType::operator std::string() {
-    return fmt::format("{0}[]", string(base_type));
+    return std::format("{0}[]", string(base_type));
 }
 
 llvm::Type *OpenArrayType::get_llvm() const {

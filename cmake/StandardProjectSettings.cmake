@@ -73,12 +73,3 @@ link_directories(${ICU_LIBRARY_DIRS})
 include(cmake/CPM.cmake)
 CPMAddPackage("gh:nemtrif/utfcpp#v3.2.1")
 CPMAddPackage("gh:ivmai/bdwgc#v8.2.4")
-
-CPMAddPackage(
-    NAME fmt
-    GITHUB_REPOSITORY fmtlib/fmt
-    GIT_TAG 10.0.0
-    OPTIONS
-      "BUILD_SHARED_LIBS OFF"
-      "FMT_INSTALL OFF"
-  )

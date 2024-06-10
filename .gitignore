@@ -22,3 +22,5 @@ comparison.pdf
 __latexindent_temp.tex
 *.fdb_latexmk
 *.fls
+
+.DS_Store

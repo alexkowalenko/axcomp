@@ -29,7 +29,6 @@ To build the compiler:
 - LLVM 17.0.0.
 - UTFCPP v3.2.1 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
 - Boehm garbage collection
-- fmtlib 10.0.0
 - CMake - build and test the compiler.
 
 To test:

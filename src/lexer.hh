@@ -11,9 +11,8 @@
 #include <iostream>
 #include <map>
 #include <stack>
+#include <format>
 #include <string>
-
-#include <fmt/core.h>
 
 #include "ax.hh"
 #include "error.hh"
@@ -373,7 +372,7 @@ Token LexerImplementation<C, CharClass>::scan_string(C start) {
         }
         CharClass::add_string(str, c);
         if (str.length() > MAX_STR_LITERAL) {
-            throw LexicalException(fmt::format("String literal greater than {0}", MAX_STR_LITERAL),
+            throw LexicalException(std::format("String literal greater than {0}", MAX_STR_LITERAL),
                                    get_location());
         }
         c = get();

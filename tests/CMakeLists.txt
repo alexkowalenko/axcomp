@@ -18,7 +18,7 @@ macro(package_add_test TESTNAME)
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
     target_link_libraries(${TESTNAME} PRIVATE project_options project_warnings 
-                            libax axtest gtest gtest_main fmt ${llvm_libs} ${ICU_LIBRARIES})
+                            libax axtest gtest gtest_main ${llvm_libs} ${ICU_LIBRARIES})
     
     # gtest_discover_tests replaces gtest_add_tests,
     gtest_discover_tests(${TESTNAME}

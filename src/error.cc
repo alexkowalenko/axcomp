@@ -5,16 +5,15 @@
 //
 
 #include <algorithm>
+#include <format>
 #include <iostream>
-
-#include <fmt/core.h>
 
 #include "error.hh"
 
 namespace ax {
 
 std::string AXException::error_msg() const {
-    return std::string(fmt::format("{0}: {1}", std::string(location), msg));
+    return std::string(std::format("{0}: {1}", std::string(location), msg));
 }
 
 void ErrorManager::print_errors(std::ostream &out) {
