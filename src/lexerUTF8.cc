@@ -45,7 +45,7 @@ void LexerUTF8::get_line() {
     buf.push_back('\n');
     // check UTF-8 correctness
     if (!utf8::is_valid(buf.begin(), buf.end())) {
-        throw LexicalException("Not valid UTF-8 text", get_location());
+        throw LexicalException(get_location(), "Not valid UTF-8 text");
     }
     ptr = buf.begin();
 };

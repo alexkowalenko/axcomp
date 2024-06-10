@@ -67,7 +67,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 
         auto *dp = opendir(path.c_str());
         if (dp == nullptr) {
-            throw CodeGenException(std::format("Can't open {0}", path));
+            throw CodeGenException("Can't open {0}", path);
         }
         std::unique_ptr<DIR, DirCloser> dir(dp);
 
@@ -91,9 +91,8 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
                         Inspector inpect(module_symbols, types, errors, *this);
                         inpect.check(ast);
                     } catch (AXException const &e) {
-                        throw CodeGenException(
-                            std::format("Importer MODULE {0} error: {1} at: {2}", name,
-                                        e.error_msg(), full_path));
+                        throw CodeGenException("Importer MODULE {0} error: {1} at: {2}", name,
+                                               e.error_msg(), full_path);
                     }
                     st_imports++;
                     return module_symbols;

@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <vector>
 
@@ -16,34 +17,66 @@ namespace ax {
 class AXException : std::exception {
 
   public:
-    AXException(std::string m, Location const &l) : msg(std::move(m)), location(l){};
+    AXException(Location const &l, std::string m) : location(l), msg(std::move(m)) {};
     ~AXException() override = default;
 
     [[nodiscard]] std::string error_msg() const;
 
-    std::string msg;
     Location    location;
+    std::string msg;
+
+  protected:
+    AXException() = default;
 };
 
 class LexicalException : public AXException {
   public:
-    LexicalException(std::string const &m, Location const &l) : AXException(m, l){};
+    LexicalException(Location const &l, std::string m) : AXException(l, m) {};
+
+    template <typename... Args>
+    LexicalException(Location const &l, std::string fmt, const Args &...args) {
+        location = l;
+        msg = std::vformat(fmt, std::make_format_args(args...));
+    };
 };
 
 class ParseException : public AXException {
   public:
-    ParseException(std::string const &m, Location const &l) : AXException(m, l){};
+    ParseException(Location const &l, std::string const &m) : AXException(l, m) {};
+
+    template <typename... Args>
+    ParseException(Location const &l, std::string fmt, const Args &...args) {
+        location = l;
+        msg = std::vformat(fmt, std::make_format_args(args...));
+    };
 };
 
 class TypeError : public AXException {
   public:
-    TypeError(std::string const &m, Location const &l) : AXException(m, l){};
+    TypeError(Location const &l, std::string const &m) : AXException(l, m) {};
+
+    template <typename... Args>
+    TypeError(Location const &l, std::string fmt, const Args &...args) {
+        location = l;
+        msg = std::vformat(fmt, std::make_format_args(args...));
+    };
 };
 
 class CodeGenException : public AXException {
   public:
-    explicit CodeGenException(std::string const &m) : AXException(m, Location{}){};
-    CodeGenException(std::string const &m, Location const &l) : AXException(m, l){};
+    explicit CodeGenException(std::string const &m) : AXException(Location{}, m) {};
+
+    template <typename... Args> CodeGenException(std::string fmt, const Args &...args) {
+        msg = std::vformat(fmt, std::make_format_args(args...));
+    };
+
+    CodeGenException(Location const &l, std::string const &m) : AXException(l, m) {};
+
+    template <typename... Args>
+    CodeGenException(Location const &l, std::string fmt, const Args &...args) {
+        location = l;
+        msg = std::vformat(fmt, std::make_format_args(args...));
+    };
 };
 
 class ErrorManager {
@@ -55,7 +88,7 @@ class ErrorManager {
     auto first() { return error_list.begin(); };
 
   private:
-    std::vector<AXException> error_list{};
+    std::vector<AXException> error_list;
 };
 
 } // namespace ax

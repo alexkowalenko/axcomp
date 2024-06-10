@@ -40,9 +40,9 @@ ASTModule DefParser::parse_module() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
-        throw ParseException(std::format("END identifier name: {0} doesn't match module name: {1}",
-                                         tok.val, module->name),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(),
+                             "END identifier name: {0} doesn't match module name: {1}", tok.val,
+                             module->name);
     }
     get_token(TokenType::period);
     return module;

@@ -23,7 +23,7 @@ namespace ax {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
-#pragma clang diagnostic                                         pop
+#pragma clang diagnostic pop
 
 // Custom emoji checker
 // This is a hack.
@@ -55,7 +55,7 @@ class Character32 : CharacterClass<Char> {
         try {
             utf8::append(char32_t(c), s);
         } catch (utf8::invalid_code_point &e) {
-            throw LexicalException("Invalid code Point", Location(0, 0));
+            throw LexicalException(Location(0, 0), "Invalid code Point");
         };
     }
 };

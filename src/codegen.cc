@@ -207,7 +207,7 @@ void CodeGenerator::doTopConsts(ASTConst const &ast) {
         if (isa<Constant>(last_value)) {
             gVar->setInitializer(dyn_cast<Constant>(last_value));
         } else {
-            throw CodeGenException("Expression based CONSTs not supported.", ast->get_location());
+            throw CodeGenException(ast->get_location(), "Expression based CONSTs not supported.");
         }
         gVar->setConstant(true);
         symboltable.set_value(c.ident->value, gVar);
@@ -523,7 +523,7 @@ void CodeGenerator::visit_ASTExit(ASTExit ast) {
     if (last_end) {
         builder.CreateBr(last_end);
     } else {
-        throw CodeGenException("EXIT: no enclosing loop.", ast->get_location());
+        throw CodeGenException(ast->get_location(), "EXIT: no enclosing loop.");
     }
 }
 
@@ -1204,8 +1204,8 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
                 last_value = builder.CreateAnd(L, last_value, "setdiff");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr with sign" + string(op),
-                                       ast->get_location());
+                throw CodeGenException(ast->get_location(),
+                                       "ASTSimpleExpr with sign" + string(op));
             }
         } else if (L->getType() == TypeTable::StrType->get_llvm() ||
                    R->getType() == TypeTable::StrType->get_llvm()) {
@@ -1235,8 +1235,8 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
                 last_value = builder.CreateOr(L, R, "subtmp");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr with sign" + string(op),
-                                       ast->get_location());
+                throw CodeGenException(ast->get_location(),
+                                       "ASTSimpleExpr with sign" + string(op));
             }
         } else {
             // Do float calculations
@@ -1255,8 +1255,8 @@ void CodeGenerator::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
                 last_value = builder.CreateFSub(L, R, "subtmp");
                 break;
             default:
-                throw CodeGenException("ASTSimpleExpr float with sign" + string(op),
-                                       ast->get_location());
+                throw CodeGenException(ast->get_location(),
+                                       "ASTSimpleExpr float with sign" + string(op));
             }
         }
         L = last_value;
@@ -1326,7 +1326,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
                 break;
             }
             default:
-                throw CodeGenException("ASTTerm with sign" + string(op), ast->get_location());
+                throw CodeGenException(ast->get_location(), "ASTTerm with sign" + string(op));
             }
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
@@ -1345,7 +1345,7 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
                 last_value = builder.CreateAnd(L, R, "modtmp");
                 break;
             default:
-                throw CodeGenException("ASTTerm with sign" + string(op), ast->get_location());
+                throw CodeGenException(ast->get_location(), "ASTTerm with sign" + string(op));
             }
         } else {
             // Do float calculations
@@ -1364,8 +1364,8 @@ void CodeGenerator::visit_ASTTerm(ASTTerm ast) {
                 last_value = builder.CreateFDiv(L, R, "divtmp");
                 break;
             default:
-                throw CodeGenException("ASTTerm float with sign " + string(op),
-                                       ast->get_location());
+                throw CodeGenException(ast->get_location(),
+                                       "ASTTerm float with sign " + string(op));
             }
         }
         L = last_value;

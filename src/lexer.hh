@@ -8,10 +8,10 @@
 
 #include <cctype>
 #include <concepts>
+#include <format>
 #include <iostream>
 #include <map>
 #include <stack>
-#include <format>
 #include <string>
 
 #include "ax.hh"
@@ -245,7 +245,7 @@ Token LexerImplementation<C, CharClass>::get_token() {
         return scan_ident(c);
     }
     std::cout << "character: " << int(c) << std::endl;
-    throw LexicalException("Unknown character " + CharClass::to_string(c), get_location());
+    throw LexicalException(get_location(), "Unknown character " + CharClass::to_string(c));
 }
 
 template <std::signed_integral C, class CharClass>
@@ -368,12 +368,12 @@ Token LexerImplementation<C, CharClass>::scan_string(C start) {
     while (c != start) {
         if (c == '\n') {
             // End of line reached - error
-            throw LexicalException("Unterminated string", get_location());
+            throw LexicalException(get_location(), "Unterminated string");
         }
         CharClass::add_string(str, c);
         if (str.length() > MAX_STR_LITERAL) {
-            throw LexicalException(std::format("String literal greater than {0}", MAX_STR_LITERAL),
-                                   get_location());
+            throw LexicalException(get_location(), "String literal greater than {0}",
+                                   MAX_STR_LITERAL);
         }
         c = get();
     };

@@ -54,9 +54,8 @@ void Parser::set_attrs(ASTIdentifier const &ident) {
 Token Parser::get_token(TokenType const &t) {
     auto tok = lexer.get_token();
     if (tok.type != t) {
-        throw ParseException(
-            std::format("Unexpected token: {0} - expecting {1}", std::string(tok), string(t)),
-            lexer.get_location());
+        throw ParseException(lexer.get_location(), "Unexpected token: {0} - expecting {1}",
+                             std::string(tok), string(t));
     }
     return tok;
 }
@@ -112,9 +111,9 @@ ASTModule Parser::parse_module() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != module->name) {
-        throw ParseException(std::format("END identifier name: {0} doesn't match module name: {1}",
-                                         tok.val, module->name),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(),
+                             "END identifier name: {0} doesn't match module name: {1}", tok.val,
+                             module->name);
     }
     get_token(TokenType::period);
     return module;
@@ -206,7 +205,7 @@ ASTDeclaration Parser::parse_declaration() {
             break;
         }
         default:
-            throw ParseException(std::format("unimplemented {0}", tok.val), lexer.get_location());
+            throw ParseException(lexer.get_location(), "unimplemented {0}", tok.val);
         }
         tok = lexer.peek_token();
     }
@@ -411,9 +410,9 @@ ASTProcedure Parser::parse_procedure() {
     get_token(TokenType::end);
     tok = get_token(TokenType::ident);
     if (tok.val != proc->name->value) {
-        throw ParseException(std::format("END name: {0} doesn't match procedure name: {1}",
-                                         tok.val, proc->name->value),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(),
+                             "END name: {0} doesn't match procedure name: {1}", tok.val,
+                             proc->name->value);
     }
     get_token(TokenType::semicolon);
 
@@ -486,7 +485,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
         if (tok.type == TokenType::r_paren) {
             break;
         }
-        throw ParseException("expecting ; or ) in parameter list", lexer.get_location());
+        throw ParseException(lexer.get_location(), "expecting ; or ) in parameter list");
     }
     lexer.get_token(); // get )
 }
@@ -543,8 +542,7 @@ ASTStatement Parser::parse_statement() {
         return parse_assignment(designator);
     }
     default:
-        throw ParseException(std::format("Unexpected token: {0}", std::string(tok)),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(), "Unexpected token: {0}", std::string(tok));
     }
 }
 
@@ -630,8 +628,7 @@ ASTCall Parser::parse_call(ASTDesignator d) {
                 lexer.get_token(); // get ,
                 continue;
             }
-            throw ParseException(std::format("Unexpected {0} expecting , or )", tok.val),
-                                 lexer.get_location());
+            throw ParseException(lexer.get_location(), "Unexpected {0} expecting , or )", tok.val);
         }
         get_token(TokenType::r_paren);
     }
@@ -1024,8 +1021,7 @@ ASTFactor Parser::parse_factor() {
         return ast;
     }
     default:
-        throw ParseException(std::format("Unexpected token: {0}", std::string(tok)),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(), "Unexpected token: {0}", std::string(tok));
     }
     return nullptr; // Not factor
 }
@@ -1300,9 +1296,8 @@ ASTInteger Parser::parse_integer() {
         ast->value = std::strtol(tok.val.c_str(), &end, radix);
         return ast;
     }
-    throw ParseException(
-        std::format("Unexpected token: {0} - expecting integer", std::string(tok)),
-        lexer.get_location());
+    throw ParseException(lexer.get_location(), "Unexpected token: {0} - expecting integer",
+                         std::string(tok));
 }
 
 ASTReal Parser::parse_real() {
@@ -1318,11 +1313,9 @@ ASTReal Parser::parse_real() {
     try {
         ast->value = std::stod(str);
     } catch (std::invalid_argument &) {
-        throw ParseException(std::format("REAL number invalid argument: {0} ", tok.val),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(), "REAL number invalid argument: {0} ", tok.val);
     } catch (std::out_of_range &) {
-        throw ParseException(std::format("REAL number out of range: {0} ", tok.val),
-                             lexer.get_location());
+        throw ParseException(lexer.get_location(), "REAL number out of range: {0} ", tok.val);
     }
     return ast;
 }
