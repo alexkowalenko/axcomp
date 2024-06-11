@@ -50,4 +50,16 @@ void LexerUTF8::get_line() {
     ptr = buf.begin();
 };
 
+std::string wcharToString(const wchar_t wchar) {
+    std::mbstate_t        state = std::mbstate_t();
+    std::array<char, 120> buffer;
+    const size_t          length = std::wcrtomb(buffer.data(), wchar, &state);
+
+    if (length == static_cast<size_t>(-1)) {
+        throw std::runtime_error("Failed to convert wide character to multibyte string");
+    }
+
+    return {buffer.data(), length};
+}
+
 } // namespace ax

@@ -9,8 +9,6 @@
 #include "error.hh"
 #include "lexer.hh"
 
-#include <codecvt>
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wconversion"
 #pragma clang diagnostic ignored "-Wold-style-cast"
@@ -20,10 +18,7 @@
 
 namespace ax {
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
-#pragma clang diagnostic pop
+std::string wcharToString(const wchar_t wchar);
 
 // Custom emoji checker
 // This is a hack.
@@ -50,8 +45,9 @@ class Character32 : CharacterClass<Char> {
     static bool        isdigit(Char c) { return std::iswdigit(c); };
     static bool        isalnum(Char c) { return u_isalnum(c) || is_emoji(c); };
     static bool        isalpha(Char c) { return u_isalpha(c) || is_emoji(c); };
-    static std::string to_string(Char c) { return converterX.to_bytes(std::wstring(1, c)); }
-    static void        add_string(std::string &s, Char c) {
+    static std::string to_string(Char c) { return wcharToString(c); };
+
+    static void add_string(std::string &s, Char c) {
         try {
             utf8::append(char32_t(c), s);
         } catch (utf8::invalid_code_point &e) {
