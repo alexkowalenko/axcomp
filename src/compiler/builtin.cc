@@ -37,7 +37,7 @@ BIFunctor abs{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
         debug("builtin abs fabs");
         std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
         auto                     *fun =
-            Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::fabs, type_args);
+            Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::fabs, type_args);
         return codegen->get_builder().CreateCall(fun, args);
     }
     return TypeTable::IntType->make_value(1);
@@ -145,7 +145,7 @@ BIFunctor floor{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     auto                      args = codegen->do_arguments(ast);
     std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
     auto                     *fun =
-        Intrinsic::getDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
+        Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
     auto *value = codegen->get_builder().CreateCall(fun, args);
     return codegen->get_builder().CreateFPToSI(value, TypeTable::IntType->get_llvm());
 }};

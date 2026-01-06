@@ -8,8 +8,11 @@
 #include <sstream>
 
 #include <format>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcharacter-conversion"
 #include <gtest/gtest.h>
-#include <string_view>
+#pragma clang diagnostic pop
 
 #include "builtin.hh"
 #include "defparser.hh"
@@ -23,7 +26,6 @@
 #include "printer.hh"
 #include "symboltable.hh"
 #include "token.hh"
-#include "type.hh"
 #include "typetable.hh"
 
 #include "parse_test.hh"

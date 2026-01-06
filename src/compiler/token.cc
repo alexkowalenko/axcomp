@@ -90,8 +90,8 @@ static const std::map<TokenType, std::string> mapping{
     {TokenType::eof, "EOF"},
 };
 
-std::string string(TokenType t) {
-    if (auto res = mapping.find(t); res != mapping.end()) {
+std::string string(const TokenType t) {
+    if (const auto res = mapping.find(t); res != mapping.end()) {
         return res->second;
     }
     return "Unknown token";

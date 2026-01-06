@@ -11,7 +11,7 @@
 
 namespace ax {
 
-enum class TokenType {
+enum class TokenType : std::uint8_t {
     null = 0,
     eof,
     ident,
@@ -91,9 +91,9 @@ std::string string(TokenType t);
 
 class Token {
   public:
-    explicit Token(TokenType t) noexcept : type(t){};
-    Token(TokenType t, std::string v) : type(t), val(std::move(v)){};
-    Token(TokenType t, long v) : type(t), val_int(v){};
+    explicit Token(const TokenType t) noexcept : type(t){};
+    Token(const TokenType t, std::string v) : type(t), val(std::move(v)){};
+    Token(const TokenType t, const long v) : type(t), val_int(v){};
 
     Token(Token const &) = default;
     Token &operator=(Token const &) = default;

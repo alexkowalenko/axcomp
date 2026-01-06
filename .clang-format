@@ -10,4 +10,6 @@ AlignTrailingComments: true
 AlignConsecutiveMacros: true
 AlignConsecutiveDeclarations: true
 
+Standard: Latest
+
 ColumnLimit: 99

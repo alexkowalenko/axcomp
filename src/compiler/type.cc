@@ -109,7 +109,8 @@ llvm::Type *StringType::make_type(std::string const &s) {
 }
 
 llvm::Type *StringType::make_type_ptr() {
-    return llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0)->getPointerTo();
+    auto *arrayTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0);
+    return llvm::PointerType::get(arrayTy->getContext(), 0);
 }
 
 std::string ProcedureType::get_print(bool forward) {
@@ -197,7 +198,7 @@ OpenArrayType::operator std::string() {
 }
 
 llvm::Type *OpenArrayType::get_llvm() const {
-    return ArrayType::get_llvm()->getPointerTo();
+    return llvm::PointerType::get(ArrayType::get_llvm()->getContext(), 0);
 }
 
 llvm::Constant *OpenArrayType::get_init() const {
@@ -344,7 +345,7 @@ bool RecordType::equiv(std::shared_ptr<RecordType> const &r) {
 }
 
 llvm::Type *PointerType::get_llvm() const {
-    return reference->get_llvm()->getPointerTo();
+    return llvm::PointerType::get(reference->get_llvm()->getContext(), 0);
 }
 
 llvm::Constant *PointerType::get_init() const {
