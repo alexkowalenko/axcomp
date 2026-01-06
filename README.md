@@ -25,11 +25,11 @@ See the [_AX Oberon-2/07 Language Report_](report/report.tex) in the [report](re
 
 To build the compiler:
 
-- C++ 23 compiler - tested with Clang++ 17.0.
-- LLVM 17.0.0.
+- C++ 26 compiler - tested with Clang++ 21.1.
+- LLVM 21.0.0.
 - UTFCPP v3.2.1 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
 - Boehm garbage collection
-- CMake - build and test the compiler.
+- CMake 4.0 – build and test the compiler.
 
 To test:
 

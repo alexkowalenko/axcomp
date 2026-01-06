@@ -4,14 +4,13 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-set(PYTHON_EXECUTABLE python3)
-find_package(PythonInterp 3.7 REQUIRED)
+find_package(Python3)
 
 set(ENV{AXLIB_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 macro(xtest_add_test TESTNAME)
     add_test(NAME xtest.${TESTNAME}
-            COMMAND ${PYTHON_EXECUTABLE} ./tester.py -t ${TESTNAME}
+            COMMAND ${Python3_EXECUTABLE} ./tester.py -t ${TESTNAME}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endmacro()       
 
