@@ -30,8 +30,14 @@ Also we extend the definition of Oberon to include the following updates:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Syntax}
 
-To describe the syntax, an extended Backus-Naur Formalism called EBNF is used. Brackets [ and ] denote optionality of the enclosed sentential form, and braces \{ and \} denote its repetition (possibly 0 times). Syntactic entities (non-terminal symbols) are denoted by English words expressing their intuitive meaning. Symbols of the language vocabulary (terminal symbols) are denoted by strings enclosed in quote marks or words written in capital letters, so-called reserved words.
+To describe the syntax, an extended Backus-Naur Formalism called EBNF is used. 
 
+\begin{itemize}
+    \item Brackets [ and ] denote optionality of the enclosed sentential form.
+    \item Braces \{ and \} denote its repetition (possibly 0 times). 
+    \item Syntactic entities (non-terminal symbols) are denoted by English words expressing their intuitive meaning. 
+    \item Symbols of the language vocabulary (terminal symbols) are denoted by strings enclosed in quote marks or words written in capital letters, so-called reserved words.
+\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Vocabulary and representation}
 
@@ -726,7 +732,7 @@ ProcedureHeading = PROCEDURE IdentDef [FormalParameters].
 ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END. 
 
 DeclarationSequence = {CONST {ConstantDeclaration ";"} 
-                    | TYPE {TypeDeclaration ";"} 
+                    | {TYPE {TypeDeclaration ";"} 
                     | VAR {VariableDeclaration ";"}}.
                     { ProcedureDeclaration ";" | ForwardDeclaration ";"}.
 
