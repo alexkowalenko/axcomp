@@ -29,14 +29,15 @@ To build the compiler:
 - LLVM 21.0.0.
 - UTFCPP v3.2.1 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
 - Boehm garbage collection
+- ICU4C v78.1 – support UTF-8 text (https://github.com/unicode-org/icu.git).
 - CMake 4.0 – build and test the compiler.
 
 To test:
 
 - GoogleTest release-1.13.0 - test suites (https://github.com/google/googletest.git).
-- Python 3.7 - to run the xtext test suite.
+- Python 3.14 – to run the xtext test suite.
 
-To generate the language report - TeX.
+To generate the language report – TeX.
 
 ## Usage
 

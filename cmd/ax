@@ -8,16 +8,13 @@
 import os
 import argparse
 from pathlib import Path
+from os import path
 
 
 compiler = "axcomp"
 linker = "clang++"
 
-lib_dir = os.environ['AXLIB_PATH']
 libs = " -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc -L/opt/homebrew/opt/icu4c@77/lib -licuuc -licudata"
-
-compiler = f"{lib_dir}/../bin/axcomp"
-
 
 def main():
     argsParser = argparse.ArgumentParser(
@@ -76,6 +73,11 @@ def main():
         arguments += "-debug "
     if args.debug_only:
         arguments += "-debug  -debug-only " + args.debug_only + " "
+
+    script_dir = path.dirname(path.abspath(__file__))
+    lib_dir = script_dir + "/../lib"
+
+    compiler = f"{script_dir}/axcomp"
 
     cmd = f"{compiler} {arguments} {args.file}"
     if args.verbose:
