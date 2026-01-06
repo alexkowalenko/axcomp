@@ -315,7 +315,7 @@ class PointerType : public Type_ {
 
     explicit operator std::string() override { return '^' + ref_name; };
     [[nodiscard]] size_t get_size() const override {
-        return reference->get_llvm()->getPointerTo()->getPrimitiveSizeInBits() / CHAR_BIT;
+        return  PTR_SIZE;
     };
 
     [[nodiscard]] llvm::Type     *get_llvm() const override;
@@ -327,6 +327,7 @@ class PointerType : public Type_ {
     std::string &get_ref_name() { return ref_name; };
 
   private:
+    constexpr static size_t PTR_SIZE = 8;
     Type        reference = nullptr;
     std::string ref_name;
 };

@@ -8,9 +8,9 @@ include_directories(../src)
 
 include_directories(Ax PUBLIC "${gc_SOURCE_DIR}/include")
 
-add_library(Ax STATIC io.cc math.cc strings.cc)
+add_library(Ax io.cc math.cc strings.cc)
 
-target_link_libraries(Ax gc)
+target_link_libraries(Ax PUBLIC gc ${ICU_LIBRARIES})
 
 install(FILES Out.def DESTINATION lib)
 install(FILES Math.def DESTINATION lib)

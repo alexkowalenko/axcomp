@@ -4,17 +4,13 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
-#include <codecvt>
 #include <cstdio>
 #include <locale>
 #include <sstream>
 
-#include "ax.hh"
+#include <unicode/unistr.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-inline std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converterX;
-#pragma clang diagnostic pop
+#include "ax.hh"
 
 namespace ax {
 
@@ -65,15 +61,25 @@ extern "C" void Out_Set(Set x) {
 }
 
 extern "C" void Out_Char(Char x) {
-    std::fputs(converterX.to_bytes(std::wstring(1, x)).c_str(), stdout);
+    icu::UnicodeString ustr(static_cast<int32_t>(x), 1);
+    std::string utf8;
+    ustr.toUTF8String(utf8);
+    std::fputs(utf8.c_str(), stdout);
 }
 
 extern "C" void Out_String(String x) {
-    std::fputs(converterX.to_bytes(x).c_str(), stdout);
+    if (x == nullptr) {
+        return;
+    }
+    auto len = std::wcslen(x);
+    icu::UnicodeString ustr(reinterpret_cast<uint16_t *>(x), static_cast<int32_t>(len));
+    std::string utf8;
+    ustr.toUTF8String(utf8);
+    std::fputs(utf8.c_str(), stdout);
 }
 
 extern "C" void Out_Ln(void) {
-    std::putc('\n', stdout);
+    std::fputc('\n', stdout);
 }
 
 extern "C" void WriteLn(void) {

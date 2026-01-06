@@ -191,11 +191,11 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     CharType->set_llvm(llvm::Type::getInt32Ty(context));
     CharType->set_init(CharType->make_value(0));
 
-    StrType->set_llvm(llvm::ArrayType::get(llvm::Type::getInt32Ty(context), 0)->getPointerTo());
-    StrType->set_init(Constant::getNullValue(llvm::Type::getInt32PtrTy(context)));
+    StrType->set_llvm(llvm::ArrayType::get(llvm::PointerType::get(context, 0), 0));
+    StrType->set_init(Constant::getNullValue(llvm::Type::getInt64Ty(context)));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
-    VoidType->set_init(llvm::ConstantPointerNull::get(llvm::Type::getInt8PtrTy(context)));
+    VoidType->set_init(llvm::ConstantPointerNull::get(llvm::PointerType::get(context, 0)));
 }
 
 Type TypeTable::resolve(std::string const &n) {

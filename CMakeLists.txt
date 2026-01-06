@@ -36,6 +36,8 @@ set(ENABLE_SANITIZER_UNDEFINED_BEHAVIOR ON)
 include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L${AX_BASE_CLANG}/lib/c++ -L${AX_BASE_CLANG}/lib/unwind -lunwind")
+
 # enable doxygen
 include(cmake/Doxygen.cmake)
 enable_doxygen()

@@ -283,7 +283,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
         auto [name, typeName] = ast->receiver;
         auto *type = typeName->get_type()->get_llvm();
         if (name->is(Attr::var)) {
-            type = type->getPointerTo();
+            type = llvm::PointerType::get(context, 0);
         }
         proto.push_back(type);
     }
@@ -295,12 +295,12 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
         if (index == 1 && sym->is(Attr::closure)) {
             debug("ASTProcedure {0} is closure function", ast->name->value);
             argAttr.emplace_back(index, llvm::Attribute::Nest);
-            proto.push_back(funct_type->get_closure_struct()->get_llvm()->getPointerTo());
+            proto.push_back(llvm::PointerType::get(context, 0));
             continue;
         }
         if (var->is(Attr::var)) {
             debug(" CodeGenerator::visit_ASTProcedure VAR {0}", var->value);
-            type = type->getPointerTo();
+            type =  llvm::PointerType::get(context, 0);
 
         } else {
             // Todo: Switch on later
@@ -344,7 +344,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
         auto [name, typeName] = ast->receiver;
         auto *type = typeName->get_type()->get_llvm();
         if (name->is(Attr::var)) {
-            type = type->getPointerTo();
+            type = llvm::PointerType::get(context, 0);
         }
         proto.push_back(type);
     }
@@ -368,7 +368,7 @@ void CodeGenerator::visit_ASTProcedure(ASTProcedure ast) {
             param_name = name->value;
             auto *type = typeName->get_type()->get_llvm();
             if (name->is(Attr::var)) {
-                type = type->getPointerTo();
+                type =  llvm::PointerType::get(context, 0);
                 attr = Attr::var;
             }
             arg.setName(name->value);
@@ -1641,7 +1641,7 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
         [&](auto /*unused*/) {
             llvm::Type *t = getType(type);
             if (var) {
-                t = t->getPointerTo();
+                t =  llvm::PointerType::get(context, 0);
             }
             res = TmpB.CreateAlloca(t, nullptr, name);
         },
@@ -1821,12 +1821,14 @@ void CodeGenerator::generate_objectcode() {
     const auto *CPU = "generic";
     const auto *features = "";
 
-    TargetOptions opt;
+    TargetOptions const opt;
     auto          RM = std::optional<Reloc::Model>();
-    auto *targetMachine = target->createTargetMachine(targetTriple, CPU, features, opt, RM);
+
+    llvm::Triple const triple(targetTriple);
+    auto *targetMachine = target->createTargetMachine(triple, CPU, features, opt, RM);
 
     module->setDataLayout(targetMachine->createDataLayout());
-    module->setTargetTriple(targetTriple);
+    module->setTargetTriple(triple);
 
     auto            f = filename + file_ext_obj;
     std::error_code EC;
@@ -1837,7 +1839,7 @@ void CodeGenerator::generate_objectcode() {
     }
 
     legacy::PassManager pass;
-    auto                file_type = CGFT_ObjectFile;
+    auto                file_type = llvm::CodeGenFileType::ObjectFile;
 
     if (targetMachine->addPassesToEmitFile(pass, dest_file, nullptr, file_type)) {
         throw CodeGenException("TargetMachine can't emit a file of this type");

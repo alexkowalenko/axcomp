@@ -8,6 +8,7 @@ lib/**
 .idea
 compile_commands.json
 *.fail
+demo/**
 
 **/*.o
 **/*.ll
