@@ -4,7 +4,7 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src/compiler)
 
 # Allow short runs during automated testing to see if something new breaks
 set(FUZZ_RUNTIME

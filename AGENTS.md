@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-* Core compiler sources live inside `src/`, grouped by lexer/parser, AST + visitors, importer logic, and LLVM-based code generation. `cmd/` provides the `axcomp` CLI, while `runtime/` holds the Oberon modules and C++ glue that become `libAx`. 
+* Core compiler sources live inside `src/compiler/`, grouped by lexer/parser, AST + visitors, importer logic, and LLVM-based code generation. `src/cmd/` provides the `axcomp` CLI, while `src/runtime/` holds the Oberon modules and C++ glue that become `libAx`. 
 * Tests split between GoogleTest suites in `tests/` and language regression suites under `xtest/` driven by `tester.py`. 
 * Keep helper CMake modules in `cmake/`; generated directories like `build/` should stay disposable.
 

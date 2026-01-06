@@ -29,7 +29,7 @@ macro(package_add_test TESTNAME)
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
 endmacro()              
 
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src/compiler)
 include_directories("${utfcpp_SOURCE_DIR}/source")
 include_directories("${gtest_SOURCE_DIR}/include")
 include_directories("${fmt_SOURCE_DIR}/include")

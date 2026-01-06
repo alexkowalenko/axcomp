@@ -4,7 +4,7 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include_directories(../src)
+include_directories(../compiler)
 
 # ax compiler executable
 add_executable(axcomp axcomp.cc)

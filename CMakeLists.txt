@@ -72,11 +72,11 @@ endif()
 # Doxygen docs
 add_subdirectory(docs)
 
-add_subdirectory(src)
-add_subdirectory(cmd)
+add_subdirectory(src/compiler)
+add_subdirectory(src/cmd)
 
 # ax runtime library
-add_subdirectory(runtime)
+add_subdirectory(src/runtime)
 
 # install
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})

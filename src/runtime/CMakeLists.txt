@@ -4,7 +4,7 @@
 # Copyright © 2020 Alex Kowalenko
 #
 
-include_directories(../src)
+include_directories(../compiler)
 
 include_directories(Ax PUBLIC "${gc_SOURCE_DIR}/include")
 
