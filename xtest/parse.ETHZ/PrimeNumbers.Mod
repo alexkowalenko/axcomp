@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE PrimeNumbers;  (*NW 6.9.07; Tabulate prime numbers; for Oberon-07  NW 25.1.2013*)
   IMPORT Texts, Oberon;
   

@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Permutations;  (*NW 22.1.2013*)
   IMPORT Texts, Oberon;
   VAR n: INTEGER;

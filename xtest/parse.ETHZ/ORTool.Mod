@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE ORTool;  (*NW 18.2.2013*)
   IMPORT SYSTEM, Files, Texts, Oberon, ORB;
   VAR W: Texts.Writer;

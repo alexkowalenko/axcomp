@@ -26,24 +26,21 @@ endmacro()
 configure_file(lit.parse.cfg.py.in ${CMAKE_CURRENT_SOURCE_DIR}/lit.parse.cfg.py @ONLY)
 
 # Parse tests
-xtest_add_lit_tests(oo2c parse.oo2c lit.parse)
+xtest_add_lit_tests(parse.oo2c parse.oo2c lit.parse)
+xtest_add_lit_tests(parse.ETHZ parse.ETHZ lit.parse)
 
-
-#xtest_add_test(parse.oo2c)
-#xtest_add_test(parse.ETHZ)
-#
 #xtest_add_test(demo)
 #xtest_add_test(extra)
-#
+
 #xtest_add_test(lang/const)
 #xtest_add_test(lang/type)
 #xtest_add_test(lang/var)
-#
+
 ## xtest_add_test(lang/record)
 #xtest_add_test(lang/array)
 ## xtest_add_test(lang/openarray)
 #xtest_add_test(lang/set)
-#
+
 #xtest_add_test(lang/literals)
 #xtest_add_test(lang/expr)
 #xtest_add_test(lang/bool)
@@ -53,12 +50,12 @@ xtest_add_lit_tests(oo2c parse.oo2c lit.parse)
 #xtest_add_test(lang/assignment)
 #xtest_add_test(lang/conditional)
 ## xtest_add_test(lang/pointers)
-#
+
 ## xtest_add_test(lang/procedure)
 #xtest_add_test(lang/forward)
 ## xtest_add_test(lang/closures)
 ## xtest_add_test(lang/procedure-bound)
-#
+
 #xtest_add_test(lang/if)
 #xtest_add_test(lang/while)
 #xtest_add_test(lang/repeat)
@@ -66,9 +63,9 @@ xtest_add_lit_tests(oo2c parse.oo2c lit.parse)
 #xtest_add_test(lang/for)
 #xtest_add_test(lang/case)
 #xtest_add_test(lang/return)
-#
+
 #xtest_add_test(lang/import)
-#
+
 #xtest_add_test(lib/assert)
 #xtest_add_test(lib/inc)
 #xtest_add_test(lib/char)

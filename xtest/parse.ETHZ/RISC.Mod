@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE RISC;     (*NW 22.9.07 / 1.11.2013*)
   IMPORT SYSTEM, Texts, Oberon;
   CONST

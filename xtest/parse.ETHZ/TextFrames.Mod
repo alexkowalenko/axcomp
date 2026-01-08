@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE TextFrames; (*JG 8.10.90 / NW 10.5.2013 / 16.11.2015*)
   IMPORT Modules, Input, Display, Viewers, Fonts, Texts, Oberon, MenuViewers;
 

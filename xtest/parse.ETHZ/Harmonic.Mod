@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Harmonic;   (*NW 27.1.2013*)
   IMPORT Texts, Oberon;
   VAR W: Texts.Writer;

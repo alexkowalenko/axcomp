@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Checkers;  (*NW 4.10.90 / 10.3.2013*)
   IMPORT SYSTEM, Display, Viewers, Oberon, MenuViewers, TextFrames;
 

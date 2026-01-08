@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Fonts; (*JG 18.11.90; PDR 8.6.12; NW 25.3.2013*)
   IMPORT SYSTEM, Files;
 

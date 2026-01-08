@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE PIO;   (*NW 16.10.2014  PIC Input/Output for RISC*)
   IMPORT SYSTEM;
   

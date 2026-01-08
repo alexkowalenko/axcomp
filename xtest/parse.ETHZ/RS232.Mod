@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE RS232;   (*NW 3.1.2012*)
   IMPORT SYSTEM;
   CONST data = -56; stat = -52;

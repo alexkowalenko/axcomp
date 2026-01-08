@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE PCLink1;  (*NW 25.7.2013  for Oberon on RISC*)
   IMPORT SYSTEM, Files, Texts, Oberon;
   

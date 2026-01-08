@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Math;   (*Standard functions;  NW 12.10.2013*)
 
   PROCEDURE sqrt*(x: REAL): REAL;

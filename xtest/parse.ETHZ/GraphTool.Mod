@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE GraphTool;  (*NW  8.8.2013*)
   IMPORT Files, Texts, Oberon;
 

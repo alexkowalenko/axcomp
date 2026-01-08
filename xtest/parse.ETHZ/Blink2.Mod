@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE Blink2;   (*NW 30.5.2013  use of a Task; blinks LED every second*)
   IMPORT SYSTEM, Oberon;
   VAR z: INTEGER;

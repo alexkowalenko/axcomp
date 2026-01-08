@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)
+
 MODULE MagicSquares;   (*NW 11.8.97*)
   IMPORT Texts, Oberon;
 
