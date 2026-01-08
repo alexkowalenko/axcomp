@@ -1,4 +1,0 @@
-MODULE M;
-IMPORT x := X;
-
-END M.

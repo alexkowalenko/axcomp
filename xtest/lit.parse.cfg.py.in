@@ -1,0 +1,13 @@
+import lit.formats
+import os
+
+config.name = "Oberon"
+config.test_format = lit.formats.ShTest(True)
+config.suffixes = [".mod", ".Mod"]
+config.tools_root = r'@CMAKE_CURRENT_SOURCE_DIR@/../bin'
+
+config.output = r'@CMAKE_CURRENT_BINARY_DIR@'
+config.test_exec_root = r'/tmp'
+config.pipefail = False
+
+config.substitutions.append(('%comp', os.path.join(config.tools_root, 'axcomp -s -p ')))

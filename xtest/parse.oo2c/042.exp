@@ -1,5 +1,0 @@
-MODULE M;
-
-BEGIN
-    x := {1,2}
-END M.

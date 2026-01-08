@@ -1,7 +1,0 @@
-MODULE M;
-    VAR
-        a: INTEGER;
-        b-: INTEGER;
-        c*: INTEGER;
-
-END M.

@@ -1,8 +1,0 @@
-MODULE M;
-    TYPE
-        T = RECORD
-            a: CHAR;
-            b: INTEGER
-        END;
-
-END M.

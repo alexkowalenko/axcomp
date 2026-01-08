@@ -1,6 +1,0 @@
-MODULE M;
-    TYPE
-        T = RECORD (Base)
-;
-
-END M.

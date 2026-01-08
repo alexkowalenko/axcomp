@@ -9,6 +9,7 @@ lib/**
 compile_commands.json
 *.fail
 demo/**
+xtest/lit.parse.cfg.py
 
 **/*.o
 **/*.ll

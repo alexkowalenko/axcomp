@@ -1,7 +1,0 @@
-MODULE M;
-    CONST
-        a = 1;
-        b* = 01H;
-        c* = 01X;
-
-END M.

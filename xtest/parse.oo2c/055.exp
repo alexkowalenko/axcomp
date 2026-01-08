@@ -1,5 +1,0 @@
-MODULE M;
-    TYPE
-        T = ARRAY OF ARRAY OF CHAR;
-
-END M.
