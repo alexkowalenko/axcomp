@@ -52,3 +52,8 @@ CPMAddPackage(
         "gtest_disable_pthreads ON"
         "gtest_hide_internal_symbols ON"
 )
+
+CPMAddPackage(
+        NAME argparse
+        GITHUB_REPOSITORY p-ranav/argparse
+        GIT_TAG v3.2)

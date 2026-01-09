@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # AX compiler
 #
@@ -14,7 +14,7 @@ from os import path
 compiler = "axcomp"
 linker = "clang++"
 
-libs = " -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc -L/opt/homebrew/opt/icu4c@77/lib -licuuc -licudata"
+libs = " -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc -L/opt/homebrew/opt/icu4c@78/lib -licuuc -licudata"
 
 
 def main():

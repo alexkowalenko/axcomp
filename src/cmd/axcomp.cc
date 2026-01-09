@@ -13,8 +13,9 @@
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/Support/CommandLine.h"
 #pragma clang diagnostic pop
+
+#include <argparse/argparse.hpp>
 
 #include "builtin.hh"
 #include "codegen.hh"
@@ -67,68 +68,112 @@ Options do_args(int argc, char **argv) {
         axlib = std_path;
     }
 
-    cl::OptionCategory oberon("Oberon compiler");
+    argparse::ArgumentParser app{"Oberon compiler", "0.3"};
 
-    cl::opt<bool> defs("defs", cl::desc("(-d) generate only the .def file"), cl::cat(oberon));
-    cl::alias     defsA("d", cl::aliasopt(defs));
+    app.add_argument("-d", "--defs")
+        .help("generate only the .def file")
+        .flag()
+        .store_into(options.output_defs);
 
-    cl::opt<bool> main("main", cl::desc("(-m) generate function main()"), cl::cat(oberon));
-    cl::alias     mainA("m", cl::aliasopt(main));
+    app.add_argument("-m", "--main")
+        .help("generate function main()")
+        .flag()
+        .default_value(false)
+        .store_into(options.output_main);
 
-    cl::opt<bool> output("output_funct", cl::desc("(-o) generate compiler test function output()"),
-                         cl::cat(oberon));
-    cl::alias     outputA("o", cl::aliasopt(output));
+    app.add_argument("-o", "--output")
+        .help("generate compiler output")
+        .flag()
+        .default_value(false)
+        .store_into(options.output_funct);
 
-    cl::opt<bool> ll("ll", cl::desc("(-l) generate only the .ll file"), cl::cat(oberon));
-    cl::alias     llA("l", cl::aliasopt(ll));
+    app.add_argument("-l", "--ll")
+        .help("generate only the .ll file")
+        .flag()
+        .default_value(false)
+        .store_into(options.only_ll);
 
-    cl::opt<bool> opt1("O1", cl::desc("invoke optimizer level 1"), cl::cat(oberon));
-    cl::opt<bool> opt2("O2", cl::desc("invoke optimizer level 2"), cl::cat(oberon));
-    cl::opt<bool> opt3("O3", cl::desc("invoke optimizer level 3"), cl::cat(oberon));
+    // cl::opt<bool> opt1("O1", cl::desc("invoke optimizer level 1"), cl::cat(oberon));
+    // cl::opt<bool> opt2("O2", cl::desc("invoke optimizer level 2"), cl::cat(oberon));
+    // cl::opt<bool> opt3("O3", cl::desc("invoke optimizer level 3"), cl::cat(oberon));
 
-    cl::opt<bool> symbols("symbols", cl::desc("(-s) dump the symbol table"), cl::cat(oberon));
-    cl::alias     symbolsA("s", cl::aliasopt(symbols));
+    app.add_argument("-O", "--opt");
 
-    cl::opt<std::string> file_name(cl::Positional, cl::desc("<input file>"));
+    app.add_argument("-s", "--symbols")
+        .help("dump the symbol table")
+        .flag()
+        .default_value(false)
+        .store_into(options.print_symbols);
 
-    cl::opt<std::string> axlib_path("axlib_path", cl::desc("(-L) path searched for runtime files"),
-                                    cl::init(axlib), cl::cat(oberon));
-    cl::alias            axlib_pathA("L", cl::aliasopt(axlib_path));
+    app.add_argument("file_name").help("<input file>").store_into(options.file_name);
 
-    cl::opt<bool> parse("p", cl::desc("parse only"), cl::cat(oberon));
+    // cl::opt<std::string> axlib_path("axlib_path", cl::desc("(-L) path searched for runtime
+    // files"),
+    //                                 cl::init(axlib), cl::cat(oberon));
+    // cl::alias            axlib_pathA("L", cl::aliasopt(axlib_path));
 
-    cl::opt<bool>         dbg("debug", cl::desc("turn on debugging"), cl::cat(oberon));
-    cl::list<std::string> doptions("debug-only", cl::desc("debug options"), cl::cat(oberon));
-    // cl::opt<bool>         stats("stats", cl::desc("show statistics"), cl::cat(oberon));
+    app.add_argument("-L", "--axlib_path")
+        .help("path searched for runtime files")
+        .default_value(axlib)
+        .store_into(axlib);
 
-    cl::ParseCommandLineOptions(argc, argv, "AX Oberon compiler");
+    app.add_argument("-p", "--parse")
+        .help("parse only")
+        .flag()
+        .default_value(false)
+        .store_into(options.debug_parse);
 
-    options.output_defs = defs;
-    options.output_main = main;
-    options.output_funct = output;
-    options.only_ll = ll;
-    if (opt1) {
-        options.optimise = 1;
+    // cl::opt<bool>         dbg("debug", cl::desc("turn on debugging"), cl::cat(oberon));
+    // cl::list<std::string> doptions("debug-only", cl::desc("debug options"),
+    // cl::cat(oberon));
+    bool dbg{false};
+    app.add_argument("-g", "--debug")
+        .help("turn on debugging")
+        .flag()
+        .default_value(false)
+        .store_into(dbg);
+
+    bool stats = false;
+    app.add_argument("-st", "--stats")
+        .help("show statistics")
+        .flag()
+        .default_value(false)
+        .store_into(stats);
+
+    // if (opt1) {
+    //     options.optimise = 1;
+    // }
+    // if (opt2) {
+    //     options.optimise = 2;
+    // }
+    // if (opt3) {
+    //     options.optimise = 3;
+    // }
+    options.axlib_path = axlib;
+
+    try {
+        app.parse_args(argc, argv);
+    } catch (const std::runtime_error &err) {
+        std::println("{}", err.what());
+        exit(1);
     }
-    if (opt2) {
-        options.optimise = 2;
-    }
-    if (opt3) {
-        options.optimise = 3;
-    }
-
-    options.print_symbols = symbols;
-    options.file_name = file_name;
-    options.axlib_path = axlib_path;
-    options.debug_parse = parse;
 
     llvm::DebugFlag = dbg;
-    std::for_each(begin(doptions), end(doptions),
-                  [](auto x) { llvm::setCurrentDebugType(x.c_str()); });
-    // if (stats) {
-    //    llvm::EnableStatistics(stats);
-    // }
-    llvm::EnableStatistics(true);
+    // std::for_each(begin(doptions), end(doptions),
+    //               [](auto x) { llvm::setCurrentDebugType(x.c_str()); });
+
+    if (stats) {
+        llvm::EnableStatistics(stats);
+    }
+
+#if 0
+    std::println("Options: file: {}", options.file_name);
+    std::println("         axlib: {}", options.axlib_path);
+    std::println("         output_funct: {}", options.output_funct);
+    std::println("         output_main: {}", options.output_main);
+    std::println("         output_defs: {}", options.output_defs);
+    std::println("         only_ll: {}", options.only_ll);
+#endif
 
     return options;
 }
@@ -174,10 +219,8 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        // Always generate .def files
-        output_defs(ast, options);
         if (options.output_defs) {
-            return 0;
+            output_defs(ast, options);
         }
 
         if (options.print_symbols) {
@@ -191,10 +234,10 @@ int main(int argc, char **argv) {
             code.optimize();
         }
 
-        code.generate_llcode();
-        if (!options.only_ll) {
-            code.generate_objectcode();
+        if (options.only_ll) {
+            code.generate_llcode();
         }
+        code.generate_objectcode();
 
         if (AreStatisticsEnabled()) {
             PrintStatistics();
