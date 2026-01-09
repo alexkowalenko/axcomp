@@ -10,6 +10,7 @@ compile_commands.json
 *.fail
 demo/**
 xtest/lit.parse.cfg.py
+xtest/lit.compile.cfg.py
 
 **/*.o
 **/*.ll

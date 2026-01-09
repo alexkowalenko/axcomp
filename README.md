@@ -1,6 +1,7 @@
 # AX compiler
 
-Compiler for the Oberon-0 language and progressing towards implementing Oberon-2, implemented in C++17, using the LLVM compiler infrastructure for code generation.
+Compiler for the Oberon-0 language and progressing towards implementing Oberon-2, implemented in C++26, using the LLVM
+compiler infrastructure for code generation.
 
 Supports at the moment:
 
@@ -34,8 +35,8 @@ To build the compiler:
 
 To test:
 
-- GoogleTest release-1.13.0 - test suites (https://github.com/google/googletest.git).
-- Python 3.14 – to run the xtext test suite.
+- GoogleTest release-1.17 - test suites (https://github.com/google/googletest.git).
+- LLVM lit and FileCheck - parser regression tests.
 
 To generate the language report – TeX.
 
@@ -51,6 +52,10 @@ Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.t
 
 The project is covered by the license in [LICENSE](LICENSE). The following are exempt and have the following licenses:
 
-1. Some of the test code in [xtest](xtest), is originally from the oo2c project hosted at _Spirit of Oberon_ (https://github.com/Spirit-of-Oberon/oo2c.git). This is covered by the GNU General Public License v2.0.
-2. Test code in [xtest/parse.ETHZ](xtest/parse.ETHZ) is from the ProjectOberon2013 hosted at _Spirit of Oberon_ (https://github.com/Spirit-of-Oberon/ProjectOberon.git). Copyright (C)2013 Niklaus Wirth (NW), Juerg Gutknecht (JG), Paul
-Reed (PR/PDR), as listed in [license.txt](https://github.com/Spirit-of-Oberon/ProjectOberon2013/blob/master/license.txt).
+1. Some of the test code in [xtest](xtest), is originally from the oo2c project hosted at _Spirit of
+   Oberon_ (https://github.com/Spirit-of-Oberon/oo2c.git). This is covered by the GNU General Public License v2.0.
+2. Test code in [xtest/parse.ETHZ](xtest/parse.ETHZ) is from the ProjectOberon2013 hosted at _Spirit of
+   Oberon_ (https://github.com/Spirit-of-Oberon/ProjectOberon.git). Copyright (C)2013 Niklaus Wirth (NW), Juerg
+   Gutknecht (JG), Paul
+   Reed (PR/PDR), as listed
+   in [license.txt](https://github.com/Spirit-of-Oberon/ProjectOberon2013/blob/master/license.txt).

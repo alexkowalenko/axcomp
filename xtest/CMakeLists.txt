@@ -24,6 +24,7 @@ macro(xtest_add_lit_tests TEST_NAME TEST_DIR CFG_FILE)
 endmacro()
 
 configure_file(lit.parse.cfg.py.in ${CMAKE_CURRENT_SOURCE_DIR}/lit.parse.cfg.py @ONLY)
+configure_file(lit.compile.cfg.py.in ${CMAKE_CURRENT_SOURCE_DIR}/lit.compile.cfg.py @ONLY)
 
 # Parse tests
 xtest_add_lit_tests(parse.oo2c parse.oo2c lit.parse)
@@ -41,7 +42,7 @@ xtest_add_lit_tests(parse.ETHZ parse.ETHZ lit.parse)
 ## xtest_add_test(lang/openarray)
 #xtest_add_test(lang/set)
 
-#xtest_add_test(lang/literals)
+xtest_add_lit_tests(lang-literals lang/literals lit.compile)
 #xtest_add_test(lang/expr)
 #xtest_add_test(lang/bool)
 #xtest_add_test(lang/char)

@@ -1,4 +1,4 @@
-#!env python3
+#!/usr/bin/env python
 #
 # AX compiler
 #
@@ -6,15 +6,16 @@
 #
 
 import os
+import subprocess
 import argparse
 from pathlib import Path
 from os import path
-
 
 compiler = "axcomp"
 linker = "clang++"
 
 libs = " -lAx -L/opt/homebrew/opt/bdw-gc/lib -lgc -L/opt/homebrew/opt/icu4c@77/lib -licuuc -licudata"
+
 
 def main():
     argsParser = argparse.ArgumentParser(
@@ -34,6 +35,8 @@ def main():
         '-O2', help="invoke optimizer level 2", action='store_true')
     argsParser.add_argument(
         '-O3', help="invoke optimizer level 3", action='store_true')
+
+    argsParser.add_argument('--run', help="run the compiled program", action='store_true')
 
     argsParser.add_argument(
         '-debug', help="turn on debugging", action='store_true')
@@ -94,6 +97,15 @@ def main():
         if args.verbose:
             print(cmd)
         ret = os.system(cmd)
+
+        if args.run and ret == 0:
+            cmd = f"./{stem}"
+            if args.verbose:
+                print(cmd)
+            result = subprocess.run(cmd, shell=True)
+            print(result.returncode)
+            exit(ret)
+
         exit(ret)
 
 
