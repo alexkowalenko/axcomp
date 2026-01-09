@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 2
+*)
+
 MODULE div0;
 VAR
   x : INTEGER;

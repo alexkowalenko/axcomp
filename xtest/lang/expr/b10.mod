@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 25
+*)
+
 (* parentheses *)
 MODULE b10;
 BEGIN

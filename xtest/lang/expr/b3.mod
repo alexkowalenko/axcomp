@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 98
+*)
+
 (* add/subtract integer *)
 MODULE b3;
 BEGIN

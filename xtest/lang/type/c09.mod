@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 60
+*)
+
 MODULE c09; (* TYPE declarations *)
 
  TYPE time = INTEGER;

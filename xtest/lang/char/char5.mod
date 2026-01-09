@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 97
+*)
+
 MODULE char5;
 VAR x : CHAR;
 

@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 47
+*)
+
 (* multiple integer *)
 MODULE b6;
 BEGIN

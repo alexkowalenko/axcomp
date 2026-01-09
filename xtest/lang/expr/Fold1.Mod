@@ -1,3 +1,16 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 123
+CHECK-NEXT: 123
+CHECK-NEXT: -123
+CHECK-NEXT: 3
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 7
+CHECK-NEXT: 26
+CHECK-NEXT: 3
+CHECK-NEXT: 1
+*)
 
 (* Test simple constant folding for integers. *)
 
