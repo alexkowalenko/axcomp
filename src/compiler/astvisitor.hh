@@ -93,48 +93,48 @@ class ASTVisitor {
   public:
     virtual ~ASTVisitor() = default;
 
-    virtual void visit_ASTModule(ASTModule ast);
-    virtual void visit_ASTImport(ASTImport ast);
-    virtual void visit_ASTDeclaration(ASTDeclaration ast);
-    virtual void visit_ASTConst(ASTConst ast);
-    virtual void visit_ASTTypeDec(ASTTypeDec ast);
-    virtual void visit_ASTVar(ASTVar ast);
-    virtual void visit_ASTProcedure(ASTProcedure ast);
-    virtual void visit_ASTProcedureForward(ASTProcedureForward ast);
+    virtual void visit(ASTModule const &ast);
+    virtual void visit(ASTImport const &ast);
+    virtual void visit(ASTDeclaration const &ast);
+    virtual void visit(ASTConst const &ast);
+    virtual void visit(ASTTypeDec const &ast);
+    virtual void visit(ASTVar const &ast);
+    virtual void visit(ASTProcedure const &ast);
+    virtual void visit(ASTProcedureForward const &ast);
 
-    virtual void visit_ASTAssignment(ASTAssignment ast);
-    virtual void visit_ASTReturn(ASTReturn ast);
-    virtual void visit_ASTExit(ASTExit ast);
-    virtual void visit_ASTCall(ASTCall ast);
-    virtual void visit_ASTIf(ASTIf ast);
-    virtual void visit_ASTCaseElement(ASTCaseElement ast);
-    virtual void visit_ASTCase(ASTCase ast);
-    virtual void visit_ASTFor(ASTFor ast);
-    virtual void visit_ASTWhile(ASTWhile ast);
-    virtual void visit_ASTRepeat(ASTRepeat ast);
-    virtual void visit_ASTLoop(ASTLoop ast);
-    virtual void visit_ASTBlock(ASTBlock ast);
+    virtual void visit(ASTAssignment const &ast);
+    virtual void visit(ASTReturn const &ast);
+    virtual void visit(ASTExit const &ast);
+    virtual void visit(ASTCall const &ast);
+    virtual void visit(ASTIf const &ast);
+    virtual void visit(ASTCaseElement const &ast);
+    virtual void visit(ASTCase const &ast);
+    virtual void visit(ASTFor const &ast);
+    virtual void visit(ASTWhile const &ast);
+    virtual void visit(ASTRepeat const &ast);
+    virtual void visit(ASTLoop const &ast);
+    virtual void visit(ASTBlock const &ast);
 
-    virtual void visit_ASTExpr(ASTExpr ast);
-    virtual void visit_ASTRange(ASTRange ast);
-    virtual void visit_ASTSimpleExpr(ASTSimpleExpr ast);
-    virtual void visit_ASTTerm(ASTTerm ast);
-    virtual void visit_ASTFactor(ASTFactor ast);
-    virtual void visit_ASTDesignator(ASTDesignator ast);
+    virtual void visit(ASTExpr const &ast);
+    virtual void visit(ASTRange const &ast);
+    virtual void visit(ASTSimpleExpr const &ast);
+    virtual void visit(ASTTerm const &ast);
+    virtual void visit(ASTFactor const &ast);
+    virtual void visit(ASTDesignator const &ast);
 
-    virtual void visit_ASTType(ASTType ast);
-    virtual void visit_ASTArray(ASTArray ast);
-    virtual void visit_ASTPointerType(ASTPointerType ast);
-    virtual void visit_ASTRecord(ASTRecord ast);
-    virtual void visit_ASTQualident(ASTQualident /*not used*/){};   // NOLINT
-    virtual void visit_ASTIdentifier(ASTIdentifier /*not used*/){}; // NOLINT
-    virtual void visit_ASTSet(ASTSet /*not used*/){};               // NOLINT
-    virtual void visit_ASTInteger(ASTInteger /*not used*/){};       // NOLINT
-    virtual void visit_ASTReal(ASTReal /*not used*/){};             // NOLINT
-    virtual void visit_ASTChar(ASTCharPtr /*not used*/){};          // NOLINT
-    virtual void visit_ASTString(ASTString /*not used*/){};         // NOLINT
-    virtual void visit_ASTBool(ASTBool /*not used*/){};             // NOLINT
-    virtual void visit_ASTNil(ASTNil /*not used*/){};               // NOLINT
+    virtual void visit(ASTType const &ast);
+    virtual void visit(ASTArray const &ast);
+    virtual void visit(ASTPointerType const &ast);
+    virtual void visit(ASTRecord const &ast);
+    virtual void visit(ASTQualident const & /*not used*/){};   // NOLINT
+    virtual void visit(ASTIdentifier const & /*not used*/){}; // NOLINT
+    virtual void visit(ASTSet const & /*not used*/){};               // NOLINT
+    virtual void visit(ASTInteger const & /*not used*/){};       // NOLINT
+    virtual void visit(ASTReal const & /*not used*/){};             // NOLINT
+    virtual void visit(ASTCharPtr const & /*not used*/){};          // NOLINT
+    virtual void visit(ASTString const & /*not used*/){};         // NOLINT
+    virtual void visit(ASTBool const & /*not used*/){};             // NOLINT
+    virtual void visit(ASTNil const & /*not used*/){};               // NOLINT
 };
 
 } // namespace ax

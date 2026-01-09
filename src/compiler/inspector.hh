@@ -26,47 +26,47 @@ class Inspector : ASTVisitor {
     void check(ASTModule const &ast);
 
   private:
-    void visit_ASTModule(ASTModule ast) override;
-    void visit_ASTImport(ASTImport ast) override;
-    void visit_ASTConst(ASTConst ast) override;
-    void visit_ASTTypeDec(ASTTypeDec ast) override;
-    void visit_ASTVar(ASTVar ast) override;
+    void visit(ASTModule const &ast) override;
+    void visit(ASTImport const &ast) override;
+    void visit(ASTConst const &ast) override;
+    void visit(ASTTypeDec const &ast) override;
+    void visit(ASTVar const &ast) override;
 
     void                                       do_receiver(RecVar &r);
     std::pair<Type, ProcedureType::ParamsList> do_proc(ASTProc_ &ast);
 
-    void visit_ASTProcedure(ASTProcedure ast) override;
-    void visit_ASTProcedureForward(ASTProcedureForward ast) override;
+    void visit(ASTProcedure const &ast) override;
+    void visit(ASTProcedureForward const &ast) override;
 
-    void visit_ASTAssignment(ASTAssignment ast) override;
-    void visit_ASTReturn(ASTReturn ast) override;
-    void visit_ASTCall(ASTCall ast) override;
-    void visit_ASTIf(ASTIf ast) override;
-    void visit_ASTCaseElement(ASTCaseElement ast) override;
-    void visit_ASTCase(ASTCase ast) override;
-    void visit_ASTFor(ASTFor ast) override;
-    void visit_ASTWhile(ASTWhile ast) override;
-    void visit_ASTRepeat(ASTRepeat ast) override;
-    void visit_ASTLoop(ASTLoop ast) override;
-    void visit_ASTBlock(ASTBlock ast) override;
-    void visit_ASTSimpleExpr(ASTSimpleExpr ast) override;
-    void visit_ASTExpr(ASTExpr ast) override;
-    void visit_ASTTerm(ASTTerm ast) override;
-    void visit_ASTFactor(ASTFactor ast) override;
-    void visit_ASTDesignator(ASTDesignator ast) override;
-    void visit_ASTType(ASTType ast) override;
-    void visit_ASTArray(ASTArray ast) override;
-    void visit_ASTRecord(ASTRecord ast) override;
-    void visit_ASTPointerType(ASTPointerType ast) override;
-    void visit_ASTQualident(ASTQualident ast) override;
-    void visit_ASTIdentifier(ASTIdentifier ast) override;
-    void visit_ASTSet(ASTSet ast) override;
-    void visit_ASTInteger(ASTInteger ast) override;
-    void visit_ASTReal(ASTReal ast) override;
-    void visit_ASTChar(ASTCharPtr ast) override;
-    void visit_ASTString(ASTString ast) override;
-    void visit_ASTBool(ASTBool ast) override;
-    void visit_ASTNil(ASTNil /*not used*/) override;
+    void visit(ASTAssignment const &ast) override;
+    void visit(ASTReturn const &ast) override;
+    void visit(ASTCall const &ast) override;
+    void visit(ASTIf const &ast) override;
+    void visit(ASTCaseElement const &ast) override;
+    void visit(ASTCase const &ast) override;
+    void visit(ASTFor const &ast) override;
+    void visit(ASTWhile const &ast) override;
+    void visit(ASTRepeat const &ast) override;
+    void visit(ASTLoop const &ast) override;
+    void visit(ASTBlock const &ast) override;
+    void visit(ASTSimpleExpr const &ast) override;
+    void visit(ASTExpr const &ast) override;
+    void visit(ASTTerm const &ast) override;
+    void visit(ASTFactor const &ast) override;
+    void visit(ASTDesignator const &ast) override;
+    void visit(ASTType const &ast) override;
+    void visit(ASTArray const &ast) override;
+    void visit(ASTRecord const &ast) override;
+    void visit(ASTPointerType const &ast) override;
+    void visit(ASTQualident const &ast) override;
+    void visit(ASTIdentifier const &ast) override;
+    void visit(ASTSet const &ast) override;
+    void visit(ASTInteger const &ast) override;
+    void visit(ASTReal const &ast) override;
+    void visit(ASTCharPtr const &ast) override;
+    void visit(ASTString const &ast) override;
+    void visit(ASTBool const &ast) override;
+    void visit(ASTNil const & /*not used*/) override;
 
     std::string get_Qualident(ASTQualident const &ast);
 

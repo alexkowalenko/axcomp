@@ -14,7 +14,7 @@
 
 namespace ax {
 
-void DefPrinter::visit_ASTModule(ASTModule ast) {
+void DefPrinter::visit(ASTModule const &ast) {
     os << std::string(std::format("DEFINITION {0};\n", ast->name));
     ast->decs->accept(this);
     std::for_each(ast->procedures.begin(), ast->procedures.end(), [this](auto const &proc) {
@@ -25,7 +25,7 @@ void DefPrinter::visit_ASTModule(ASTModule ast) {
     os << std::string(std::format("END {0}.\n", ast->name));
 }
 
-void DefPrinter::visit_ASTConst(ASTConst ast) {
+void DefPrinter::visit(ASTConst const &ast) {
     bool print_hdr{false};
 
     std::for_each(ast->consts.begin(), ast->consts.end(), [this, &print_hdr](auto const &c) {
@@ -43,7 +43,7 @@ void DefPrinter::visit_ASTConst(ASTConst ast) {
     });
 }
 
-void DefPrinter::visit_ASTTypeDec(ASTTypeDec ast) {
+void DefPrinter::visit(ASTTypeDec const &ast) {
     bool print_hdr{false};
 
     std::for_each(begin(ast->types), end(ast->types), [this, &print_hdr](auto const &v) {
@@ -61,7 +61,7 @@ void DefPrinter::visit_ASTTypeDec(ASTTypeDec ast) {
     });
 }
 
-void DefPrinter::visit_ASTVar(ASTVar ast) {
+void DefPrinter::visit(ASTVar const &ast) {
     bool print_hdr{false};
 
     std::for_each(ast->vars.begin(), ast->vars.end(), [this, &print_hdr](auto const &v) {
@@ -79,7 +79,7 @@ void DefPrinter::visit_ASTVar(ASTVar ast) {
     });
 }
 
-void DefPrinter::visit_ASTProcedure(ASTProcedure ast) {
+void DefPrinter::visit(ASTProcedure const &ast) {
     os << std::string(std::format("PROCEDURE {0}", ast->name->value))
        << std::string(ast->name->attrs);
     if (!ast->params.empty() || ast->return_type != nullptr) {

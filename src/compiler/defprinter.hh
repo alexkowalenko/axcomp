@@ -21,12 +21,12 @@ class DefPrinter : ASTPrinter {
     void print(ASTModule const &ast) { ast->accept(this); };
 
   private:
-    void visit_ASTModule(ASTModule ast) override;
+    void visit(ASTModule const &ast) override;
 
-    void visit_ASTConst(ASTConst ast) override;
-    void visit_ASTTypeDec(ASTTypeDec ast) override;
-    void visit_ASTVar(ASTVar ast) override;
-    void visit_ASTProcedure(ASTProcedure ast) override;
+    void visit(ASTConst const &ast) override;
+    void visit(ASTTypeDec const &ast) override;
+    void visit(ASTVar const &ast) override;
+    void visit(ASTProcedure const &ast) override;
 };
 
 } // namespace ax

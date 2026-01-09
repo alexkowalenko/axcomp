@@ -15,7 +15,7 @@
 
 namespace ax {
 
-void ASTPrinter::visit_ASTModule(ASTModule ast) {
+void ASTPrinter::visit(ASTModule const &ast) {
 
     os << std::format("MODULE {0};\n", ast->name);
     if (ast->import) {
@@ -41,7 +41,7 @@ void ASTPrinter::visit_ASTModule(ASTModule ast) {
     os << std::string(std::format("END {0}.\n", ast->name));
 }
 
-void ASTPrinter::visit_ASTImport(ASTImport ast) {
+void ASTPrinter::visit(ASTImport const &ast) {
     if (!ast->imports.empty()) {
         os << indent() << "IMPORT ";
         std::for_each(begin(ast->imports), end(ast->imports), [this, ast](auto const &i) {
@@ -59,7 +59,7 @@ void ASTPrinter::visit_ASTImport(ASTImport ast) {
     }
 }
 
-void ASTPrinter::visit_ASTConst(ASTConst ast) {
+void ASTPrinter::visit(ASTConst const &ast) {
     if (!ast->consts.empty()) {
         os << indent() << "CONST\n";
         push();
@@ -75,7 +75,7 @@ void ASTPrinter::visit_ASTConst(ASTConst ast) {
     }
 }
 
-void ASTPrinter::visit_ASTTypeDec(ASTTypeDec ast) {
+void ASTPrinter::visit(ASTTypeDec const &ast) {
     if (!ast->types.empty()) {
         os << indent() << "TYPE\n";
         push();
@@ -91,7 +91,7 @@ void ASTPrinter::visit_ASTTypeDec(ASTTypeDec ast) {
     }
 }
 
-void ASTPrinter::visit_ASTVar(ASTVar ast) {
+void ASTPrinter::visit(ASTVar const &ast) {
     if (!ast->vars.empty()) {
         os << indent() << "VAR\n";
         push();
@@ -149,7 +149,7 @@ void ASTPrinter::proc_header(ASTProc_ const &ast, bool forward) {
     os << ";\n";
 }
 
-void ASTPrinter::visit_ASTProcedure(ASTProcedure ast) {
+void ASTPrinter::visit(ASTProcedure const &ast) {
     proc_header(*ast, false);
     push();
     ast->decs->accept(this);
@@ -163,28 +163,28 @@ void ASTPrinter::visit_ASTProcedure(ASTProcedure ast) {
     os << indent() << std::string(std::format("END {0};\n", ast->name->value));
 }
 
-void ASTPrinter::visit_ASTProcedureForward(ASTProcedureForward ast) {
+void ASTPrinter::visit(ASTProcedureForward const &ast) {
     proc_header(*ast, true);
 }
 
-void ASTPrinter::visit_ASTAssignment(ASTAssignment ast) {
+void ASTPrinter::visit(ASTAssignment const &ast) {
     ast->ident->accept(this);
     os << " := ";
     ast->expr->accept(this);
 }
 
-void ASTPrinter::visit_ASTReturn(ASTReturn ast) {
+void ASTPrinter::visit(ASTReturn const &ast) {
     os << "RETURN ";
     if (ast->expr) {
         ast->expr->accept(this);
     }
 }
 
-void ASTPrinter::visit_ASTExit(ASTExit /*ast*/) {
+void ASTPrinter::visit(ASTExit const &/*ast*/) {
     os << "EXIT";
 }
 
-void ASTPrinter::visit_ASTCall(ASTCall ast) {
+void ASTPrinter::visit(ASTCall const &ast) {
     ast->name->accept(this);
     os << "(";
     std::for_each(ast->args.begin(), ast->args.end(), [this, ast](auto const &a) {
@@ -209,7 +209,7 @@ void ASTPrinter::print_stats(std::vector<ASTStatement> stats) {
     pop();
 };
 
-void ASTPrinter::visit_ASTIf(ASTIf ast) {
+void ASTPrinter::visit(ASTIf const &ast) {
     os << "IF ";
     ast->if_clause.expr->accept(this);
     os << " THEN\n";
@@ -227,7 +227,7 @@ void ASTPrinter::visit_ASTIf(ASTIf ast) {
     os << indent() << "END";
 }
 
-void ASTPrinter::visit_ASTCaseElement(ASTCaseElement ast) {
+void ASTPrinter::visit(ASTCaseElement const &ast) {
     std::for_each(begin(ast->exprs), end(ast->exprs), [this, ast](auto const &e) {
         if (std::holds_alternative<ASTSimpleExpr>(e)) {
             std::get<ASTSimpleExpr>(e)->accept(this);
@@ -255,7 +255,7 @@ void ASTPrinter::visit_ASTCaseElement(ASTCaseElement ast) {
     pop();
 }
 
-void ASTPrinter::visit_ASTCase(ASTCase ast) {
+void ASTPrinter::visit(ASTCase const &ast) {
     os << "CASE ";
     ast->expr->accept(this);
     os << " OF\n";
@@ -277,7 +277,7 @@ void ASTPrinter::visit_ASTCase(ASTCase ast) {
     os << indent() << "END";
 } // namespace ax
 
-void ASTPrinter::visit_ASTFor(ASTFor ast) {
+void ASTPrinter::visit(ASTFor const &ast) {
     os << "FOR ";
     ast->ident->accept(this);
     os << " := ";
@@ -293,7 +293,7 @@ void ASTPrinter::visit_ASTFor(ASTFor ast) {
     os << indent() << "END";
 }
 
-void ASTPrinter::visit_ASTWhile(ASTWhile ast) {
+void ASTPrinter::visit(ASTWhile const &ast) {
     os << "WHILE ";
     ast->expr->accept(this);
     os << " DO\n";
@@ -301,26 +301,26 @@ void ASTPrinter::visit_ASTWhile(ASTWhile ast) {
     os << indent() << "END";
 }
 
-void ASTPrinter::visit_ASTRepeat(ASTRepeat ast) {
+void ASTPrinter::visit(ASTRepeat const &ast) {
     os << "REPEAT\n";
     print_stats(ast->stats);
     os << indent() << "UNTIL ";
     ast->expr->accept(this);
 }
 
-void ASTPrinter::visit_ASTLoop(ASTLoop ast) {
+void ASTPrinter::visit(ASTLoop const &ast) {
     os << "LOOP\n";
     print_stats(ast->stats);
     os << indent() << "END";
 }
 
-void ASTPrinter::visit_ASTBlock(ASTBlock ast) {
+void ASTPrinter::visit(ASTBlock const &ast) {
     os << "BEGIN\n";
     print_stats(ast->stats);
     os << indent() << "END";
 }
 
-void ASTPrinter::visit_ASTExpr(ASTExpr ast) {
+void ASTPrinter::visit(ASTExpr const &ast) {
     ast->expr->accept(this);
     if (ast->relation) {
         os << std::string(std::format(" {0} ", string(*ast->relation)));
@@ -328,13 +328,13 @@ void ASTPrinter::visit_ASTExpr(ASTExpr ast) {
     }
 }
 
-void ASTPrinter::visit_ASTRange(ASTRange ast) {
+void ASTPrinter::visit(ASTRange const &ast) {
     ast->first->accept(this);
     os << "..";
     ast->last->accept(this);
 };
 
-void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
+void ASTPrinter::visit(ASTSimpleExpr const &ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());
     }
@@ -349,7 +349,7 @@ void ASTPrinter::visit_ASTSimpleExpr(ASTSimpleExpr ast) {
     });
 }
 
-void ASTPrinter::visit_ASTTerm(ASTTerm ast) {
+void ASTPrinter::visit(ASTTerm const &ast) {
     ast->factor->accept(this);
     std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) {
         if (t.first == TokenType::asterisk) {
@@ -361,7 +361,7 @@ void ASTPrinter::visit_ASTTerm(ASTTerm ast) {
     });
 }
 
-void ASTPrinter::visit_ASTFactor(ASTFactor ast) {
+void ASTPrinter::visit(ASTFactor const &ast) {
     std::visit(overloaded{[this](auto arg) { arg->accept(this); },
                           [this](ASTExpr const &arg) {
                               this->os << " (";
@@ -377,7 +377,7 @@ void ASTPrinter::visit_ASTFactor(ASTFactor ast) {
                ast->factor);
 }
 
-void ASTPrinter::visit_ASTDesignator(ASTDesignator ast) {
+void ASTPrinter::visit(ASTDesignator const &ast) {
     ast->ident->accept(this);
     std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto &s) {
         std::visit(overloaded{[this](ArrayRef const &s) {
@@ -399,11 +399,11 @@ void ASTPrinter::visit_ASTDesignator(ASTDesignator ast) {
     });
 }
 
-void ASTPrinter::visit_ASTType(ASTType ast) {
+void ASTPrinter::visit(ASTType const &ast) {
     std::visit(overloaded{[this](auto arg) { arg->accept(this); }}, ast->type);
 }
 
-void ASTPrinter::visit_ASTArray(ASTArray ast) {
+void ASTPrinter::visit(ASTArray const &ast) {
     os << "ARRAY ";
     std::for_each(begin(ast->dimensions), end(ast->dimensions), [this, ast](auto &expr) {
         expr->accept(this);
@@ -417,7 +417,7 @@ void ASTPrinter::visit_ASTArray(ASTArray ast) {
     ast->type->accept(this);
 }
 
-void ASTPrinter::visit_ASTRecord(ASTRecord ast) {
+void ASTPrinter::visit(ASTRecord const &ast) {
     os << "RECORD";
     if (ast->base) {
         os << " (";
@@ -441,23 +441,23 @@ void ASTPrinter::visit_ASTRecord(ASTRecord ast) {
     });
 }
 
-void ASTPrinter::visit_ASTPointerType(ASTPointerType ast) {
+void ASTPrinter::visit(ASTPointerType const &ast) {
     os << "POINTER TO ";
     ast->reference->accept(this);
 }
 
-void ASTPrinter::visit_ASTQualident(ASTQualident ast) {
+void ASTPrinter::visit(ASTQualident const &ast) {
     if (!ast->qual.empty()) {
         os << ast->qual + ".";
     }
     ast->id->accept(this);
 }
 
-void ASTPrinter::visit_ASTIdentifier(ASTIdentifier ast) {
+void ASTPrinter::visit(ASTIdentifier const &ast) {
     os << ast->value;
 }
 
-void ASTPrinter::visit_ASTSet(ASTSet ast) {
+void ASTPrinter::visit(ASTSet const &ast) {
     os << '{';
     std::for_each(cbegin(ast->values), cend(ast->values), [this, ast](auto const &e) {
         std::visit(overloaded{[this](auto e) { e->accept(this); }}, e);
@@ -468,7 +468,7 @@ void ASTPrinter::visit_ASTSet(ASTSet ast) {
     os << '}';
 }
 
-void ASTPrinter::visit_ASTInteger(ASTInteger ast) {
+void ASTPrinter::visit(ASTInteger const &ast) {
     if (ast->hex) {
         os << std::hex << '0';
     };
@@ -478,11 +478,11 @@ void ASTPrinter::visit_ASTInteger(ASTInteger ast) {
     };
 }
 
-void ASTPrinter::visit_ASTReal(ASTReal ast) {
+void ASTPrinter::visit(ASTReal const &ast) {
     os << ast->style;
 }
 
-void ASTPrinter::visit_ASTChar(ASTCharPtr ast) {
+void ASTPrinter::visit(ASTCharPtr const &ast) {
     if (ast->hex) {
         os << std::hex << '0' << int(ast->value) << 'X' << std::dec;
     } else {
@@ -490,11 +490,11 @@ void ASTPrinter::visit_ASTChar(ASTCharPtr ast) {
     }
 }
 
-void ASTPrinter::visit_ASTString(ASTString ast) {
+void ASTPrinter::visit(ASTString const &ast) {
     os << ast->delim << ast->value << ast->delim;
 };
 
-void ASTPrinter::visit_ASTBool(ASTBool ast) {
+void ASTPrinter::visit(ASTBool const &ast) {
     if (ast->value) {
         os << string(TokenType::true_k);
     } else {
@@ -502,7 +502,7 @@ void ASTPrinter::visit_ASTBool(ASTBool ast) {
     }
 }
 
-void ASTPrinter::visit_ASTNil(ASTNil /*not used*/) {
+void ASTPrinter::visit(ASTNil const &/*not used*/) {
     os << "NIL";
 }
 

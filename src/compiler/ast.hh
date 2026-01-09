@@ -60,7 +60,7 @@ class ASTNil_ : public ASTBase_, public std::enable_shared_from_this<ASTNil_> {
   public:
     ~ASTNil_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTNil(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 };
 using ASTNil = std::shared_ptr<ASTNil_>;
 
@@ -68,7 +68,7 @@ class ASTInteger_ : public ASTBase_, public std::enable_shared_from_this<ASTInte
   public:
     ~ASTInteger_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTInteger(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     Int  value{0};
     bool hex{false};
@@ -79,7 +79,7 @@ class ASTReal_ : public ASTBase_, public std::enable_shared_from_this<ASTReal_> 
   public:
     ~ASTReal_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTReal(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     Real        value{0.0};
     std::string style;
@@ -90,7 +90,7 @@ class ASTBool_ : public ASTBase_, public std::enable_shared_from_this<ASTBool_> 
   public:
     ~ASTBool_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTBool(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     Bool value{false};
 };
@@ -104,7 +104,7 @@ class ASTChar_ : public ASTBase_, public std::enable_shared_from_this<ASTChar_> 
   public:
     ~ASTChar_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTChar(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::string str() const {
         std::string s{};
@@ -121,7 +121,7 @@ class ASTString_ : public ASTBase_, public std::enable_shared_from_this<ASTStrin
   public:
     ~ASTString_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTString(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::string str() const { return delim + value + delim; }
 
@@ -141,7 +141,7 @@ class ASTSet_ : public ASTBase_, public std::enable_shared_from_this<ASTSet_> {
   public:
     ~ASTSet_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTSet(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<std::variant<ASTSimpleExpr, ASTRange>> values;
 };
@@ -153,7 +153,7 @@ class ASTIdentifier_ : public ASTBase_, public std::enable_shared_from_this<ASTI
     explicit ASTIdentifier_(std::string n) : value(std::move(n)){};
     ~ASTIdentifier_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTIdentifier(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     [[nodiscard]] bool is(Attr attr) const { return attrs.contains(attr); }
     void               set(Attr attr) { attrs.set(attr); }
@@ -178,7 +178,7 @@ class ASTQualident_ : public ASTBase_, public std::enable_shared_from_this<ASTQu
     ASTQualident_(ASTQualident_ const &o) = default;
     ASTQualident_ &operator=(ASTQualident_ const &other) = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTQualident(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::string                     qual;
     std::shared_ptr<ASTIdentifier_> id = nullptr;
@@ -205,7 +205,7 @@ class ASTType_ : public ASTBase_, public std::enable_shared_from_this<ASTType_> 
   public:
     ~ASTType_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTType(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::variant<ASTQualident, ASTArray, ASTRecord, ASTPointerType> type;
 };
@@ -220,7 +220,7 @@ class ASTArray_ : public ASTBase_, public std::enable_shared_from_this<ASTArray_
   public:
     ~ASTArray_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTArray(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<ASTInteger> dimensions;
     ASTType                 type;
@@ -238,7 +238,7 @@ class ASTRecord_ : public ASTBase_, public std::enable_shared_from_this<ASTRecor
   public:
     ~ASTRecord_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTRecord(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTQualident        base = nullptr;
     std::vector<VarDec> fields;
@@ -254,7 +254,7 @@ class ASTPointerType_ : public ASTBase_, public std::enable_shared_from_this<AST
   public:
     ~ASTPointerType_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTPointerType(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTType reference;
 };
@@ -280,7 +280,7 @@ class ASTDesignator_ : public ASTBase_, public std::enable_shared_from_this<ASTD
   public:
     ~ASTDesignator_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTDesignator(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTIdentifier first_field() const;
 
@@ -305,7 +305,7 @@ class ASTFactor_ : public ASTBase_, public std::enable_shared_from_this<ASTFacto
   public:
     ~ASTFactor_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTFactor(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::variant<ASTDesignator, ASTInteger, ASTReal, ASTExpr, ASTCall, ASTBool, ASTCharPtr,
                  ASTString, ASTSet, ASTNil, ASTFactor>
@@ -322,7 +322,7 @@ class ASTTerm_ : public ASTBase_, public std::enable_shared_from_this<ASTTerm_> 
   public:
     ~ASTTerm_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTTerm(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     using Term_mult = std::pair<TokenType, ASTFactor>;
 
@@ -339,7 +339,7 @@ class ASTSimpleExpr_ : public ASTBase_, public std::enable_shared_from_this<ASTS
   public:
     ~ASTSimpleExpr_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTSimpleExpr(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     using Expr_add = std::pair<TokenType, ASTTerm>;
 
@@ -357,7 +357,7 @@ class ASTRange_ : public ASTBase_, public std::enable_shared_from_this<ASTRange_
   public:
     ~ASTRange_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTRange(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTSimpleExpr first;
     ASTSimpleExpr last;
@@ -374,7 +374,7 @@ class ASTExpr_ : public ASTBase_, public std::enable_shared_from_this<ASTExpr_> 
   public:
     ~ASTExpr_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTExpr(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTSimpleExpr            expr;
     std::optional<TokenType> relation;
@@ -396,7 +396,7 @@ class ASTAssignment_ : public ASTStatement_, public std::enable_shared_from_this
   public:
     ~ASTAssignment_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTAssignment(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTDesignator ident;
     ASTExpr       expr;
@@ -411,7 +411,7 @@ class ASTReturn_ : public ASTStatement_, public std::enable_shared_from_this<AST
   public:
     ~ASTReturn_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTReturn(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTExpr expr;
 };
@@ -425,7 +425,7 @@ class ASTExit_ : public ASTStatement_, public std::enable_shared_from_this<ASTEx
   public:
     ~ASTExit_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTExit(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTExpr expr;
 };
@@ -439,7 +439,7 @@ class ASTCall_ : public ASTStatement_, public std::enable_shared_from_this<ASTCa
   public:
     ~ASTCall_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTCall(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTDesignator        name;
     std::vector<ASTExpr> args;
@@ -458,7 +458,7 @@ class ASTIf_ : public ASTStatement_, public std::enable_shared_from_this<ASTIf_>
   public:
     ~ASTIf_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTIf(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     struct IFClause {
         ASTExpr                   expr;
@@ -480,7 +480,7 @@ class ASTCaseElement_ : public ASTStatement_,
   public:
     ~ASTCaseElement_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTCaseElement(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<std::variant<ASTSimpleExpr, ASTRange>> exprs;
     std::vector<ASTStatement>                          stats;
@@ -495,7 +495,7 @@ class ASTCase_ : public ASTStatement_, public std::enable_shared_from_this<ASTCa
   public:
     ~ASTCase_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTCase(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTSimpleExpr               expr;
     std::vector<ASTCaseElement> elements;
@@ -512,7 +512,7 @@ class ASTFor_ : public ASTStatement_, public std::enable_shared_from_this<ASTFor
   public:
     ~ASTFor_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTFor(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTIdentifier             ident;
     ASTExpr                   start;
@@ -530,7 +530,7 @@ class ASTWhile_ : public ASTStatement_, public std::enable_shared_from_this<ASTW
   public:
     ~ASTWhile_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTWhile(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTExpr                   expr;
     std::vector<ASTStatement> stats;
@@ -545,7 +545,7 @@ class ASTRepeat_ : public ASTStatement_, public std::enable_shared_from_this<AST
   public:
     ~ASTRepeat_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTRepeat(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTExpr                   expr;
     std::vector<ASTStatement> stats;
@@ -560,7 +560,7 @@ class ASTLoop_ : public ASTStatement_, public std::enable_shared_from_this<ASTLo
   public:
     ~ASTLoop_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTLoop(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<ASTStatement> stats;
 };
@@ -574,7 +574,7 @@ class ASTBlock_ : public ASTStatement_, public std::enable_shared_from_this<ASTB
   public:
     ~ASTBlock_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTBlock(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<ASTStatement> stats;
 };
@@ -599,7 +599,7 @@ class ASTProcedureForward_ : public ASTProc_,
   public:
     ~ASTProcedureForward_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTProcedureForward(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 };
 using ASTProcedureForward = std::shared_ptr<ASTProcedureForward_>;
 
@@ -608,7 +608,7 @@ class ASTProcedure_ : public ASTProc_, public std::enable_shared_from_this<ASTPr
     ~ASTProcedure_() override = default;
 
     void accept(ASTVisitor *v) override {
-        v->visit_ASTProcedure(ASTProcedure_::shared_from_this());
+        v->visit(ASTProcedure_::shared_from_this());
     };
 
     ASTDeclaration            decs;
@@ -627,7 +627,7 @@ class ASTVar_ : public ASTBase_, public std::enable_shared_from_this<ASTVar_> {
   public:
     ~ASTVar_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTVar(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<VarDec> vars;
 };
@@ -641,7 +641,7 @@ class ASTTypeDec_ : public ASTBase_, public std::enable_shared_from_this<ASTType
   public:
     ~ASTTypeDec_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTTypeDec(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<VarDec> types;
 };
@@ -661,7 +661,7 @@ class ASTConst_ : public ASTBase_, public std::enable_shared_from_this<ASTConst_
   public:
     ~ASTConst_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTConst(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::vector<ConstDec> consts;
 };
@@ -671,7 +671,7 @@ class ASTDeclaration_ : public ASTBase_, public std::enable_shared_from_this<AST
   public:
     ~ASTDeclaration_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTDeclaration(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     ASTTypeDec type;
     ASTConst   cnst;
@@ -689,7 +689,7 @@ class ASTImport_ : public ASTBase_, public std::enable_shared_from_this<ASTImpor
   public:
     ~ASTImport_() override = default;
 
-    void accept(ASTVisitor *v) override { v->visit_ASTImport(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     using Pair = std::pair<ASTIdentifier,  // Module
                            ASTIdentifier>; // Alias
@@ -701,7 +701,7 @@ using ASTImport = std::shared_ptr<ASTImport_>;
 class ASTModule_ : public ASTBase_, public std::enable_shared_from_this<ASTModule_> {
   public:
     ~ASTModule_() override = default;
-    void accept(ASTVisitor *v) override { v->visit_ASTModule(shared_from_this()); };
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::string               name;
     ASTImport                 import;
