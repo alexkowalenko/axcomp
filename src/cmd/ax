@@ -79,6 +79,7 @@ def main():
 
     script_dir = path.dirname(path.abspath(__file__))
     lib_dir = script_dir + "/../lib"
+    arguments += f" -L {lib_dir} "
 
     compiler = f"{script_dir}/axcomp"
 

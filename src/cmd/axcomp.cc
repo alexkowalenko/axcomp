@@ -23,7 +23,6 @@
 #include "error.hh"
 #include "importer.hh"
 #include "inspector.hh"
-#include "lexer.hh"
 #include "lexerUTF8.hh"
 #include "options.hh"
 #include "parser.hh"
@@ -32,13 +31,6 @@
 #include "typetable.hh"
 
 using namespace ax;
-
-constexpr auto std_path = ".";
-
-std::string getEnvVar(std::string const &key) {
-    char *val = std::getenv(key.c_str());
-    return val == nullptr ? std::string("") : std::string(val);
-}
 
 void output_defs(std::shared_ptr<ASTModule_> const &ast, Options const &options) {
     std::string def_file{"out.def"};
@@ -62,11 +54,6 @@ void dump_symbols(SymbolFrameTable &symbols, TypeTable &types) {
 
 Options do_args(int argc, char **argv) {
     Options options;
-
-    auto axlib = getEnvVar("AXLIB_PATH");
-    if (axlib.empty()) {
-        axlib = std_path;
-    }
 
     argparse::ArgumentParser app{"Oberon compiler", "0.3"};
 
@@ -107,15 +94,7 @@ Options do_args(int argc, char **argv) {
 
     app.add_argument("file_name").help("<input file>").store_into(options.file_name);
 
-    // cl::opt<std::string> axlib_path("axlib_path", cl::desc("(-L) path searched for runtime
-    // files"),
-    //                                 cl::init(axlib), cl::cat(oberon));
-    // cl::alias            axlib_pathA("L", cl::aliasopt(axlib_path));
-
-    app.add_argument("-L", "--axlib_path")
-        .help("path searched for runtime files")
-        .default_value(axlib)
-        .store_into(axlib);
+    app.add_argument("-L").help("path searched for runtime files").store_into(options.axlib_path);
 
     app.add_argument("-p", "--parse")
         .help("parse only")
@@ -149,7 +128,6 @@ Options do_args(int argc, char **argv) {
     // if (opt3) {
     //     options.optimise = 3;
     // }
-    options.axlib_path = axlib;
 
     try {
         app.parse_args(argc, argv);
