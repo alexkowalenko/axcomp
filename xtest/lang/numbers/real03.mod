@@ -1,3 +1,14 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Min: 2.22507E-308
+CHECK-NEXT: Max: 1.79769E+308
+CHECK-NEXT: Abs: 1
+CHECK-NEXT: Abs: 1.2
+CHECK-NEXT: Floor: -2
+CHECK-NEXT: FLT: 3
+CHECK-NEXT: 0
+*)
+
 MODULE real03; (* REAL *)
 IMPORT Out;
 VAR x : REAL;

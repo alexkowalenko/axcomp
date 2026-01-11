@@ -1,3 +1,11 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+*)
 
 (* Test generation of type conversion operators *)
 

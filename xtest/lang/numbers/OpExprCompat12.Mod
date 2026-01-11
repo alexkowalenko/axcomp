@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)
+
 MODULE OpExprCompat12;
 
 TYPE

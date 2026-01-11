@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)
+
 MODULE Long2;
 
 PROCEDURE Test* ();

@@ -1,3 +1,11 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 2
+CHECK-NEXT: -0.025
+CHECK-NEXT: 0
+*)
+
 MODULE Real2;
 
 IMPORT Out;

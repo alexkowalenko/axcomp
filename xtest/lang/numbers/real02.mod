@@ -1,3 +1,9 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)
+
 MODULE real02; (* REAL *)
 IMPORT Out;
 CONST pi = 3.1415927;

@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)
+
 MODULE real01; (* REAL *)
 CONST c = 1.2;
     d = 1.2E+2;

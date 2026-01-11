@@ -1,3 +1,12 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: -17
+CHECK-NEXT: 3.1
+CHECK-EMPTY:
+CHECK-NEXT: -17
+CHECK-NEXT: 3.1
+*)
+
 MODULE long; (* LONG *)
 IMPORT Out;
 BEGIN

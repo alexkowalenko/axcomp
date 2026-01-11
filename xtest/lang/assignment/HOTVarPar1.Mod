@@ -1,3 +1,9 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 2
+CHECK-NEXT: 3
+*)
+
 MODULE HOTVarPar1;
 
 IMPORT Out;

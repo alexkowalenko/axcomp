@@ -1,3 +1,18 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: pi: 3.14159
+CHECK-NEXT:      e: 2.71828
+CHECK-EMPTY:
+CHECK-NEXT:      sin: 0
+CHECK-NEXT:      cos: 1
+CHECK-NEXT:      arctan: 0.785398
+CHECK-NEXT:      ln: 1
+CHECK-NEXT:      exp: 2.71828
+CHECK-NEXT:      sqrt: 1.41421
+CHECK-NEXT:      pi is greater than e
+CHECK-NEXT:      0
+*)
+
 MODULE real04; (* REAL *)
 IMPORT Out, Math;
 VAR x : REAL;

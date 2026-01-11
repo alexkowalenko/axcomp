@@ -1,3 +1,11 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 1
+CHECK-NEXT: 4.71828
+CHECK-NEXT: 3
+*)
+
 MODULE shortint; (* compatibity *)
 
 IMPORT Out, Math;
