@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 15
+*)
+
 (* constants in calculations *)
 MODULE c03;
 CONST

@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 4
+*)
+
 (* constants *)
 MODULE c02;
 CONST

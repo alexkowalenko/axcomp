@@ -1,3 +1,9 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: TRUE
+CHECK-NEXT: 0
+*)
+
 MODULE ConstFold20;
 IMPORT Out;
 BEGIN

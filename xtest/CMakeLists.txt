@@ -33,7 +33,7 @@ xtest_add_lit_tests(parse.ETHZ parse.ETHZ lit.parse)
 #xtest_add_test(demo)
 #xtest_add_test(extra)
 
-#xtest_add_test(lang/const)
+xtest_add_lit_tests(lang-const lang/const lit.compile)
 xtest_add_lit_tests(lang-type lang/type lit.compile)
 xtest_add_lit_tests(lang-var lang/var lit.compile)
 

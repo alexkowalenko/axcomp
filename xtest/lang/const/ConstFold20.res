@@ -1,2 +1,0 @@
-TRUE
-output: 0

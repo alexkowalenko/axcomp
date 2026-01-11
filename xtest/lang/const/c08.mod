@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)
+
 MODULE c08; (* multiple VAR & CONST declarations*)
 
 CONST alpha = 24;
