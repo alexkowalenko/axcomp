@@ -61,7 +61,7 @@ extern "C" void Out_Set(Set x) {
 }
 
 extern "C" void Out_Char(Char x) {
-    icu::UnicodeString ustr(static_cast<int32_t>(x), 1);
+    auto        ustr = icu::UnicodeString::fromUTF32(reinterpret_cast<const UChar32 *>(&x), 1);
     std::string utf8;
     ustr.toUTF8String(utf8);
     std::fputs(utf8.c_str(), stdout);
