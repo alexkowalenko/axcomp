@@ -31,3 +31,12 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTLoop4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 1
+*)

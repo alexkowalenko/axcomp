@@ -1,3 +1,9 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+*)
+
 MODULE Undef7;
 
 IMPORT Out;

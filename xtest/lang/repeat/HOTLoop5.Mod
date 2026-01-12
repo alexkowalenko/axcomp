@@ -21,3 +21,13 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTLoop5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 1 2
+CHECK-NEXT: 1 2 3
+CHECK-NEXT: 1 2 3 4
+*)
+
+

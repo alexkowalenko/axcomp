@@ -16,3 +16,7 @@ PROCEDURE P*(): INTEGER;
 BEGIN
   Out.Int(P, 0); Out.Ln;
 END Undef27.
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+*)

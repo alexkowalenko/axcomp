@@ -6,3 +6,8 @@ PROCEDURE Test*(): SHORTINT;
   END Test;
   
 END Return3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

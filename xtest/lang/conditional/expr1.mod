@@ -1,3 +1,12 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+*)
+
 MODULE expr1; (* comparison mixed numerics and CHAR *)
 IMPORT Out, Math;
 BEGIN

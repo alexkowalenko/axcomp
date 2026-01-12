@@ -5,3 +5,10 @@ BEGIN
     WriteInt(x); WriteLn();
     RETURN 0
 END f01.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 12
+CHECK-NEXT: 0
+*)

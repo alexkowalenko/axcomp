@@ -8,3 +8,8 @@ BEGIN
        END
        RETURN 0;
 END halt.
+
+(*
+RUN: %comp %s | echo $? | filecheck %s
+CHECK: 0
+*)

@@ -10,3 +10,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTLoop9.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)
+

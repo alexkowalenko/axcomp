@@ -10,3 +10,9 @@ BEGIN
     END;
     RETURN x; 
 END e12.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 5
+*)
+
