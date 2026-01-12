@@ -10,3 +10,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Len4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

@@ -7,3 +7,9 @@ BEGIN
               Out.Char(CHR(i)) Out.Char(' '); Out.Int(ORD(CHR(i)), 0);   Out.Ln;
        END
 END ord.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

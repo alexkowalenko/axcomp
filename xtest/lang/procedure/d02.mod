@@ -17,3 +17,8 @@ MODULE d02; (* function definitions *)
 BEGIN
     RETURN 0
 END d02.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

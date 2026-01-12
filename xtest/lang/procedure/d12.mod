@@ -13,3 +13,8 @@ MODULE d12; (* Test call args *)
 BEGIN
     RETURN add(mult(3,3),mult(4,4))
 END d12.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 25
+*)

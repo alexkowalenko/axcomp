@@ -10,3 +10,8 @@ PROCEDURE Test;
 BEGIN
   Test;
 END Chr3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

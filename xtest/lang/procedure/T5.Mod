@@ -15,3 +15,9 @@ PROCEDURE f*(a, b: LONGINT): LONGINT;
 BEGIN
   Out.Int(f(3, 17), 0); Out.Ln;
 END T5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 14
+CHECK-NEXT: 0
+*)

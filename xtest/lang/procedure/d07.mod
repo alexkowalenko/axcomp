@@ -11,3 +11,8 @@ MODULE d07; (* Test return types from procedures *)
 BEGIN
     RETURN 5 + f() + (f() * f())
 END d07.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 11
+*)

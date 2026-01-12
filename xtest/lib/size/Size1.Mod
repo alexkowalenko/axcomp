@@ -11,3 +11,9 @@ PROCEDURE P;
 BEGIN
   P
 END Size1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

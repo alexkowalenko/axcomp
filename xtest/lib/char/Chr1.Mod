@@ -20,3 +20,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Chr1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 65AA
+CHECK-NEXT: 97aa
+CHECK-NEXT: 255ÿÿ
+*)

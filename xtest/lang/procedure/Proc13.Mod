@@ -20,3 +20,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Proc13.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 12
+CHECK-NEXT: 12
+CHECK-NEXT: 0
+*)

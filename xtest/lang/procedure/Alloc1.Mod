@@ -21,3 +21,10 @@ PROCEDURE Test* ();
 BEGIN
   Test;
 END Alloc1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+*)

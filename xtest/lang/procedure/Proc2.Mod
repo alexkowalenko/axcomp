@@ -7,3 +7,8 @@ PROCEDURE P (a, b: INTEGER): INTEGER;
 BEGIN
   P(123, 456);
 END Proc2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

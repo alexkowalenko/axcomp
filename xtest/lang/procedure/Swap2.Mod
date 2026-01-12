@@ -30,3 +30,11 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Swap2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1 2
+CHECK-NEXT: 2 1
+CHECK-NEXT: 1 2
+CHECK-NEXT: 0
+*)

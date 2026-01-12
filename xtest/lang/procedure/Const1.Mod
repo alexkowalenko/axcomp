@@ -22,3 +22,9 @@ PROCEDURE Test* ();
 BEGIN 
   Test
 END Const1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 12
+CHECK-NEXT: 0
+*)

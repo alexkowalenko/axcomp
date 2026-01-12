@@ -7,3 +7,9 @@ BEGIN
               Out.Char(CHR(i)) Out.Char(' '); Out.Char(CAP(CHR(i)));   Out.Ln;
        END
 END cap.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: a A
+CHECK-NEXT: 0
+*)

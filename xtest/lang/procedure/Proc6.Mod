@@ -7,3 +7,8 @@ PROCEDURE P (a: SHORTINT);
 BEGIN
   P(128);
 END Proc6.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

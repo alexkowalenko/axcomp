@@ -12,3 +12,9 @@ PROCEDURE Fct*(b: BOOLEAN): BOOLEAN;
 BEGIN
   Out.Bool(Fct(TRUE)); Out.Ln;
 END Undef13.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

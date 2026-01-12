@@ -21,3 +21,11 @@ END d14.
 10
 output: 0
 *)
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 2
+CHECK-NEXT: 10
+CHECK-NEXT: 10
+CHECK-NEXT: 0
+*)

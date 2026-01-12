@@ -24,3 +24,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Const3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

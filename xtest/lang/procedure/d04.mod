@@ -11,3 +11,8 @@ MODULE d04; (* Test top level consts and procedure consts *)
 BEGIN
     RETURN y
 END d04.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 3
+*)

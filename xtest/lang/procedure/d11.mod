@@ -13,3 +13,8 @@ MODULE d11; (* Test call args *)
 BEGIN
     RETURN ~(eq(1, 1) & neq(1, 1))
 END d11.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+*)

@@ -11,3 +11,8 @@ MODULE d05; (* Test top level VARs and procedure VARs *)
 BEGIN
     RETURN y + 63
 END d05.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 63
+*)

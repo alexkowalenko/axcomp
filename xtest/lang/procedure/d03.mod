@@ -8,3 +8,8 @@ BEGIN
     f();
     RETURN 0
 END d03.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

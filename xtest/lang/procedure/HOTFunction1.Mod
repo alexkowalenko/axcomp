@@ -16,3 +16,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTFunction1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 123
+CHECK-NEXT: 123
+CHECK-NEXT: 0
+*)

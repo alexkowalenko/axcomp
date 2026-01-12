@@ -11,3 +11,8 @@ MODULE d08; (* Test procedure parameters *)
 BEGIN
     RETURN 5 + f() + (f() * f())
 END d08.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 11
+*)

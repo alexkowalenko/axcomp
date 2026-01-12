@@ -12,3 +12,9 @@ BEGIN
        END
        Out.Ln;
 END chr.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

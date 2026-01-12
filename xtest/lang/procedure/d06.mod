@@ -11,3 +11,8 @@ MODULE d06; (* Test return types from procedures *)
 BEGIN
     RETURN y + 63
 END d06.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 63
+*)

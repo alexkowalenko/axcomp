@@ -21,3 +21,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Cap1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: aAAA
+CHECK-NEXT: zZZZ
+CHECK-NEXT: 0000
+*)

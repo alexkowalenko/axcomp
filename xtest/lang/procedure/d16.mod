@@ -29,3 +29,14 @@ END d16.
 20
 output: 0
 *)
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 2
+CHECK-NEXT: 10
+CHECK-NEXT: 20
+CHECK-NEXT: 10
+CHECK-NEXT: 20
+CHECK-NEXT: 0
+*)

@@ -14,3 +14,9 @@ PROCEDURE f*(a, b, c: BOOLEAN): LONGINT;
 BEGIN
   Out.Int(f(FALSE, TRUE, TRUE), 0); Out.Ln;
 END T7b.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 9
+CHECK-NEXT: 0
+*)

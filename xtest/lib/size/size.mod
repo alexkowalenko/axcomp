@@ -19,3 +19,9 @@ BEGIN
     x := SIZE(arrayType);
     Out.Int(x, 0); Out.Ln;
 END size.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

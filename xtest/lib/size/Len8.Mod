@@ -13,3 +13,9 @@ PROCEDURE F(): LONGINT;
 BEGIN
   Out.Int(F(), 0); Out.Ln;  
 END Len8.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)
