@@ -102,15 +102,15 @@ Options do_args(int argc, char **argv) {
         .default_value(false)
         .store_into(options.debug_parse);
 
-    // cl::opt<bool>         dbg("debug", cl::desc("turn on debugging"), cl::cat(oberon));
-    // cl::list<std::string> doptions("debug-only", cl::desc("debug options"),
-    // cl::cat(oberon));
     bool dbg{false};
     app.add_argument("-g", "--debug")
         .help("turn on debugging")
         .flag()
         .default_value(false)
         .store_into(dbg);
+
+    std::vector<std::string> doptions;
+    app.add_argument("-dg", "--debug_options").help("debug options").store_into(doptions);
 
     bool stats = false;
     app.add_argument("-st", "--stats")
@@ -137,21 +137,22 @@ Options do_args(int argc, char **argv) {
     }
 
     llvm::DebugFlag = dbg;
-    // std::for_each(begin(doptions), end(doptions),
-    //               [](auto x) { llvm::setCurrentDebugType(x.c_str()); });
+    for (auto const &x : doptions) {
+        llvm::setCurrentDebugType(x.c_str());
+    }
 
     if (stats) {
         llvm::EnableStatistics(stats);
     }
 
-#if 0
-    std::println("Options: file: {}", options.file_name);
-    std::println("         axlib: {}", options.axlib_path);
-    std::println("         output_funct: {}", options.output_funct);
-    std::println("         output_main: {}", options.output_main);
-    std::println("         output_defs: {}", options.output_defs);
-    std::println("         only_ll: {}", options.only_ll);
-#endif
+    if (std::ranges::find(doptions, "config") != doptions.end()) {
+        std::println("Options: file: {}", options.file_name);
+        std::println("         axlib: {}", options.axlib_path);
+        std::println("         output_funct: {}", options.output_funct);
+        std::println("         output_main: {}", options.output_main);
+        std::println("         output_defs: {}", options.output_defs);
+        std::println("         only_ll: {}", options.only_ll);
+    }
 
     return options;
 }
