@@ -7,3 +7,9 @@ BEGIN
    z := {};
    Out.Int(MIN(SET), 0); Out.String(" - "); Out.Int(MAX(SET), 0); Out.Ln;
 END set1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0 - 63
+CHECK-NEXT: 0
+*)

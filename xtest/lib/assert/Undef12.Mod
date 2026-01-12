@@ -14,6 +14,6 @@ END Undef12.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: After
 CHECK-NEXT: 0
 *)

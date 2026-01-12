@@ -60,3 +60,23 @@ BEGIN
 
    Out.String("Finish!"); Out.Ln;
 END set5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Union
+CHECK-NEXT: 3 in set z
+CHECK-NEXT: 4 in set z
+CHECK-EMPTY:
+CHECK: Intersection
+CHECK-NEXT: 2 in set z
+
+CHECK: Symmetric difference
+CHECK-NEXT: 1 in set z
+CHECK-NEXT: 3 in set z
+
+CHECK: Difference
+CHECK-NEXT:   in set z
+
+CHECK: Finish!
+CHECK-NEXT: 0
+*)

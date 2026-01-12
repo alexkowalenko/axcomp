@@ -26,3 +26,13 @@ BEGIN
 
    Out.String("Finish!"); Out.Ln;
 END set3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 3 in set x
+CHECK-NEXT:       4 in set x
+CHECK-EMPTY:
+CHECK-NEXT:       3 in set x
+CHECK-NEXT:       Finish!
+CHECK-NEXT: 0
+*)

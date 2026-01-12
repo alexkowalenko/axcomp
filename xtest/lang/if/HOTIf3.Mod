@@ -24,3 +24,11 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTIf3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: a=TRUE
+CHECK-NEXT: a=FALSE, b=TRUE
+CHECK-NEXT: a=FALSE, b=FALSE
+CHECK-NEXT: 0
+*)

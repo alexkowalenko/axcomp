@@ -10,3 +10,13 @@ BEGIN
     WriteBoolean(x); WriteLn;
     RETURN 0;
 END not.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 1
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+*)

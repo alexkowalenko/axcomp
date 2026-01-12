@@ -18,3 +18,11 @@ BEGIN
 
    Out.String("Finish!"); Out.Ln;
 END set4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 3 in set y
+CHECK-NEXT: 4 in set y
+CHECK-NEXT: Finish!
+CHECK-NEXT: 0
+*)

@@ -32,3 +32,13 @@ BEGIN
 
    Out.String("Finish!"); Out.Ln;
 END set2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 3 in set x
+CHECK-NEXT: 7 in set y
+CHECK-NEXT: x = z
+CHECK-NEXT: y # z
+CHECK-NEXT: Finish!
+CHECK-NEXT: 0
+*)

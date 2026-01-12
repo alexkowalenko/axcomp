@@ -13,3 +13,8 @@ BEGIN
     END;
     RETURN x
 END e04.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 20
+*)

@@ -19,3 +19,11 @@ END f;
 BEGIN
     g;
 END forward1.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: g()
+CHECK-NEXT: f()
+CHECK-NEXT: 0
+*)

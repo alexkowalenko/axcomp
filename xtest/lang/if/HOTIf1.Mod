@@ -23,3 +23,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTIf1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: TRUE
+CHECK-NEXT: FALSE
+CHECK-NEXT: 0
+*)

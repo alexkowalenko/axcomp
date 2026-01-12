@@ -61,7 +61,7 @@ extern "C" void Out_Set(Set x) {
 }
 
 extern "C" void Out_Char(Char x) {
-    auto        ustr = icu::UnicodeString::fromUTF32(reinterpret_cast<const UChar32 *>(&x), 1);
+    const auto  ustr = icu::UnicodeString::fromUTF32(reinterpret_cast<const UChar32 *>(&x), 1);
     std::string utf8;
     ustr.toUTF8String(utf8);
     std::fputs(utf8.c_str(), stdout);
@@ -71,8 +71,10 @@ extern "C" void Out_String(String x) {
     if (x == nullptr) {
         return;
     }
-    auto len = std::wcslen(x);
-    icu::UnicodeString ustr(reinterpret_cast<uint16_t *>(x), static_cast<int32_t>(len));
+    const auto len = std::wcslen(x);
+    const auto ustr = icu::UnicodeString::fromUTF32(reinterpret_cast<const UChar32 *>(x),
+                                                    static_cast<int32_t>(len));
+
     std::string utf8;
     ustr.toUTF8String(utf8);
     std::fputs(utf8.c_str(), stdout);

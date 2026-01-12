@@ -21,6 +21,6 @@ END Const5.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: bar
 CHECK-NEXT: 0
 *)

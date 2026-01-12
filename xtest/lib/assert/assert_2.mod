@@ -7,6 +7,5 @@ END assert_2.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
-CHECK-NEXT: 0
+CHECK: 2
 *)

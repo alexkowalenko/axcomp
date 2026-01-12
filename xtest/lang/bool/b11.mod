@@ -3,3 +3,8 @@ BEGIN
     RETURN TRUE = FALSE;
     RETURN TRUE # FALSE
 END b11.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

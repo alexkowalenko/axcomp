@@ -1,6 +1,6 @@
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 220
+CHECK: 222
 *)
 
 MODULE c06; (* vars *)

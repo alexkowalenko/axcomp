@@ -8,3 +8,8 @@ BEGIN
     END;
     RETURN x
 END e01.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 2
+*)

@@ -1,5 +1,0 @@
-FALSE OR FALSE: ab0
-FALSE OR TRUE : ab1
-TRUE OR FALSE : a1
-TRUE OR TRUE  : a1
-output: 0

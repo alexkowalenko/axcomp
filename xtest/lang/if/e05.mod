@@ -24,3 +24,8 @@ BEGIN
 
     RETURN x (* x should be 200 *)
 END e05.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 200
+*)

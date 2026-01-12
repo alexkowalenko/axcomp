@@ -29,3 +29,11 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END And1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: FALSE & FALSE: a0
+CHECK-NEXT: FALSE & TRUE : a0
+CHECK-NEXT: TRUE & FALSE : ab0
+CHECK-NEXT: TRUE & TRUE  : ab1
+*)
