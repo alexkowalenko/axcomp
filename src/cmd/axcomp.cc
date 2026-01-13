@@ -102,15 +102,18 @@ Options do_args(int argc, char **argv) {
         .default_value(false)
         .store_into(options.debug_parse);
 
-    bool dbg{false};
     app.add_argument("-g", "--debug")
         .help("turn on debugging")
         .flag()
         .default_value(false)
-        .store_into(dbg);
+        .store_into(options.debug);
 
     std::vector<std::string> doptions;
-    app.add_argument("-dg", "--debug_options").help("debug options").store_into(doptions);
+    app.add_argument("-dg", "--debug_options")
+        .help("debug options")
+        .append()
+        .nargs(argparse::nargs_pattern::at_least_one)
+        .store_into(doptions);
 
     bool stats = false;
     app.add_argument("-st", "--stats")
@@ -136,7 +139,7 @@ Options do_args(int argc, char **argv) {
         exit(1);
     }
 
-    llvm::DebugFlag = dbg;
+    llvm::DebugFlag = options.debug;
     for (auto const &x : doptions) {
         llvm::setCurrentDebugType(x.c_str());
     }
@@ -152,6 +155,9 @@ Options do_args(int argc, char **argv) {
         std::println("         output_main: {}", options.output_main);
         std::println("         output_defs: {}", options.output_defs);
         std::println("         only_ll: {}", options.only_ll);
+        for (auto const &x : doptions) {
+            std::println("         debug_option: {}", x);
+        }
     }
 
     return options;

@@ -12,3 +12,10 @@ PROCEDURE Test*;
 BEGIN
   Test
 END For5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 127
+CHECK-NEXT: 128
+CHECK-NEXT: 0
+*)

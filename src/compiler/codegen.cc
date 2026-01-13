@@ -872,6 +872,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
     last_end = after;
 
+    debug("index: {}", ast->ident->value);
     auto *index = symboltable.find(ast->ident->value)->value;
     builder.CreateStore(start_value, index);
 
@@ -891,28 +892,47 @@ void CodeGenerator::visit(ASTFor const &ast) {
     } else {
         step = TypeTable::IntType->make_value(1);
     }
-    auto  *tmp = builder.CreateLoad(index->getType(), index, "index");
+    auto  *tmp = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "tmp");
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
     builder.CreateStore(nextVar, index);
 
-    // Compute the end condition.
+    debug("Compute the end condition.");
     ast->end->accept(this);
     auto *end_value = last_value;
 
-    // check step
+    debug("check step");
     auto *cond = builder.CreateICmpSGE(step, TypeTable::IntType->get_init());
     builder.CreateCondBr(cond, forpos, forneg);
 
-    // Step is positive
-    builder.SetInsertPoint(forpos);
-    Value *endCond = builder.CreateICmpSLE(nextVar, end_value, "loopcond");
+    debug("Step is positive");
+    if (llvm::isCurrentDebugType(DEBUG_TYPE) && options.debug) {
+        llvm::dbgs() << "index: ";
+        index->getType()->print(llvm::dbgs());
+        llvm::dbgs() << "\ntmp: ";
+        tmp->getType()->print(llvm::dbgs());
+        llvm::dbgs() << "\nnextVar: ";
+        nextVar->getType()->print(llvm::dbgs());
+        llvm::dbgs() << "\nend_value: ";
+        end_value->getType()->print(llvm::dbgs());
+    }
 
-    // Insert the conditional branch into the end of Loop.
+    builder.SetInsertPoint(forpos);
+    auto *nextVar_value = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "nextvar");
+    if (llvm::isCurrentDebugType(DEBUG_TYPE) && options.debug) {
+        llvm::dbgs() << "\nnextVar_value: ";
+        nextVar_value->getType()->print(llvm::dbgs());
+        llvm::dbgs() << "\n";
+    }
+
+    Value *endCond = builder.CreateICmpSLE(nextVar_value, end_value, "loopcond");
+
+    debug("Insert the conditional branch into the end of Loop.");
     builder.CreateCondBr(endCond, loop, after);
 
     // Step is negative
     builder.SetInsertPoint(forneg);
-    endCond = builder.CreateICmpSGE(nextVar, end_value, "loopcond");
+    nextVar_value = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "nextvar");
+    endCond = builder.CreateICmpSGE(nextVar_value, end_value, "loopcond");
 
     // Insert the conditional branch into the end of Loop.
     builder.CreateCondBr(endCond, loop, after);
@@ -1388,18 +1408,17 @@ void CodeGenerator::visit(ASTTerm const &ast) {
 void CodeGenerator::visit(ASTFactor const &ast) {
     // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
-    std::visit(
-        overloaded{[this](auto arg) { arg->accept(this); },
-                   [this, ast](ASTDesignator const &arg) { visitPtr(arg, false); },
-                   [this, ast](ASTFactor const &arg) {
-                       debug("visit: not ");
-                       if (ast->is_not) {
-                           debug("visit: not do");
-                           arg->accept(this);
-                           last_value = builder.CreateNot(last_value);
-                       }
-                   }},
-        ast->factor);
+    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
+                          [this, ast](ASTDesignator const &arg) { visitPtr(arg, false); },
+                          [this, ast](ASTFactor const &arg) {
+                              debug("visit: not ");
+                              if (ast->is_not) {
+                                  debug("visit: not do");
+                                  arg->accept(this);
+                                  last_value = builder.CreateNot(last_value);
+                              }
+                          }},
+               ast->factor);
 }
 
 void CodeGenerator::visit_value(ASTRange const &ast, Value *case_value) {

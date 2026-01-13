@@ -17,3 +17,21 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Div1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: -6 DIV 3 = -2
+CHECK-NEXT:        -5 DIV 3 = -1
+CHECK-NEXT:        -4 DIV 3 = -1
+CHECK-NEXT:        -3 DIV 3 = -1
+CHECK-NEXT:        -2 DIV 3 = 0
+CHECK-NEXT:        -1 DIV 3 = 0
+CHECK-NEXT:         0 DIV 3 = 0
+CHECK-NEXT:         1 DIV 3 = 0
+CHECK-NEXT:         2 DIV 3 = 0
+CHECK-NEXT:         3 DIV 3 = 1
+CHECK-NEXT:         4 DIV 3 = 1
+CHECK-NEXT:         5 DIV 3 = 1
+CHECK-NEXT:         6 DIV 3 = 2
+CHECK-NEXT: 0
+*)

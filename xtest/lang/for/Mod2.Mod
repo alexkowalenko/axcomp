@@ -20,3 +20,21 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Mod2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: -6 MOD -3 = 0
+CHECK-NEXT: -5 MOD -3 = -2
+CHECK-NEXT: -4 MOD -3 = -1
+CHECK-NEXT: -3 MOD -3 = 0
+CHECK-NEXT: -2 MOD -3 = -2
+CHECK-NEXT: -1 MOD -3 = -1
+CHECK-NEXT:  0 MOD -3 = 0
+CHECK-NEXT:  1 MOD -3 = 1
+CHECK-NEXT:  2 MOD -3 = 2
+CHECK-NEXT:  3 MOD -3 = 0
+CHECK-NEXT:  4 MOD -3 = 1
+CHECK-NEXT:  5 MOD -3 = 2
+CHECK-NEXT:  6 MOD -3 = 0
+CHECK-NEXT: 0
+*)

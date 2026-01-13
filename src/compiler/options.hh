@@ -11,6 +11,7 @@
 namespace ax {
 
 struct Options {
+    bool debug{false};
     bool debug_parse{false};
 
     bool output_funct{false};

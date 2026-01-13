@@ -61,7 +61,7 @@ xtest_add_lit_tests(lang-if lang/if lit.compile)
 xtest_add_lit_tests(lang-while lang/while lit.compile)
 xtest_add_lit_tests(lang-repeat lang/repeat lit.compile)
 xtest_add_lit_tests(lang-loop lang/loop lit.compile)
-#xtest_add_test(lang/for)
+xtest_add_lit_tests(lang-for lang/for lit.compile)
 #xtest_add_test(lang/case)
 xtest_add_lit_tests(lang-return lang/return lit.compile)
 

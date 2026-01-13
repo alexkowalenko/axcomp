@@ -16,3 +16,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Div3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: -1
+*)

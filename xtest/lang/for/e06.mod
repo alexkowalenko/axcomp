@@ -7,3 +7,8 @@ BEGIN
     END;
     RETURN x
 END e06.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 45
+*)
