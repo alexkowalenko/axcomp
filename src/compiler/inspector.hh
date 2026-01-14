@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "ast.hh"
 #include "astvisitor.hh"
 #include "error.hh"

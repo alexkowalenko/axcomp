@@ -35,8 +35,8 @@ class ASTBase_ {
 
     virtual void accept(ASTVisitor *v) = 0;
 
-    void            set_location(Location const &l) { location = l; };
-    Location const &get_location() { return location; };
+    void                          set_location(Location const &l) { location = l; };
+    [[nodiscard]] Location const &get_location() const { return location; };
 
     [[nodiscard]] Type get_type() const { return type_info; };
     void               set_type(Type const &t) { type_info = t; }
@@ -150,7 +150,7 @@ using ASTSet = std::shared_ptr<ASTSet_>;
 class ASTIdentifier_ : public ASTBase_, public std::enable_shared_from_this<ASTIdentifier_> {
   public:
     ASTIdentifier_() = default;
-    explicit ASTIdentifier_(std::string n) : value(std::move(n)){};
+    explicit ASTIdentifier_(std::string n) : value(std::move(n)) {};
     ~ASTIdentifier_() override = default;
 
     void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
@@ -607,9 +607,7 @@ class ASTProcedure_ : public ASTProc_, public std::enable_shared_from_this<ASTPr
   public:
     ~ASTProcedure_() override = default;
 
-    void accept(ASTVisitor *v) override {
-        v->visit(ASTProcedure_::shared_from_this());
-    };
+    void accept(ASTVisitor *v) override { v->visit(ASTProcedure_::shared_from_this()); };
 
     ASTDeclaration            decs;
     std::vector<ASTProc>      procedures;

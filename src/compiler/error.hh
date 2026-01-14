@@ -8,6 +8,7 @@
 
 #include <format>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "location.hh"
@@ -31,10 +32,10 @@ class AXException : std::exception {
 
 class LexicalException : public AXException {
   public:
-    LexicalException(Location const &l, std::string m) : AXException(l, m) {};
+    LexicalException(Location const &l, std::string m) : AXException(l, std::move(m)) {};
 
     template <typename... Args>
-    LexicalException(Location const &l, std::string fmt, const Args &...args) {
+    LexicalException(Location const &l, const std::string fmt, const Args &...args) {
         location = l;
         msg = std::vformat(fmt, std::make_format_args(args...));
     };
@@ -45,7 +46,7 @@ class ParseException : public AXException {
     ParseException(Location const &l, std::string const &m) : AXException(l, m) {};
 
     template <typename... Args>
-    ParseException(Location const &l, std::string fmt, const Args &...args) {
+    ParseException(Location const &l, const std::string fmt, const Args &...args) {
         location = l;
         msg = std::vformat(fmt, std::make_format_args(args...));
     };
@@ -56,7 +57,7 @@ class TypeError : public AXException {
     TypeError(Location const &l, std::string const &m) : AXException(l, m) {};
 
     template <typename... Args>
-    TypeError(Location const &l, std::string fmt, const Args &...args) {
+    TypeError(Location const &l, const std::string fmt, const Args &...args) {
         location = l;
         msg = std::vformat(fmt, std::make_format_args(args...));
     };
@@ -66,7 +67,8 @@ class CodeGenException : public AXException {
   public:
     explicit CodeGenException(std::string const &m) : AXException(Location{}, m) {};
 
-    template <typename... Args> CodeGenException(std::string fmt, const Args &...args) {
+    template <typename... Args>
+    explicit CodeGenException(const std::string fmt, const Args &...args) {
         msg = std::vformat(fmt, std::make_format_args(args...));
     };
 
@@ -84,7 +86,7 @@ class ErrorManager {
     void               add(AXException const &e) { error_list.push_back(e); };
     [[nodiscard]] bool has_errors() const { return !error_list.empty(); };
 
-    void print_errors(std::ostream &out);
+    void print_errors(std::ostream &out) const;
     auto first() { return error_list.begin(); };
 
   private:

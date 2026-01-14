@@ -6,7 +6,6 @@
 
 #include "importer.hh"
 
-#include <cstddef>
 #include <fstream>
 #include <memory>
 #include <optional>
@@ -14,7 +13,6 @@
 
 #include <dirent.h>
 #include <format>
-#include <sys/types.h>
 
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Debug.h>
@@ -49,13 +47,6 @@ void Importer::set_search_path(std::string const &path) {
     }
 }
 
-bool ends_with(std::string const &s) {
-    if (s.length() < std::strlen(suffix)) {
-        return false;
-    }
-    return s.substr(s.length() - std::strlen(suffix), s.length()) == suffix;
-}
-
 std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
     debug("Importer::read_module {0}", name);
 
@@ -63,21 +54,21 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
         void operator()(DIR *dp) const { closedir(dp); }
     };
 
-    for (auto path : paths) {
+    for (const auto &path : paths) {
 
         auto *dp = opendir(path.c_str());
         if (dp == nullptr) {
             throw CodeGenException("Can't open {0}", path);
         }
-        std::unique_ptr<DIR, DirCloser> dir(dp);
+        std::unique_ptr<DIR, DirCloser> const dir(dp);
 
         struct dirent *in_file = nullptr;
         while ((in_file = readdir(dir.get()))) {
-            std::string fname(in_file->d_name);
+            std::string const fname(in_file->d_name);
             if (fname == "." || fname == "..") {
                 continue;
             }
-            if (ends_with(fname)) {
+            if (fname.ends_with(suffix)) {
                 auto dname = fname.substr(0, fname.find_last_of('.'));
                 if (dname == name) {
                     auto full_path = path + '/';
@@ -88,13 +79,13 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
                         Lexer     lex(is, errors);
                         DefParser parser(lex, module_symbols, types, errors);
                         auto      ast = parser.parse();
-                        Inspector inpect(module_symbols, types, errors, *this);
-                        inpect.check(ast);
+                        Inspector inspect(module_symbols, types, errors, *this);
+                        inspect.check(ast);
                     } catch (AXException const &e) {
                         throw CodeGenException("Importer MODULE {0} error: {1} at: {2}", name,
                                                e.error_msg(), full_path);
                     }
-                    st_imports++;
+                    ++st_imports;
                     return module_symbols;
                 }
             }
@@ -103,10 +94,10 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
     return std::nullopt;
 }
 
-void transfer_symbols(SymbolFrameTable &from, SymbolFrameTable &to,
+void transfer_symbols(const SymbolFrameTable &from, SymbolFrameTable &to,
                       std::string const &module_name) {
     for (const auto &iter : from) {
-        std::string n = ASTQualident_::make_coded_id(module_name, std::string(iter.first));
+        std::string const n = ASTQualident_::make_coded_id(module_name, std::string(iter.first));
         iter.second->set(Attr::global_var);
         to.put(n, iter.second);
     }

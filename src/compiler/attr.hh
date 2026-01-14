@@ -11,7 +11,7 @@
 
 namespace ax {
 
-enum class Attr {
+enum class Attr : std::uint8_t {
     null = 0,
     var,       // VAR parameters
     global,    // * symbol on global objects in modules

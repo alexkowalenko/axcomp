@@ -7,9 +7,8 @@
 #pragma once
 
 #include <climits>
-#include <cwctype>
 
-// Common defintions to be shared with the runtime.
+// Common definitions to be shared with the runtime.
 
 namespace ax {
 

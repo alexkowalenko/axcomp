@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <iostream>
-
 #include "ast.hh"
 #include "printer.hh"
 
@@ -16,7 +14,7 @@ namespace ax {
 class DefPrinter : ASTPrinter {
 
   public:
-    explicit DefPrinter(std::ostream &ostream) : ASTPrinter(ostream){};
+    explicit DefPrinter(std::ostream &ostream) : ASTPrinter(ostream) {};
 
     void print(ASTModule const &ast) { ast->accept(this); };
 

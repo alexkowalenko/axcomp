@@ -6,10 +6,8 @@
 
 #include "codegen.hh"
 
-#include <cstddef>
 #include <exception>
 #include <format>
-#include <iostream>
 #include <memory>
 
 #include <llvm/IR/Constants.h>
@@ -31,7 +29,6 @@
 #include "astvisitor.hh"
 #include "builtin.hh"
 #include "error.hh"
-#include "parser.hh"
 #include "symbol.hh"
 #include "symboltable.hh"
 #include "token.hh"
@@ -69,7 +66,7 @@ void CodeGenerator::visit(ASTModule const &ast) {
     setup_builtins();
 
     if (ast->import) {
-        ast->import->accept(this);
+        visit(ast->import);
     }
 
     // Top level consts
@@ -102,7 +99,7 @@ void CodeGenerator::visit(ASTModule const &ast) {
 
     // Do declarations - vars
     top_level = true; // we have done the procedures
-    ast->decs->accept(this);
+    visit(ast->decs);
 
     // Go through the statements
     std::for_each(ast->stats.begin(), ast->stats.end(),
@@ -198,7 +195,7 @@ void CodeGenerator::doTopConsts(ASTConst const &ast) {
         auto            const_name = gen_module_id(c.ident->value);
         GlobalVariable *gVar = generate_global(const_name, type);
 
-        c.value->accept(this);
+        visit(c.value);
         GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.ident->is(Attr::global)) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
@@ -220,17 +217,17 @@ void CodeGenerator::doProcedures(std::vector<ASTProc> const &procs) {
 
 void CodeGenerator::visit(ASTDeclaration const &ast) {
     if (ast->cnst && !top_level) {
-        ast->cnst->accept(this);
+        visit(ast->cnst);
     }
     if (ast->var && !top_level) {
-        ast->var->accept(this);
+        visit(ast->var);
     }
 }
 
 void CodeGenerator::visit(ASTConst const &ast) {
     debug("ASTConst");
     for (auto const &c : ast->consts) {
-        c.value->accept(this);
+        visit(c.value);
         auto *val = last_value;
 
         auto name = c.ident->value; // consts within procedures don't need
@@ -396,7 +393,7 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     };
 
     // Do declarations
-    ast->decs->accept(this);
+    visit(ast->decs);
 
     // Do closure variables
     if (sym->is(Attr::closure)) {
@@ -472,7 +469,7 @@ void CodeGenerator::visit(ASTProcedureForward const &ast) {
 
 void CodeGenerator::visit(ASTAssignment const &ast) {
     debug("ASTAssignment {0}", std::string(*(ast->ident)));
-    ast->expr->accept(this);
+    visit(ast->expr);
     auto *val = last_value;
 
     bool var = false;
@@ -507,7 +504,7 @@ void CodeGenerator::visit(ASTAssignment const &ast) {
 
 void CodeGenerator::visit(ASTReturn const &ast) {
     if (ast->expr) {
-        ast->expr->accept(this);
+        visit(ast->expr);
         if (top_level && last_value->getType() != llvm::Type::getInt64Ty(context)) {
             // in the main module - return i64 value
             last_value = builder.CreateZExt(last_value, llvm::Type::getInt64Ty(context));
@@ -591,7 +588,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
             do_strchar_conv = a->get_type()->id == TypeId::str1 &&
                               (typeFunction->params[i].first &&
                                typeFunction->params[i].first->id == TypeId::chr);
-            a->accept(this);
+            visit(a);
         }
         args.push_back(last_value);
         i++;
@@ -649,7 +646,7 @@ void CodeGenerator::visit(ASTIf const &ast) {
     debug("ASTIf");
 
     // IF
-    ast->if_clause.expr->accept(this);
+    visit(ast->if_clause.expr);
 
     // Create blocks, insert then block
     auto                     *funct = builder.GetInsertBlock()->getParent();
@@ -690,7 +687,7 @@ void CodeGenerator::visit(ASTIf const &ast) {
         builder.SetInsertPoint(elsif_blocks[i]);
 
         // do expr
-        e.expr->accept(this);
+        visit(e.expr);
         BasicBlock *t_block = BasicBlock::Create(context, "then", funct);
 
         if (&e != &ast->elsif_clause.back()) {
@@ -752,7 +749,7 @@ void CodeGenerator::visit(ASTCase const &ast) {
     BasicBlock *end_block = BasicBlock::Create(context, "case.end");
 
     // CASE
-    ast->expr->accept(this);
+    visit(ast->expr);
     auto *case_value = last_value;
 
     std::vector<std::pair<ASTRange, int>> range_list;
@@ -860,7 +857,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
     debug("ASTFor");
 
     // do start expr
-    ast->start->accept(this);
+    visit(ast->start);
     auto *start_value = last_value;
 
     // Make the new basic block for the loop header, inserting after current
@@ -887,7 +884,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
     // Emit the step value.
     Value *step = nullptr;
     if (ast->by) {
-        ast->by->accept(this);
+        visit(ast->by);
         step = last_value;
     } else {
         step = TypeTable::IntType->make_value(1);
@@ -897,7 +894,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
     builder.CreateStore(nextVar, index);
 
     debug("Compute the end condition.");
-    ast->end->accept(this);
+    visit(ast->end);
     auto *end_value = last_value;
 
     debug("check step");
@@ -957,7 +954,7 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     builder.SetInsertPoint(while_block);
 
     // Expr
-    ast->expr->accept(this);
+    visit(ast->expr);
     builder.CreateCondBr(last_value, loop, end_block);
     while_block = builder.GetInsertBlock();
 
@@ -991,7 +988,7 @@ void CodeGenerator::visit(ASTRepeat const &ast) {
     std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &s) { s->accept(this); });
 
     // Expr
-    ast->expr->accept(this);
+    visit(ast->expr);
     builder.CreateCondBr(last_value, end_block, repeat_block);
     repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code NOLINT
 
@@ -1049,11 +1046,11 @@ void CodeGenerator::visit(ASTBlock const &ast) {
 
 void CodeGenerator::visit(ASTExpr const &ast) {
     debug("ASTExpr");
-    ast->expr->accept(this);
+    visit(ast->expr);
 
     if (ast->relation) {
         auto *L = last_value;
-        ast->relation_expr->accept(this);
+        visit(ast->relation_expr);
         auto *R = last_value;
         if (L->getType() == TypeTable::StrType->get_llvm() &&
             R->getType() == TypeTable::StrType->get_llvm()) {
@@ -1173,7 +1170,7 @@ void CodeGenerator::visit(ASTExpr const &ast) {
 
 void CodeGenerator::visit(ASTSimpleExpr const &ast) {
     debug("ASTSimpleExpr");
-    ast->term->accept(this);
+    visit(ast->term);
     Value *L = last_value;
     // if initial sign exists and is negative, negate the integer
     if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
@@ -1199,12 +1196,12 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
             builder.CreateCondBr(last_value, or_end_block, or_next_block);
             use_end = true;
             builder.SetInsertPoint(or_next_block);
-            right->accept(this);
+            visit(right);
             L = last_value;
             continue;
         }
 
-        right->accept(this);
+        visit(right);
         Value *R = last_value;
 #if 0
         llvm::dbgs() << "L and R ";
@@ -1298,7 +1295,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
 
 void CodeGenerator::visit(ASTTerm const &ast) {
     debug("ASTTerm {0}", std::string(*ast));
-    ast->factor->accept(this);
+    visit(ast->factor);
     Value *L = last_value;
 
     BasicBlock *end_block = BasicBlock::Create(context, "and_end");
@@ -1315,12 +1312,12 @@ void CodeGenerator::visit(ASTTerm const &ast) {
             builder.CreateCondBr(last_value, next_block, end_block);
             use_end = true;
             builder.SetInsertPoint(next_block);
-            right->accept(this);
+            visit(right);
             L = last_value;
             continue;
         }
 
-        right->accept(this);
+        visit(right);
         Value *R = last_value;
 #if 0
         llvm::dbgs() << "L and R ";
@@ -1423,9 +1420,9 @@ void CodeGenerator::visit(ASTFactor const &ast) {
 
 void CodeGenerator::visit_value(ASTRange const &ast, Value *case_value) {
     debug("ASTRange");
-    ast->first->accept(this);
+    visit(ast->first);
     auto *low = builder.CreateICmpSLE(last_value, case_value);
-    ast->last->accept(this);
+    visit(ast->last);
     auto *high = builder.CreateICmpSLE(case_value, last_value);
     last_value = builder.CreateAnd(low, high);
 }

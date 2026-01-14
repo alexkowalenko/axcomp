@@ -32,7 +32,7 @@
 
 namespace ax {
 
-enum class TypeId {
+enum class TypeId : std::uint8_t {
     null, // void
     any,  // any - used to for multi type return values like MIN, MAX
     integer,
@@ -59,7 +59,7 @@ using Type = std::shared_ptr<Type_>;
 
 class Type_ {
   public:
-    explicit Type_(TypeId i) : id(i){};
+    explicit Type_(TypeId i) : id(i) {};
     virtual ~Type_() = default;
 
     TypeId id = TypeId::null;
@@ -101,16 +101,16 @@ inline std::string string(Type const &t) {
 
 class SimpleType : public Type_ {
   public:
-    explicit SimpleType(std::string n, TypeId id) : Type_(id), name(std::move(n)){};
+    explicit SimpleType(std::string n, TypeId id) : Type_(id), name(std::move(n)) {};
     ~SimpleType() override = default;
 
-    explicit operator std::string() override;
+    explicit    operator std::string() override;
     std::string name;
 };
 
 class IntegerType : public SimpleType {
   public:
-    explicit IntegerType() : SimpleType("INTEGER", TypeId::integer){};
+    explicit IntegerType() : SimpleType("INTEGER", TypeId::integer) {};
     ~IntegerType() override = default;
 
     [[nodiscard]] bool is_numeric() const override { return true; };
@@ -126,7 +126,7 @@ class IntegerType : public SimpleType {
 
 class BooleanType : public SimpleType {
   public:
-    explicit BooleanType() : SimpleType("BOOLEAN", TypeId::boolean){};
+    explicit BooleanType() : SimpleType("BOOLEAN", TypeId::boolean) {};
     ~BooleanType() override = default;
 
     [[nodiscard]] llvm::Constant *make_value(Bool b) const;
@@ -140,7 +140,7 @@ class BooleanType : public SimpleType {
 
 class RealCType : public SimpleType {
   public:
-    explicit RealCType() : SimpleType("REAL", TypeId::real){};
+    explicit RealCType() : SimpleType("REAL", TypeId::real) {};
     ~RealCType() override = default;
 
     [[nodiscard]] llvm::Constant *make_value(Real f) const {
@@ -154,7 +154,7 @@ class RealCType : public SimpleType {
 
 class CharacterType : public SimpleType {
   public:
-    explicit CharacterType() : SimpleType("CHAR", TypeId::chr){};
+    explicit CharacterType() : SimpleType("CHAR", TypeId::chr) {};
     ~CharacterType() override = default;
 
     [[nodiscard]] llvm::Constant *make_value(Char c) const;
@@ -168,9 +168,9 @@ class CharacterType : public SimpleType {
 
 class ProcedureType : public Type_ {
   public:
-    explicit ProcedureType() : Type_(TypeId::procedure){};
+    explicit ProcedureType() : Type_(TypeId::procedure) {};
     ProcedureType(Type returns, std::vector<std::pair<Type, Attr>> params)
-        : Type_(TypeId::procedure), ret(std::move(returns)), params(std::move(params)){};
+        : Type_(TypeId::procedure), ret(std::move(returns)), params(std::move(params)) {};
     ~ProcedureType() override = default;
 
     explicit operator std::string() override;
@@ -203,7 +203,7 @@ class ProcedureFwdType : public ProcedureType {
 
 class ArrayType : public Type_ {
   public:
-    explicit ArrayType(Type b) : Type_(TypeId::array), base_type(std::move(b)){};
+    explicit ArrayType(Type b) : Type_(TypeId::array), base_type(std::move(b)) {};
     ~ArrayType() override = default;
 
     explicit operator std::string() override;
@@ -238,7 +238,7 @@ class OpenArrayType : public ArrayType {
 
 class StringType : public SimpleType {
   public:
-    StringType() : SimpleType("STRING", TypeId::string){};
+    StringType() : SimpleType("STRING", TypeId::string) {};
     ~StringType() override = default;
 
     static llvm::Constant *make_value(std::string const &s);
@@ -248,7 +248,7 @@ class StringType : public SimpleType {
 
 class RecordType : public Type_ {
   public:
-    RecordType() : Type_(TypeId::record){};
+    RecordType() : Type_(TypeId::record) {};
     ~RecordType() override = default;
 
     explicit operator std::string() override;
@@ -294,7 +294,7 @@ class TypeAlias : public Type_ {
         : Type_(TypeId::alias), name{std::move(n)}, alias{std::move(t)} {};
     ~TypeAlias() override = default;
 
-    explicit operator std::string() override { return name; };
+    explicit             operator std::string() override { return name; };
     [[nodiscard]] size_t get_size() const override { return alias->get_size(); };
 
     Type get_alias() { return alias; }
@@ -313,10 +313,8 @@ class PointerType : public Type_ {
 
     ~PointerType() override = default;
 
-    explicit operator std::string() override { return '^' + ref_name; };
-    [[nodiscard]] size_t get_size() const override {
-        return  PTR_SIZE;
-    };
+    explicit             operator std::string() override { return '^' + ref_name; };
+    [[nodiscard]] size_t get_size() const override { return PTR_SIZE; };
 
     [[nodiscard]] llvm::Type     *get_llvm() const override;
     [[nodiscard]] llvm::Constant *get_init() const override;
@@ -328,8 +326,8 @@ class PointerType : public Type_ {
 
   private:
     constexpr static size_t PTR_SIZE = 8;
-    Type        reference = nullptr;
-    std::string ref_name;
+    Type                    reference = nullptr;
+    std::string             ref_name;
 };
 
 inline bool is_ptr_to_record(Type const &t) {
@@ -344,7 +342,7 @@ inline bool is_ptr_to_record(Type const &t) {
 
 class SetCType : public SimpleType {
   public:
-    SetCType() : SimpleType("SET", TypeId::set){};
+    SetCType() : SimpleType("SET", TypeId::set) {};
     ~SetCType() override = default;
 
     [[nodiscard]] llvm::Type     *get_llvm() const override;

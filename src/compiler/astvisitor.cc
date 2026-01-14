@@ -14,18 +14,21 @@ namespace ax {
 
 void ASTVisitor::visit(ASTModule const &ast) { // NOLINT
     ast->decs->accept(this);
-    std::for_each(begin(ast->procedures), end(ast->procedures),
-                  [this](auto const &proc) { proc->accept(this); });
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &proc : ast->procedures) {
+        proc->accept(this);
+    }
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTImport const &ast) { // NOLINT
-    std::for_each(begin(ast->imports), end(ast->imports), [this](auto const &i) {
-        i.first->accept(this);
-        if (i.second) {
-            i.second->accept(this);
+    for (const auto &[module, alias] : ast->imports) {
+        module->accept(this);
+        if (alias) {
+            alias->accept(this);
         }
-    });
+    }
 };
 
 void ASTVisitor::visit(ASTDeclaration const &ast) { // NOLINT
@@ -41,24 +44,27 @@ void ASTVisitor::visit(ASTDeclaration const &ast) { // NOLINT
 }
 
 void ASTVisitor::visit(ASTConst const &ast) { // NOLINT
-    std::for_each(begin(ast->consts), end(ast->consts), [this](auto const &c) {
-        c.ident->accept(this);
-        c.value->accept(this);
-    });
+    for (auto const &cnst : ast->consts) {
+        cnst.ident->accept(this);
+        cnst.value->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTTypeDec const & /*unused*/) {} // NOLINT
 
 void ASTVisitor::visit(ASTVar const &ast) { // NOLINT
 
-    std::for_each(begin(ast->vars), end(ast->vars),
-                  [this](auto const &v) { v.first->accept(this); });
+    for (auto const &var : ast->vars) {
+        var.first->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTProcedure const &ast) { // NOLINT
     ast->return_type->accept(this);
     ast->decs->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTProcedureForward const & /*not used*/) {} // NOLINT
@@ -82,22 +88,27 @@ void ASTVisitor::visit(ASTCall const &ast) { // NOLINT
 
 void ASTVisitor::visit(ASTIf const &ast) { // NOLINT
     ast->if_clause.expr->accept(this);
-    std::for_each(ast->if_clause.stats.begin(), ast->if_clause.stats.end(),
-                  [this](auto const &x) { x->accept(this); });
+    for (auto const &s : ast->if_clause.stats) {
+        s->accept(this);
+    }
 
-    std::for_each(ast->elsif_clause.begin(), ast->elsif_clause.end(), [this](auto const &x) {
-        x.expr->accept(this);
-        std::for_each(x.stats.begin(), x.stats.end(), [this](auto const &s) { s->accept(this); });
-    });
+    for (auto const &elsif_clause : ast->elsif_clause) {
+        elsif_clause.expr->accept(this);
+        for (auto const &stmt : elsif_clause.stats) {
+            stmt->accept(this);
+        }
+    }
     if (ast->else_clause) {
         auto elses = *ast->else_clause;
-        std::for_each(begin(elses), end(elses), [this](auto const &s) { s->accept(this); });
+        for (auto const &stmt : elses) {
+            stmt->accept(this);
+        }
     }
 }
 
-void ASTVisitor::visit(ASTCaseElement const &ast){}; // NOLINT
+void ASTVisitor::visit(ASTCaseElement const &ast) {}; // NOLINT
 
-void ASTVisitor::visit(ASTCase const &ast){}; // NOLINT
+void ASTVisitor::visit(ASTCase const &ast) {}; // NOLINT
 
 void ASTVisitor::visit(ASTFor const &ast) { // NOLINT
     ast->ident->accept(this);
@@ -106,25 +117,35 @@ void ASTVisitor::visit(ASTFor const &ast) { // NOLINT
     if (ast->by) {
         ast->by->accept(this);
     }
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTWhile const &ast) { // NOLINT
     ast->expr->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTRepeat const &ast) { // NOLINT
     ast->expr->accept(this);
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTLoop const &ast) { // NOLINT
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTBlock const &ast) { // NOLINT
-    std::for_each(begin(ast->stats), end(ast->stats), [this](auto const &x) { x->accept(this); });
+    for (auto const &stat : ast->stats) {
+        stat->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTExpr const &ast) { // NOLINT
@@ -141,12 +162,16 @@ void ASTVisitor::visit(ASTRange const &ast) { // NOLINT
 
 void ASTVisitor::visit(ASTSimpleExpr const &ast) { // NOLINT
     ast->term->accept(this);
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) { t.second->accept(this); });
+    for (auto const &rest : ast->rest) {
+        rest.second->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTTerm const &ast) { // NOLINT
     ast->factor->accept(this);
-    std::for_each(ast->rest.begin(), ast->rest.end(), [this](auto t) { t.second->accept(this); });
+    for (auto const &rest : ast->rest) {
+        rest.second->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTFactor const &ast) { // NOLINT
@@ -156,15 +181,16 @@ void ASTVisitor::visit(ASTFactor const &ast) { // NOLINT
 
 void ASTVisitor::visit(ASTDesignator const &ast) { // NOLINT
     ast->ident->accept(this);
-    std::for_each(begin(ast->selectors), end(ast->selectors), [this](auto const &arg) {
+    for (auto const &arg : ast->selectors) {
         std::visit(overloaded{[this](ArrayRef const &s) {
-                                  std::for_each(begin(s), end(s),
-                                                [this](auto &e) { e->accept(this); });
+                                  for (auto &expr : s) {
+                                      expr->accept(this);
+                                  }
                               },
                               [this](FieldRef const &s) { s.first->accept(this); },
                               [this](PointerRef /* unused */) {}},
                    arg);
-    });
+    }
 } // namespace ax
 
 void ASTVisitor::visit(ASTType const &ast) { // NOLINT
@@ -173,16 +199,17 @@ void ASTVisitor::visit(ASTType const &ast) { // NOLINT
 }
 
 void ASTVisitor::visit(ASTArray const &ast) { // NOLINT
-    std::for_each(begin(ast->dimensions), end(ast->dimensions),
-                  [this](auto &expr) { expr->accept(this); });
+    for (auto const &dimension : ast->dimensions) {
+        dimension->accept(this);
+    }
     ast->type->accept(this);
 };
 
 void ASTVisitor::visit(ASTRecord const &ast) { // NOLINT
-    std::for_each(begin(ast->fields), end(ast->fields), [this](auto const &s) {
-        s.first->accept(this);
-        s.second->accept(this);
-    });
+    for (auto const &field : ast->fields) {
+        field.first->accept(this);
+        field.second->accept(this);
+    }
 }
 
 void ASTVisitor::visit(ASTPointerType const &ast) { // NOLINT

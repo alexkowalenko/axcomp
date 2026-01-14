@@ -27,25 +27,25 @@ template <typename S, typename... Args> static void debug(const S &format, const
 
 BIFunctor abs{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin ABS");
-    auto  args = codegen->do_arguments(ast);
-    auto *arg = args[0];
+    const auto args = codegen->do_arguments(ast);
+    auto      *arg = args[0];
     if (arg->getType()->isIntegerTy()) {
         debug("builtin abs int");
         return codegen->call_function("ABS", TypeTable::IntType->get_llvm(), {arg});
     }
     if (arg->getType()->isFloatingPointTy()) {
         debug("builtin abs fabs");
-        std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
-        auto                     *fun =
-            Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::fabs, type_args);
+        std::vector<llvm::Type *> const type_args{TypeTable::RealType->get_llvm()};
+        auto *fun = Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::fabs,
+                                                      type_args);
         return codegen->get_builder().CreateCall(fun, args);
     }
     return TypeTable::IntType->make_value(1);
 }};
 
 BIFunctor len{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto  args = codegen->do_arguments(ast);
-    auto *arg = args[0];
+    const auto args = codegen->do_arguments(ast);
+    auto      *arg = args[0];
     if (arg->getType()->isArrayTy()) {
         auto *array = dyn_cast<llvm::ArrayType>(arg->getType());
         return TypeTable::IntType->make_value(array->getArrayNumElements());
@@ -85,9 +85,9 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::openarray) {
         debug("builtin NEW ARRAY");
 
-        auto   array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
-        auto   base_size = array_type->base_type->get_size();
-        Value *value = TypeTable::IntType->make_value(base_size);
+        auto      array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
+        const Int base_size = array_type->base_type->get_size();
+        Value    *value = TypeTable::IntType->make_value(base_size);
         for (int i = 1; i < args.size(); i++) {
             value = codegen->get_builder().CreateMul(args[i], value);
         }
@@ -100,8 +100,8 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 template <bool max_f>
 BIFunctor max{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto name = std::string(*ast->args[0]);
-    auto type = codegen->get_types().resolve(name);
+    const auto name = std::string(*ast->args[0]);
+    const auto type = codegen->get_types().resolve(name);
     if (!type) {
         throw CodeGenException(ast->get_location(), "{0}: {1} is not a type name",
                                max_f ? "MAX" : "MIN", name);
@@ -112,9 +112,8 @@ BIFunctor max{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 template <bool inc_f>
 BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin INC/DEC");
-    auto  args = codegen->do_arguments(ast);
-    auto *arg = args[0];
-    if (arg->getType()->isPointerTy()) {
+    const auto args = codegen->do_arguments(ast);
+    if (auto *arg = args[0]; arg->getType()->isPointerTy()) {
         // debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
         Value *inc = nullptr;
@@ -142,10 +141,10 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 BIFunctor floor{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin FLOOR");
-    auto                      args = codegen->do_arguments(ast);
-    std::vector<llvm::Type *> type_args{TypeTable::RealType->get_llvm()};
-    auto                     *fun =
-        Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::floor, type_args);
+    const auto                      args = codegen->do_arguments(ast);
+    std::vector<llvm::Type *> const type_args{TypeTable::RealType->get_llvm()};
+    auto *fun = Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::floor,
+                                                  type_args);
     auto *value = codegen->get_builder().CreateCall(fun, args);
     return codegen->get_builder().CreateFPToSI(value, TypeTable::IntType->get_llvm());
 }};
@@ -157,8 +156,8 @@ BIFunctor flt{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 BIFunctor assert{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("builtin ASSERT");
-    auto  args = codegen->do_arguments(ast);
-    auto *arg = args[0];
+    const auto args = codegen->do_arguments(ast);
+    auto      *arg = args[0];
 
     auto       *funct = codegen->get_builder().GetInsertBlock()->getParent();
     BasicBlock *assert_block = BasicBlock::Create(codegen->get_context(), "assert", funct);
@@ -181,8 +180,8 @@ BIFunctor assert{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 }};
 
 BIFunctor long_func{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto  args = codegen->do_arguments(ast);
-    auto *arg = args[0];
+    const auto args = codegen->do_arguments(ast);
+    auto      *arg = args[0];
     if (arg->getType()->isIntegerTy() || arg->getType()->isFloatingPointTy()) {
         return args[0];
     }
@@ -192,8 +191,8 @@ BIFunctor long_func{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 template <bool inc>
 BIFunctor incl{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto   args = codegen->do_arguments(ast);
-    auto  *set = args[0];
+    const auto args = codegen->do_arguments(ast);
+    auto      *set = args[0];
     auto  *index = codegen->get_builder().CreateShl(TypeTable::IntType->make_value(1), args[1]);
     Value *val = codegen->get_builder().CreateLoad(set->getType(), set);
     if (inc) {
@@ -349,11 +348,11 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
 
     };
 
-    std::for_each(begin(global_functions), end(global_functions), [&symbols](auto &f) {
-        auto sym = mkSym(f.second);
+    for (auto &[name, s] : global_functions) {
+        auto sym = mkSym(s);
         sym->set(Attr::global_var);
-        symbols.put(f.first, sym);
-    });
+        symbols.put(name, sym);
+    };
 
     compile_functions.try_emplace("LEN", len);
     compile_functions.try_emplace("SIZE", size);

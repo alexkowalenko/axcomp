@@ -6,9 +6,6 @@
 
 #include "defparser.hh"
 
-#include <format>
-#include <optional>
-
 #include "error.hh"
 #include "typetable.hh"
 

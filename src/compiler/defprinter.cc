@@ -17,18 +17,18 @@ namespace ax {
 void DefPrinter::visit(ASTModule const &ast) {
     os << std::string(std::format("DEFINITION {0};\n", ast->name));
     ast->decs->accept(this);
-    std::for_each(ast->procedures.begin(), ast->procedures.end(), [this](auto const &proc) {
+    for (auto const &proc : ast->procedures) {
         if (proc->name->is(Attr::global)) {
             proc->accept(this);
         }
-    });
+    }
     os << std::string(std::format("END {0}.\n", ast->name));
 }
 
 void DefPrinter::visit(ASTConst const &ast) {
     bool print_hdr{false};
 
-    std::for_each(ast->consts.begin(), ast->consts.end(), [this, &print_hdr](auto const &c) {
+    for (auto const &c : ast->consts) {
         if (c.ident->is(Attr::global)) {
             if (!print_hdr) {
                 os << "CONST\n";
@@ -40,43 +40,43 @@ void DefPrinter::visit(ASTConst const &ast) {
             c.value->accept(this);
             os << ";\n";
         }
-    });
+    }
 }
 
 void DefPrinter::visit(ASTTypeDec const &ast) {
     bool print_hdr{false};
 
-    std::for_each(begin(ast->types), end(ast->types), [this, &print_hdr](auto const &v) {
-        if (v.first->is(Attr::global) || v.first->is(Attr::read_only)) {
+    for (auto const &type_pair : ast->types) {
+        if (type_pair.first->is(Attr::global) || type_pair.first->is(Attr::read_only)) {
             if (!print_hdr) {
                 os << "TYPE\n";
                 print_hdr = true;
             }
-            v.first->accept(this);
-            os << std::string(v.first->attrs);
+            type_pair.first->accept(this);
+            os << std::string(type_pair.first->attrs);
             os << " = ";
-            v.second->accept(this);
+            type_pair.second->accept(this);
             os << ";\n";
         }
-    });
+    }
 }
 
 void DefPrinter::visit(ASTVar const &ast) {
     bool print_hdr{false};
 
-    std::for_each(ast->vars.begin(), ast->vars.end(), [this, &print_hdr](auto const &v) {
-        if (v.first->is(Attr::global) || v.first->is(Attr::read_only)) {
+    for (auto const &var : ast->vars) {
+        if (var.first->is(Attr::global) || var.first->is(Attr::read_only)) {
             if (!print_hdr) {
                 os << "VAR\n";
                 print_hdr = true;
             }
-            v.first->accept(this);
-            os << std::string(v.first->attrs);
+            var.first->accept(this);
+            os << std::string(var.first->attrs);
             os << ": ";
-            v.second->accept(this);
+            var.second->accept(this);
             os << ";\n";
         }
-    });
+    }
 }
 
 void DefPrinter::visit(ASTProcedure const &ast) {
@@ -84,17 +84,19 @@ void DefPrinter::visit(ASTProcedure const &ast) {
        << std::string(ast->name->attrs);
     if (!ast->params.empty() || ast->return_type != nullptr) {
         os << "(";
-        std::for_each(ast->params.begin(), ast->params.end(), [this, ast](auto const &p) {
-            if (p.first->is(Attr::var)) {
+        for (auto param_iter = ast->params.begin(); param_iter != ast->params.end();
+             ++param_iter) {
+            auto const &param = *param_iter;
+            if (param.first->is(Attr::var)) {
                 os << "VAR ";
             }
-            p.first->accept(this);
+            param.first->accept(this);
             os << " : ";
-            p.second->accept(this);
-            if (p != *(ast->params.end() - 1)) {
+            param.second->accept(this);
+            if (std::next(param_iter) != ast->params.end()) {
                 os << "; ";
             }
-        });
+        }
         os << ")";
     }
     if (ast->return_type != nullptr) {
