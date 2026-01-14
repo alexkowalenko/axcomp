@@ -8,3 +8,16 @@ BEGIN
               Out.Int(x, 0); Out.Ln;
        END
 END ash.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 2
+CHECK-NEXT: 4
+CHECK-NEXT: 8
+CHECK-NEXT: 16
+CHECK-NEXT: 32
+CHECK-NEXT: 64
+CHECK-NEXT: 128
+CHECK-NEXT: 0
+*)

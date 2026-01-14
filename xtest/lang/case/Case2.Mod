@@ -16,3 +16,8 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Case2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

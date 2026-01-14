@@ -11,3 +11,11 @@ BEGIN
     END
     RETURN 0;
 END case_2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: One
+CHECK-NEXT: Two
+CHECK-NEXT: More
+CHECK-NEXT: 0
+*)

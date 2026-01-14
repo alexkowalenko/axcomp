@@ -15,6 +15,7 @@ END chr.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+CHECK-NEXT: abcdefghijklmnopqrstuvwxyz
 CHECK-NEXT: 0
 *)

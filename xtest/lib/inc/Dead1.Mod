@@ -14,3 +14,9 @@ PROCEDURE P();
 BEGIN
   P;
 END Dead1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 133
+CHECK-NEXT: 0
+*)

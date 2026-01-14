@@ -23,3 +23,19 @@ BEGIN
       IF ~closed[i] THEN Out.Int(i, 0); Out.Char(' ') END
     END;  Out.Ln
 END Doors.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: + - - + - - - - + -
+CHECK-NEXT: - - - - - + - - - -
+CHECK-NEXT: - - - - + - - - - -
+CHECK-NEXT: - - - - - + - - - -
+CHECK-NEXT: - - - - - - - - + -
+CHECK-NEXT: - - - - - - - - - -
+CHECK-NEXT: - - - + - - - - - -
+CHECK-NEXT: - - - - - - - - - -
+CHECK-NEXT: + - - - - - - - - -
+CHECK-NEXT: - - - - - - - - - +
+CHECK-NEXT: 1 4 9 16 25 36 49 64 81 100
+CHECK-NEXT: 0
+*)

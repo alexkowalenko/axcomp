@@ -10,3 +10,8 @@ PROCEDURE P (i, j: INTEGER);
 BEGIN
   P(1, 3)
 END Case4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

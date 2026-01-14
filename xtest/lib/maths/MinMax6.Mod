@@ -12,3 +12,9 @@ PROCEDURE Test*;
 BEGIN
   Test
 END MinMax6.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+*)

@@ -24,3 +24,12 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Case10.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: no match
+CHECK-NEXT: no match
+CHECK-NEXT: no match
+CHECK-NEXT: no match
+CHECK-NEXT: 0
+*)

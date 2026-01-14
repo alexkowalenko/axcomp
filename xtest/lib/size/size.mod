@@ -22,6 +22,9 @@ END size.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: 1
+CHECK-NEXT: 4
+CHECK-NEXT: 8
+CHECK-NEXT: 56
 CHECK-NEXT: 0
 *)

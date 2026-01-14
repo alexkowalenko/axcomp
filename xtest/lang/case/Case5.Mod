@@ -10,3 +10,8 @@ PROCEDURE P (i: SHORTINT);
 BEGIN
   P(2)
 END Case5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

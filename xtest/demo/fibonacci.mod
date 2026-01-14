@@ -15,3 +15,9 @@ END fibonacci;
 BEGIN
     Out.Int(fibonacci(35), 0); Out.Ln();
 END fibonacci.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 9227465
+CHECK-NEXT: 0
+*)

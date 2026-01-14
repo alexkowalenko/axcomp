@@ -1,3 +1,9 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 👾 👿 💀 💁 💂 💃 💄 💅 💆 💇
+CHECK-NEXT: 0
+*)
+
 MODULE chr2; (* CHR function*)
 IMPORT Out;
 VAR i: INTEGER;

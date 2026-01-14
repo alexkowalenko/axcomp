@@ -31,3 +31,14 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Entier1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0   0   0
+CHECK-NEXT:       0.9   0   0
+CHECK-NEXT:       -0.1  -1  -1
+CHECK-NEXT:       0   0   0
+CHECK-NEXT:       0.9   0   0
+CHECK-NEXT:       -0.1  -1  -1
+CHECK-NEXT: 0
+*)

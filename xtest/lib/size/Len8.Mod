@@ -16,6 +16,6 @@ END Len8.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: 1
 CHECK-NEXT: 0
 *)

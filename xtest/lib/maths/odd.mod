@@ -7,3 +7,16 @@ BEGIN
               Out.Bool(ODD(i)); Out.Ln;
        END
 END odd.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+*)

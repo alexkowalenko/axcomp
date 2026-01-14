@@ -18,4 +18,5 @@ END len.
 RUN: %comp %s | filecheck %s
 CHECK: 7
 CHECK-NEXT: 0
+CHECK-NEXT: 1
 *)

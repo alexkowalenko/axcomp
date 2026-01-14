@@ -8,3 +8,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Abs3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+*)

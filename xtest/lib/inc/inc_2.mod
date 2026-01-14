@@ -15,3 +15,9 @@ BEGIN
    Out.Int(x, 0); Out.Ln;
 
 END inc_2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 0
+*)

@@ -16,3 +16,11 @@ BEGIN
     END
     RETURN 0;
 END inc.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 7
+CHECK-NEXT: 6
+CHECK-NEXT: Same
+CHECK-NEXT: 0
+*)

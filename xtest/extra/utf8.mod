@@ -1,3 +1,8 @@
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 15
+*)
+
 MODULE utf8;
 
 (* 

@@ -15,3 +15,12 @@ BEGIN
     END
     RETURN 0;
 END case_4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: A
+CHECK-NEXT: B,C
+CHECK-NEXT: B,C
+CHECK-NEXT: D-Z
+CHECK-NEXT: 0
+*)

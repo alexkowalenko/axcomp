@@ -10,5 +10,22 @@ BEGIN
 END factor;
 
 BEGIN
-    RETURN factor(10)
+    WriteInt( factor(10)); WriteLn;
+    RETURN 0;
 END factorial.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 10
+CHECK-NEXT: 9
+CHECK-NEXT:8
+CHECK-NEXT:7
+CHECK-NEXT:6
+CHECK-NEXT:5
+CHECK-NEXT:4
+CHECK-NEXT:3
+CHECK-NEXT:2
+CHECK-NEXT:1
+CHECK-NEXT:3628800
+CHECK-NEXT: 0
+*)

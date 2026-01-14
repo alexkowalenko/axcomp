@@ -28,3 +28,19 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Case1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: no match
+CHECK-NEXT: one
+CHECK-NEXT: two
+CHECK-NEXT: three
+CHECK-NEXT: many
+CHECK-NEXT: many
+CHECK-NEXT: too many
+CHECK-NEXT: too many
+CHECK-NEXT: too many
+CHECK-NEXT: too many
+CHECK-NEXT: no match
+CHECK-NEXT: 0
+*)

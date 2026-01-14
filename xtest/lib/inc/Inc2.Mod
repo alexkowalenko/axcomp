@@ -6,3 +6,8 @@ BEGIN
   INC(x,1);
   RETURN x;
 END Inc2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+*)

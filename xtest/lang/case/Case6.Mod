@@ -10,3 +10,8 @@ PROCEDURE P (i: CHAR);
 BEGIN
   P('a')
 END Case6.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

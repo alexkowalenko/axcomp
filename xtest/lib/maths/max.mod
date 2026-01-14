@@ -11,3 +11,12 @@ BEGIN
     Out.Bool(MAX(BOOLEAN)); Out.Char(' '); Out.Bool(MIN(BOOLEAN)); Out.Ln;
     Out.Int(MAX(INTEGER), 0); Out.Char(' '); Out.Int(MIN(INTEGER), 0); Out.Ln;
 END max.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 9223372036854775807
+CHECK-NEXT: 0
+CHECK-NEXT: 1 0
+CHECK-NEXT: 9223372036854775807 -9223372036854775808
+CHECK-NEXT: 0
+*)

@@ -12,3 +12,13 @@ BEGIN
     END
     RETURN 0
 END case_5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: A
+CHECK-NEXT: A
+CHECK-NEXT: D-Z
+CHECK-NEXT: D-Z
+CHECK-NEXT: D-Z
+CHECK-NEXT: 0
+*)

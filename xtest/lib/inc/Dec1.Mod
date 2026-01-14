@@ -16,3 +16,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Dec1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+CHECK-NEXT: 0
+*)
