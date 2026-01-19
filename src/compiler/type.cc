@@ -7,9 +7,8 @@
 #include "type.hh"
 #include "typetable.hh"
 
-#include <climits>
 #include <format>
-#include <llvm/Support/Debug.h>
+#include <ranges>
 
 #include "utf8.h"
 
@@ -42,12 +41,12 @@ bool Type_::equiv(Type const &t) {
         return rthis->equiv(std::dynamic_pointer_cast<RecordType>(t)) || rthis->is_base(t);
     }
     if (id == TypeId::pointer) {
-        auto *pthis = dynamic_cast<PointerType *>(this);
-        auto  pt = std::dynamic_pointer_cast<PointerType>(t);
+        auto      *pthis = dynamic_cast<PointerType *>(this);
+        const auto pt = std::dynamic_pointer_cast<PointerType>(t);
         if (pthis->get_reference()->id == TypeId::record &&
             pt->get_reference()->id == TypeId::record) {
-            auto pthisr = std::dynamic_pointer_cast<RecordType>(pthis->get_reference());
-            auto ptr = std::dynamic_pointer_cast<RecordType>(pt->get_reference());
+            auto       pthisr = std::dynamic_pointer_cast<RecordType>(pthis->get_reference());
+            const auto ptr = std::dynamic_pointer_cast<RecordType>(pt->get_reference());
             if (pthisr->is_base(ptr)) {
                 return true;
             }
@@ -77,16 +76,16 @@ SimpleType::operator std::string() {
     return name;
 }
 
-llvm::Constant *IntegerType::make_value(long i) const {
+llvm::Constant *IntegerType::make_value(const long i) const {
     return ConstantInt::get(get_llvm(), i); // Todo: getSigned?
 }
 
-llvm::Constant *BooleanType::make_value(bool b) const {
+llvm::Constant *BooleanType::make_value(const bool b) const {
     return ConstantInt::get(get_llvm(), static_cast<uint64_t>(b));
 }
 
-llvm::Constant *CharacterType::make_value(Char c) const {
-    return ConstantInt::get(get_llvm(), static_cast<Char>(c));
+llvm::Constant *CharacterType::make_value(const Char c) const {
+    return ConstantInt::get(get_llvm(), c);
 }
 
 llvm::Constant *StringType::make_value(std::string const &s) {
@@ -102,14 +101,14 @@ llvm::Constant *StringType::make_value(std::string const &s) {
 }
 
 llvm::Type *StringType::make_type(std::string const &s) {
-    // Type dependant on string size
+    // Type dependent on string size
 
     return llvm::ArrayType::get(TypeTable::CharType->get_llvm(),
                                 utf8::distance(s.begin(), s.end()) + 1);
 }
 
 llvm::Type *StringType::make_type_ptr() {
-    auto *arrayTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0);
+    const auto *arrayTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0);
     return llvm::PointerType::get(arrayTy->getContext(), 0);
 }
 
@@ -120,7 +119,7 @@ std::string ProcedureType::get_print(bool forward) {
     }
     res += '(';
     const auto *insert = "";
-    for (auto [name, attr] : params) {
+    for (const auto &[name, attr] : params) {
         res += insert;
         if (attr == Attr::var) {
             res += " VAR ";
@@ -141,9 +140,9 @@ ProcedureType::operator std::string() {
 
 llvm::Type *ProcedureType::get_llvm() const {
     std::vector<llvm::Type *> proto;
-    std::for_each(cbegin(params), cend(params),
-                  [this, &proto](auto const &t) { proto.push_back(t.first->get_llvm()); });
-
+    for (const auto &key : params | std::views::keys) {
+        proto.push_back(key->get_llvm());
+    }
     return FunctionType::get(ret->get_llvm(), proto, false);
 }
 
@@ -176,7 +175,7 @@ llvm::Type *ArrayType::get_llvm() const {
     }
 
     llvm::Type *array_type = base_type->get_llvm();
-    for (auto d : dimensions) {
+    for (const auto d : dimensions) {
         array_type = llvm::ArrayType::get(array_type, d);
     }
     return array_type;
@@ -184,12 +183,11 @@ llvm::Type *ArrayType::get_llvm() const {
 
 llvm::Constant *ArrayType::get_init() const {
     if (dimensions.empty()) {
-        auto const_array = std::vector<Constant *>(0, base_type->get_init());
+        const auto const_array = std::vector<Constant *>(0, base_type->get_init());
         return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
     }
 
-    std::vector<Constant *> const_array =
-        std::vector<Constant *>(dimensions[0], base_type->get_init());
+    auto const const_array = std::vector<Constant *>(dimensions[0], base_type->get_init());
     return ConstantArray::get(dyn_cast<llvm::ArrayType>(get_llvm()), const_array);
 }
 
@@ -223,13 +221,13 @@ RecordType::operator std::string() {
 std::vector<llvm::Type *> RecordType::get_fieldTypes() const {
     std::vector<llvm::Type *> fs;
     if (base) {
-        auto b_fs = base->get_fieldTypes();
+        const auto b_fs = base->get_fieldTypes();
         fs.insert(cbegin(fs), cbegin(b_fs), cend(b_fs));
     }
-    std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
-        auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
+    for (auto const &name : index) {
+        const auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
         fs.push_back(res->get_llvm());
-    });
+    }
     if (fs.empty()) {
         // Empty records will crash LLVM
         fs.push_back(TypeTable::BoolType->get_llvm());
@@ -241,7 +239,7 @@ llvm::Type *RecordType::get_llvm() const {
     if (cache) {
         return cache;
     }
-    auto fs = get_fieldTypes();
+    const auto fs = get_fieldTypes();
     if (identified.empty()) {
         cache = StructType::create(fs);
     } else {
@@ -253,13 +251,13 @@ llvm::Type *RecordType::get_llvm() const {
 std::vector<llvm::Constant *> RecordType::get_fieldInit() const {
     std::vector<llvm::Constant *> fs;
     if (base) {
-        auto b_fs = base->get_fieldInit();
+        const auto b_fs = base->get_fieldInit();
         fs.insert(cbegin(fs), cbegin(b_fs), cend(b_fs));
     }
-    std::for_each(cbegin(index), cend(index), [&fs, this](auto const &name) {
-        auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
+    for (auto const &name : index) {
+        const auto res = TypeTable::sgl()->resolve(fields.find(name)->second->get_name());
         fs.push_back(res->get_init());
-    });
+    }
     if (fs.empty()) {
         fs.push_back(TypeTable::BoolType->get_init());
     }
@@ -267,7 +265,7 @@ std::vector<llvm::Constant *> RecordType::get_fieldInit() const {
 }
 
 llvm::Constant *RecordType::get_init() const {
-    auto fs = get_fieldInit();
+    const auto fs = get_fieldInit();
     return ConstantStruct::get(dyn_cast<llvm::StructType>(get_llvm()), fs);
 }
 
@@ -277,7 +275,7 @@ void RecordType::insert(std::string const &field, Type type) {
 }
 
 bool RecordType::has_field(std::string const &field) {
-    if (fields.find(field) != fields.end()) {
+    if (fields.contains(field)) {
         return true;
     }
     if (base) {
@@ -311,14 +309,14 @@ int RecordType::get_index(std::string const &field) {
         }
         base_count = base->count();
     }
-    auto it = std::find(cbegin(index), cend(index), field);
+    const auto it = std::find(cbegin(index), cend(index), field);
     if (it == end(index)) {
         return -1;
     }
-    return base_count + int(std::distance(cbegin(index), it));
+    return base_count + static_cast<int>(std::distance(cbegin(index), it));
 }
 
-bool RecordType::is_base(Type const &t) {
+bool RecordType::is_base(Type const &t) const {
     if (!t || !base) {
         return false;
     }

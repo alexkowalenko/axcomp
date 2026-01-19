@@ -267,7 +267,7 @@ class RecordType : public Type_ {
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
-    bool                        is_base(Type const &t);
+    bool                        is_base(Type const &t) const;
 
     std::optional<Type> get_type(std::string const &field);
     int                 get_index(std::string const &field);

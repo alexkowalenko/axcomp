@@ -32,12 +32,12 @@ struct TypeRule2 {
 
 class TypeTable : public SymbolTable<Type> {
   public:
-    TypeTable() : SymbolTable(nullptr){};
+    TypeTable() : SymbolTable(nullptr) {};
 
     void        initialise();
     static void setTypes(llvm::LLVMContext &context);
 
-    Type resolve(std::string const &name);
+    Type resolve(std::string const &name) const;
 
     /**
      * @brief Check one argument operator with a type
@@ -58,7 +58,6 @@ class TypeTable : public SymbolTable<Type> {
      * @return true - operator accepts the this type
      * @return false
      */
-
     Type check(TokenType op, Type const &L, Type const &R);
 
     static bool is_int_instruct(llvm::Type *t) {

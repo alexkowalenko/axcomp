@@ -60,7 +60,7 @@ void TypeTable::initialise() {
     AnyType = std::make_shared<SimpleType>("any", TypeId::any);
     put(std::string(*AnyType), AnyType);
 
-    // Type aliases for compatiblity
+    // Type aliases for compatibility
     set_type_alias("SHORTINT", TypeTable::IntType);
     set_type_alias("LONGINT", TypeTable::IntType);
     set_type_alias("HUGEINT", TypeTable::IntType);
@@ -198,7 +198,7 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     VoidType->set_init(llvm::ConstantPointerNull::get(llvm::PointerType::get(context, 0)));
 }
 
-Type TypeTable::resolve(std::string const &n) {
+Type TypeTable::resolve(std::string const &n) const {
 
     // All ARRAY OF CHAR are STRING types
     if (n == "CHAR[]") {
@@ -213,7 +213,7 @@ Type TypeTable::resolve(std::string const &n) {
             // not found
             return res;
         }
-        auto alias = std::dynamic_pointer_cast<TypeAlias>(res);
+        const auto alias = std::dynamic_pointer_cast<TypeAlias>(res);
         if (!alias) {
             // normal type
             return res;
@@ -223,8 +223,8 @@ Type TypeTable::resolve(std::string const &n) {
 }
 
 Type TypeTable::check(TokenType op, Type const &type) {
-    auto range = rules1.equal_range(op);
-    for (auto i = range.first; i != range.second; ++i) {
+    auto [fst, snd] = rules1.equal_range(op);
+    for (auto i = fst; i != snd; ++i) {
         if (i->second.value == type) {
             return i->second.result;
         }
@@ -233,10 +233,10 @@ Type TypeTable::check(TokenType op, Type const &type) {
 }
 
 Type TypeTable::check(TokenType op, Type const &Lt, Type const &Rt) {
-    auto range = rules2.equal_range(op);
-    auto L = resolve(Lt->get_name());
-    auto R = resolve(Rt->get_name());
-    for (auto i = range.first; i != range.second; ++i) {
+    auto [fst, snd] = rules2.equal_range(op);
+    const auto L = resolve(Lt->get_name());
+    const auto R = resolve(Rt->get_name());
+    for (auto i = fst; i != snd; ++i) {
         if (i->second.L == L && i->second.R == R) {
             return i->second.result;
         }
@@ -254,11 +254,11 @@ Type TypeTable::check(TokenType op, Type const &Lt, Type const &Rt) {
 }
 
 void TypeTable::reg(TokenType op, Type const &type, Type const &result) {
-    rules1.insert({op, {type, result}});
+    rules1.insert({op, {.value = type, .result = result}});
 }
 
 void TypeTable::reg(TokenType op, Type const &L, Type const &R, Type const &result) {
-    rules2.insert({op, {L, R, result}});
+    rules2.insert({op, {.L = L, .R = R, .result = result}});
 }
 
 } // namespace ax

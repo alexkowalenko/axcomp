@@ -38,8 +38,8 @@ class Symbol {
         attrs.insert(a);
     };
 
-    void set(const Attr &a) { attrs.insert(a); };
-    bool is(const Attr &a) { return attrs.find(a) != attrs.end(); }
+    void               set(const Attr &a) { attrs.insert(a); };
+    [[nodiscard]] bool is(const Attr &a) const { return attrs.contains(a); }
 
     Type           type = nullptr;
     std::set<Attr> attrs;

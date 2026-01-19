@@ -54,7 +54,7 @@ template <typename T> class TableInterface {
 
 template <typename T> class SymbolTable : public TableInterface<T> {
   public:
-    explicit SymbolTable(std::shared_ptr<SymbolTable> s) : next(std::move(s)){};
+    explicit SymbolTable(std::shared_ptr<SymbolTable> s) : next(std::move(s)) {};
     ~SymbolTable() override = default;
 
     SymbolTable(const SymbolTable &) = delete; // stop copying
@@ -80,6 +80,7 @@ template <typename T> class SymbolTable : public TableInterface<T> {
             next->reset_free_variables();
         }
     }
+
     [[nodiscard]] std::set<std::string> &get_free_variables() const override {
         return free_variables;
     }
@@ -208,12 +209,12 @@ template <typename T> void FrameTable<T>::pop_frame() {
 }
 
 template <typename T> void FrameTable<T>::dump(std::ostream &os) {
-    std::for_each(std::begin(frame_map), std::end(frame_map), [&os](auto &f) {
-        os << f.first << "  ------------------------------\n";
-        std::for_each(f.second->begin(), f.second->end(), [&os](auto &s) {
-            os << std::string(s.first) << " : " << s.second->type->get_name() << '\n';
-        });
-    });
+    for (auto &frame : frame_map) {
+        os << frame.first << "  ------------------------------\n";
+        for (auto &symbol : *frame.second) {
+            os << std::string(symbol.first) << " : " << symbol.second->type->get_name() << '\n';
+        }
+    }
 }
 
 } // namespace ax
@@ -230,8 +231,8 @@ class SymbolFrameTable : public FrameTable<SymbolPtr> {
      * @param name
      * @param v
      */
-    void set_value(std::string const &name, llvm::Value *v) {
-        auto s = find(name);
+    void set_value(std::string const &name, llvm::Value *v) const {
+        const auto s = find(name);
         s->value = v;
     };
 
@@ -242,8 +243,8 @@ class SymbolFrameTable : public FrameTable<SymbolPtr> {
      * @param v
      * @param a
      */
-    void set_value(std::string const &name, llvm::Value *v, Attr a) {
-        auto s = find(name);
+    void set_value(std::string const &name, llvm::Value *v, const Attr a) const {
+        const auto s = find(name);
         s->value = v;
         s->set(a);
     };

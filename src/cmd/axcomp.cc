@@ -47,9 +47,9 @@ void output_defs(std::shared_ptr<ASTModule_> const &ast, Options const &options)
 void dump_symbols(SymbolFrameTable &symbols, TypeTable &types) {
     symbols.dump(std::cout);
     std::cout << "- Types -------------------------------\n";
-    std::for_each(types.begin(), types.end(), [](auto &t) {
-        std::cout << std::string(t.first) << " : " << string(t.second->id) << "\n";
-    });
+    for (const auto &[name, snd] : types) {
+        std::cout << std::string(name) << " : " << string(snd->id) << "\n";
+    }
 }
 
 Options do_args(int argc, char **argv) {

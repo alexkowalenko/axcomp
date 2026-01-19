@@ -64,19 +64,19 @@ class Parser {
     ASTArray       parse_array();
     ASTRecord      parse_record();
     ASTPointerType parse_pointer();
-    ASTQualident   parse_qualident();
-    ASTIdentifier  parse_identifier();
-    ASTInteger     parse_integer();
+    ASTQualident   parse_qualident() const;
+    ASTIdentifier  parse_identifier() const;
+    ASTInteger     parse_integer() const;
     ASTSet         parse_set();
-    ASTReal        parse_real();
-    ASTCharPtr     parse_char();
-    ASTString      parse_string();
-    ASTBool        parse_boolean();
-    ASTNil         parse_nil();
+    ASTReal        parse_real() const;
+    ASTCharPtr     parse_char() const;
+    ASTString      parse_string() const;
+    ASTBool        parse_boolean() const;
+    ASTNil         parse_nil() const;
 
-    Token get_token(TokenType const &t);
+    [[maybe_unused]] Token get_token(TokenType const &t) const;
 
-    void set_attrs(ASTIdentifier const &ident);
+    void set_attrs(ASTIdentifier const &ident) const;
 
     LexerInterface   &lexer;
     SymbolFrameTable &symbols;

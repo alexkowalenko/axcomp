@@ -18,9 +18,9 @@ namespace ax {
 class ASTPrinter : public ASTVisitor {
 
   public:
-    explicit ASTPrinter(std::ostream &ostream) : os(ostream){};
+    explicit ASTPrinter(std::ostream &ostream) : os(ostream) {};
 
-    void print(ASTModule const &ast) { ast->accept(this); };
+    virtual void print(ASTModule const &ast) { ast->accept(this); };
 
     void visit(ASTModule const &ast) override;
     void visit(ASTImport const &ast) override;
@@ -64,7 +64,7 @@ class ASTPrinter : public ASTVisitor {
     void visit(ASTBool const &ast) override;
     void visit(ASTNil const & /*not used*/) override;
 
-    void set_indent(size_t i) { indent_width = i; }
+    void set_indent(const size_t i) { indent_width = i; }
 
   protected:
     std::ostream &os;
@@ -72,9 +72,7 @@ class ASTPrinter : public ASTVisitor {
     void push() { level++; }
     void pop() { level--; }
 
-    [[nodiscard]] std::string indent() const {
-        return std::string(indent_width * level, char(' '));
-    }
+    [[nodiscard]] std::string indent() const { return std::string(indent_width * level, ' '); }
 
   private:
     size_t indent_width{0};

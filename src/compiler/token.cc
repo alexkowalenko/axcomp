@@ -91,8 +91,8 @@ static const std::map<TokenType, std::string> mapping{
 };
 
 std::string string(const TokenType t) {
-    if (const auto res = mapping.find(t); res != mapping.end()) {
-        return res->second;
+    if (mapping.contains(t)) {
+        return mapping.at(t);
     }
     return "Unknown token";
 }

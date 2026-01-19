@@ -14,7 +14,7 @@ class Location {
 
   public:
     Location() = default;
-    Location(int l, int c) : lineno(l), charpos(c){};
+    Location(const int l, const int c) : lineno(l), charpos(c) {};
     ~Location() = default;
 
     Location(Location const &) = default;
