@@ -65,7 +65,7 @@ xtest_add_lit_tests(lang-for lang/for lit.compile)
 xtest_add_lit_tests(lang-case lang/case lit.compile)
 xtest_add_lit_tests(lang-return lang/return lit.compile)
 
-#xtest_add_test(lang/import)
+# xtest_add_lit_tests(lang-import lang/import lit.compile)
 
 xtest_add_lit_tests(lib-assert lib/assert lit.compile)
 xtest_add_lit_tests(lib-inc lib/inc lit.compile)

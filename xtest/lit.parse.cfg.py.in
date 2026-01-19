@@ -1,7 +1,7 @@
 import lit.formats
 import os
 
-config.name = "Oberon"
+config.name = "Oberon Parse"
 config.test_format = lit.formats.ShTest(True)
 config.suffixes = [".mod", ".Mod"]
 config.tools_root = r'@CMAKE_CURRENT_SOURCE_DIR@/../bin'

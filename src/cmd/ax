@@ -45,7 +45,7 @@ def main():
 
     argsParser.add_argument(
         '-v', '--verbose', help="show the compile steps", action='store_true')
-    argsParser.add_argument('file', help="<input file>")
+    argsParser.add_argument('files', nargs="*", help="<input files>")
 
     args = argsParser.parse_args()
 
@@ -79,11 +79,27 @@ def main():
 
     script_dir = path.dirname(path.abspath(__file__))
     lib_dir = script_dir + "/../lib"
-    arguments += f" -L {lib_dir} "
+    arguments += f" -L {lib_dir}:. "
 
     compiler = f"{script_dir}/axcomp"
 
-    cmd = f"{compiler} {arguments} {args.file}"
+    file = ""
+    objects = []
+
+    for f in args.files:
+        if f.lower().endswith(".mod"):
+            file = f
+        elif f.endswith(".o"):
+            objects.append(f)
+        else:
+            print(f"Unknown file type: {f}")
+            exit(1)
+
+    if not file:
+        print("No .mod file provided")
+        exit(1)
+
+    cmd = f"{compiler} {arguments} {file}"
     if args.verbose:
         print(cmd)
     ret = os.system(cmd)
@@ -92,9 +108,11 @@ def main():
 
     if not ret and not terminate:
         # link file
-        stem = Path(args.file).stem
+        stem = Path(file).stem
 
-        cmd = f"{linker} {stem}.o -o {stem} -L{lib_dir} {libs}"
+        objects_str = " ".join(objects)
+
+        cmd = f"{linker} {stem}.o {objects_str} -o {stem} -L{lib_dir} {libs}"
         if args.verbose:
             print(cmd)
         ret = os.system(cmd)

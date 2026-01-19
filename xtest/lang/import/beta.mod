@@ -14,3 +14,7 @@ END c;
 BEGIN
     RETURN 0
 END beta.
+
+(*
+RUN: true
+*)
