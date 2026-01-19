@@ -10,7 +10,13 @@
 #include <set>
 #include <utility>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wimplicit-int-conversion"
+#pragma clang diagnostic ignored "-Wsign-conversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <llvm/IR/Value.h>
+#pragma clang diagnostic pop
 
 #include "type.hh"
 

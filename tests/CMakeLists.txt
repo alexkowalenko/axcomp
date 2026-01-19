@@ -12,7 +12,7 @@ set_target_properties(gtest_main PROPERTIES FOLDER _deps)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 macro(package_add_test TESTNAME)
-    # create an exectuable in which the tests will be stored
+    # create an executable in which the tests will be stored
     add_executable(${TESTNAME} ${ARGN})
 
     # link the Google test infrastructure, mocking library, and a default main fuction to
@@ -53,3 +53,5 @@ package_add_test(inspect.5 inspect.5.cc)
 package_add_test(definition.1 definition.cc)
 
 package_add_test(type.1 type.1.cc)
+
+package_add_test(importer importer_test.cc)

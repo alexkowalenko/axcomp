@@ -6,13 +6,12 @@
 
 #include "importer.hh"
 
+#include <filesystem>
+#include <format>
 #include <fstream>
 #include <memory>
 #include <optional>
 #include <sstream>
-
-#include <dirent.h>
-#include <format>
 
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Debug.h>
@@ -50,45 +49,48 @@ void Importer::set_search_path(std::string const &path) {
 std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, TypeTable &types) {
     debug("Importer::read_module {0}", name);
 
-    struct DirCloser {
-        void operator()(DIR *dp) const { closedir(dp); }
-    };
-
     for (const auto &path : paths) {
-
-        auto *dp = opendir(path.c_str());
-        if (dp == nullptr) {
+        std::error_code ec;
+        auto            directory = std::filesystem::path(path);
+        if (!std::filesystem::exists(directory, ec) ||
+            !std::filesystem::is_directory(directory, ec)) {
             throw CodeGenException("Can't open {0}", path);
         }
-        std::unique_ptr<DIR, DirCloser> const dir(dp);
 
-        struct dirent *in_file = nullptr;
-        while ((in_file = readdir(dir.get()))) {
-            std::string const fname(in_file->d_name);
-            if (fname == "." || fname == "..") {
+        // Iterate through the files in the directory
+        for (auto const &entry : std::filesystem::directory_iterator(directory, ec)) {
+            if (ec) {
+                throw CodeGenException("Can't read {0}: {1}", path, ec.message());
+            }
+            if (!entry.is_regular_file()) {
                 continue;
             }
-            if (fname.ends_with(suffix)) {
-                auto dname = fname.substr(0, fname.find_last_of('.'));
-                if (dname == name) {
-                    auto full_path = path + '/';
-                    full_path += fname;
-                    SymbolFrameTable module_symbols;
-                    std::ifstream    is(full_path);
-                    try {
-                        Lexer     lex(is, errors);
-                        DefParser parser(lex, module_symbols, types, errors);
-                        auto      ast = parser.parse();
-                        Inspector inspect(module_symbols, types, errors, *this);
-                        inspect.check(ast);
-                    } catch (AXException const &e) {
-                        throw CodeGenException("Importer MODULE {0} error: {1} at: {2}", name,
-                                               e.error_msg(), full_path);
-                    }
-                    ++st_imports;
-                    return module_symbols;
-                }
+            auto const &file_path = entry.path();
+            if (file_path.extension() != suffix) {
+                continue;
             }
+            auto       fname = file_path.filename().string();
+            auto       dot_pos = fname.find_last_of('.');
+            auto const dname = dot_pos == std::string::npos ? fname : fname.substr(0, dot_pos);
+            if (dname != name) {
+                continue;
+            }
+
+            // Found definition file now import it
+            SymbolFrameTable module_symbols;
+            std::ifstream    is(file_path);
+            try {
+                Lexer     lex(is, errors);
+                DefParser parser(lex, module_symbols, types, errors);
+                auto      ast = parser.parse();
+                Inspector inspect(module_symbols, types, errors, *this);
+                inspect.check(ast);
+            } catch (AXException const &e) {
+                throw CodeGenException("Importer MODULE {0} error: {1} at: {2}", name,
+                                       e.error_msg(), file_path.string());
+            }
+            ++st_imports;
+            return module_symbols;
         }
     }
     return std::nullopt;

@@ -24,9 +24,10 @@ class Importer {
 
     virtual bool find_module(std::string const &name, SymbolFrameTable &symbols, TypeTable &types);
 
-  private:
+  protected:
     std::optional<SymbolFrameTable> read_module(std::string const &name, TypeTable &types);
 
+  private:
     ErrorManager                           &errors;
     std::map<std::string, SymbolFrameTable> cache;
     std::vector<std::string>                paths;
