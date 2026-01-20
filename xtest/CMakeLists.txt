@@ -50,7 +50,7 @@ xtest_add_lit_tests(lang-char lang/char lit.compile)
 xtest_add_lit_tests(lang-numbers lang/numbers lit.compile)
 xtest_add_lit_tests(lang-assignment lang/assignment lit.compile)
 xtest_add_lit_tests(lang-conditional lang/conditional lit.compile)
-## xtest_add_test(lang/pointers)
+xtest_add_lit_tests(lang-pointers lang/pointers lit.compile)
 
 xtest_add_lit_tests(lang-procedure lang/procedure lit.compile)
 xtest_add_lit_tests(lang-forward lang/forward lit.compile)

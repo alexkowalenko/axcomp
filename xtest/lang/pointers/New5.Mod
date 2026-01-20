@@ -7,3 +7,8 @@ VAR
 BEGIN
   NEW(p);
 END New5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

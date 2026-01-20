@@ -1,2 +1,0 @@
-bar
-output: 0

@@ -12,3 +12,11 @@ BEGIN
     Out.Int(SIZE(x^), 0); Out.Ln;
     RETURN 0;
 END pointer02.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 5
+CHECK-NEXT: 10
+CHECK-NEXT: 8
+CHECK-NEXT: 0
+*)

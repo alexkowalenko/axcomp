@@ -7,3 +7,8 @@ BEGIN
    x := 'Hello';
    RETURN 0;
 END string1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

@@ -14,3 +14,9 @@ BEGIN
     Out.Int(start^.value, 0); Out.Ln;
     RETURN 0;
 END pointer03.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 5
+CHECK-NEXT: 0
+*)

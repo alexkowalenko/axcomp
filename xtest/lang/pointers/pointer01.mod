@@ -4,3 +4,8 @@ BEGIN
     x := NIL;
     RETURN 0;
 END pointer01.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

@@ -36,7 +36,7 @@ extern "C" void Out_Real(Real x, Int n) {
     if (n == 0) {
         std::printf("%G", x);
     } else {
-        std::printf("%.*G", int(n), x);
+        std::printf("%.*G", static_cast<int>(n), x);
     }
 }
 

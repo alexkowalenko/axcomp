@@ -14,3 +14,9 @@ BEGIN
    Out.String(y); Out.Ln;
    RETURN 0;
 END string2.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello
+CHECK-NEXT: 0
+*)
