@@ -24,6 +24,7 @@ class ASTPrinter : public ASTVisitor {
 
     void visit(ASTModule const &ast) override;
     void visit(ASTImport const &ast) override;
+    void visit(ASTDeclaration const &ast) override;
     void visit(ASTConst const &ast) override;
     void visit(ASTTypeDec const &ast) override;
     void visit(ASTVar const &ast) override;

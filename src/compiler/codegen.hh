@@ -37,12 +37,12 @@ class CodeGenerator : ASTVisitor {
 
     void generate(ASTModule const &ast) { ast->accept(this); };
 
-    void setup_builtins();
+    void setup_builtins() const;
 
-    void generate_objectcode();
-    void generate_llcode();
+    void generate_objectcode() const;
+    void generate_llcode() const;
 
-    void optimize();
+    void optimize() const;
 
     TypeTable &get_types() { return types; };
 
@@ -74,7 +74,8 @@ class CodeGenerator : ASTVisitor {
     void visit(ASTReturn const &ast) override;
     void visit(ASTExit const &ast) override;
 
-    std::tuple<std::shared_ptr<ProcedureType>, std::string, bool> do_find_proc(ASTCall const &ast);
+    std::tuple<std::shared_ptr<ProcedureType>, std::string, bool>
+    do_find_proc(ASTCall const &ast) const;
 
     void visit(ASTCall const &ast) override;
     void visit(ASTIf const &ast) override;
@@ -104,23 +105,23 @@ class CodeGenerator : ASTVisitor {
     void init();
 
     AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,
-                                       ASTType type, bool var = false);
+                                       const ASTType &type, bool var = false);
 
     static AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
                                               llvm::Type *type);
 
-    Type        resolve_type(ASTType const &t);
-    llvm::Type *getType(ASTType const &type);
-    Constant   *getType_init(ASTType const &type);
+    Type        resolve_type(ASTType const &t) const;
+    llvm::Type *getType(ASTType const &type) const;
+    Constant   *getType_init(ASTType const &type) const;
 
     void ejectBranch(std::vector<ASTStatement> const &stats, BasicBlock *block, BasicBlock *where);
 
     [[nodiscard]] std::string gen_module_id(std::string const &id) const;
-    std::string               get_nested_name();
+    std::string               get_nested_name() const;
 
-    GlobalVariable *generate_global(std::string const &name, llvm::Type *t);
-    FunctionCallee  generate_function(std::string const &name, llvm::Type *t,
-                                      llvm::ArrayRef<llvm::Type *> const &params);
+    GlobalVariable *generate_global(std::string const &name, llvm::Type *t) const;
+    FunctionCallee  generate_function(std::string const &name, llvm::Type *return_type,
+                                      llvm::ArrayRef<llvm::Type *> const &params) const;
 
     Options                 &options;
     SymbolFrameTable        &symboltable;

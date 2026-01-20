@@ -9,6 +9,7 @@
 #include <exception>
 #include <format>
 #include <memory>
+#include <ranges>
 
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -37,10 +38,11 @@
 
 namespace ax {
 
+namespace {
 // this has to be a #define for it work properly
 #define DEBUG_TYPE "codegen"
 
-template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
+template <typename S, typename... Args> void debug(const S &format, const Args &...msg) {
     LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' '
                             << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
@@ -50,6 +52,8 @@ using namespace llvm::sys;
 
 constexpr auto file_ext_llvmri{".ll"};
 constexpr auto file_ext_obj{".o"};
+
+} // namespace
 
 CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i)
     : options{o}, symboltable{s}, types{t}, importer{i}, filename("main"), builder(context) {
@@ -80,7 +84,7 @@ void CodeGenerator::visit(ASTModule const &ast) {
     // Set up the module as a function
     // Make the function type:  (void) : int
     // main returns int
-    std::vector<llvm::Type *> proto;
+    constexpr std::vector<llvm::Type *> proto;
     FunctionType *ft = FunctionType::get(llvm::Type::getInt64Ty(context), proto, false);
 
     auto function_name = filename;
@@ -119,16 +123,15 @@ void CodeGenerator::visit(ASTModule const &ast) {
 void CodeGenerator::visit(ASTImport const &ast) {
     debug("ASTImport");
 
-    for (auto const &import : ast->imports) {
+    for (const auto &key : ast->imports | std::views::keys) {
         SymbolFrameTable symbols;
-        const auto       found = importer.find_module(import.first->value, symbols, types);
+        const auto       found = importer.find_module(key->value, symbols, types);
         assert(found); // NOLINT
 
-        debug("ASTImport do {0}", import.first->value);
+        debug("ASTImport do {0}", key->value);
 
-        for (auto &symbol : symbols) {
-            auto name = std::string(symbol.first);
-            auto type = symbol.second->type;
+        for (const auto &[name, snd] : symbols) {
+            const auto type = snd->type;
             debug("ASTImport get {0} : {1}", name, type->get_name());
 
             if (type->is_referencable()) {
@@ -137,7 +140,7 @@ void CodeGenerator::visit(ASTImport const &ast) {
                 symboltable.set_value(name, gVar, Attr::global);
             } else if (type->id == TypeId::procedure) {
                 debug("ASTImport proc {0}", name);
-                if (auto res = symboltable.find(name); res->is(Attr::used)) {
+                if (const auto res = symboltable.find(name); res->is(Attr::used)) {
                     auto *funcType = (FunctionType *)type->get_llvm();
 
                     auto *func = Function::Create(
@@ -283,8 +286,8 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     }
 
     for (auto const &[var, t_type] : ast->params) {
-        auto             *type = getType(t_type);
-        llvm::AttrBuilder attrs(context);
+        auto                   *type = getType(t_type);
+        llvm::AttrBuilder const attrs(context);
         index++;
         if (index == 1 && sym->is(Attr::closure)) {
             debug("ASTProcedure {0} is closure function", ast->name->value);
@@ -320,7 +323,7 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     if (!f) {
         f = Function::Create(ft, linkage, proc_name, module.get());
     }
-    for (auto const &[_, attr] : argAttr) {
+    for (const auto &attr : argAttr | std::views::values) {
         f->addFnAttr(attr);
     }
 
@@ -356,7 +359,7 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
 
         std::string param_name;
         AllocaInst *alloca{nullptr};
-        Attr        attr = Attr::null;
+        auto        attr = Attr::null;
         if (i == 0 && do_receiver) {
             auto [name, typeName] = ast->receiver;
             param_name = name->value;
@@ -383,9 +386,9 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
         // Store the initial value into the alloca.
         builder.CreateStore(&arg, alloca);
 
-        // put also into symbol table
+        // put also into the symbol table
         symboltable.set_value(param_name, alloca, attr);
-        debug("put {0} into symboltable", param_name);
+        debug("put {0} into symbol table", param_name);
         i++;
     };
 
@@ -454,10 +457,10 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
 
 void CodeGenerator::visit(ASTProcedureForward const &ast) {
 
-    auto  res = symboltable.find(ast->name->value);
-    auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
+    const auto res = symboltable.find(ast->name->value);
+    auto      *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
 
-    auto  proc_name = gen_module_id(ast->name->value);
+    const auto proc_name = gen_module_id(ast->name->value);
     auto *func = Function::Create(funcType, Function::LinkageTypes::InternalLinkage, proc_name,
                                   module.get());
     verifyFunction(*func);
@@ -522,7 +525,7 @@ void CodeGenerator::visit(ASTExit const &ast) {
 }
 
 std::tuple<std::shared_ptr<ProcedureType>, std::string, bool>
-CodeGenerator::do_find_proc(ASTCall const &ast) {
+CodeGenerator::do_find_proc(ASTCall const &ast) const {
 
     // Look up the name in the global module table.
 
@@ -533,7 +536,7 @@ CodeGenerator::do_find_proc(ASTCall const &ast) {
     auto typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
     if (!typeFunction) {
         // check bound procedure
-        auto field = ast->name->first_field();
+        const auto field = ast->name->first_field();
         name = field->value;
         res = symboltable.find(name);
         typeFunction = std::dynamic_pointer_cast<ProcedureType>(res->type);
@@ -594,13 +597,13 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
 }
 
 void CodeGenerator::visit(ASTCall const &ast) {
-    auto name = ast->name->ident->make_coded_id();
+    const auto name = ast->name->ident->make_coded_id();
     debug("ASTCall: {0}", name);
     auto res = symboltable.find(name);
 
     if (res->is(Attr::compile_function)) {
         debug("ASTCall: compile {0}", name);
-        auto &f = Builtin::compile_functions[name];
+        const auto &f = Builtin::compile_functions[name];
         last_value = f(this, ast);
         return;
     }
@@ -621,7 +624,7 @@ void CodeGenerator::visit(ASTCall const &ast) {
         auto                      *current_func = builder.GetInsertBlock()->getParent();
         llvm::Value *closure = createEntryBlockAlloca(current_func, "closure_struct", cls_ty);
         int          index = 0;
-        for (auto const &[name, f_ty] : callee_type->free_vars) {
+        for (const auto &name : callee_type->free_vars | std::views::keys) {
             auto         r = symboltable.find(name);
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
@@ -714,7 +717,7 @@ void CodeGenerator::visit(ASTIf const &ast) {
     if (ast->else_clause) {
         funct->insert(funct->end(), else_block);
         builder.SetInsertPoint(else_block);
-        auto elses = *ast->else_clause;
+        const auto elses = *ast->else_clause;
         for (auto const &stmt : elses) {
             stmt->accept(this);
         }
@@ -770,7 +773,7 @@ void CodeGenerator::visit(ASTCase const &ast) {
             } else if (std::holds_alternative<ASTRange>(expr)) {
                 debug("ASTCase {0} range", i);
                 auto range = std::get<ASTRange>(expr);
-                range_list.push_back({range, i});
+                range_list.emplace_back(range, i);
             }
         }
         i++;
@@ -1181,7 +1184,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
     debug("ASTSimpleExpr");
     visit(ast->term);
     Value *L = last_value;
-    // if initial sign exists and is negative, negate the integer
+    // if the initial sign exists and is negative, negate the integer
     if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
         if (TypeTable::is_int_instruct(L->getType())) {
             L = builder.CreateSub(TypeTable::IntType->get_init(), L, "negtmp");
@@ -1414,13 +1417,13 @@ void CodeGenerator::visit(ASTTerm const &ast) {
 void CodeGenerator::visit(ASTFactor const &ast) {
     // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
-    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
+    std::visit(overloaded{[this](auto arg) { visit(arg); },
                           [this, ast](ASTDesignator const &arg) { visitPtr(arg, false); },
                           [this, ast](ASTFactor const &arg) {
                               debug("visit: not ");
                               if (ast->is_not) {
                                   debug("visit: not do");
-                                  arg->accept(this);
+                                  visit(arg);
                                   last_value = builder.CreateNot(last_value);
                               }
                           }},
@@ -1446,8 +1449,8 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 
         std::visit(
             overloaded{[this, &index](ArrayRef const &s) {
-                           for (auto iter = s.rbegin(); iter != s.rend(); ++iter) {
-                               (*iter)->accept(this);
+                           for (const auto &iter : std::ranges::reverse_view(s)) {
+                               (visit(iter));
                                debug("GEP index is Int: {0}",
                                      last_value->getType()->isIntegerTy());
                                index.push_back(last_value);
@@ -1538,7 +1541,7 @@ void CodeGenerator::visitPtr(ASTIdentifier const &ast, bool ptr) {
             last_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
         }
         if (is_var) {
-            // This is a write of a VAR variable, preseve this value
+            // This is a write of a VAR variable, preserve this value
             last_value = res->value;
         }
         if (!ptr) {
@@ -1556,15 +1559,15 @@ void CodeGenerator::visit(ASTSet const &ast) {
     for (auto const &exp : ast->values) {
         std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExpr const &exp) {
                                   debug("ASTSet exp");
-                                  exp->accept(this);
+                                  visit(exp);
                                   auto *index = builder.CreateShl(one, last_value);
                                   set_value = builder.CreateOr(set_value, index);
                               },
                               [this, &set_value, ast, one](ASTRange const &exp) {
                                   debug("ASTSet range");
-                                  exp->first->accept(this);
+                                  visit(exp->first);
                                   auto *first = last_value;
-                                  exp->last->accept(this);
+                                  visit(exp->last);
                                   auto *last = last_value;
                                   set_value =
                                       call_function("Set_range", TypeTable::SetType->get_llvm(),
@@ -1591,16 +1594,16 @@ void CodeGenerator::visit(ASTString const &ast) {
     debug("ASTString {0}", ast->value);
 
     if (do_strchar_conv) {
-        auto char_val = ast->value[0];
+        const auto char_val = ast->value[0];
         last_value = TypeTable::CharType->make_value(char_val);
         return;
     }
 
     GlobalVariable *var = nullptr;
-    if (auto res = global_strings.find(ast->value); res != global_strings.end()) {
+    if (const auto res = global_strings.find(ast->value); res != global_strings.end()) {
         var = res->second;
     } else {
-        std::string name = std::format("STRING_{0}", string_const++);
+        const std::string name = std::format("STRING_{0}", string_const++);
         var = generate_global(name, TypeTable::StrType->make_type(ast->value));
         var->setInitializer(TypeTable::StrType->make_value(ast->value));
         var->setLinkage(GlobalValue::LinkageTypes::PrivateLinkage);
@@ -1655,10 +1658,12 @@ Value *CodeGenerator::call_function(std::string const &name, llvm::Type *ret,
  *
  * @param function
  * @param name
+ * @param type
+ * @param var
  * @return AllocaInst*
  */
 AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::string const &name,
-                                                  ASTType type, bool var) {
+                                                  const ASTType &type, const bool var) {
     AllocaInst *res = nullptr;
     IRBuilder<> TmpB(&function->getEntryBlock(), function->getEntryBlock().begin());
 
@@ -1680,13 +1685,13 @@ AllocaInst *CodeGenerator::createEntryBlockAlloca(Function *function, std::strin
     return TmpB.CreateAlloca(type, nullptr, name);
 }
 
-Type CodeGenerator::resolve_type(ASTType const &t) {
+Type CodeGenerator::resolve_type(ASTType const &t) const {
     // debug("resolve_type {0}", std::string(*t));
     Type result;
     std::visit(overloaded{[this, &result](ASTQualident const &type) {
                               result = types.resolve(type->id->value);
 
-                              // should be a resloved type this far down
+                              // should be a resolved type this far down
                               assert(result && "Type not found"); // NOLINT
                           },
                           [t, &result, this](auto /* not used*/) {
@@ -1697,23 +1702,23 @@ Type CodeGenerator::resolve_type(ASTType const &t) {
     return result;
 }
 
-llvm::Type *CodeGenerator::getType(ASTType const &t) {
+llvm::Type *CodeGenerator::getType(ASTType const &type) const {
     // debug("getType {0}", std::string(*t));
-    return resolve_type(t)->get_llvm();
+    return resolve_type(type)->get_llvm();
 }
 
-Constant *CodeGenerator::getType_init(ASTType const &t) {
+Constant *CodeGenerator::getType_init(ASTType const &type) const {
     // debug("getType_init {0}", std::string(*t));
-    return resolve_type(t)->get_init();
+    return resolve_type(type)->get_init();
 }
 
-void CodeGenerator::setup_builtins() {
+void CodeGenerator::setup_builtins() const {
     debug("setup_builtins");
 
     for (auto const &f : Builtin::global_functions) {
         // debug("function: {0} ", f.first);
 
-        if (auto res = symboltable.find(f.first);
+        if (const auto res = symboltable.find(f.first);
             res->is(Attr::used) && res->is(Attr::global_function)) {
             auto *funcType = dyn_cast<FunctionType>(res->type->get_llvm());
 
@@ -1741,7 +1746,7 @@ void CodeGenerator::ejectBranch(std::vector<ASTStatement> const &stats, BasicBlo
     }
 }
 
-std::string CodeGenerator::get_nested_name() {
+std::string CodeGenerator::get_nested_name() const {
     const auto *insert{""};
     std::string result{};
     for (auto const &name : nested_procs) {
@@ -1751,14 +1756,14 @@ std::string CodeGenerator::get_nested_name() {
     return result;
 }
 
-GlobalVariable *CodeGenerator::generate_global(std::string const &name, llvm::Type *t) {
+GlobalVariable *CodeGenerator::generate_global(std::string const &name, llvm::Type *t) const {
     module->getOrInsertGlobal(name, t);
     return module->getNamedGlobal(name);
 }
 
-FunctionCallee CodeGenerator::generate_function(std::string const &name, llvm::Type *ret,
-                                                llvm::ArrayRef<llvm::Type *> const &params) {
-    llvm::FunctionType *ft = llvm::FunctionType::get(ret, params, false);
+FunctionCallee CodeGenerator::generate_function(std::string const &name, llvm::Type *return_type,
+                                                llvm::ArrayRef<llvm::Type *> const &params) const {
+    llvm::FunctionType *ft = llvm::FunctionType::get(return_type, params, false);
     return module->getOrInsertFunction(name, ft);
 }
 
@@ -1767,7 +1772,7 @@ void CodeGenerator::init() {
     module->setSourceFileName(options.file_name);
 }
 
-void CodeGenerator::optimize() {
+void CodeGenerator::optimize() const {
     llvm::PassBuilder passBuilder;
 
     llvm::LoopAnalysisManager     loopAnalysisManager; // * add constructor true for debug info
@@ -1801,7 +1806,7 @@ void CodeGenerator::optimize() {
     modulePassManager.run(*module, moduleAnalysisManager);
 }
 
-void CodeGenerator::generate_llcode() {
+void CodeGenerator::generate_llcode() const {
     debug("generate_llcode");
     auto            f = filename + file_ext_llvmri;
     std::error_code EC;
@@ -1814,7 +1819,7 @@ void CodeGenerator::generate_llcode() {
     out_file.flush();
 }
 
-void CodeGenerator::generate_objectcode() {
+void CodeGenerator::generate_objectcode() const {
     debug("generate_objectcode");
 
     // Define the target triple

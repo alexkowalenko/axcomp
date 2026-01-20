@@ -25,13 +25,14 @@ class Inspector : ASTVisitor {
 
   private:
     void visit(ASTModule const &ast) override;
+    void visit(ASTDeclaration const &ast) override;
     void visit(ASTImport const &ast) override;
     void visit(ASTConst const &ast) override;
     void visit(ASTTypeDec const &ast) override;
     void visit(ASTVar const &ast) override;
 
-    void                                       do_receiver(RecVar &r);
-    std::pair<Type, ProcedureType::ParamsList> do_proc(ASTProc_ &ast);
+    void                                       do_receiver(const RecVar &r) const;
+    std::pair<Type, ProcedureType::ParamsList> do_proc(const ASTProc_ &ast);
 
     void visit(ASTProcedure const &ast) override;
     void visit(ASTProcedureForward const &ast) override;
@@ -66,7 +67,7 @@ class Inspector : ASTVisitor {
     void visit(ASTBool const &ast) override;
     void visit(ASTNil const & /*not used*/) override;
 
-    std::string get_Qualident(ASTQualident const &ast);
+    std::string get_Qualident(ASTQualident const &ast) const;
 
     SymbolFrameTable &symboltable;
     TypeTable        &types;

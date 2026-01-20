@@ -19,11 +19,11 @@ void ASTPrinter::visit(ASTModule const &ast) {
 
     os << std::format("MODULE {0};\n", ast->name);
     if (ast->import) {
-        ast->import->accept(this);
+        visit(ast->import);
     }
 
     push();
-    ast->decs->accept(this);
+    visit(ast->decs);
     if (indent_width > 0) {
         os << '\n';
     }
@@ -46,10 +46,10 @@ void ASTPrinter::visit(ASTImport const &ast) {
         os << indent() << "IMPORT ";
         for (auto iter = ast->imports.begin(); iter != ast->imports.end(); ++iter) {
             if (iter->second) {
-                iter->second->accept(this);
+                visit(iter->second);
                 os << " := ";
             }
-            iter->first->accept(this);
+            visit(iter->first);
             if (std::next(iter) != ast->imports.end()) {
                 os << ",\n";
             }
@@ -59,16 +59,28 @@ void ASTPrinter::visit(ASTImport const &ast) {
     }
 }
 
+void ASTPrinter::visit(ASTDeclaration const &ast) {
+    if (ast->cnst) {
+        visit(ast->cnst);
+    }
+    if (ast->type) {
+        visit(ast->type);
+    }
+    if (ast->var) {
+        visit(ast->var);
+    }
+}
+
 void ASTPrinter::visit(ASTConst const &ast) {
     if (!ast->consts.empty()) {
         os << indent() << "CONST\n";
         push();
         for (auto const &c : ast->consts) {
             os << indent();
-            c.ident->accept(this);
+            visit(c.ident);
             os << std::string(c.ident->attrs);
             os << " = ";
-            c.value->accept(this);
+            visit(c.value);
             os << ";\n";
         }
         pop();
@@ -81,10 +93,10 @@ void ASTPrinter::visit(ASTTypeDec const &ast) {
         push();
         for (const auto &[name, snd] : ast->types) {
             os << indent();
-            name->accept(this);
+            visit(name);
             os << std::string(name->attrs);
             os << " = ";
-            snd->accept(this);
+            visit(snd);
             os << ";\n";
         }
         pop();
@@ -97,10 +109,10 @@ void ASTPrinter::visit(ASTVar const &ast) {
         push();
         for (const auto &[name, snd] : ast->vars) {
             os << indent();
-            name->accept(this);
+            visit(name);
             os << std::string(name->attrs);
             os << ": ";
-            snd->accept(this);
+            visit(snd);
             os << ";\n";
         }
         pop();
@@ -112,9 +124,9 @@ void ASTPrinter::proc_rec(RecVar const &r) {
     if (r.first->is(Attr::var)) {
         os << "VAR ";
     }
-    r.first->accept(this);
+    visit(r.first);
     os << " : ";
-    r.second->accept(this);
+    visit(r.second);
     os << ") ";
 }
 
@@ -134,9 +146,9 @@ void ASTPrinter::proc_header(ASTProc_ const &ast, bool forward) {
             if (name->is(Attr::var)) {
                 os << "VAR ";
             }
-            name->accept(this);
+            visit(name);
             os << " : ";
-            type->accept(this);
+            visit(type);
             if (std::next(param_iter) != ast.params.end()) {
                 os << "; ";
             }
@@ -145,7 +157,7 @@ void ASTPrinter::proc_header(ASTProc_ const &ast, bool forward) {
     }
     if (ast.return_type != nullptr) {
         os << ": ";
-        ast.return_type->accept(this);
+        visit(ast.return_type);
     }
     os << ";\n";
 }
@@ -153,7 +165,7 @@ void ASTPrinter::proc_header(ASTProc_ const &ast, bool forward) {
 void ASTPrinter::visit(ASTProcedure const &ast) {
     proc_header(*ast, false);
     push();
-    ast->decs->accept(this);
+    visit(ast->decs);
     for (auto const &proc : ast->procedures) {
         proc->accept(this);
     }
@@ -170,15 +182,15 @@ void ASTPrinter::visit(ASTProcedureForward const &ast) {
 }
 
 void ASTPrinter::visit(ASTAssignment const &ast) {
-    ast->ident->accept(this);
+    visit(ast->ident);
     os << " := ";
-    ast->expr->accept(this);
+    visit(ast->expr);
 }
 
 void ASTPrinter::visit(ASTReturn const &ast) {
     os << "RETURN ";
     if (ast->expr) {
-        ast->expr->accept(this);
+        visit(ast->expr);
     }
 }
 
@@ -187,7 +199,7 @@ void ASTPrinter::visit(ASTExit const & /*ast*/) {
 }
 
 void ASTPrinter::visit(ASTCall const &ast) {
-    ast->name->accept(this);
+    visit(ast->name);
     os << "(";
     for (auto iter = ast->args.begin(); iter != ast->args.end(); ++iter) {
         (*iter)->accept(this);
@@ -259,7 +271,7 @@ void ASTPrinter::visit(ASTCaseElement const &ast) {
 
 void ASTPrinter::visit(ASTCase const &ast) {
     os << "CASE ";
-    ast->expr->accept(this);
+    visit(ast->expr);
     os << " OF\n";
     push();
     int i = 0;
@@ -268,7 +280,7 @@ void ASTPrinter::visit(ASTCase const &ast) {
         if (i != 0) {
             os << "| ";
         }
-        element->accept(this);
+        visit(element);
         i++;
     }
     pop();
@@ -281,14 +293,14 @@ void ASTPrinter::visit(ASTCase const &ast) {
 
 void ASTPrinter::visit(ASTFor const &ast) {
     os << "FOR ";
-    ast->ident->accept(this);
+    visit(ast->ident);
     os << " := ";
-    ast->start->accept(this);
+    visit(ast->start);
     os << " TO ";
-    ast->end->accept(this);
+    visit(ast->end);
     if (ast->by) {
         os << " BY ";
-        ast->by->accept(this);
+        visit(ast->by);
     }
     os << " DO\n";
     print_stats(ast->stats);
@@ -297,7 +309,7 @@ void ASTPrinter::visit(ASTFor const &ast) {
 
 void ASTPrinter::visit(ASTWhile const &ast) {
     os << "WHILE ";
-    ast->expr->accept(this);
+    visit(ast->expr);
     os << " DO\n";
     print_stats(ast->stats);
     os << indent() << "END";
@@ -307,7 +319,7 @@ void ASTPrinter::visit(ASTRepeat const &ast) {
     os << "REPEAT\n";
     print_stats(ast->stats);
     os << indent() << "UNTIL ";
-    ast->expr->accept(this);
+    visit(ast->expr);
 }
 
 void ASTPrinter::visit(ASTLoop const &ast) {
@@ -323,24 +335,24 @@ void ASTPrinter::visit(ASTBlock const &ast) {
 }
 
 void ASTPrinter::visit(ASTExpr const &ast) {
-    ast->expr->accept(this);
+    visit(ast->expr);
     if (ast->relation) {
         os << std::string(std::format(" {0} ", string(*ast->relation)));
-        ast->relation_expr->accept(this);
+        visit(ast->relation_expr);
     }
 }
 
 void ASTPrinter::visit(ASTRange const &ast) {
-    ast->first->accept(this);
+    visit(ast->first);
     os << "..";
-    ast->last->accept(this);
+    visit(ast->last);
 };
 
 void ASTPrinter::visit(ASTSimpleExpr const &ast) {
     if (ast->first_sign) {
         os << string(ast->first_sign.value());
     }
-    ast->term->accept(this);
+    visit(ast->term);
     for (auto const &rest : ast->rest) {
         if (rest.first == TokenType::or_k) {
             os << std::string(std::format(" {0} ", string(rest.first)));
@@ -352,7 +364,7 @@ void ASTPrinter::visit(ASTSimpleExpr const &ast) {
 }
 
 void ASTPrinter::visit(ASTTerm const &ast) {
-    ast->factor->accept(this);
+    visit(ast->factor);
     for (auto const &rest : ast->rest) {
         if (rest.first == TokenType::asterisk) {
             os << string(rest.first);
@@ -364,23 +376,23 @@ void ASTPrinter::visit(ASTTerm const &ast) {
 }
 
 void ASTPrinter::visit(ASTFactor const &ast) {
-    std::visit(overloaded{[this](auto arg) { arg->accept(this); },
+    std::visit(overloaded{[this](auto arg) { visit(arg); },
                           [this](ASTExpr const &arg) {
                               this->os << " (";
-                              arg->accept(this);
+                              visit(arg);
                               this->os << ") ";
                           },
                           [this, ast](ASTFactor const &arg) {
                               if (ast->is_not) {
                                   os << "~ ";
                               }
-                              arg->accept(this);
+                              visit(arg);
                           }},
                ast->factor);
 }
 
 void ASTPrinter::visit(ASTDesignator const &ast) {
-    ast->ident->accept(this);
+    visit(ast->ident);
     for (auto &selector : ast->selectors) {
         std::visit(overloaded{[this](ArrayRef const &s) {
                                   os << '[';
@@ -402,7 +414,7 @@ void ASTPrinter::visit(ASTDesignator const &ast) {
 }
 
 void ASTPrinter::visit(ASTType const &ast) {
-    std::visit(overloaded{[this](auto arg) { arg->accept(this); }}, ast->type);
+    std::visit(overloaded{[this](auto arg) { visit(arg); }}, ast->type);
 }
 
 void ASTPrinter::visit(ASTArray const &ast) {
@@ -416,24 +428,24 @@ void ASTPrinter::visit(ASTArray const &ast) {
         }
     }
     os << "OF ";
-    ast->type->accept(this);
+    visit(ast->type);
 }
 
 void ASTPrinter::visit(ASTRecord const &ast) {
     os << "RECORD";
     if (ast->base) {
         os << " (";
-        ast->base->accept(this);
+        visit(ast->base);
         os << ')';
     }
     os << '\n';
     push();
     for (auto iter = ast->fields.begin(); iter != ast->fields.end(); ++iter) {
         os << indent();
-        iter->first->accept(this);
+        visit(iter->first);
         os << std::string(iter->first->attrs);
         os << ": ";
-        iter->second->accept(this);
+        visit(iter->second);
         if (std::next(iter) != ast->fields.end()) {
             os << ";\n";
         } else {
@@ -445,14 +457,14 @@ void ASTPrinter::visit(ASTRecord const &ast) {
 
 void ASTPrinter::visit(ASTPointerType const &ast) {
     os << "POINTER TO ";
-    ast->reference->accept(this);
+    visit(ast->reference);
 }
 
 void ASTPrinter::visit(ASTQualident const &ast) {
     if (!ast->qual.empty()) {
         os << ast->qual + ".";
     }
-    ast->id->accept(this);
+    visit(ast->id);
 }
 
 void ASTPrinter::visit(ASTIdentifier const &ast) {
@@ -462,7 +474,7 @@ void ASTPrinter::visit(ASTIdentifier const &ast) {
 void ASTPrinter::visit(ASTSet const &ast) {
     os << '{';
     for (auto iter = ast->values.begin(); iter != ast->values.end(); ++iter) {
-        std::visit(overloaded{[this](auto e) { e->accept(this); }}, *iter);
+        std::visit(overloaded{[this](auto e) { visit(e); }}, *iter);
         if (std::next(iter) != ast->values.end()) {
             os << ',';
         };
