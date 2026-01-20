@@ -21,3 +21,13 @@ BEGIN
   Out.String("sum b = "); Out.Int(b.x + b.y, 0); Out.Ln; 
   RETURN a.x;
 END record01.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: a := {1,2,3}
+CHECK-NEXT:       b := {1,2}
+CHECK-NEXT:       sum a = 6
+CHECK-NEXT:       sum b = 3
+CHECK-NEXT: 1
+*)

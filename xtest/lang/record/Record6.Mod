@@ -31,3 +31,11 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Record6.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1 2
+CHECK: 1 2
+*)
+

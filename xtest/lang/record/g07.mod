@@ -10,3 +10,8 @@ BEGIN
     pt.z := 5;
     RETURN pt.x + pt.y + pt.z
 END g07.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 10
+*)

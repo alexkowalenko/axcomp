@@ -37,7 +37,7 @@ xtest_add_lit_tests(lang-const lang/const lit.compile)
 xtest_add_lit_tests(lang-type lang/type lit.compile)
 xtest_add_lit_tests(lang-var lang/var lit.compile)
 
-## xtest_add_test(lang/record)
+xtest_add_lit_tests(lang-record lang/record lit.compile)
 xtest_add_lit_tests(lang-array lang/array lit.compile)
 ## xtest_add_test(lang/openarray)
 xtest_add_lit_tests(lang-set lang/set lit.compile)

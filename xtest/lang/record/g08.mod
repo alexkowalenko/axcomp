@@ -17,3 +17,9 @@ BEGIN
     pt.a := TRUE;
     RETURN pt.x + pt.y + pt.z.x + pt.z.y
 END g08.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 5
+*)

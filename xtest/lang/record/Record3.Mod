@@ -27,3 +27,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Record3.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1 2
+CHECK: 1 2
+*)

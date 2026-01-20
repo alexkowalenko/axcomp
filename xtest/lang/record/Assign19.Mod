@@ -44,3 +44,10 @@ BEGIN
   r4.a := 0; r4.b := -1;
   Test;
 END Assign19.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:          1        -1
+CHECK-NEXT: 258        -1
+CHECK-NEXT: 67371521        -1
+*)

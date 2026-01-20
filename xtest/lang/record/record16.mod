@@ -13,3 +13,10 @@ BEGIN
     f(x); 
     Out.Int(x.x, 0); Out.Ln;
 END record16.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK: 1
+*)

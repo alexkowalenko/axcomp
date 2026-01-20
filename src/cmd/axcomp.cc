@@ -142,6 +142,7 @@ Options do_args(int argc, char **argv) {
     llvm::DebugFlag = options.debug;
     for (auto const &x : doptions) {
         llvm::setCurrentDebugType(x.c_str());
+        llvm::DebugFlag = true;
     }
 
     if (stats) {
@@ -155,6 +156,7 @@ Options do_args(int argc, char **argv) {
         std::println("         output_main: {}", options.output_main);
         std::println("         output_defs: {}", options.output_defs);
         std::println("         only_ll: {}", options.only_ll);
+        std::println("         debug: {}", options.debug);
         for (auto const &x : doptions) {
             std::println("         debug_option: {}", x);
         }

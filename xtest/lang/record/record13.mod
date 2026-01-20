@@ -9,3 +9,9 @@ BEGIN
     current.value := 5;
     RETURN current.value;
 END record13.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 5
+*)

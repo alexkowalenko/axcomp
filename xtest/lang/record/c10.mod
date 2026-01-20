@@ -14,3 +14,8 @@ BEGIN
      z0.x := 1;  z0.y := 1;  z0.z := 1;
      RETURN sum(z0)
 END c10.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 3
+*)

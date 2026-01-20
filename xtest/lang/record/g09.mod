@@ -12,3 +12,8 @@ BEGIN
     pt.y[2] := 4;
     RETURN pt.x + pt.y[0] + pt.y[1] + pt.y[2]
 END g09.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 9
+*)

@@ -26,3 +26,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END AntiDep1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 1
+CHECK-NEXT: 2
+*)

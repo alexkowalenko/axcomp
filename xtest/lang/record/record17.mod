@@ -27,3 +27,12 @@ BEGIN
     set(x, 4, 3);
     print(x); Out.Ln;
 END record17.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: (1,2)
+CHECK-NEXT:       (0,0)
+CHECK-NEXT:       (4,3)
+CHECK: 0
+*)

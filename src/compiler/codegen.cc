@@ -1518,8 +1518,9 @@ void CodeGenerator::visitPtr(ASTDesignator const &ast, bool ptr) {
     get_index(ast);
     // debug("ASTDesignator: ptr:{0} is_var:{1}", ptr, is_var);
     if (!ptr && !is_var) {
-        debug("ASTDesignator: load");
-        last_value = builder.CreateLoad(ast->get_type()->get_llvm(), last_value, "idx");
+        debug("ASTDesignator: load {}", ast->get_type()->get_name());
+        const auto resolved_type = types.resolve(ast->get_type()->get_name());
+        last_value = builder.CreateLoad(resolved_type->get_llvm(), last_value, "idx");
     }
 }
 

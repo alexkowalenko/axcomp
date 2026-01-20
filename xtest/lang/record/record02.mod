@@ -35,3 +35,12 @@ BEGIN
 
   RETURN a.x;
 END record02.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: a := {1,2,3}
+CHECK: a := {4,2,3}
+CHECK: sum a = 9
+CHECK: 4
+*)

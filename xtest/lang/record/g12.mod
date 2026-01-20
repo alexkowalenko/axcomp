@@ -18,3 +18,9 @@ BEGIN
     pt.y := 24;
     RETURN sum(identity(pt))
 END g12.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 36
+*)
