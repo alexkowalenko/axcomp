@@ -70,8 +70,8 @@ void do_lexUTF8_tests(std::vector<LexTests> &tests) {
 // Different lexers return slightly different positions
 // check the message.
 bool check_errors(std::string const &e1, std::string const &e2) {
-    auto s1 = e1.substr(e1.find(':'));
-    auto s2 = e2.substr(e2.find(':'));
+    const auto s1 = e1.substr(e1.find(':'));
+    const auto s2 = e2.substr(e2.find(':'));
     return s1 == s2;
 }
 

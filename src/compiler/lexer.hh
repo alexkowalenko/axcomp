@@ -244,7 +244,7 @@ Token LexerImplementation<C, CharClass>::get_token() {
     if (CharClass::isalnum(c)) {
         return scan_ident(c);
     }
-    std::cout << "character: " << int(c) << std::endl;
+    std::cout << "character: " << static_cast<int>(c) << std::endl;
     throw LexicalException(get_location(), "Unknown character " + CharClass::to_string(c));
 }
 
@@ -276,7 +276,7 @@ Token LexerImplementation<C, CharClass>::scan_digit(C c) {
     c = peek();
     while (CharClass::isxdigit(c)) {
         get();
-        digit += char(c);
+        digit += static_cast<char>(c);
         c = peek();
     }
     if (c == 'H') {

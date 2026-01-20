@@ -110,7 +110,7 @@ template <typename T> T SymbolTable<T>::find(const std::string &name) const {
 }
 
 template <typename T> bool SymbolTable<T>::set(const std::string &name, T const &val) {
-    if (auto const &x = table.find(name); x != table.end()) {
+    if (table.contains(name)) {
         put(name, val);
         return true;
     }
@@ -127,7 +127,7 @@ template <typename T> bool SymbolTable<T>::set(const std::string &name, T const 
 }
 
 template <typename T> void SymbolTable<T>::remove(const std::string &name) {
-    if (auto const &x = table.find(name); x != table.end()) {
+    if (table.contains(name)) {
         table.erase(name);
         return;
     }
@@ -191,7 +191,7 @@ template <typename T> class FrameTable : public TableInterface<T> {
 };
 
 template <typename T> void FrameTable<T>::push_frame(std::string const &name) {
-    if (frame_map.find(name) != frame_map.end()) {
+    if (frame_map.contains(name)) {
         current_table = frame_map[name];
         frame_stack.push(current_table);
         return;

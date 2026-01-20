@@ -109,12 +109,12 @@ bool Importer::find_module(std::string const &name, SymbolFrameTable &symbols, T
     debug("Importer::find_module {0}", name);
     // Look at cache
 
-    if (auto res = cache.find(name); res != cache.end()) {
+    if (const auto res = cache.find(name); res != cache.end()) {
         transfer_symbols(res->second, symbols, name);
         return true;
     }
 
-    if (auto mod_symbols = read_module(name, types); mod_symbols) {
+    if (const auto mod_symbols = read_module(name, types); mod_symbols) {
         transfer_symbols(*mod_symbols, symbols, name);
         cache[name] = *mod_symbols;
         return true;

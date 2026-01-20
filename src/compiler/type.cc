@@ -309,7 +309,7 @@ int RecordType::get_index(std::string const &field) {
         }
         base_count = base->count();
     }
-    const auto it = std::find(cbegin(index), cend(index), field);
+    const auto it = std::ranges::find(std::as_const(index), field);
     if (it == end(index)) {
         return -1;
     }

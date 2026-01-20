@@ -75,7 +75,7 @@ class CodeGenException : public AXException {
     CodeGenException(Location const &l, std::string const &m) : AXException(l, m) {};
 
     template <typename... Args>
-    CodeGenException(Location const &l, std::string fmt, const Args &...args) {
+    CodeGenException(Location const &l, const std::string fmt, const Args &...args) {
         location = l;
         msg = std::vformat(fmt, std::make_format_args(args...));
     };

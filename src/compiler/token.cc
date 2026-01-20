@@ -11,7 +11,9 @@
 
 namespace ax {
 
-static const std::map<TokenType, std::string> mapping{
+namespace {
+
+const std::map<TokenType, std::string> mapping{
     {TokenType::null, "null"},
 
     {TokenType::ident, "indent"},
@@ -89,6 +91,8 @@ static const std::map<TokenType, std::string> mapping{
 
     {TokenType::eof, "EOF"},
 };
+
+}
 
 std::string string(const TokenType t) {
     if (mapping.contains(t)) {

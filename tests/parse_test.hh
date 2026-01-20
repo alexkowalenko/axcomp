@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,8 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests);
 void do_defparse_tests(std::vector<ParseTests> &tests);
 
 inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(),
+    s.erase(std::ranges::find_if(std::views::reverse(s),
+                                 [](const int ch) { return !std::isspace(ch); })
+                .base(),
             s.end());
 }

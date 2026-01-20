@@ -22,7 +22,7 @@ std::string wcharToString(const wchar_t wchar);
 
 // Custom emoji checker
 // This is a hack.
-inline constexpr bool is_emoji(Char c) {
+inline constexpr bool is_emoji(const Char c) {
     return (0x1f600 <= c && c <= 0x1f64f) || // Emoticons NOLINT
            (0x1F300 <= c && c <= 0x1F5FF) || // Misc Symbols and Pictographs NOLINT
            (0x1F680 <= c && c <= 0x1F6FF) || // Transport and Map NOLINT
@@ -49,7 +49,7 @@ class Character32 : CharacterClass<Char> {
 
     static void add_string(std::string &s, Char c) {
         try {
-            utf8::append(char32_t(c), s);
+            utf8::append(static_cast<char32_t>(c), s);
         } catch (utf8::invalid_code_point &e) {
             throw LexicalException(Location(0, 0), "Invalid code Point");
         };

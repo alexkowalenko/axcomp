@@ -399,7 +399,7 @@ void Inspector::visit(ASTCall const &ast) {
     debug("ASTCall: {0}", name);
     auto res = symboltable.find(name);
     if (!res) {
-        std::replace(begin(name), end(name), '_', '.');
+        std::ranges::replace(name, '_', '.');
         auto e = CodeGenException(ast->get_location(), "undefined PROCEDURE {0}", name);
         errors.add(e);
         return;
@@ -410,7 +410,7 @@ void Inspector::visit(ASTCall const &ast) {
         // check bound procedure
         auto field = ast->name->first_field();
         if (!field) {
-            std::replace(begin(name), end(name), '_', '.');
+            std::ranges::replace(name, '_', '.');
             auto e = TypeError(ast->get_location(), "{0} is not a PROCEDURE", name);
             errors.add(e);
             return;
@@ -418,7 +418,7 @@ void Inspector::visit(ASTCall const &ast) {
 
         name = field->value;
         if (res = symboltable.find(name); !res) {
-            std::replace(begin(name), end(name), '_', '.');
+            std::ranges::replace(name, '_', '.');
             auto e = TypeError(ast->get_location(), "{0} is not a PROCEDURE", name);
             errors.add(e);
             return;
@@ -449,7 +449,7 @@ void Inspector::visit(ASTCall const &ast) {
     if (procType->params.empty() || procType->params[0].first != TypeTable::AnyType) {
 
         if (ast->args.size() != procType->params.size()) {
-            std::replace(begin(name), end(name), '_', '.');
+            std::ranges::replace(name, '_', '.');
             auto e = TypeError(
                 ast->get_location(),
                 "calling PROCEDURE {0}, incorrect number of arguments: {1} instead of {2}", name,
@@ -472,7 +472,7 @@ void Inspector::visit(ASTCall const &ast) {
         if (proc_iter->second == Attr::var) {
             if (!is_lvalue || is_const) {
                 debug("ASTCall is_lvalue: {0} is_const: {0}", is_lvalue, is_const);
-                std::replace(begin(name), end(name), '_', '.');
+                std::ranges::replace(name, '_', '.');
                 auto e = TypeError(ast->get_location(),
                                    "procedure call {0} does not have a variable "
                                    "reference for VAR parameter {2}",
@@ -501,7 +501,7 @@ void Inspector::visit(ASTCall const &ast) {
         debug("check parameter {0}: {1} with {2}", name, base_last->get_name(),
               proc_base->get_name());
         if (!proc_base->equiv(base_last)) {
-            std::replace(begin(name), end(name), '_', '.');
+            std::ranges::replace(name, '_', '.');
             debug("incorrect parameter");
             auto e = TypeError(ast->get_location(),
                                "procedure call {0} has incorrect "
@@ -547,7 +547,7 @@ void Inspector::visit(ASTIf const &ast) {
 }
 
 void Inspector::visit(ASTCaseElement const &ast) {
-    for (auto &stmt : ast->stats) {
+    for (const auto &stmt : ast->stats) {
         stmt->accept(this);
     }
 }
@@ -623,8 +623,7 @@ void Inspector::visit(ASTFor const &ast) {
         }
     }
 
-    auto res = symboltable.find(ast->ident->value);
-    if (!res) {
+    if (auto res = symboltable.find(ast->ident->value); !res) {
         auto e = TypeError(ast->get_location(), "FOR index variable {0} not defined",
                            ast->ident->value);
         errors.add(e);
@@ -706,7 +705,7 @@ void Inspector::visit(ASTSimpleExpr const &ast) {
     for (auto const &t : ast->rest) {
         is_lvalue = false;
         t.second->accept(this);
-        auto result_type = types.check(t.first, t1, last_type);
+        const auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
             const auto e =
                 TypeError(ast->get_location(), "operator {0} doesn't takes types {1} and {2}",
@@ -731,8 +730,9 @@ void Inspector::visit(ASTTerm const &ast) {
         t.second->accept(this);
         const auto result_type = types.check(t.first, t1, last_type);
         if (!result_type) {
-            auto e = TypeError(ast->get_location(), "operator {0} doesn't takes types {1} and {2}",
-                               string(t.first), string(t1), string(last_type));
+            const auto e =
+                TypeError(ast->get_location(), "operator {0} doesn't takes types {1} and {2}",
+                          string(t.first), string(t1), string(last_type));
             errors.add(e);
             return;
         }
@@ -761,7 +761,7 @@ void Inspector::visit(ASTFactor const &ast) {
                    [this, ast](ASTFactor const &arg) {
                        if (ast->is_not) {
                            visit(arg);
-                           auto result_type = types.check(TokenType::tilde, last_type);
+                           const auto result_type = types.check(TokenType::tilde, last_type);
                            if (!result_type) {
                                auto e = TypeError(ast->get_location(),
                                                   "type in ~ expression must be BOOLEAN");
@@ -897,7 +897,7 @@ void Inspector::visit(ASTDesignator const &ast) {
 void Inspector::visit(ASTType const &ast) {
     std::visit(overloaded{[this, ast](ASTQualident const &type) {
                               debug("ASTType {0}", type->id->value);
-                              auto result = types.find(type->id->value);
+                              const auto result = types.find(type->id->value);
                               if (!result) {
                                   throw TypeError(ast->get_location(), "Unknown type: {0}",
                                                   type->id->value);
@@ -1060,8 +1060,7 @@ void Inspector::visit(ASTIdentifier const &ast) {
 
             // Check is type name and accept, can only then be passed to objects of
             // type VOID
-            auto typep = types.find(ast->value);
-            if (typep) {
+            if (auto typep = types.find(ast->value)) {
                 debug("type: {0}", ast->value);
                 return;
             }
