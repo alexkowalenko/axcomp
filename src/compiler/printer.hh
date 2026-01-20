@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <ostream>
 
 #include "ast.hh"

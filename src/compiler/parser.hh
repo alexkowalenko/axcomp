@@ -16,7 +16,7 @@ namespace ax {
 
 class Parser {
   public:
-    Parser(LexerInterface &l, SymbolFrameTable &s, TypeTable &t, ErrorManager &e)
+    Parser(LexerUTF8 &l, SymbolFrameTable &s, TypeTable &t, ErrorManager &e)
         : lexer{l}, symbols{s}, types{t}, errors{e} {};
 
     ASTModule parse();
@@ -78,13 +78,13 @@ class Parser {
 
     void set_attrs(ASTIdentifier const &ident) const;
 
-    LexerInterface   &lexer;
+    LexerUTF8        &lexer;
     SymbolFrameTable &symbols;
     TypeTable        &types;
     ErrorManager     &errors;
 };
 
-template <class T> inline std::shared_ptr<T> makeAST(LexerInterface &lexer) {
+template <class T> inline std::shared_ptr<T> makeAST(LexerUTF8 &lexer) {
     auto ast = make<T>();
     ast->set_location(lexer.get_location());
     return ast;

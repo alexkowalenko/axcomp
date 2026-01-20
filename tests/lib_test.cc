@@ -21,7 +21,6 @@
 #include "fake_importer.hh"
 #include "inspector.hh"
 #include "lexer.hh"
-#include "lexerUTF8.hh"
 #include "parser.hh"
 #include "printer.hh"
 #include "symboltable.hh"
@@ -32,12 +31,12 @@
 
 using namespace ax;
 
-template <class L> void do_l_tests(std::vector<LexTests> &tests) {
+void do_lex_tests(std::vector<LexTests> &tests) {
     for (auto const &t : tests) {
 
         std::istringstream is(t.input);
         ErrorManager       errors;
-        L                  lex(is, errors);
+        LexerUTF8          lex(is, errors);
 
         try {
             auto token = lex.get_token();
@@ -57,14 +56,6 @@ template <class L> void do_l_tests(std::vector<LexTests> &tests) {
             FAIL();
         }
     }
-}
-
-void do_lex_tests(std::vector<LexTests> &tests) {
-    do_l_tests<Lexer>(tests);
-};
-
-void do_lexUTF8_tests(std::vector<LexTests> &tests) {
-    do_l_tests<LexerUTF8>(tests);
 }
 
 // Different lexers return slightly different positions
@@ -284,7 +275,7 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
             std::cerr << "Result of definition: \n" << result;
 
             std::istringstream dis(result);
-            Lexer              dlex(dis, errors);
+            LexerUTF8          dlex(dis, errors);
             DefParser          dparser(dlex, symbols, types, errors);
             auto               dast = dparser.parse();
 

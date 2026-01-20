@@ -23,7 +23,7 @@
 #include "error.hh"
 #include "importer.hh"
 #include "inspector.hh"
-#include "lexerUTF8.hh"
+#include "lexer.hh"
 #include "options.hh"
 #include "parser.hh"
 #include "printer.hh"

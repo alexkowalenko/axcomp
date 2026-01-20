@@ -10,7 +10,7 @@ include_directories(../compiler)
 add_executable(axcomp axcomp.cc)
 
 target_link_libraries(axcomp PUBLIC project_options project_warnings
-        libax
+        ax::compiler
         argparse
         ${llvm_libs}
         ${ICU_LIBRARIES})

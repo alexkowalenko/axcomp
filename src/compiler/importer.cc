@@ -80,7 +80,7 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
             SymbolFrameTable module_symbols;
             std::ifstream    is(file_path);
             try {
-                Lexer     lex(is, errors);
+                LexerUTF8 lex(is, errors);
                 DefParser parser(lex, module_symbols, types, errors);
                 auto      ast = parser.parse();
                 Inspector inspect(module_symbols, types, errors, *this);

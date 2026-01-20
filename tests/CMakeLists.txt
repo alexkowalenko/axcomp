@@ -18,7 +18,11 @@ macro(package_add_test TESTNAME)
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
     target_link_libraries(${TESTNAME} PRIVATE project_options project_warnings 
-                            libax axtest gtest gtest_main ${llvm_libs} ${ICU_LIBRARIES})
+                            ax::compiler
+                            ax::test
+                            gtest gtest_main
+                            ${llvm_libs}
+                            ${ICU_LIBRARIES})
     
     # gtest_discover_tests replaces gtest_add_tests,
     gtest_discover_tests(${TESTNAME}
@@ -35,8 +39,12 @@ include_directories("${utfcpp_SOURCE_DIR}/source")
 include_directories("${gtest_SOURCE_DIR}/include")
 include_directories("${fmt_SOURCE_DIR}/include")
 
-add_library(axtest STATIC lib_test.cc 
-                          fake_importer.cc) 
+add_library(ax.test)
+add_library(ax::test ALIAS ax.test)
+
+target_sources(ax.test PRIVATE
+            lib_test.cc
+            fake_importer.cc)
 
 package_add_test(lex.1 lex.1.cc)
 

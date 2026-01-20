@@ -27,7 +27,6 @@ struct ParseTests {
 
 // Lexer tester
 void do_lex_tests(std::vector<LexTests> &tests);
-void do_lexUTF8_tests(std::vector<LexTests> &tests);
 
 // Parser tester
 void do_parse_tests(std::vector<ParseTests> &tests);

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <cstddef>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -14,11 +13,16 @@
 
 #include "astvisitor.hh"
 #include "attr.hh"
-#include "lexerUTF8.hh"
 #include "location.hh"
 #include "symbol.hh"
 #include "token.hh"
 #include "type.hh"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#include <utf8.h>
+#pragma clang diagnostic pop
 
 namespace ax {
 
@@ -107,8 +111,8 @@ class ASTChar_ : public ASTBase_, public std::enable_shared_from_this<ASTChar_> 
     void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
     std::string str() const {
-        std::string s{};
-        Character32::add_string(s, value);
+        std::string s;
+        utf8::append(static_cast<char32_t>(value), s);
         return s;
     }
 
