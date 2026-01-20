@@ -7,3 +7,9 @@ BEGIN
     x := a[0];
     WriteInt(x); WriteLn;
 END index02.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 7
+CHECK-NEXT: 0
+*)

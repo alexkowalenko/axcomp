@@ -20,3 +20,11 @@ BEGIN
       WriteInt(sum);   WriteLn();
     RETURN 0
 END g05.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 012
+CHECK-NEXT: 123
+CHECK-NEXT: 234
+CHECK-NEXT: 9
+*)

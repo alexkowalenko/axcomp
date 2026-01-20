@@ -16,3 +16,8 @@ BEGIN
     x1 := x2[0] + x2[1] + f();
     RETURN x2[3] + x1
 END g02.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

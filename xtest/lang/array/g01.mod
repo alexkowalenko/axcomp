@@ -16,3 +16,8 @@ BEGIN
     f();
     RETURN 0
 END g01.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

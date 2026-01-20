@@ -12,3 +12,8 @@ BEGIN
     END;
     RETURN pt[1].x + pt[1].y
 END g10.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 4
+*)

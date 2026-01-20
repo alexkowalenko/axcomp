@@ -12,3 +12,11 @@ BEGIN
     END;
     RETURN x[0] + x[1] + x[2]
 END g03.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 2
+CHECK-NEXT: 3
+CHECK-NEXT: 6
+*)

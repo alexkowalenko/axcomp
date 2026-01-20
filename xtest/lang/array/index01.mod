@@ -4,3 +4,9 @@ VAR
 BEGIN
     a[0] := 7;
 END index01.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

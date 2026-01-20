@@ -23,3 +23,8 @@ BEGIN
     END;
     RETURN sum(identity(pt))
 END g11.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 11
+*)

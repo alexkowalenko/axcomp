@@ -12,3 +12,11 @@ BEGIN
     f(x); 
     Out.Int(x[0], 0); Out.Ln;
 END array15.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+CHECK-NEXT: 1
+CHECK-NEXT: 0
+*)

@@ -10,3 +10,9 @@ BEGIN
     x := a[0] + a[1] + a[2];
     WriteInt(x); WriteLn;
 END index03.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 15
+CHECK-NEXT: 0
+*)

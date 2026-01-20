@@ -17,3 +17,11 @@ BEGIN
         Out.Ln;
     END
 END array1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0,0=0 0,1=1 0,2=2 0,3=3
+CHECK-NEXT: 1,0=4 1,1=5 1,2=6 1,3=7
+CHECK-NEXT: 2,0=8 2,1=9 2,2=10 2,3=11
+CHECK-NEXT: 0
+*)
