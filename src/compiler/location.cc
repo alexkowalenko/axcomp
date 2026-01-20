@@ -11,7 +11,10 @@
 namespace ax {
 
 Location::operator std::string() const {
-    return std::format("{0},{1}", lineno, charpos);
+    if (line_no == 0 && char_pos == 0) {
+        return std::string{"[X]"};
+    }
+    return std::format("[{},{}]", line_no, char_pos);
 }
 
 }; // namespace ax

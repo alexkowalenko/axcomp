@@ -70,7 +70,7 @@ TEST(Inspector, IF) {
                 RETURN 1
             END
         END alpha.)",
-         "", "4,14: IF expression must be type BOOLEAN"},
+         "", "[4,14]: IF expression must be type BOOLEAN"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -84,7 +84,7 @@ TEST(Inspector, IF) {
                 RETURN 2
             END
         END alpha.)",
-         "", "4,14: ELSIF expression must be type BOOLEAN"},
+         "", "[4,14]: ELSIF expression must be type BOOLEAN"},
 
         {R"(MODULE alpha;
         VAR x : INTEGER;
@@ -102,7 +102,7 @@ TEST(Inspector, IF) {
                 RETURN 2
             END
         END alpha.)",
-         "", "4,14: ELSIF expression must be type BOOLEAN"},
+         "", "[4,14]: ELSIF expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -130,7 +130,7 @@ TEST(Inspector, FOR) {
             END;
             RETURN
             END e06.)",
-         "", "4,15: FOR end expression must be numeric type"},
+         "", "[4,15]: FOR end expression must be numeric type"},
 
         {R"(MODULE e06;
             VAR i: INTEGER;
@@ -140,7 +140,7 @@ TEST(Inspector, FOR) {
             END;
             RETURN
             END e06.)",
-         "", "4,15: FOR start expression must be numeric type"},
+         "", "[4,15]: FOR start expression must be numeric type"},
 
         {R"(MODULE e06;
             BEGIN 
@@ -149,7 +149,7 @@ TEST(Inspector, FOR) {
             END;
             RETURN
             END e06.)",
-         "", "3,15: FOR index variable i not defined"},
+         "", "[3,15]: FOR index variable i not defined"},
 
         {R"(MODULE For2;
             TYPE
@@ -158,7 +158,7 @@ TEST(Inspector, FOR) {
                 FOR T := 1 TO 8 DO
                 END;
             END For2.)",
-         "", "5,19: FOR index variable T not defined"},
+         "", "[5,19]: FOR index variable T not defined"},
     };
     do_inspect_tests(tests);
 }
@@ -187,7 +187,7 @@ TEST(Inspector, WHILE) {
             END;
             RETURN x
         END alpha.)",
-         "", "4,17: WHILE expression must be type BOOLEAN"},
+         "", "[4,17]: WHILE expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -215,7 +215,7 @@ TEST(Inspector, REPEAT) {
                 x := x+1
             UNTIL  10
         END alpha.)",
-         "", "4,18: REPEAT expression must be type BOOLEAN"},
+         "", "[4,18]: REPEAT expression must be type BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -341,7 +341,7 @@ TEST(Inspector, CASE) {
                 RETURN 0;
             END alpha.)",
          "",
-         "6,23: CASE expression mismatch type CHAR does not match CASE expression type INTEGER"},
+         "[6,23]: CASE expression mismatch type CHAR does not match CASE expression type INTEGER"},
 
         {R"(MODULE alpha;
             VAR x : INTEGER;
@@ -357,7 +357,7 @@ TEST(Inspector, CASE) {
                 RETURN 0;
             END alpha.)",
          "",
-         "6,21: CASE expression mismatch type INTEGER does not match CASE expression type CHAR"},
+         "[6,21]: CASE expression mismatch type INTEGER does not match CASE expression type CHAR"},
 
         {R"(MODULE beta;
             VAR x :INTEGER;
@@ -368,7 +368,7 @@ TEST(Inspector, CASE) {
                 RETURN 0
             END beta.)",
          "",
-         "5,25: CASE expression range mismatch first type CHAR does not match CASE expression "
+         "[5,25]: CASE expression range mismatch first type CHAR does not match CASE expression "
          "type INTEGER"},
 
         {R"(MODULE beta;
@@ -380,7 +380,8 @@ TEST(Inspector, CASE) {
                 RETURN 0
             END beta.)",
          "",
-         "5,23: CASE expression range mismatch last type CHAR does not match CASE expression type "
+         "[5,23]: CASE expression range mismatch last type CHAR does not match CASE expression "
+         "type "
          "INTEGER"},
 
         {R"(MODULE alpha;
@@ -392,7 +393,8 @@ TEST(Inspector, CASE) {
                 RETURN 0;
             END alpha.)",
          "",
-         "5,23: CASE expression range mismatch first type INTEGER does not match CASE expression "
+         "[5,23]: CASE expression range mismatch first type INTEGER does not match CASE "
+         "expression "
          "type CHAR"},
 
         {R"(MODULE alpha;
@@ -404,7 +406,7 @@ TEST(Inspector, CASE) {
                 RETURN 0;
             END alpha.)",
          "",
-         "5,25: CASE expression range mismatch last type INTEGER does not match CASE expression "
+         "[5,25]: CASE expression range mismatch last type INTEGER does not match CASE expression "
          "type CHAR"},
 
     };
@@ -476,7 +478,7 @@ TEST(Inspector, ReadOnly) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "", "2,21: CONST a is always read only"},
+         "", "[2,21]: CONST a is always read only"},
 
         {R"(MODULE alpha;
                 CONST a = 10;
@@ -491,7 +493,7 @@ TEST(Inspector, ReadOnly) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "", "7,27: PROCEDURE f is always read only"},
+         "", "[7,27]: PROCEDURE f is always read only"},
     };
     do_inspect_tests(tests);
 }
@@ -520,14 +522,14 @@ TEST(Inspector, IMPORT) {
              BEGIN
                  RETURN System.x;
              END alpha.)",
-         "", "2,19: MODULE System not found"},
+         "", "[2,19]: MODULE System not found"},
 
         {R"(MODULE alpha;
              IMPORT S := System;
              BEGIN
                  RETURN System.x;
              END alpha.)",
-         "", "2,24: MODULE System not found"},
+         "", "[2,24]: MODULE System not found"},
 
     };
     do_inspect_fimport_tests(tests);
@@ -582,7 +584,7 @@ TEST(Inspector, ImportAccess) {
              BEGIN
                  RETURN beta.aa;
              END alpha.)",
-         "", "4,28: undefined identifier aa in MODULE beta"},
+         "", "[4,28]: undefined identifier aa in MODULE beta"},
 
         // Try to access module without alias
         {R"(MODULE alpha;
@@ -590,7 +592,7 @@ TEST(Inspector, ImportAccess) {
              BEGIN
                  RETURN beta.a;
              END alpha.)",
-         "", "4,30: undefined identifier beta"},
+         "", "[4,30]: undefined identifier beta"},
 
         // CONST
         {R"(MODULE alpha;
@@ -599,7 +601,7 @@ TEST(Inspector, ImportAccess) {
                 beta.a := 10;
                 RETURN beta.a;
              END alpha.)",
-         "", "4,25: Can't assign to CONST variable beta.a"},
+         "", "[4,25]: Can't assign to CONST variable beta.a"},
 
         // Read only
         {R"(MODULE alpha;
@@ -608,7 +610,7 @@ TEST(Inspector, ImportAccess) {
                 beta.b := 0;
                  RETURN beta.a;
              END alpha.)",
-         "", "4,25: Can't assign to read only (-) variable beta.b"},
+         "", "[4,25]: Can't assign to read only (-) variable beta.b"},
 
         // Wrong type
         {R"(MODULE alpha;
@@ -617,7 +619,7 @@ TEST(Inspector, ImportAccess) {
                 beta.d := 0;
                 RETURN beta.c;
              END alpha.)",
-         "", "4,25: Can't assign expression of type INTEGER to beta.d"},
+         "", "[4,25]: Can't assign expression of type INTEGER to beta.d"},
 
         // function does not exist
         {R"(MODULE alpha;
@@ -626,7 +628,7 @@ TEST(Inspector, ImportAccess) {
                 beta.g(1, 2);
                 RETURN beta.g(100, 200);
              END alpha.)",
-         "", "4,23: undefined PROCEDURE beta.g"},
+         "", "[4,23]: undefined PROCEDURE beta.g"},
 
         // Wrong parameters for function
         {R"(MODULE alpha;
@@ -635,7 +637,7 @@ TEST(Inspector, ImportAccess) {
                 beta.f(1, 1);
                 RETURN beta.f(100);
              END alpha.)",
-         "", "4,23: calling PROCEDURE beta.f, incorrect number of arguments: 2 instead of 1"},
+         "", "[4,23]: calling PROCEDURE beta.f, incorrect number of arguments: 2 instead of 1"},
 
     };
     do_inspect_fimport_tests(tests);

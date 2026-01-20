@@ -14,7 +14,7 @@ TEST(Inspector, VarType) {
          "MODULE x;\nVAR\nz: INTEGER;\nBEGIN\nRETURN \nEND x.", ""},
 
         // Errors
-        {"MODULE x; VAR z: complex; BEGIN x := 10 END x.", "", "1,16: Unknown type: complex"},
+        {"MODULE x; VAR z: complex; BEGIN x := 10 END x.", "", "[1,16]: Unknown type: complex"},
     };
     do_inspect_tests(tests);
 }
@@ -25,7 +25,7 @@ TEST(Inspector, UnknownExpr) {
          "MODULE y;\nVAR\nx: INTEGER;\nBEGIN\nRETURN x\nEND y.", ""},
 
         // Errors
-        {"MODULE y; VAR x : INTEGER; BEGIN RETURN z END y.", "", "1,45: undefined identifier z"},
+        {"MODULE y; VAR x : INTEGER; BEGIN RETURN z END y.", "", "[1,45]: undefined identifier z"},
     };
     do_inspect_tests(tests);
 }
@@ -58,7 +58,7 @@ TEST(Inspector, ProcedureDefined) {
             BEGIN
                 f;
             END alpha.)",
-         "", "5,23: PROCEDURE f, identifier is already defined"},
+         "", "[5,23]: PROCEDURE f, identifier is already defined"},
 
         {R"(MODULE alpha; (* pointers *)
             VAR f: INTEGER;
@@ -69,7 +69,7 @@ TEST(Inspector, ProcedureDefined) {
             BEGIN
                 f;
             END alpha.)",
-         "", "4,23: PROCEDURE f, identifier is already defined"},
+         "", "[4,23]: PROCEDURE f, identifier is already defined"},
     };
     do_inspect_tests(tests);
 }
@@ -102,15 +102,15 @@ TEST(Inspector, ReturnType) {
         // Error
         {"MODULE x; PROCEDURE f(): complex; BEGIN RETURN 0 END f; BEGIN "
          "RETURN 333 END x.",
-         "", "1,24: Unknown type: complex"},
+         "", "[1,24]: Unknown type: complex"},
 
         {"MODULE x; PROCEDURE f(): INTEGER; BEGIN RETURN END f; BEGIN "
          "RETURN 333 END x.",
-         "", "1,46: RETURN type (INTEGER) does not match return type for function f: void"},
+         "", "[1,46]: RETURN type (INTEGER) does not match return type for function f: void"},
 
         {"MODULE x; PROCEDURE f; BEGIN RETURN 0 END f; BEGIN "
          "RETURN 333 END x.",
-         "", "1,35: RETURN type (void) does not match return type for function f: INTEGER"},
+         "", "[1,35]: RETURN type (void) does not match return type for function f: INTEGER"},
         {R"(MODULE xxx;
             PROCEDURE f : BOOLEAN;
             BEGIN
@@ -119,7 +119,7 @@ TEST(Inspector, ReturnType) {
             BEGIN
             RETURN 3
             END xxx.)",
-         "", "4,18: RETURN type (BOOLEAN) does not match return type for function f: INTEGER"},
+         "", "[4,18]: RETURN type (BOOLEAN) does not match return type for function f: INTEGER"},
     };
     do_inspect_tests(tests);
 }
@@ -169,14 +169,14 @@ TEST(Inspector, Call) {
         // Errors
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN END f; BEGIN "
          "x(); RETURN x END y.",
-         "", "1,68: x is not a PROCEDURE"},
+         "", "[1,68]: x is not a PROCEDURE"},
         {"MODULE y; VAR x : INTEGER; PROCEDURE f; BEGIN RETURN END f; BEGIN "
          "g(); RETURN x END y.",
-         "", "1,68: undefined PROCEDURE g"},
+         "", "[1,68]: undefined PROCEDURE g"},
         {"MODULE y; VAR x : INTEGER; "
          "PROCEDURE f():INTEGER; BEGIN RETURN 0 END f; "
          "BEGIN RETURN g() END y.",
-         "", "1,87: undefined PROCEDURE g"},
+         "", "[1,87]: undefined PROCEDURE g"},
 
         {R"(MODULE xxx;
             PROCEDURE f(x : INTEGER) : INTEGER;
@@ -187,7 +187,7 @@ TEST(Inspector, Call) {
                 RETURN f()
             END xxx.)",
          "",
-         "7,25: calling PROCEDURE f, incorrect number of arguments: 0 instead "
+         "[7,25]: calling PROCEDURE f, incorrect number of arguments: 0 instead "
          "of "
          "1"},
         {R"(MODULE xxx;
@@ -199,7 +199,7 @@ TEST(Inspector, Call) {
                 RETURN f(1,2,3,4)
             END xxx.)",
          "",
-         "7,25: calling PROCEDURE f, incorrect number of arguments: 4 instead "
+         "[7,25]: calling PROCEDURE f, incorrect number of arguments: 4 instead "
          "of "
          "0"},
 
@@ -262,7 +262,7 @@ TEST(Inspector, CallType) {
             f(TRUE)
         END y.)",
          "",
-         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "[7,14]: procedure call f has incorrect type BOOLEAN for parameter "
          "INTEGER"},
 
         {R"(MODULE y; 
@@ -274,7 +274,7 @@ TEST(Inspector, CallType) {
             f(TRUE,2)
         END y.)",
          "",
-         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "[7,14]: procedure call f has incorrect type BOOLEAN for parameter "
          "INTEGER"},
 
         {R"(MODULE y; 
@@ -286,7 +286,7 @@ TEST(Inspector, CallType) {
             f(1,TRUE)
         END y.)",
          "",
-         "7,14: procedure call f has incorrect type BOOLEAN for parameter "
+         "[7,14]: procedure call f has incorrect type BOOLEAN for parameter "
          "INTEGER"},
 
         {R"(MODULE alpha;
@@ -300,7 +300,7 @@ TEST(Inspector, CallType) {
             BEGIN
                 h(1, 'x');
             END alpha.)",
-         "", "6,18: procedure call g has incorrect type INTEGER for parameter CHAR"},
+         "", "[6,18]: procedure call g has incorrect type INTEGER for parameter CHAR"},
 
         {R"(MODULE alpha;
             PROCEDURE f(x : INTEGER);
@@ -313,7 +313,7 @@ TEST(Inspector, CallType) {
             BEGIN
                 h(1, 'x');
             END alpha.)",
-         "", "6,18: procedure call f has incorrect type CHAR for parameter INTEGER"},
+         "", "[6,18]: procedure call f has incorrect type CHAR for parameter INTEGER"},
 
     };
     do_inspect_tests(tests);
@@ -363,7 +363,7 @@ TEST(Inspector, CallVar) {
             f(1) 
         END y.)",
          "",
-         "9,14: procedure call f does not have a variable reference for VAR "
+         "[9,14]: procedure call f does not have a variable reference for VAR "
          "parameter INTEGER"},
 
         {R"(MODULE y; 
@@ -377,7 +377,7 @@ TEST(Inspector, CallVar) {
             f(y + 1) 
         END y.)",
          "",
-         "9,14: procedure call f does not have a variable reference for VAR "
+         "[9,14]: procedure call f does not have a variable reference for VAR "
          "parameter INTEGER"},
 
     };
@@ -399,13 +399,15 @@ TEST(Inspector, CallVarConst) {
             BEGIN
             INC(x);
             END alpha.)",
-         "", "4,16: procedure call INC does not have a variable reference for VAR parameter any"},
+         "",
+         "[4,16]: procedure call INC does not have a variable reference for VAR parameter any"},
 
         {R"(MODULE alpha; (* SET *)
             BEGIN
             INC(1);
             END alpha.)",
-         "", "3,16: procedure call INC does not have a variable reference for VAR parameter any"},
+         "",
+         "[3,16]: procedure call INC does not have a variable reference for VAR parameter any"},
 
     };
     do_inspect_tests(tests);
@@ -455,7 +457,7 @@ TEST(Inspector, FunctionParams) {
             BEGIN
             RETURN 3
             END xxx.)",
-         "", "3,27: Unknown type: UNDEF"},
+         "", "[3,27]: Unknown type: UNDEF"},
     };
     do_inspect_tests(tests);
 }
@@ -529,7 +531,7 @@ TEST(Inspector, NestedProcs) {
             BEGIN
                 f();
             END alpha.)",
-         "", "6,27: PROCEDURE g, identifier is already defined"},
+         "", "[6,27]: PROCEDURE g, identifier is already defined"},
     };
     do_inspect_tests(tests);
 }
@@ -570,7 +572,8 @@ TEST(Inspector, ProcReciever) {
 
             END alpha.)",
          "",
-         "2,26: bound type INTEGER must be a RECORD or POINTER TO RECORD in type-bound PROCEDURE"},
+         "[2,26]: bound type INTEGER must be a RECORD or POINTER TO RECORD in type-bound "
+         "PROCEDURE"},
 
         {R"(MODULE alpha; (* Procedures with receivers *)
             PROCEDURE (a : pt) print();
@@ -578,7 +581,7 @@ TEST(Inspector, ProcReciever) {
             END print;
 
             END alpha.)",
-         "", "2,26: bound type pt not found for type-bound PROCEDURE"},
+         "", "[2,26]: bound type pt not found for type-bound PROCEDURE"},
 
     };
     do_inspect_tests(tests);
@@ -628,7 +631,7 @@ TEST(Inspector, ProcRecieverCall) {
             BEGIN
                 x.print;
             END alpha.)",
-         "", "10,24: base type: INTEGER does not match bound procedure print, type: {x,y}"},
+         "", "[10,24]: base type: INTEGER does not match bound procedure print, type: {x,y}"},
 
         {R"(MODULE alpha; (* Procedures with recievers *)
             TYPE pt = RECORD x, y : INTEGER; END;
@@ -641,7 +644,7 @@ TEST(Inspector, ProcRecieverCall) {
             BEGIN
                 print(x);
             END alpha.)",
-         "", "10,22: calling PROCEDURE print, incorrect number of arguments: 1 instead of 0"},
+         "", "[10,22]: calling PROCEDURE print, incorrect number of arguments: 1 instead of 0"},
 
         {R"(MODULE alpha; (* Procedures with recievers *)
             TYPE pt = RECORD x, y : INTEGER; END;
@@ -654,7 +657,7 @@ TEST(Inspector, ProcRecieverCall) {
             BEGIN
                 x.jones;
             END alpha.)",
-         "", "10,24: jones is not a PROCEDURE"},
+         "", "[10,24]: jones is not a PROCEDURE"},
 
         {R"(MODULE alpha; (* Procedures with recievers *)
             TYPE pt = RECORD x, y : INTEGER; END;
@@ -668,7 +671,7 @@ TEST(Inspector, ProcRecieverCall) {
                 x.x := 1;
                 x.x();
             END alpha.)",
-         "", "11,20: x is not a PROCEDURE"},
+         "", "[11,20]: x is not a PROCEDURE"},
 
     };
     do_inspect_tests(tests);
@@ -714,7 +717,7 @@ TEST(Inspector, ProcDerivedReciever) {
                     i.print; 
                     k.print; 
                 END alpha.)",
-         "", "14,28: base type: {x} does not match bound procedure print, type: {x,y}"},
+         "", "[14,28]: base type: {x} does not match bound procedure print, type: {x,y}"},
 
     };
     do_inspect_tests(tests);
@@ -748,14 +751,14 @@ TEST(Inspector, Assignment) {
             z := 4;
             RETURN z
             END xxx.)",
-         "", "4,16: Can't assign expression of type INTEGER to z"},
+         "", "[4,16]: Can't assign expression of type INTEGER to z"},
         {R"(MODULE xxx;
             VAR z : INTEGER;
             BEGIN
             z := TRUE;
             RETURN z
             END xxx.)",
-         "", "4,16: Can't assign expression of type BOOLEAN to z"},
+         "", "[4,16]: Can't assign expression of type BOOLEAN to z"},
     };
     do_inspect_tests(tests);
 }
@@ -808,12 +811,12 @@ TEST(Inspector, ExprCompare) {
             BEGIN
             RETURN TRUE = 1
             END xxx.)",
-         "", "3,23: operator = doesn't takes types BOOLEAN and INTEGER"},
+         "", "[3,23]: operator = doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 # FALSE
             END xxx.)",
-         "", "3,20: operator # doesn't takes types INTEGER and BOOLEAN"},
+         "", "[3,20]: operator # doesn't takes types INTEGER and BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -832,22 +835,22 @@ TEST(Inspector, SimpleExpr) {
             BEGIN
             RETURN TRUE + 1
             END xxx.)",
-         "", "3,23: operator + doesn't takes types BOOLEAN and INTEGER"},
+         "", "[3,23]: operator + doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR FALSE
             END xxx.)",
-         "", "3,20: operator OR doesn't takes types INTEGER and BOOLEAN"},
+         "", "[3,20]: operator OR doesn't takes types INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 OR 0
             END xxx.)",
-         "", "3,20: operator OR doesn't takes types INTEGER and INTEGER"},
+         "", "[3,20]: operator OR doesn't takes types INTEGER and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN FALSE + FALSE
             END xxx.)",
-         "", "3,24: operator + doesn't takes types BOOLEAN and BOOLEAN"},
+         "", "[3,24]: operator + doesn't takes types BOOLEAN and BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -866,22 +869,22 @@ TEST(Inspector, Term) {
             BEGIN
             RETURN TRUE * 1
             END xxx.)",
-         "", "3,23: operator * doesn't takes types BOOLEAN and INTEGER"},
+         "", "[3,23]: operator * doesn't takes types BOOLEAN and INTEGER"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & FALSE
             END xxx.)",
-         "", "3,20: operator & doesn't takes types INTEGER and BOOLEAN"},
+         "", "[3,20]: operator & doesn't takes types INTEGER and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN TRUE DIV FALSE
             END xxx.)",
-         "", "3,23: operator DIV doesn't takes types BOOLEAN and BOOLEAN"},
+         "", "[3,23]: operator DIV doesn't takes types BOOLEAN and BOOLEAN"},
         {R"(MODULE xxx;
             BEGIN
             RETURN 0 & 23
             END xxx.)",
-         "", "3,20: operator & doesn't takes types INTEGER and INTEGER"},
+         "", "[3,20]: operator & doesn't takes types INTEGER and INTEGER"},
     };
     do_inspect_tests(tests);
 }
@@ -900,7 +903,7 @@ TEST(Inspector, Factor) {
             BEGIN
             RETURN ~ 1
             END xxx.)",
-         "", "3,20: type in ~ expression must be BOOLEAN"},
+         "", "[3,20]: type in ~ expression must be BOOLEAN"},
     };
     do_inspect_tests(tests);
 }
@@ -958,12 +961,12 @@ TEST(Inspector, TypeDef) {
                 BEGIN
                     RETURN seconds
                 END alpha.)",
-         "", "4,29: Unknown type: complex"},
+         "", "[4,29]: Unknown type: complex"},
 
         {R"(MODULE alpha;
                 TYPE CHAR = CHAR;
             END alpha.)",
-         "", "2,20: TYPE CHAR already defined"},
+         "", "[2,20]: TYPE CHAR already defined"},
 
         {R"(MODULE alpha;
                 TYPE time = INTEGER;
@@ -974,7 +977,7 @@ TEST(Inspector, TypeDef) {
                 BEGIN
                     RETURN 0;
                 END alpha.)",
-         "", "5,26: RETURN type (INTEGER) does not match return type for function T: CHAR"},
+         "", "[5,26]: RETURN type (INTEGER) does not match return type for function T: CHAR"},
 
     };
     do_inspect_tests(tests);
@@ -1030,7 +1033,7 @@ TEST(Inspector, TypeAssign) {
                     seconds := TRUE;
                     RETURN seconds
                 END alpha.)",
-         "", "5,30: Can't assign expression of type BOOLEAN to seconds"},
+         "", "[5,30]: Can't assign expression of type BOOLEAN to seconds"},
     };
     do_inspect_tests(tests);
 }
@@ -1068,7 +1071,7 @@ TEST(Inspector, TypeCompatible) {
                 x := f;
                 RETURN x;
             END alpha.)",
-         "", "6,20: Can't assign expression of type REAL to x"},
+         "", "[6,20]: Can't assign expression of type REAL to x"},
 
         {R"(MODULE alpha; (* compatibity *)
             TYPE I = INTEGER;
@@ -1078,7 +1081,7 @@ TEST(Inspector, TypeCompatible) {
                 f := x;
                 RETURN x;
             END alpha.)",
-         "", "6,20: Can't assign expression of type INTEGER to f"},
+         "", "[6,20]: Can't assign expression of type INTEGER to f"},
 
     };
     do_inspect_tests(tests);
@@ -1149,7 +1152,7 @@ TEST(Inspector, Const) {
                 BEGIN
                     RETURN time
                 END alpha.)",
-         "", "5,21: CONST y is not a constant expression"},
+         "", "[5,21]: CONST y is not a constant expression"},
     };
     do_inspect_tests(tests);
 }
@@ -1171,7 +1174,7 @@ TEST(Inspector, ConstAssign) {
                     time := 40;
                     RETURN time
                 END alpha.)",
-         "", "4,27: Can't assign to CONST variable time"},
+         "", "[4,27]: Can't assign to CONST variable time"},
     };
     do_inspect_tests(tests);
 }
@@ -1199,7 +1202,7 @@ TEST(Inspector, RealExpr) {
                     x := 2.3 * 2.3 * pi;
                     RETURN 0
                 END alpha.)",
-         "", "5,24: Can't assign expression of type REAL to x"},
+         "", "[5,24]: Can't assign expression of type REAL to x"},
 
         {R"(MODULE alpha;
                 CONST pi = 3.14159269;
@@ -1208,7 +1211,7 @@ TEST(Inspector, RealExpr) {
                     x := 1 * pi;
                     RETURN 0
                 END alpha.)",
-         "", "5,24: Can't assign expression of type REAL to x"},
+         "", "[5,24]: Can't assign expression of type REAL to x"},
 
         {R"(MODULE alpha;
                 VAR x : INTEGER;
@@ -1216,7 +1219,7 @@ TEST(Inspector, RealExpr) {
                     x := 3 + 2.5;
                     RETURN 0
                 END alpha.)",
-         "", "4,24: Can't assign expression of type REAL to x"},
+         "", "[4,24]: Can't assign expression of type REAL to x"},
 
     };
     do_inspect_tests(tests);

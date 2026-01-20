@@ -47,7 +47,7 @@ TEST(Inspector, CHAR) {
                 x := 1;
                 RETURN
             END alpha.)",
-         "", "4,20: Can't assign expression of type INTEGER to x"},
+         "", "[4,20]: Can't assign expression of type INTEGER to x"},
 
         {R"(MODULE alpha;
             VAR x : CHAR;
@@ -55,7 +55,7 @@ TEST(Inspector, CHAR) {
                 x := 'a' - 1;
                 RETURN
             END alpha.)",
-         "", "4,20: operator - doesn't takes types CHAR and INTEGER"},
+         "", "[4,20]: operator - doesn't takes types CHAR and INTEGER"},
 
         {R"(MODULE alpha;
             VAR x : ARRAY 3 OF CHAR;
@@ -63,7 +63,7 @@ TEST(Inspector, CHAR) {
                 x[0] := 1;
                 RETURN
             END alpha.)",
-         "", "4,23: Can't assign expression of type INTEGER to x[0]"},
+         "", "[4,23]: Can't assign expression of type INTEGER to x[0]"},
 
         {R"(MODULE alpha;
             VAR x : ARRAY 3 OF CHAR;
@@ -71,7 +71,7 @@ TEST(Inspector, CHAR) {
                 x[0] := 1 * 'a';
                 RETURN
             END alpha.)",
-         "", "4,25: operator * doesn't takes types INTEGER and CHAR"},
+         "", "[4,25]: operator * doesn't takes types INTEGER and CHAR"},
 
     };
     do_inspect_tests(tests);
@@ -113,7 +113,7 @@ TEST(Inspector, String) {
                 x := 8;
                 RETURN
             END alpha.)",
-         "", "4,20: Can't assign expression of type INTEGER to x"},
+         "", "[4,20]: Can't assign expression of type INTEGER to x"},
 
         {R"(MODULE alpha;
             VAR x : INTEGER;
@@ -121,7 +121,7 @@ TEST(Inspector, String) {
                 x := "HELLO";
                 RETURN
             END alpha.)",
-         "", "4,20: Can't assign expression of type STRING to x"},
+         "", "[4,20]: Can't assign expression of type STRING to x"},
 
         {R"(MODULE alpha;
             VAR x : INTEGER;
@@ -129,7 +129,7 @@ TEST(Inspector, String) {
                 x := 1 + "HELLO";
                 RETURN
             END alpha.)",
-         "", "4,20: operator + doesn't takes types INTEGER and STRING"},
+         "", "[4,20]: operator + doesn't takes types INTEGER and STRING"},
 
         {R"(MODULE alpha;
             TYPE strArray = ARRAY 3 OF STRING;
@@ -139,7 +139,7 @@ TEST(Inspector, String) {
                 x[1] := 6;
                 RETURN
             END alpha.)",
-         "", "6,23: Can't assign expression of type INTEGER to x[1]"},
+         "", "[6,23]: Can't assign expression of type INTEGER to x[1]"},
     };
     do_inspect_tests(tests);
 }
@@ -175,7 +175,7 @@ TEST(Inspector, ArrayCHAR) {
                 y := x;
                 RETURN 0;
             END string9.)",
-         "", "6,20: Can't assign expression of type STRING to y"},
+         "", "[6,20]: Can't assign expression of type STRING to y"},
     };
     do_inspect_tests(tests);
 }
@@ -218,7 +218,7 @@ TEST(Inspector, StringCat) {
                 c := s1 + 1;
                 RETURN 0
             END alpha.)",
-         "", "4,20: operator + doesn't takes types STRING and INTEGER"},
+         "", "[4,20]: operator + doesn't takes types STRING and INTEGER"},
     };
     do_inspect_tests(tests);
 }
@@ -250,7 +250,7 @@ TEST(Inspector, StringCompare) {
                 c := c = s2;
                 RETURN 0
             END alpha.)",
-         "", "5,20: operator = doesn't takes types BOOLEAN and STRING"},
+         "", "[5,20]: operator = doesn't takes types BOOLEAN and STRING"},
     };
     do_inspect_tests(tests);
 }
@@ -282,7 +282,7 @@ TEST(Inspector, String1) {
                 BEGIN
                 print2('c');
                 END alpha.)",
-         "", "9,23: procedure call print2 has incorrect type CHAR for parameter STRING"},
+         "", "[9,23]: procedure call print2 has incorrect type CHAR for parameter STRING"},
     };
     do_inspect_tests(tests);
 }
@@ -304,7 +304,7 @@ TEST(Inspector, NIL) {
                 x := NIL;
                 RETURN 0;
             END alpha.)",
-         "", "4,20: Can't assign expression of type void to x"},
+         "", "[4,20]: Can't assign expression of type void to x"},
 
         {R"(MODULE alpha; (* pointers *)
             VAR x : POINTER TO INTEGER;
@@ -312,7 +312,7 @@ TEST(Inspector, NIL) {
                 x := 5;
                 RETURN 0;
             END alpha.)",
-         "", "4,20: Can't assign expression of type INTEGER to x"},
+         "", "[4,20]: Can't assign expression of type INTEGER to x"},
 
     };
     do_inspect_tests(tests);
@@ -340,14 +340,14 @@ TEST(Inspector, NILCompare) {
             BEGIN
                 RETURN x = NIL;
             END alpha.)",
-         "", "4,24: operator = doesn't takes types INTEGER and void"},
+         "", "[4,24]: operator = doesn't takes types INTEGER and void"},
 
         {R"(MODULE alpha; (* pointers *)
             VAR x : INTEGER;
             BEGIN
                 RETURN x # NIL;
             END alpha.)",
-         "", "4,24: operator # doesn't takes types INTEGER and void"},
+         "", "[4,24]: operator # doesn't takes types INTEGER and void"},
 
     };
     do_inspect_tests(tests);
@@ -384,7 +384,7 @@ TEST(Inspector, Reference) {
                 x^ := 5;
                 RETURN 0;
             END alpha.)",
-         "", "4,17: variable x is not an indexable type"},
+         "", "[4,17]: variable x is not an indexable type"},
 
         {R"(MODULE alpha; (* pointers *)
             VAR x : POINTER TO POINTER TO INTEGER;
@@ -392,7 +392,7 @@ TEST(Inspector, Reference) {
                 x^ := 5;
                 RETURN  x^^;
             END alpha.)",
-         "", "4,21: Can't assign expression of type INTEGER to x^"},
+         "", "[4,21]: Can't assign expression of type INTEGER to x^"},
     };
     do_inspect_tests(tests);
 }
@@ -466,7 +466,7 @@ TEST(Inspector, Set) {
                 BEGIN
                 x := {'c'};
                 END alpha.)",
-         "", "4,25: Expression 'c' is not a integer type"},
+         "", "[4,25]: Expression 'c' is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
@@ -474,21 +474,21 @@ TEST(Inspector, Set) {
                 BEGIN
                 x := {y};
                 END alpha.)",
-         "", "5,23: Expression y is not a integer type"},
+         "", "[5,23]: Expression y is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
             BEGIN
                 x := {"hello"..6};
             END alpha.)",
-         "", "4,29: Expression \"hello\" is not a integer type"},
+         "", "[4,29]: Expression \"hello\" is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
             BEGIN
                 x := {1..'!'};
             END alpha.)",
-         "", "4,25: Expression '!' is not a integer type"},
+         "", "[4,25]: Expression '!' is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
@@ -497,7 +497,7 @@ TEST(Inspector, Set) {
             BEGIN
                 x := {a..b};
             END alpha.)",
-         "", "6,25: Expression b is not a integer type"},
+         "", "[6,25]: Expression b is not a integer type"},
 
         {R"(MODULE alpha; (* SET *)
             VAR x: SET;
@@ -506,7 +506,7 @@ TEST(Inspector, Set) {
             BEGIN
                 x := {b..a};
             END alpha.)",
-         "", "6,23: Expression b is not a integer type"},
+         "", "[6,23]: Expression b is not a integer type"},
 
     };
     do_inspect_tests(tests);
@@ -535,7 +535,7 @@ TEST(Inspector, SetOps) {
                 BEGIN
                 b := 1.2 IN s;
                 END alpha.)",
-         "", "5,20: operator IN doesn't takes types REAL and SET"},
+         "", "[5,20]: operator IN doesn't takes types REAL and SET"},
 
         {R"(MODULE alpha; (* SET *)
             VAR s, t: SET;
@@ -543,7 +543,7 @@ TEST(Inspector, SetOps) {
                 BEGIN
                 b := s IN s;
                 END alpha.)",
-         "", "5,20: operator IN doesn't takes types SET and SET"},
+         "", "[5,20]: operator IN doesn't takes types SET and SET"},
 
         {R"(MODULE alpha; (* SET *)
             VAR s, t: SET;
@@ -551,7 +551,7 @@ TEST(Inspector, SetOps) {
                 BEGIN
                 b := b = s;
                 END alpha.)",
-         "", "5,20: operator = doesn't takes types BOOLEAN and SET"},
+         "", "[5,20]: operator = doesn't takes types BOOLEAN and SET"},
 
         {R"(MODULE alpha; (* SET *)
             VAR s, t: SET;
@@ -559,7 +559,7 @@ TEST(Inspector, SetOps) {
                 BEGIN
                 b := 1 # s;
                 END alpha.)",
-         "", "5,20: operator # doesn't takes types INTEGER and SET"},
+         "", "[5,20]: operator # doesn't takes types INTEGER and SET"},
 
     };
     do_inspect_tests(tests);
@@ -586,7 +586,7 @@ TEST(Inspector, SetOps2) {
                 BEGIN
                 t := s + u;
                 END alpha.)",
-         "", "5,20: operator + doesn't takes types SET and INTEGER"},
+         "", "[5,20]: operator + doesn't takes types SET and INTEGER"},
 
         {R"(MODULE alpha; (* SET *)
             VAR s, t: SET;
@@ -594,7 +594,7 @@ TEST(Inspector, SetOps2) {
                 BEGIN
                 u := s + t;
                 END alpha.)",
-         "", "5,20: Can't assign expression of type SET to u"},
+         "", "[5,20]: Can't assign expression of type SET to u"},
 
     };
     do_inspect_tests(tests);

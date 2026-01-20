@@ -14,7 +14,7 @@ class Location {
 
   public:
     Location() = default;
-    Location(const int l, const int c) : lineno(l), charpos(c) {};
+    Location(const int l, const int c) : line_no(l), char_pos(c) {};
     ~Location() = default;
 
     Location(Location const &) = default;
@@ -22,8 +22,8 @@ class Location {
 
     explicit operator std::string() const;
 
-    int lineno{0};
-    int charpos{0};
+    int line_no{0};
+    int char_pos{0};
 };
 
 }; // namespace ax

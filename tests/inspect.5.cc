@@ -36,13 +36,13 @@ TEST(Inspector, Arrays) {
             BEGIN
                 RETURN 0
             END alpha.)",
-         "", "2,30: Unknown type: complex"},
+         "", "[2,30]: Unknown type: complex"},
         {R"(MODULE alpha;
             VAR x : ARRAY TRUE OF complex;
             BEGIN
                 RETURN 0 
             END alpha.)",
-         "", "2,30: Unexpected token: TRUE - expecting integer"},
+         "", "[2,30]: Unexpected token: TRUE - expecting integer"},
     };
     do_inspect_tests(tests);
 }
@@ -102,42 +102,42 @@ TEST(Inspector, ArraysIndex) {
                 BEGIN
                     RETURN x[1]
                 END alpha.)",
-         "", "4,28: variable x is not an indexable type"},
+         "", "[4,28]: variable x is not an indexable type"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
                 BEGIN
                     RETURN x[1] + 1
                 END alpha.)",
-         "", "4,28: operator + doesn't takes types BOOLEAN and INTEGER"},
+         "", "[4,28]: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x3 : ARRAY 6 OF BOOLEAN;
                 BEGIN
                     RETURN x3[0] + 1
                 END alpha.)",
-         "", "4,29: operator + doesn't takes types BOOLEAN and INTEGER"},
+         "", "[4,29]: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     RETURN x2[0] + 1
                 END alpha.)",
-         "", "4,29: operator + doesn't takes types INTEGER[5] and INTEGER"},
+         "", "[4,29]: operator + doesn't takes types INTEGER[5] and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
                 BEGIN
                     RETURN x2[0][0] + 1
                 END alpha.)",
-         "", "4,29: operator + doesn't takes types BOOLEAN and INTEGER"},
+         "", "[4,29]: operator + doesn't takes types BOOLEAN and INTEGER"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
                 BEGIN
                     RETURN x2[0][2][3]
                 END alpha.)",
-         "", "4,29: value not indexable type"},
+         "", "[4,29]: value not indexable type"},
     };
     do_inspect_tests(tests);
 }
@@ -173,7 +173,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,21: variable x is not an indexable type"},
+         "", "[4,21]: variable x is not an indexable type"},
 
         {R"(MODULE alpha;
                 VAR x : ARRAY 5 OF BOOLEAN;
@@ -181,7 +181,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x[0] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,27: Can't assign expression of type INTEGER to x[0]"},
+         "", "[4,27]: Can't assign expression of type INTEGER to x[0]"},
 
         {R"(MODULE alpha;
                 VAR x3 : ARRAY 6 OF INTEGER;
@@ -189,7 +189,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x3[2] := TRUE;
                     RETURN 0
                 END alpha.)",
-         "", "4,28: Can't assign expression of type BOOLEAN to x3[2]"},
+         "", "[4,28]: Can't assign expression of type BOOLEAN to x3[2]"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF INTEGER;
@@ -197,7 +197,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x2[1] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,28: Can't assign expression of type INTEGER to x2[1]"},
+         "", "[4,28]: Can't assign expression of type INTEGER to x2[1]"},
 
         {R"(MODULE alpha;
                 VAR x2 : ARRAY 5 OF ARRAY 5 OF BOOLEAN;
@@ -205,7 +205,7 @@ TEST(Inspector, ArraysIndexAssign) {
                     x2[1][2] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "4,31: Can't assign expression of type INTEGER to x2[1][2]"},
+         "", "[4,31]: Can't assign expression of type INTEGER to x2[1][2]"},
     };
     do_inspect_tests(tests);
 }
@@ -264,7 +264,7 @@ TEST(Inspector, ArrayIndex_Dimension) {
                 x[2, 3] := 3.3;
                 RETURN x[2, 3]
             END alpha.)",
-         "", "4,26: Can't assign expression of type REAL to x[2,3]"},
+         "", "[4,26]: Can't assign expression of type REAL to x[2,3]"},
 
         {R"(MODULE alpha;
             VAR x : ARRAY 5, 5 OF INTEGER;
@@ -272,7 +272,7 @@ TEST(Inspector, ArrayIndex_Dimension) {
                 x[2] := 3;
                 RETURN 0
             END alpha.)",
-         "", "4,17: array indexes don't match array dimensions of x"},
+         "", "[4,17]: array indexes don't match array dimensions of x"},
 
     };
 
@@ -302,7 +302,7 @@ TEST(Inspector, Record) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "", "3,27: Unknown type: complex"},
+         "", "[3,27]: Unknown type: complex"},
         {R"(MODULE alpha;
                 VAR pt : RECORD
                         x : INTEGER;
@@ -311,7 +311,7 @@ TEST(Inspector, Record) {
                 BEGIN
                     RETURN 0 
                 END alpha.)",
-         "", "4,25: RECORD already has field x"},
+         "", "[4,25]: RECORD already has field x"},
     };
     do_inspect_tests(tests);
 }
@@ -338,14 +338,14 @@ TEST(Inspector, RecordBase) {
                         z: INTEGER;
                     END; 
                 END alpha.)",
-         "", "2,38: undefined identifier pt"},
+         "", "[2,38]: undefined identifier pt"},
 
         {R"(MODULE alpha;
                 TYPE pt3 = RECORD (INTEGER)
                         z: INTEGER;
                     END; 
                 END alpha.)",
-         "", "2,35: RECORD base type INTEGER is not a record"},
+         "", "[2,35]: RECORD base type INTEGER is not a record"},
 
         {R"(MODULE alpha;
                 TYPE pt = RECORD
@@ -356,7 +356,7 @@ TEST(Inspector, RecordBase) {
                         x: INTEGER;
                     END; 
                 END alpha.)",
-         "", "7,25: RECORD already has field x"},
+         "", "[7,25]: RECORD already has field x"},
 
     };
     do_inspect_tests(tests);
@@ -437,7 +437,7 @@ TEST(Inspector, RecordFields) {
                 BEGIN
                     RETURN pt.a + pt.y
                 END alpha.)",
-         "", "7,29: no field <a> in RECORD"},
+         "", "[7,29]: no field <a> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -448,7 +448,7 @@ TEST(Inspector, RecordFields) {
                     pt.spin := FALSE;
                     RETURN 0
                 END alpha.)",
-         "", "7,22: no field <spin> in RECORD"},
+         "", "[7,22]: no field <spin> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -462,7 +462,7 @@ TEST(Inspector, RecordFields) {
                     pt.f.x := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,22: no field <f> in RECORD"},
+         "", "[10,22]: no field <f> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -476,7 +476,7 @@ TEST(Inspector, RecordFields) {
                     pt.z.g := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,22: no field <g> in RECORD"},
+         "", "[10,22]: no field <g> in RECORD"},
 
         {R"(MODULE alpha;
                 VAR pt : RECORD
@@ -490,7 +490,7 @@ TEST(Inspector, RecordFields) {
                     gt.z.x := 1;
                     RETURN 0
                 END alpha.)",
-         "", "10,24: undefined identifier gt"},
+         "", "[10,24]: undefined identifier gt"},
 
         {R"(MODULE alpha;
                 TYPE pt = RECORD
@@ -504,7 +504,7 @@ TEST(Inspector, RecordFields) {
                 BEGIN
                     RETURN a.d;
                 END alpha.)",
-         "", "11,28: no field <d> in RECORD"},
+         "", "[11,28]: no field <d> in RECORD"},
     };
     do_inspect_tests(tests);
 }
@@ -527,7 +527,7 @@ TEST(Inspector, RecordAssign) {
                     b := a;
                     RETURN a.x;
                 END alpha.)",
-         "", "11,24: Can't assign expression of type {({x,y})z} to b"},
+         "", "[11,24]: Can't assign expression of type {({x,y})z} to b"},
 
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD
@@ -543,7 +543,7 @@ TEST(Inspector, RecordAssign) {
                     a := b; (* no data lost *)
                     RETURN a.x;
                 END alpha.)",
-         "", "12,24: Can't assign expression of type {x,y} to a"},
+         "", "[12,24]: Can't assign expression of type {x,y} to a"},
 
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD
@@ -559,7 +559,7 @@ TEST(Inspector, RecordAssign) {
                     b := a; (* data lost *)
                     RETURN a.x;
                 END alpha.)",
-         "", "12,24: Can't assign expression of type {({x,y})z} to b"},
+         "", "[12,24]: Can't assign expression of type {({x,y})z} to b"},
 
         {R"(MODULE alpha;
                 TYPE pt2 = RECORD
@@ -574,7 +574,7 @@ TEST(Inspector, RecordAssign) {
                     b := a; (* diferent *)
                     RETURN a.x;
                 END alpha.)",
-         "", "11,24: Can't assign expression of type {z} to b"},
+         "", "[11,24]: Can't assign expression of type {z} to b"},
     };
     do_inspect_tests(tests);
 }
@@ -665,7 +665,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt[1].y := 1;
                     RETURN 0
                 END alpha.)",
-         "", "7,22: value not indexable type"},
+         "", "[7,22]: value not indexable type"},
 
         {R"(MODULE alpha;
                 VAR pt : ARRAY 3 OF RECORD
@@ -675,7 +675,7 @@ TEST(Inspector, RecordArrayMix) {
                     pt.x[0] := 1;
                     RETURN 0
                 END alpha.)",
-         "", "6,24: value not RECORD: {x,y}[3]"},
+         "", "[6,24]: value not RECORD: {x,y}[3]"},
 
     };
     do_inspect_tests(tests);

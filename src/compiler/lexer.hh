@@ -35,7 +35,8 @@ class LexerUTF8 {
     Char get();
     Char peek();
     Char get_char(); // get the next non-whitespace or comment char
-    void push(Char const c) { last_char = c; }
+    void push_char(Char const c) { last_char = c; }
+
     void set_newline() {
         line_no++;
         char_pos = 0;

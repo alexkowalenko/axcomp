@@ -22,6 +22,11 @@
 
 using namespace ax;
 
+TEST(Location, Basic) {
+    EXPECT_EQ(std::string(Location{0, 0}), "[X]");
+    EXPECT_EQ(std::string(Location{1, 2}), "[1,2]");
+}
+
 TEST(Lexer, Null) {
 
     std::istringstream is("");
@@ -29,6 +34,10 @@ TEST(Lexer, Null) {
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::eof);
+
+    auto loc = lex.get_location();
+    EXPECT_EQ(loc.line_no, 1);
+    EXPECT_EQ(loc.char_pos, 0);
 }
 
 TEST(Lexer, Exception) {
@@ -40,7 +49,6 @@ TEST(Lexer, Exception) {
     try {
         auto token = lex.get_token();
     } catch (LexicalException &l) {
-        std::cerr << l.error_msg() << std::endl;
         EXPECT_EQ(l.error_msg(), "1: Unknown character x");
     }
 }
@@ -65,6 +73,10 @@ TEST(Lexer, Digit) {
     std::cout << "val = " << token.val << '\n';
     EXPECT_EQ(token.type, TokenType::integer);
     EXPECT_EQ(token.val, "12");
+
+    auto loc = lex.get_location();
+    EXPECT_EQ(loc.line_no, 1);
+    EXPECT_EQ(loc.char_pos, 2);
 }
 
 TEST(Lexer, Identifiers) {
