@@ -13,7 +13,6 @@
 
 #include "codegen.hh"
 #include "symboltable.hh"
-#include "type.hh"
 
 namespace ax {
 

@@ -8,7 +8,6 @@
 
 #include <cfloat>
 #include <climits>
-#include <cstddef>
 #include <functional>
 #include <memory>
 #include <numeric>
@@ -26,7 +25,6 @@
 #include <llvm/IR/DerivedTypes.h>
 #pragma clang diagnostic pop
 
-#include "astvisitor.hh"
 #include "attr.hh"
 #include "ax.hh"
 
@@ -59,7 +57,7 @@ using Type = std::shared_ptr<Type_>;
 
 class Type_ {
   public:
-    explicit Type_(TypeId i) : id(i) {};
+    explicit Type_(const TypeId i) : id(i) {};
     virtual ~Type_() = default;
 
     TypeId id = TypeId::null;
@@ -101,7 +99,7 @@ inline std::string string(Type const &t) {
 
 class SimpleType : public Type_ {
   public:
-    explicit SimpleType(std::string n, TypeId id) : Type_(id), name(std::move(n)) {};
+    explicit SimpleType(std::string n, const TypeId id) : Type_(id), name(std::move(n)) {};
     ~SimpleType() override = default;
 
     explicit    operator std::string() override;
@@ -143,10 +141,10 @@ class RealCType : public SimpleType {
     explicit RealCType() : SimpleType("REAL", TypeId::real) {};
     ~RealCType() override = default;
 
-    [[nodiscard]] llvm::Constant *make_value(Real f) const {
+    [[nodiscard]] llvm::Constant *make_value(const Real f) const {
         return llvm::ConstantFP::get(get_llvm(), f);
     }
-    [[nodiscard]] size_t get_size() const override { return sizeof(Real); } // 64 bit floats;
+    [[nodiscard]] size_t get_size() const override { return sizeof(Real); } // 64-bit floats;
 
     [[nodiscard]] llvm::Value *min() const override { return make_value(DBL_MIN); };
     [[nodiscard]] llvm::Value *max() const override { return make_value(DBL_MAX); };
@@ -214,7 +212,7 @@ class ArrayType : public Type_ {
     [[nodiscard]] llvm::Constant *get_init() const override;
 
     [[nodiscard]] size_t get_size() const override {
-        return std::accumulate(begin(dimensions), end(dimensions), size_t(1),
+        return std::accumulate(begin(dimensions), end(dimensions), static_cast<size_t>(1),
                                std::multiplies<>()) *
                base_type->get_size();
     }
@@ -262,8 +260,8 @@ class RecordType : public Type_ {
     llvm::Constant *get_init() const override;
 
     void   insert(std::string const &field, Type type);
-    bool   has_field(std::string const &field);
-    size_t count() { return index.size(); };
+    bool   has_field(std::string const &field) const;
+    size_t count() const { return index.size(); };
 
     void                        set_baseType(std::shared_ptr<RecordType> const &b) { base = b; };
     std::shared_ptr<RecordType> baseType() { return base; };
@@ -320,7 +318,7 @@ class PointerType : public Type_ {
     [[nodiscard]] llvm::Constant *get_init() const override;
 
     Type get_reference() { return reference; }
-    void set_reference(Type &r) { reference = r; }
+    void set_reference(const Type &r) { reference = r; }
 
     std::string &get_ref_name() { return ref_name; };
 
@@ -332,7 +330,7 @@ class PointerType : public Type_ {
 
 inline bool is_ptr_to_record(Type const &t) {
     if (t->id == TypeId::pointer) {
-        if (auto p = std::dynamic_pointer_cast<PointerType>(t);
+        if (const auto p = std::dynamic_pointer_cast<PointerType>(t);
             p->get_reference()->id == TypeId::record) {
             return true;
         }

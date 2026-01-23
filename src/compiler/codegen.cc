@@ -141,7 +141,7 @@ void CodeGenerator::visit(ASTImport const &ast) {
             } else if (type->id == TypeId::procedure) {
                 debug("ASTImport proc {0}", name);
                 if (const auto res = symboltable.find(name); res->is(Attr::used)) {
-                    auto *funcType = (FunctionType *)type->get_llvm();
+                    auto *funcType = static_cast<FunctionType *>(type->get_llvm());
 
                     auto *func = Function::Create(
                         funcType, Function::LinkageTypes::ExternalLinkage, name, module.get());
@@ -165,7 +165,7 @@ void CodeGenerator::doTopDecs(ASTDeclaration const &ast) {
     }
 }
 
-void CodeGenerator::doTopVars(ASTVar const &ast) {
+void CodeGenerator::doTopVars(ASTVar const &ast) const {
     debug("doTopVars");
     for (auto const &c : ast->vars) {
         debug("doTopVars {0}: {1}", c.first->value, c.second->get_type()->get_name());
@@ -473,7 +473,7 @@ void CodeGenerator::visit(ASTAssignment const &ast) {
     auto *val = last_value;
 
     bool var = false;
-    if (auto res = symboltable.find(ast->ident->ident->id->value); res) {
+    if (const auto res = symboltable.find(ast->ident->ident->id->value); res) {
         if (res->is(Attr::var)) {
             var = true;
         }
@@ -1105,7 +1105,7 @@ void CodeGenerator::visit(ASTExpr const &ast) {
             }
         } else if (ast->relation_expr->get_type() == TypeTable::SetType) {
             // SET comparisons
-            debug("ASTExpr set comprisons");
+            debug("ASTExpr set comparisons");
             switch (*ast->relation) {
             case TokenType::in: {
                 auto *index = builder.CreateShl(TypeTable::IntType->make_value(1), L);
@@ -1481,7 +1481,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 #if 0
         if (ast->ident->get_type()->id == TypeId::openarray) {
             debug("openarray");
-            auto array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
+            const auto array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
             arg_ptr = builder.CreateLoad(array_type->get_llvm(), arg_ptr);
             debug("arg_ptr ");
             arg_ptr->print(llvm::dbgs());
@@ -1557,7 +1557,7 @@ void CodeGenerator::visitPtr(ASTIdentifier const &ast, bool ptr) {
 void CodeGenerator::visit(ASTSet const &ast) {
     Value *set_value = TypeTable::SetType->get_init();
     auto  *one = TypeTable::IntType->make_value(1);
-    for (auto const &exp : ast->values) {
+    for (auto const &e : ast->values) {
         std::visit(overloaded{[this, &set_value, ast, one](ASTSimpleExpr const &exp) {
                                   debug("ASTSet exp");
                                   visit(exp);
@@ -1574,7 +1574,7 @@ void CodeGenerator::visit(ASTSet const &ast) {
                                       call_function("Set_range", TypeTable::SetType->get_llvm(),
                                                     {set_value, first, last});
                               }},
-                   exp);
+                   e);
     }
     last_value = set_value;
 }
@@ -1774,12 +1774,12 @@ void CodeGenerator::init() {
 }
 
 void CodeGenerator::optimize() const {
-    llvm::PassBuilder passBuilder;
+    PassBuilder passBuilder;
 
-    llvm::LoopAnalysisManager     loopAnalysisManager; // * add constructor true for debug info
-    llvm::FunctionAnalysisManager functionAnalysisManager;
-    llvm::CGSCCAnalysisManager    cGSCCAnalysisManager;
-    llvm::ModuleAnalysisManager   moduleAnalysisManager;
+    LoopAnalysisManager     loopAnalysisManager; // * add constructor true for debug info
+    FunctionAnalysisManager functionAnalysisManager;
+    CGSCCAnalysisManager    cGSCCAnalysisManager;
+    ModuleAnalysisManager   moduleAnalysisManager;
 
     passBuilder.registerModuleAnalyses(moduleAnalysisManager);
     passBuilder.registerCGSCCAnalyses(cGSCCAnalysisManager);
@@ -1800,10 +1800,10 @@ void CodeGenerator::optimize() const {
     case 3:
         opt_level = OptimizationLevel::O3;
         break;
+    default:;
     }
 
-    llvm::ModulePassManager modulePassManager =
-        passBuilder.buildPerModuleDefaultPipeline(opt_level);
+    ModulePassManager modulePassManager = passBuilder.buildPerModuleDefaultPipeline(opt_level);
     modulePassManager.run(*module, moduleAnalysisManager);
 }
 
@@ -1824,7 +1824,7 @@ void CodeGenerator::generate_objectcode() const {
     debug("generate_objectcode");
 
     // Define the target triple
-    auto targetTriple = sys::getDefaultTargetTriple();
+    auto targetTriple = getDefaultTargetTriple();
 
     // Set up for future cross-compiler
     // InitializeAllTargetInfos();
@@ -1863,7 +1863,7 @@ void CodeGenerator::generate_objectcode() const {
 
     auto            f = filename + file_ext_obj;
     std::error_code EC;
-    raw_fd_ostream  dest_file(f, EC, sys::fs::OF_None);
+    raw_fd_ostream  dest_file(f, EC, fs::OF_None);
 
     if (EC) {
         throw CodeGenException("Could not open file: " + EC.message());

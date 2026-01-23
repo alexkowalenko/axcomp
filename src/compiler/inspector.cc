@@ -75,8 +75,7 @@ void Inspector::visit(ASTDeclaration const &ast) {
 void Inspector::visit(ASTImport const &ast) {
     debug("ASTImport");
     for (const auto &name : ast->imports | std::views::keys) {
-        auto const found = importer.find_module(name->value, symboltable, types);
-        if (!found) {
+        if (!importer.find_module(name->value, symboltable, types)) {
             throw TypeError(name->get_location(), "MODULE {0} not found", name->value);
         }
     }
@@ -864,7 +863,7 @@ void Inspector::visit(ASTDesignator const &ast) {
                 return;
             }
 
-            // Store field index with identifier, for use later in code
+            // Store field index with identifier, for use later in the code
             // generator.
 
             s.second = record_type->get_index(s.first->value);
@@ -1094,38 +1093,39 @@ void Inspector::visit(ASTIdentifier const &ast) {
 
 void Inspector::visit(ASTSet const &ast) {
     bool set_const = true;
-    for (auto &exp : ast->values) {
-        std::visit(overloaded{[this, &set_const, ast](ASTSimpleExpr const &exp) {
-                                  debug("ASTSet exp");
-                                  visit(exp);
-                                  if (!TypeTable::IntType->equiv(last_type)) {
-                                      auto e = TypeError(exp->get_location(),
-                                                         "Expression {0} is not a integer type",
-                                                         std::string(*exp));
-                                      errors.add(e);
-                                  }
-                                  set_const &= is_const;
-                              },
-                              [this, &set_const, ast](ASTRange const &exp) {
-                                  debug("ASTSet range");
-                                  visit(exp->first);
-                                  if (!TypeTable::IntType->equiv(last_type)) {
-                                      auto e = TypeError(exp->first->get_location(),
-                                                         "Expression {0} is not a integer type",
-                                                         std::string(*exp->first));
-                                      errors.add(e);
-                                  }
-                                  set_const &= is_const;
-                                  visit(exp->last);
-                                  if (!TypeTable::IntType->equiv(last_type)) {
-                                      auto e = TypeError(exp->last->get_location(),
-                                                         "Expression {0} is not a integer type",
-                                                         std::string(*exp->last));
-                                      errors.add(e);
-                                  }
-                                  set_const &= is_const;
-                              }},
-                   exp);
+    for (auto &e : ast->values) {
+        std::visit(
+            overloaded{[this, &set_const, ast](ASTSimpleExpr const &exp) {
+                           debug("ASTSet exp");
+                           visit(exp);
+                           if (!TypeTable::IntType->equiv(last_type)) {
+                               const auto e = TypeError(exp->get_location(),
+                                                        "Expression {0} is not a integer type",
+                                                        std::string(*exp));
+                               errors.add(e);
+                           }
+                           set_const &= is_const;
+                       },
+                       [this, &set_const, ast](ASTRange const &exp) {
+                           debug("ASTSet range");
+                           visit(exp->first);
+                           if (!TypeTable::IntType->equiv(last_type)) {
+                               const auto e = TypeError(exp->first->get_location(),
+                                                        "Expression {0} is not a integer type",
+                                                        std::string(*exp->first));
+                               errors.add(e);
+                           }
+                           set_const &= is_const;
+                           visit(exp->last);
+                           if (!TypeTable::IntType->equiv(last_type)) {
+                               const auto e = TypeError(exp->last->get_location(),
+                                                        "Expression {0} is not a integer type",
+                                                        std::string(*exp->last));
+                               errors.add(e);
+                           }
+                           set_const &= is_const;
+                       }},
+            e);
     }
     is_const = set_const;
     last_type = TypeTable::SetType;

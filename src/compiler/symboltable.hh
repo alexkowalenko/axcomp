@@ -9,7 +9,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <set>
 #include <stack>
@@ -26,7 +25,7 @@ template <typename T> class TableInterface {
     [[nodiscard]] virtual T find(const std::string &name) const = 0;
 
     /**
-     * @brief puts the value into the table at the top current map. See set for changeing an
+     * @brief Puts the value into the table at the top current map. See set for changing an
      * existing value.
      *
      * @param name
@@ -39,7 +38,7 @@ template <typename T> class TableInterface {
      *
      * @param name
      * @param val
-     * @return true - name found, and value changed changed.
+     * @return true - name found, and value changed.
      * @return false
      */
     virtual bool set(const std::string &name, T const &val) = 0;

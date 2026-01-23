@@ -44,7 +44,7 @@ class CodeGenerator : ASTVisitor {
 
     void optimize() const;
 
-    TypeTable &get_types() { return types; };
+    TypeTable &get_types() const { return types; };
 
     std::vector<Value *> do_arguments(ASTCall const &ast);
     Value               *call_function(std::string const &name, llvm::Type *ret,
@@ -58,7 +58,7 @@ class CodeGenerator : ASTVisitor {
     void visit(ASTModule const &ast) override;
     void visit(ASTImport const &ast) override;
     void doTopDecs(ASTDeclaration const &ast);
-    void doTopVars(ASTVar const &ast);
+    void doTopVars(ASTVar const &ast) const;
     void doTopConsts(ASTConst const &ast);
 
     void visit(ASTDeclaration const &ast) override;

@@ -131,7 +131,7 @@ void TypeTable::initialise() {
     reg(TokenType::gteq, IntType, RealType, BoolType);
     reg(TokenType::gteq, RealType, RealType, BoolType);
 
-    // String comparsion operators
+    // String comparison operators
     reg(TokenType::equals, StrType, StrType, BoolType);
     reg(TokenType::hash, StrType, StrType, BoolType);
     reg(TokenType::less, StrType, StrType, BoolType);
@@ -223,7 +223,7 @@ Type TypeTable::resolve(std::string const &n) const {
     }
 }
 
-Type TypeTable::check(TokenType op, Type const &type) {
+Type TypeTable::check(const TokenType op, Type const &type) {
     auto [fst, snd] = rules1.equal_range(op);
     for (auto i = fst; i != snd; ++i) {
         if (i->second.value == type) {
@@ -233,7 +233,7 @@ Type TypeTable::check(TokenType op, Type const &type) {
     return nullptr;
 }
 
-Type TypeTable::check(TokenType op, Type const &Lt, Type const &Rt) {
+Type TypeTable::check(const TokenType op, Type const &Lt, Type const &Rt) {
     auto [fst, snd] = rules2.equal_range(op);
     const auto L = resolve(Lt->get_name());
     const auto R = resolve(Rt->get_name());

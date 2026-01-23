@@ -18,6 +18,8 @@ namespace ax {
 
 // builtin procedures
 
+namespace {
+
 constexpr auto DEBUG_TYPE{"builtin "};
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
@@ -56,8 +58,8 @@ BIFunctor len{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     return TypeTable::IntType->make_value(1);
 }};
 
-BIFunctor size{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto name = std::string(*ast->args[0]);
+BIFunctor size{[](const CodeGenerator *codegen, ASTCall const &ast) -> Value * {
+    const auto name = std::string(*ast->args[0]);
     debug("builtin SIZE {0}", name);
     auto type = codegen->get_types().find(name);
     if (type) {
@@ -77,17 +79,17 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     }
     if (ast->args.size() == 1 && ast->args[0]->get_type()->id == TypeId::pointer) {
         debug("builtin NEW POINTER");
-        auto ptr_type = std::dynamic_pointer_cast<ax::PointerType>(ast->args[0]->get_type());
-        auto size = ptr_type->get_reference()->get_size();
+        const auto ptr_type = std::dynamic_pointer_cast<ax::PointerType>(ast->args[0]->get_type());
+        const auto size = ptr_type->get_reference()->get_size();
         return codegen->call_function("NEW_ptr", TypeTable::IntType->get_llvm(),
                                       {args[0], TypeTable::IntType->make_value(size)});
     }
     if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::openarray) {
         debug("builtin NEW ARRAY");
 
-        auto      array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
-        const Int base_size = array_type->base_type->get_size();
-        Value    *value = TypeTable::IntType->make_value(base_size);
+        const auto array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
+        const Int  base_size = array_type->base_type->get_size();
+        Value     *value = TypeTable::IntType->make_value(base_size);
         for (int i = 1; i < args.size(); i++) {
             value = codegen->get_builder().CreateMul(args[i], value);
         }
@@ -150,7 +152,7 @@ BIFunctor floor{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 }};
 
 BIFunctor flt{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    auto args = codegen->do_arguments(ast);
+    const auto args = codegen->do_arguments(ast);
     return codegen->get_builder().CreateSIToFP(args[0], TypeTable::RealType->get_llvm());
 }};
 
@@ -203,6 +205,8 @@ BIFunctor incl{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     }
     return codegen->get_builder().CreateStore(val, set);
 }};
+
+} // namespace
 
 void Builtin::initialise(SymbolFrameTable &symbols) {
 

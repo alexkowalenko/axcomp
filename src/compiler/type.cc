@@ -16,13 +16,17 @@ namespace ax {
 
 using namespace llvm;
 
-static const std::map<TypeId, std::string> mapping{
+namespace {
+
+const std::map<TypeId, std::string> mapping{
     {TypeId::null, "null"},           {TypeId::any, "any"},         {TypeId::integer, "integer"},
     {TypeId::real, "real"},           {TypeId::boolean, "boolean"}, {TypeId::chr, "chr"},
     {TypeId::procedure, "procedure"}, {TypeId::array, "array"},     {TypeId::string, "string"},
     {TypeId::record, "record"},       {TypeId::alias, "alias"},     {TypeId::pointer, "pointer"},
     {TypeId::module, "module"},
 };
+
+}
 
 std::string const &string(TypeId const t) {
     return mapping.at(t);
@@ -37,15 +41,16 @@ bool Type_::equiv(Type const &t) {
         return false;
     }
     if (id == TypeId::record) {
-        auto *rthis = dynamic_cast<RecordType *>(this);
-        return rthis->equiv(std::dynamic_pointer_cast<RecordType>(t)) || rthis->is_base(t);
+        auto *recordTypePtr = dynamic_cast<RecordType *>(this);
+        return recordTypePtr->equiv(std::dynamic_pointer_cast<RecordType>(t)) ||
+               recordTypePtr->is_base(t);
     }
     if (id == TypeId::pointer) {
-        auto      *pthis = dynamic_cast<PointerType *>(this);
+        auto      *pointerType = dynamic_cast<PointerType *>(this);
         const auto pt = std::dynamic_pointer_cast<PointerType>(t);
-        if (pthis->get_reference()->id == TypeId::record &&
+        if (pointerType->get_reference()->id == TypeId::record &&
             pt->get_reference()->id == TypeId::record) {
-            auto       pthisr = std::dynamic_pointer_cast<RecordType>(pthis->get_reference());
+            auto pthisr = std::dynamic_pointer_cast<RecordType>(pointerType->get_reference());
             const auto ptr = std::dynamic_pointer_cast<RecordType>(pt->get_reference());
             if (pthisr->is_base(ptr)) {
                 return true;
@@ -55,7 +60,7 @@ bool Type_::equiv(Type const &t) {
             }
             return false;
         }
-        if (pthis->get_reference()->equiv(pt)) {
+        if (pointerType->get_reference()->equiv(pt)) {
             return true;
         }
     }
@@ -93,7 +98,7 @@ llvm::Constant *StringType::make_value(std::string const &s) {
     std::vector<Constant *> array;
     auto                    it = s.cbegin();
     while (it != s.cend()) {
-        auto c = utf8::next(it, s.end());
+        const auto c = utf8::next(it, s.end());
         array.push_back(TypeTable::CharType->make_value(c));
     }
     array.push_back(TypeTable::CharType->make_value(0)); // null terminate
@@ -111,7 +116,7 @@ llvm::Type *StringType::make_type_ptr() {
     return TypeTable::StrType->get_llvm();
 }
 
-std::string ProcedureType::get_print(bool forward) {
+std::string ProcedureType::get_print(const bool forward) {
     std::string res{forward ? "^" : ""};
     if (receiver) {
         res += std::format("({0})", string(receiver));
@@ -273,7 +278,7 @@ void RecordType::insert(std::string const &field, Type type) {
     index.push_back(field);
 }
 
-bool RecordType::has_field(std::string const &field) {
+bool RecordType::has_field(std::string const &field) const {
     if (fields.contains(field)) {
         return true;
     }

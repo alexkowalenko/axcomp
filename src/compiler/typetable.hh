@@ -8,11 +8,9 @@
 
 #include <map>
 #include <memory>
-#include <utility>
 
 #include <llvm/IR/LLVMContext.h>
 
-#include "ast.hh"
 #include "symboltable.hh"
 #include "token.hh"
 #include "type.hh"
@@ -53,14 +51,14 @@ class TypeTable : public SymbolTable<Type> {
      * @brief  Check two argument operator with types
      *
      * @param op
-     * @param L
-     * @param R
+     * @param Lt - Left type
+     * @param Rt - Right type
      * @return true - operator accepts the this type
      * @return false
      */
-    Type check(TokenType op, Type const &L, Type const &R);
+    Type check(TokenType op, Type const &Lt, Type const &Rt);
 
-    static bool is_int_instruct(llvm::Type *t) {
+    static bool is_int_instruct(const llvm::Type *t) {
         return t == IntType->get_llvm() || t == BoolType->get_llvm() || t == CharType->get_llvm();
     }
 

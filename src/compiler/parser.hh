@@ -23,18 +23,18 @@ class Parser {
 
   protected:
     ASTModule      parse_module();
-    ASTImport      parse_import();
+    ASTImport      parse_import() const;
     ASTDeclaration parse_declaration();
     ASTConst       parse_const();
     ASTTypeDec     parse_typedec();
-    void           parse_identList(std::vector<ASTIdentifier> &list);
+    void           parse_identList(std::vector<ASTIdentifier> &list) const;
     ASTVar         parse_var();
 
     void                parse_proc(ASTProc_ &proc);
     ASTProcedure        parse_procedure();
     ASTProcedureForward parse_procedureForward();
     void                parse_parameters(std::vector<VarDec> &params);
-    RecVar              parse_receiver();
+    RecVar              parse_receiver() const;
 
     ASTStatement parse_statement();
     void         parse_statement_block(std::vector<ASTStatement> &stats,
@@ -42,7 +42,7 @@ class Parser {
 
     ASTAssignment parse_assignment(ASTDesignator d);
     ASTReturn     parse_return();
-    ASTExit       parse_exit();
+    ASTExit       parse_exit() const;
     ASTCall       parse_call(ASTDesignator d);
     ASTIf         parse_if();
 
