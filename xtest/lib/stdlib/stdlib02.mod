@@ -9,3 +9,11 @@ BEGIN
    Out.String(a); Out.Ln;
    RETURN 0;
 END stdlib02.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello World!
+CHECK: Constant!
+CHECK: 0
+*)

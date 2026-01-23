@@ -108,8 +108,7 @@ llvm::Type *StringType::make_type(std::string const &s) {
 }
 
 llvm::Type *StringType::make_type_ptr() {
-    const auto *arrayTy = llvm::ArrayType::get(TypeTable::CharType->get_llvm(), 0);
-    return llvm::PointerType::get(arrayTy->getContext(), 0);
+    return TypeTable::StrType->get_llvm();
 }
 
 std::string ProcedureType::get_print(bool forward) {

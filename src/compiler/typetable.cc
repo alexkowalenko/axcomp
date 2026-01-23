@@ -191,8 +191,9 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
     CharType->set_llvm(llvm::Type::getInt32Ty(context));
     CharType->set_init(CharType->make_value(0));
 
-    StrType->set_llvm(llvm::ArrayType::get(llvm::PointerType::get(context, 0), 0));
-    StrType->set_init(Constant::getNullValue(llvm::Type::getInt64Ty(context)));
+    auto *string_ptr = llvm::PointerType::get(context, 0);
+    StrType->set_llvm(string_ptr);
+    StrType->set_init(llvm::ConstantPointerNull::get(string_ptr));
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
     VoidType->set_init(llvm::ConstantPointerNull::get(llvm::PointerType::get(context, 0)));

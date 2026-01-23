@@ -21,3 +21,12 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END Odd1.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 6511
+CHECK-NEXT: 9600
+CHECK-NEXT: -111
+CHECK-NEXT: 000
+*)

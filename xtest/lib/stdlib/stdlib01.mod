@@ -20,3 +20,15 @@ BEGIN
     Out.LongReal(f, 3); Out.Ln;
     Out.Flush;
 END stdlib01.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 12
+CHECK:       3405691582
+CHECK:       cafebabe
+CHECK:       1
+CHECK:       {4,35}
+CHECK:       {}
+CHECK:       3.14
+CHECK:       0
+*)

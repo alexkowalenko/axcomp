@@ -10,3 +10,10 @@ BEGIN
    Out.String(a); Out.Char(' '); Out.Int(LEN(a), 0); Out.Ln;
    RETURN 0;
 END string3.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:Hello World! 12
+CHECK-NEXT: Hello 5
+CHECK-NEXT: More constants 14
+*)

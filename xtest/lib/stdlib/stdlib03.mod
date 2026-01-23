@@ -31,3 +31,15 @@ BEGIN
 
     RETURN 0
 END stdlib03.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello World 11
+CHECK: Hello World! 12
+CHECK: !Hello World! 13
+
+CHECK: a a -> 0
+CHECK: a b -> -1
+CHECK: b a -> 1
+*)
