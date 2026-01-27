@@ -53,6 +53,14 @@ using namespace llvm::sys;
 constexpr auto file_ext_llvmri{".ll"};
 constexpr auto file_ext_obj{".o"};
 
+bool is_string_type(Type const &type) {
+    return type && (type->id == TypeId::string || type->id == TypeId::str1);
+}
+
+bool is_char_type(Type const &type) {
+    return type && type->id == TypeId::chr;
+}
+
 } // namespace
 
 CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Importer &i)
@@ -1063,9 +1071,12 @@ void CodeGenerator::visit(ASTExpr const &ast) {
     if (ast->relation) {
         auto *L = last_value;
         visit(ast->relation_expr);
-        auto *R = last_value;
-        if (L->getType() == TypeTable::StrType->get_llvm() &&
-            R->getType() == TypeTable::StrType->get_llvm()) {
+        auto  *R = last_value;
+        auto    lhs_type = ast->expr->get_type();
+        auto    rhs_type = ast->relation_expr->get_type();
+        const bool lhs_is_string = is_string_type(lhs_type);
+        const bool rhs_is_string = is_string_type(rhs_type);
+        if (lhs_is_string && rhs_is_string) {
             // String comparisons
             last_value = call_function("Strings_Compare", TypeTable::IntType->get_llvm(), {L, R});
             switch (*ast->relation) {
@@ -1090,9 +1101,14 @@ void CodeGenerator::visit(ASTExpr const &ast) {
                 break;
             default:;
             }
-        } else if (ast->expr->get_type()->id == TypeId::pointer &&
-                   ast->relation_expr->get_type()->id == TypeId::null) {
+        } else if ((lhs_type && lhs_type->id == TypeId::pointer && rhs_type &&
+                    rhs_type->id == TypeId::null) ||
+                   (lhs_type && lhs_type->id == TypeId::null && rhs_type &&
+                    rhs_type->id == TypeId::pointer)) {
             // Pointer comparisons
+            if (lhs_type->id == TypeId::null) {
+                std::swap(L, R);
+            }
             R = builder.CreateBitCast(R, L->getType());
             switch (*ast->relation) {
             case TokenType::equals:
@@ -1184,6 +1200,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
     debug("ASTSimpleExpr");
     visit(ast->term);
     Value *L = last_value;
+    auto  current_type = ast->term->get_type();
     // if the initial sign exists and is negative, negate the integer
     if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
         if (TypeTable::is_int_instruct(L->getType())) {
@@ -1214,7 +1231,12 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         }
 
         visit(right);
-        Value *R = last_value;
+        Value      *R = last_value;
+        const auto  right_type = right->get_type();
+        const bool  left_is_string = is_string_type(current_type);
+        const bool  right_is_string = is_string_type(right_type);
+        const bool  left_is_char = is_char_type(current_type);
+        const bool  right_is_char = is_char_type(right_type);
 #if 0
         llvm::dbgs() << "L and R ";
         L->getType()->print(llvm::dbgs());
@@ -1222,7 +1244,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         R->getType()->print(llvm::dbgs());
         llvm::dbgs() << '\n';
 #endif
-        if (right->get_type() == TypeTable::SetType) {
+        if (right_type == TypeTable::SetType) {
             // SET operations
             switch (op) {
             case TokenType::plus:
@@ -1236,20 +1258,23 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
                 throw CodeGenException(ast->get_location(),
                                        "ASTSimpleExpr with sign" + string(op));
             }
-        } else if (L->getType() == TypeTable::StrType->get_llvm() ||
-                   R->getType() == TypeTable::StrType->get_llvm()) {
+            current_type = TypeTable::SetType;
+        } else if (left_is_string || right_is_string) {
             // STRING operations
-            if (L->getType() == TypeTable::StrType->get_llvm() &&
-                R->getType() == TypeTable::StrType->get_llvm()) {
+            if (left_is_string && right_is_string) {
                 last_value =
                     call_function("Strings_Concat", TypeTable::StrType->get_llvm(), {L, R});
-            } else if (R->getType() == TypeTable::CharType->get_llvm()) {
+            } else if (left_is_string && right_is_char) {
                 last_value =
                     call_function("Strings_ConcatChar", TypeTable::StrType->get_llvm(), {L, R});
-            } else {
+            } else if (left_is_char && right_is_string) {
                 last_value =
                     call_function("Strings_AppendChar", TypeTable::StrType->get_llvm(), {L, R});
+            } else {
+                throw CodeGenException(ast->get_location(),
+                                       "Invalid STRING operation " + string(op));
             }
+            current_type = TypeTable::StrType;
         } else if (TypeTable::is_int_instruct(L->getType()) &&
                    TypeTable::is_int_instruct(R->getType())) {
             // INTEGER operations
@@ -1267,6 +1292,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
                 throw CodeGenException(ast->get_location(),
                                        "ASTSimpleExpr with sign" + string(op));
             }
+            current_type = TypeTable::IntType;
         } else {
             // Do float calculations
             // Promote any integers to floats
@@ -1287,6 +1313,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
                 throw CodeGenException(ast->get_location(),
                                        "ASTSimpleExpr float with sign" + string(op));
             }
+            current_type = TypeTable::RealType;
         }
         L = last_value;
     }
