@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <stack>
 #include <string>
 
@@ -19,9 +18,7 @@ namespace ax {
 
 class LexerUTF8 {
   public:
-    LexerUTF8(std::istream &stream, ErrorManager const &e) : is(stream), errors(e) {
-        line_ptr = current_line.end();
-    };
+    LexerUTF8(std::string text, ErrorManager const &e);
 
     ~LexerUTF8() = default;
 
@@ -33,7 +30,7 @@ class LexerUTF8 {
 
   private:
     Char get();
-    Char peek();
+    Char peek() const;
     Char get_char(); // get the next non-whitespace or comment char
     void push_char(Char const c) { last_char = c; }
 
@@ -43,23 +40,20 @@ class LexerUTF8 {
     }
 
     void get_comment();
-    void get_line();
 
     Token scan_digit(Char c);
     Token scan_ident(Char c);
     Token scan_string(Char start);
 
-    std::istream &is;
-
-    ErrorManager const &errors;
-    std::stack<Token>   next_token;
+    std::string                 buffer;
+    std::string::const_iterator cursor;
+    ErrorManager const         &errors;
+    std::stack<Token>           next_token;
 
     int line_no{1};
     int char_pos{0};
 
-    Char                  last_char{0};
-    std::string           current_line;
-    std::string::iterator line_ptr;
+    Char last_char{0};
 };
 
 } // namespace ax

@@ -78,9 +78,13 @@ std::optional<SymbolFrameTable> Importer::read_module(std::string const &name, T
 
             // Found definition file now import it
             SymbolFrameTable module_symbols;
-            std::ifstream    is(file_path);
+            std::ifstream    is(file_path, std::ios::binary);
+            if (!is) {
+                throw CodeGenException("Can't open {0}", file_path.string());
+            }
+            std::string text{std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>()};
             try {
-                LexerUTF8 lex(is, errors);
+                LexerUTF8 lex(std::move(text), errors);
                 DefParser parser(lex, module_symbols, types, errors);
                 auto      ast = parser.parse();
                 Inspector inspect(module_symbols, types, errors, *this);

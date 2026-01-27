@@ -102,6 +102,14 @@ constexpr bool is_emoji(const Char c) {
 
 std::string wcharToString(const wchar_t wchar);
 
+LexerUTF8::LexerUTF8(std::string text, ErrorManager const &e)
+    : buffer(std::move(text)), errors(e) {
+    if (!utf8::is_valid(buffer.begin(), buffer.end())) {
+        throw LexicalException(get_location(), "Not valid UTF-8 text");
+    }
+    cursor = buffer.cbegin();
+}
+
 Token LexerUTF8::peek_token() {
     if (next_token.empty()) {
         Token t{get_token()};
@@ -169,22 +177,24 @@ Token LexerUTF8::get_token() {
 }
 
 void LexerUTF8::get_comment() {
-    get(); // get asterisk
-    do {
-        auto const c = get();
+    get(); // consume the initial '*'
+    while (true) {
+        const auto c = get();
+        if (c == -1) {
+            throw LexicalException(get_location(), "Unterminated comment");
+        }
         if (c == '*' && peek() == ')') {
             get();
             return;
         }
         if (c == '(' && peek() == '*') {
-            // support nested comments, call
-            // recursively
-            this->get_comment();
+            // support nested comments, call recursively
+            get_comment();
         }
         if (c == '\n') {
             set_newline();
         }
-    } while (is);
+    }
 }
 
 Token LexerUTF8::scan_digit(Char c) {
@@ -302,8 +312,11 @@ Token LexerUTF8::scan_string(Char const start) {
  * @return char
  */
 Char LexerUTF8::get_char() {
-    while (is) {
-        auto const c = get();
+    while (true) {
+        const auto c = get();
+        if (c == -1) {
+            return -1;
+        }
         if (c == '\n') {
             set_newline();
             continue;
@@ -317,10 +330,7 @@ Char LexerUTF8::get_char() {
         }
         return c;
     }
-    return -1;
 }
-
-class EOFException : std::exception {};
 
 Char LexerUTF8::get() {
     Char c = 0;
@@ -328,34 +338,32 @@ Char LexerUTF8::get() {
         std::swap(c, last_char);
         return c;
     }
+    if (cursor == buffer.cend()) {
+        return -1;
+    }
     try {
-        while (line_ptr == current_line.end()) {
-            get_line();
-        }
-        c = utf8::next(line_ptr, current_line.end());
-    } catch (EOFException &) {
-        c = -1;
-        return c;
+        c = utf8::next(cursor, buffer.cend());
+    } catch (std::exception const &) {
+        throw LexicalException(get_location(), "Not valid UTF-8 text");
     }
     char_pos++;
     return c;
 }
 
-Char LexerUTF8::peek() {
-    return static_cast<Char>(utf8::peek_next(line_ptr, current_line.end()));
-}
-
-void LexerUTF8::get_line() {
-    if (!getline(is, current_line)) {
-        throw EOFException{};
+Char LexerUTF8::peek() const {
+    if (last_char != 0) {
+        return last_char;
     }
-    current_line.push_back('\n');
-    // check UTF-8 correctness
-    if (!utf8::is_valid(current_line.begin(), current_line.end())) {
+    if (cursor == buffer.cend()) {
+        return -1;
+    }
+    const auto tmp = cursor;
+    try {
+        return static_cast<Char>(utf8::peek_next(tmp, buffer.cend()));
+    } catch (std::exception const &) {
         throw LexicalException(get_location(), "Not valid UTF-8 text");
     }
-    line_ptr = current_line.begin();
-};
+}
 
 std::string wcharToString(const wchar_t wchar) {
     auto                  state = std::mbstate_t();

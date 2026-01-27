@@ -4,8 +4,6 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
-#include <sstream>
-
 #include "error.hh"
 #include "lexer.hh"
 #include "parser.hh"
@@ -15,10 +13,9 @@
 using namespace ax;
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    std::string        s{reinterpret_cast<const char *>(data), size};
-    std::istringstream is(s);
-    ErrorManager       errors;
-    Lexer              lex(is, errors);
+    std::string  s{reinterpret_cast<const char *>(data), size};
+    ErrorManager errors;
+    LexerUTF8    lex(std::move(s), errors);
 
     SymbolFrameTable symbols;
     TypeTable        types;

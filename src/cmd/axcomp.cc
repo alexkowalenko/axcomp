@@ -4,6 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -169,12 +170,21 @@ int main(int argc, char **argv) {
 
     Options options = do_args(argc, argv);
 
-    std::istream *input{&std::cin};
-    if (!options.file_name.empty()) {
-        input = new std::ifstream(options.file_name);
-    }
     ErrorManager errors;
-    LexerUTF8    lexer(*input, errors);
+    std::string  input_text;
+    if (!options.file_name.empty()) {
+        std::ifstream file(options.file_name, std::ios::binary);
+        if (!file) {
+            std::println("Cannot open {}", options.file_name);
+            return EXIT_FAILURE;
+        }
+        input_text.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+    } else {
+        // This should not happen, as the filename is a compulsory option.
+        input_text.assign(std::istreambuf_iterator<char>(std::cin),
+                          std::istreambuf_iterator<char>());
+    }
+    LexerUTF8 lexer(std::move(input_text), errors);
 
     TypeTable types;
     types.initialise();
@@ -190,7 +200,7 @@ int main(int argc, char **argv) {
             ax::ASTPrinter printer(std::cout);
             printer.set_indent(4);
             printer.print(ast);
-            return 0;
+            return EXIT_SUCCESS;
         }
 
         // Run the semantic inspector
@@ -203,7 +213,7 @@ int main(int argc, char **argv) {
             if (options.print_symbols) {
                 dump_symbols(symbols, types);
             }
-            return -1;
+            return EXIT_FAILURE;
         }
 
         if (options.output_defs) {
@@ -234,10 +244,10 @@ int main(int argc, char **argv) {
         if (options.print_symbols) {
             dump_symbols(symbols, types);
         }
-        return -1;
+        return EXIT_FAILURE;
     } catch (std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

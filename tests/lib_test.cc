@@ -34,9 +34,8 @@ using namespace ax;
 void do_lex_tests(std::vector<LexTests> &tests) {
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
 
         try {
             auto token = lex.get_token();
@@ -50,7 +49,9 @@ void do_lex_tests(std::vector<LexTests> &tests) {
             }
         } catch (LexicalException &l) {
             std::cerr << "Exception: " << l.error_msg() << std::endl;
-            FAIL();
+            if (l.error_msg() != t.val) {
+                FAIL();
+            }
         } catch (...) {
             std::cerr << "Unknown Exception" << std::endl;
             FAIL();
@@ -70,10 +71,9 @@ void do_parse_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-        TypeTable          types;
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
+        TypeTable    types;
         types.initialise();
 
         SymbolFrameTable symbols;
@@ -113,10 +113,9 @@ void do_inspect_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-        TypeTable          types;
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
+        TypeTable    types;
         types.initialise();
 
         SymbolFrameTable symbols;
@@ -157,10 +156,9 @@ void do_inspect_fimport_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-        TypeTable          types;
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
+        TypeTable    types;
         types.initialise();
 
         SymbolFrameTable symbols;
@@ -201,10 +199,9 @@ void do_def_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-        TypeTable          types;
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
+        TypeTable    types;
         types.initialise();
 
         SymbolFrameTable symbols;
@@ -244,10 +241,9 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
 
     for (auto const &t : tests) {
 
-        std::istringstream is(t.input);
-        ErrorManager       errors;
-        LexerUTF8          lex(is, errors);
-        TypeTable          types;
+        ErrorManager errors;
+        LexerUTF8    lex(t.input, errors);
+        TypeTable    types;
         types.initialise();
 
         SymbolFrameTable symbols;
@@ -274,10 +270,9 @@ void do_defparse_tests(std::vector<ParseTests> &tests) {
 
             std::cerr << "Result of definition: \n" << result;
 
-            std::istringstream dis(result);
-            LexerUTF8          dlex(dis, errors);
-            DefParser          dparser(dlex, symbols, types, errors);
-            auto               dast = dparser.parse();
+            LexerUTF8 dlex(result, errors);
+            DefParser dparser(dlex, symbols, types, errors);
+            auto      dast = dparser.parse();
 
             std::ostringstream doutstr;
             DefPrinter         dprt(doutstr);

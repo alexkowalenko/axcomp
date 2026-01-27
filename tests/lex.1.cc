@@ -5,7 +5,6 @@
 //
 
 #include "parse_test.hh"
-#include <sstream>
 
 #include "gtest/gtest.h"
 
@@ -29,8 +28,7 @@ TEST(Location, Basic) {
 
 TEST(Lexer, Null) {
 
-    std::istringstream is("");
-    LexerUTF8          lex(is, ErrorManager{});
+    LexerUTF8 lex(std::string{}, ErrorManager{});
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::eof);
@@ -42,9 +40,8 @@ TEST(Lexer, Null) {
 
 TEST(Lexer, Exception) {
 
-    std::istringstream is("x");
     const ErrorManager errors;
-    LexerUTF8          lex(is, errors);
+    LexerUTF8          lex("x", errors);
 
     try {
         auto token = lex.get_token();
@@ -55,9 +52,8 @@ TEST(Lexer, Exception) {
 
 TEST(Lexer, Whitespace) {
 
-    std::istringstream is(" \n\t");
     const ErrorManager errors;
-    LexerUTF8          lex(is, errors);
+    LexerUTF8          lex(" \n\t", errors);
 
     auto token = lex.get_token();
     EXPECT_EQ(token.type, TokenType::eof);
@@ -65,9 +61,8 @@ TEST(Lexer, Whitespace) {
 
 TEST(Lexer, Digit) {
 
-    std::istringstream is("12\n");
     const ErrorManager errors;
-    LexerUTF8          lex(is, errors);
+    LexerUTF8          lex("12\n", errors);
 
     auto token = lex.get_token();
     std::cout << "val = " << token.val << '\n';
@@ -132,7 +127,7 @@ TEST(Lexer, Comments) {
         {"(**) 1", TokenType::integer, "1"},
         {"(* hello (* there! *) *)1", TokenType::integer, "1"},
         // error in comment
-        {"(* hello (* there! *)1", TokenType::eof, ""},
+        {"(* hello (* there! *)1", TokenType::eof, "[1,22]: Unterminated comment"},
     };
     do_lex_tests(myTests);
 }
