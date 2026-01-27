@@ -25,6 +25,8 @@ endmacro()
 
 configure_file(lit.parse.cfg.py.in ${CMAKE_CURRENT_SOURCE_DIR}/lit.parse.cfg.py @ONLY)
 configure_file(lit.compile.cfg.py.in ${CMAKE_CURRENT_SOURCE_DIR}/lit.compile.cfg.py @ONLY)
+configure_file(lit_run.py.in ${CMAKE_CURRENT_BINARY_DIR}/lit_run.py @ONLY)
+file(CHMOD ${CMAKE_CURRENT_BINARY_DIR}/lit_run.py PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # Parse tests
 xtest_add_lit_tests(parse.oo2c parse.oo2c lit.parse)

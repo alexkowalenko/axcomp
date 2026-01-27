@@ -10,4 +10,7 @@ config.output = r'@CMAKE_CURRENT_BINARY_DIR@'
 config.test_exec_root = r'/tmp'
 config.pipefail = False
 
-config.substitutions.append(('%comp', os.path.join(config.tools_root, 'axcomp -s -p ')))
+run_helper = r'@CMAKE_CURRENT_BINARY_DIR@/lit_run.py'
+axcomp_tool = os.path.join(config.tools_root, 'axcomp')
+
+config.substitutions.append(('%comp', f'{run_helper} %T {axcomp_tool} -s -p'))
