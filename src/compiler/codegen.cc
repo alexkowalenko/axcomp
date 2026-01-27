@@ -1442,8 +1442,16 @@ void CodeGenerator::visit_value(ASTRange const &ast, Value *case_value) {
 void CodeGenerator::get_index(ASTDesignator const &ast) {
     debug("get_index: {}", std::string(*ast));
     visitPtr(ast->ident, true);
-    auto                *arg_ptr = last_value;
-    std::vector<Value *> index{TypeTable::IntType->make_value(0)};
+    auto *arg_ptr = last_value;
+
+    const auto ident_type = ast->ident->get_type();
+    const bool is_string_type =
+        ident_type->id == TypeId::string || ident_type->id == TypeId::str1;
+
+    std::vector<Value *> index;
+    if (!is_string_type) {
+        index.push_back(TypeTable::IntType->make_value(0));
+    }
 
     for (auto const &s : ast->selectors) {
 
@@ -1476,7 +1484,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 
     assert(arg_ptr->getType()->isPointerTy()); // NOLINT
     if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
-        is_var) {
+        is_var || is_string_type) {
         debug("Create load");
 #if 0
         if (ast->ident->get_type()->id == TypeId::openarray) {
@@ -1497,7 +1505,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     }
     debug("get_index: GEP number of indices: {0}", index.size());
     debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
-    last_value = builder.CreateGEP(ast->ident->get_type()->get_llvm(), arg_ptr, index, "idx");
+    auto *gep_type = ast->ident->get_type()->get_llvm();
+    if (is_string_type) {
+        gep_type = TypeTable::CharType->get_llvm();
+    }
+    last_value = builder.CreateGEP(gep_type, arg_ptr, index, "idx");
 }
 
 /**

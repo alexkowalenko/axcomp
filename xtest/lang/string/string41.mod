@@ -1,4 +1,4 @@
-MODULE string4; (* STRING type *)
+MODULE string41; (* STRING type *)
 IMPORT Out;
 VAR
       x : STRING;
@@ -11,12 +11,15 @@ BEGIN
    x := 'Hello';
    Out.String(x); Out.Ln;
    x[0] := 'B';  (* Strings are mutable *)
-   RETURN 0;
-END string4.
+   Out.String(x); Out.Ln;
+   c := x[1];
+   RETURN c;
+END string41.
 
 (*
 RUN: %comp %s | filecheck %s
 CHECK: A
 CHECK-NEXT: Hello
-CHECK-NEXT: 0
+CHECK-NEXT: Bello
+CHECK-NEXT: 101
 *)
