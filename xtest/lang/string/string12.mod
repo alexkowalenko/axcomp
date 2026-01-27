@@ -16,3 +16,11 @@ BEGIN
   print('c');
   print2("C");
 END string12.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: C
+CHECK-NEXT: c
+CHECK-NEXT: C
+CHECK-NEXT: 0
+*)

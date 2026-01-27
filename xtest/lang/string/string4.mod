@@ -14,3 +14,11 @@ BEGIN
    Out.Char(c); Out.Ln;
    RETURN c;
 END string4.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello
+CHECK-NEXT: H
+CHECK-NEXT: A
+CHECK-NEXT: 65
+*)

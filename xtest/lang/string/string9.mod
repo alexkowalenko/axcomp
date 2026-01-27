@@ -20,3 +20,11 @@ BEGIN
      Out.String(z); Out.Ln;
     RETURN 0;
 END string9.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:Hello!
+CHECK-NEXT: Hello!
+CHECK-NEXT: Hello!
+CHECK-NEXT: 0
+*)

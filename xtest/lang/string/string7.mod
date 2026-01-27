@@ -9,3 +9,9 @@ BEGIN
     Out.String(x); Out.Ln;
     RETURN 0;
 END string7.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello!
+CHECK-NEXT: 0
+*)

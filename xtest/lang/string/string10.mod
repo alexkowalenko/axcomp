@@ -37,3 +37,17 @@ BEGIN
 
     RETURN 0
 END string10.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:alpha  6
+CHECK-NEXT:  beta  5
+CHECK-NEXT:  alpha beta  11
+CHECK-NEXT:  alpha  6
+CHECK-NEXT:  beta  5
+CHECK-NEXT:  alpha beta gamma  17
+CHECK-NEXT:  alpha beta gamma gamma  23
+CHECK-NEXT:  alpha A 7
+CHECK-NEXT:  0alpha  7
+CHECK-NEXT:  0
+*)

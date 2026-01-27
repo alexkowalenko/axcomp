@@ -11,3 +11,9 @@ BEGIN
    Out.Ln;
    RETURN 0;
 END string5.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: H e l l o
+CHECK-NEXT: 0
+*)

@@ -26,3 +26,10 @@ BEGIN
     j.print; Out.Ln;
     Out.Int(j.z, 0); Out.Ln;
 END bound2.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: (3,4)
+CHECK-NEXT: (4,3)
+*)

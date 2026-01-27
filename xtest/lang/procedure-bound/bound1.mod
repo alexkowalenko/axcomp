@@ -27,3 +27,11 @@ BEGIN
     x.set(4, 3);
     x.print(); Out.Ln;
 END bound1.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: (1,2)
+CHECK-NEXT:       (0,0)
+CHECK-NEXT:       (4,3)
+*)
