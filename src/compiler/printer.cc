@@ -354,7 +354,7 @@ void ASTPrinter::visit(ASTSimpleExpr const &ast) {
     }
     visit(ast->term);
     for (auto const &rest : ast->rest) {
-        if (rest.first == TokenType::or_k) {
+        if (rest.first == TokenType::OR) {
             os << std::string(std::format(" {0} ", string(rest.first)));
         } else {
             os << string(rest.first);
@@ -366,7 +366,7 @@ void ASTPrinter::visit(ASTSimpleExpr const &ast) {
 void ASTPrinter::visit(ASTTerm const &ast) {
     visit(ast->factor);
     for (auto const &rest : ast->rest) {
-        if (rest.first == TokenType::asterisk) {
+        if (rest.first == TokenType::ASTÉRIX) {
             os << string(rest.first);
         } else {
             os << std::string(std::format(" {0} ", string(rest.first)));
@@ -510,9 +510,9 @@ void ASTPrinter::visit(ASTString const &ast) {
 
 void ASTPrinter::visit(ASTBool const &ast) {
     if (ast->value) {
-        os << string(TokenType::true_k);
+        os << string(TokenType::TRUE);
     } else {
-        os << string(TokenType::false_k);
+        os << string(TokenType::FALSE);
     }
 }
 

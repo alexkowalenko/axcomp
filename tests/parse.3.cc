@@ -292,7 +292,7 @@ TEST(Parser, FunctionParams) {
 
         {R"(MODULE xxx;
             VAR z : INTEGER;
-            PROCEDURE f(x, y: INTEGER; bx, by : BOOLEAN) : INTEGER;
+            PROCEDURE f(x, y: INTEGER; bx, bby : BOOLEAN) : INTEGER;
             VAR zz : INTEGER;
             BEGIN
             RETURN zz
@@ -301,7 +301,7 @@ TEST(Parser, FunctionParams) {
             RETURN 3
             END xxx.)",
          "MODULE xxx;\nVAR\nz: INTEGER;\nPROCEDURE f(x : INTEGER; y : INTEGER; "
-         "bx : BOOLEAN; by : BOOLEAN): INTEGER;\nVAR\nzz: "
+         "bx : BOOLEAN; bby : BOOLEAN): INTEGER;\nVAR\nzz: "
          "INTEGER;\nBEGIN\nRETURN zz\nEND f;\nBEGIN\nRETURN 3\nEND xxx.",
          ""},
 

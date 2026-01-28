@@ -344,7 +344,7 @@ void Inspector::visit(ASTAssignment const &ast) {
     assert(alias); // NOLINT
     debug("ASTAssignment type of ident: {0} -> {1}", last_type->get_name(), alias->get_name());
     last_type = alias;
-    if (!(types.check(TokenType::assign, last_type, expr_type) ||
+    if (!(types.check(TokenType::ASSIGN, last_type, expr_type) ||
           (last_type->is_assignable() && last_type->equiv(expr_type)))) {
         const auto e = TypeError(ast->get_location(), "Can't assign expression of type {0} to {1}",
                                  string(expr_type), std::string(*ast->ident));
@@ -760,7 +760,7 @@ void Inspector::visit(ASTFactor const &ast) {
                    [this, ast](ASTFactor const &arg) {
                        if (ast->is_not) {
                            visit(arg);
-                           const auto result_type = types.check(TokenType::tilde, last_type);
+                           const auto result_type = types.check(TokenType::TILDE, last_type);
                            if (!result_type) {
                                auto e = TypeError(ast->get_location(),
                                                   "type in ~ expression must be BOOLEAN");

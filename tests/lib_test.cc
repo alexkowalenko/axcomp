@@ -42,7 +42,7 @@ void do_lex_tests(std::vector<LexTests> &tests) {
             std::cout << std::string(std::format("Scan {0} get {1}", t.input, token.val))
                       << std::endl;
             EXPECT_EQ(token.type, t.token);
-            if (t.token == TokenType::chr) {
+            if (t.token == TokenType::CHR) {
                 EXPECT_EQ(token.val_int, t.val_int);
             } else {
                 EXPECT_EQ(token.val, t.val);

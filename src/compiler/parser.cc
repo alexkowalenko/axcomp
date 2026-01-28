@@ -31,17 +31,17 @@ template <typename S, typename... Args> static void debug(const S &format, const
 }
 
 // module identifier markers
-inline const std::set<TokenType> module_markers{TokenType::asterisk, TokenType::dash};
+inline const std::set<TokenType> module_markers{TokenType::ASTÉRIX, TokenType::DASH};
 
 void Parser::set_attrs(ASTIdentifier const &ident) const {
     auto tok = lexer.peek_token();
     if (module_markers.contains(tok.type)) {
         lexer.get_token();
         switch (tok.type) {
-        case TokenType::asterisk:
+        case TokenType::ASTÉRIX:
             ident->set(Attr::global);
             return;
-        case TokenType::dash:
+        case TokenType::DASH:
             ident->set(Attr::read_only);
             return;
         default:
@@ -59,7 +59,7 @@ Token Parser::get_token(TokenType const &t) const {
     return tok;
 }
 
-inline const std::set<TokenType> module_ends{TokenType::end};
+inline const std::set<TokenType> module_ends{TokenType::END};
 
 /**
  * @brief module -> "MODULE" IDENT ";"  declarations "BEGIN" statement_seq "END"
@@ -71,14 +71,14 @@ ASTModule Parser::parse_module() {
     auto module = makeAST<ASTModule_>(lexer);
 
     // MODULE ident BEGIN (expr)+ END ident.
-    get_token(TokenType::module);
-    auto tok = get_token(TokenType::ident);
+    get_token(TokenType::MODULE);
+    auto tok = get_token(TokenType::IDENT);
     module->name = tok.val;
     symbols.put(module->name, mkSym(std::make_shared<ModuleType>(module->name)));
-    get_token(TokenType::semicolon);
+    get_token(TokenType::SEMICOLON);
 
     tok = lexer.peek_token();
-    if (tok.type == TokenType::import) {
+    if (tok.type == TokenType::IMPORT) {
         module->import = parse_import();
     }
 
@@ -87,10 +87,10 @@ ASTModule Parser::parse_module() {
 
     // Procedures
     tok = lexer.peek_token();
-    while (tok.type == TokenType::procedure) {
+    while (tok.type == TokenType::PROCEDURE) {
         lexer.get_token(); // PROCEDURE
         tok = lexer.peek_token();
-        if (tok.type == TokenType::caret) {
+        if (tok.type == TokenType::CARET) {
             module->procedures.push_back(parse_procedureForward());
         } else {
             module->procedures.push_back(parse_procedure());
@@ -99,22 +99,22 @@ ASTModule Parser::parse_module() {
     }
 
     tok = lexer.peek_token();
-    if (tok.type == TokenType::begin) {
-        get_token(TokenType::begin);
+    if (tok.type == TokenType::BEGIN) {
+        get_token(TokenType::BEGIN);
 
         // statement_seq
         parse_statement_block(module->stats, module_ends);
     }
 
     // END
-    get_token(TokenType::end);
-    tok = get_token(TokenType::ident);
+    get_token(TokenType::END);
+    tok = get_token(TokenType::IDENT);
     if (tok.val != module->name) {
         throw ParseException(lexer.get_location(),
                              "END identifier name: {0} doesn't match module name: {1}", tok.val,
                              module->name);
     }
-    get_token(TokenType::period);
+    get_token(TokenType::PERIOD);
     return module;
 }
 
@@ -135,7 +135,7 @@ ASTImport Parser::parse_import() const {
         auto ident = parse_identifier();
 
         auto tok = lexer.peek_token();
-        if (tok.type == TokenType::assign) {
+        if (tok.type == TokenType::ASSIGN) {
             lexer.get_token(); // :=
             auto second = parse_identifier();
             ast->imports.emplace_back(second, ident);
@@ -147,12 +147,12 @@ ASTImport Parser::parse_import() const {
             symbols.put(ident->value, mkSym(module, Attr::global_var));
         }
         tok = lexer.peek_token();
-        if (tok.type != TokenType::comma) {
+        if (tok.type != TokenType::COMMA) {
             break;
         }
-        get_token(TokenType::comma);
+        get_token(TokenType::COMMA);
     }
-    get_token(TokenType::semicolon);
+    get_token(TokenType::SEMICOLON);
     return ast;
 }
 
@@ -169,11 +169,11 @@ ASTDeclaration Parser::parse_declaration() {
     auto decs = makeAST<ASTDeclaration_>(lexer);
 
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::cnst || tok.type == TokenType::type ||
-           tok.type == TokenType::var) {
+    while (tok.type == TokenType::CONST || tok.type == TokenType::TYPE ||
+           tok.type == TokenType::VAR) {
 
         switch (tok.type) {
-        case TokenType::cnst: {
+        case TokenType::CONST: {
             auto cnsts = parse_const();
             if (!decs->cnst) {
                 decs->cnst = cnsts;
@@ -183,7 +183,7 @@ ASTDeclaration Parser::parse_declaration() {
             }
             break;
         }
-        case TokenType::type: {
+        case TokenType::TYPE: {
             auto types = parse_typedec();
             if (!decs->type) {
                 decs->type = types;
@@ -193,7 +193,7 @@ ASTDeclaration Parser::parse_declaration() {
             }
             break;
         }
-        case TokenType::var: {
+        case TokenType::VAR: {
             const auto vars = parse_var();
             if (!decs->var) {
                 decs->var = vars;
@@ -222,13 +222,13 @@ ASTConst Parser::parse_const() {
 
     lexer.get_token(); // CONST
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::ident) {
+    while (tok.type == TokenType::IDENT) {
         ConstDec dec;
         dec.ident = parse_identifier();
         set_attrs(dec.ident);
-        get_token(TokenType::equals);
+        get_token(TokenType::EQUALS);
         dec.value = parse_expr();
-        get_token(TokenType::semicolon);
+        get_token(TokenType::SEMICOLON);
 
         // Not sure what type this const is yet.
         symbols.put(dec.ident->value, mkSym(TypeTable::VoidType, Attr::cnst));
@@ -249,7 +249,7 @@ void Parser::parse_identList(std::vector<ASTIdentifier> &list) const {
     set_attrs(id);
     list.push_back(id);
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::comma) {
+    while (tok.type == TokenType::COMMA) {
         lexer.get_token();
         id = parse_identifier();
         set_attrs(id);
@@ -269,13 +269,13 @@ ASTTypeDec Parser::parse_typedec() {
 
     lexer.get_token(); // TYPE
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::ident) {
+    while (tok.type == TokenType::IDENT) {
         VarDec dec;
         dec.first = parse_identifier();
         set_attrs(dec.first);
-        get_token(TokenType::equals);
+        get_token(TokenType::EQUALS);
         dec.second = parse_type();
-        get_token(TokenType::semicolon);
+        get_token(TokenType::SEMICOLON);
 
         type->types.push_back(dec);
         tok = lexer.peek_token();
@@ -294,12 +294,12 @@ ASTVar Parser::parse_var() {
 
     lexer.get_token(); // VAR
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::ident) {
+    while (tok.type == TokenType::IDENT) {
         std::vector<ASTIdentifier> list;
         parse_identList(list);
-        get_token(TokenType::colon);
+        get_token(TokenType::COLON);
         auto type = parse_type();
-        get_token(TokenType::semicolon);
+        get_token(TokenType::SEMICOLON);
 
         for (auto const &ident : list) {
             VarDec dec;
@@ -326,7 +326,7 @@ RecVar Parser::parse_receiver() const {
 
     auto tok = lexer.peek_token();
     bool var{false};
-    if (tok.type == TokenType::var) {
+    if (tok.type == TokenType::VAR) {
         var = true;
         lexer.get_token();
     }
@@ -334,9 +334,9 @@ RecVar Parser::parse_receiver() const {
     if (var) {
         result.first->set(Attr::var);
     }
-    get_token(TokenType::colon);
+    get_token(TokenType::COLON);
     result.second = parse_identifier();
-    get_token(TokenType::r_paren);
+    get_token(TokenType::R_PAREN);
     return result;
 }
 
@@ -344,7 +344,7 @@ void Parser::parse_proc(ASTProc_ &proc) {
     debug("parse_proc");
 
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::l_paren) {
+    if (tok.type == TokenType::L_PAREN) {
         proc.receiver = parse_receiver();
     }
 
@@ -353,18 +353,18 @@ void Parser::parse_proc(ASTProc_ &proc) {
 
     // Parameters
     tok = lexer.peek_token();
-    if (tok.type == TokenType::l_paren) {
+    if (tok.type == TokenType::L_PAREN) {
         parse_parameters(proc.params);
     }
 
     tok = lexer.peek_token();
-    if (tok.type == TokenType::colon) {
+    if (tok.type == TokenType::COLON) {
         // Do return type
         lexer.get_token();
         proc.return_type = parse_type();
     }
 
-    get_token(TokenType::semicolon);
+    get_token(TokenType::SEMICOLON);
 }
 
 /**
@@ -386,10 +386,10 @@ ASTProcedure Parser::parse_procedure() {
 
     // Procedures
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::procedure) {
+    while (tok.type == TokenType::PROCEDURE) {
         lexer.get_token(); // PROCEDURE
         tok = lexer.peek_token();
-        if (tok.type == TokenType::caret) {
+        if (tok.type == TokenType::CARET) {
             proc->procedures.push_back(parse_procedureForward());
         } else {
             proc->procedures.push_back(parse_procedure());
@@ -399,21 +399,21 @@ ASTProcedure Parser::parse_procedure() {
 
     // statement_seq
     tok = lexer.peek_token();
-    if (tok.type == TokenType::begin) {
-        get_token(TokenType::begin);
+    if (tok.type == TokenType::BEGIN) {
+        get_token(TokenType::BEGIN);
         parse_statement_block(proc->stats, module_ends);
     }
     symbols.pop_frame();
 
     // END
-    get_token(TokenType::end);
-    tok = get_token(TokenType::ident);
+    get_token(TokenType::END);
+    tok = get_token(TokenType::IDENT);
     if (tok.val != proc->name->value) {
         throw ParseException(lexer.get_location(),
                              "END name: {0} doesn't match procedure name: {1}", tok.val,
                              proc->name->value);
     }
-    get_token(TokenType::semicolon);
+    get_token(TokenType::SEMICOLON);
 
     // Put into symbol table as a procedure
     const auto forward = std::make_shared<ProcedureFwdType>();
@@ -446,12 +446,12 @@ ASTProcedureForward Parser::parse_procedureForward() {
 void Parser::parse_parameters(std::vector<VarDec> &params) {
     lexer.get_token(); // get (
     auto tok = lexer.peek_token();
-    while (tok.type != TokenType::r_paren) {
+    while (tok.type != TokenType::R_PAREN) {
 
         auto attr = Attr::null;
 
         tok = lexer.peek_token();
-        if (tok.type == TokenType::var) {
+        if (tok.type == TokenType::VAR) {
             lexer.get_token();
             attr = Attr::var;
         }
@@ -462,7 +462,7 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
         }
         ids.push_back(id);
         tok = lexer.peek_token();
-        while (tok.type == TokenType::comma) {
+        while (tok.type == TokenType::COMMA) {
             lexer.get_token();
             id = parse_identifier();
             if (attr == Attr::var) {
@@ -471,18 +471,18 @@ void Parser::parse_parameters(std::vector<VarDec> &params) {
             ids.push_back(id);
             tok = lexer.peek_token();
         }
-        get_token(TokenType::colon);
+        get_token(TokenType::COLON);
         auto type = parse_type();
         for (auto const &ident : ids) {
             params.emplace_back(ident, type);
         }
         tok = lexer.peek_token();
-        if (tok.type == TokenType::semicolon) {
+        if (tok.type == TokenType::SEMICOLON) {
             lexer.get_token(); // get ;
             tok = lexer.peek_token();
             continue;
         }
-        if (tok.type == TokenType::r_paren) {
+        if (tok.type == TokenType::R_PAREN) {
             break;
         }
         throw ParseException(lexer.get_location(), "expecting ; or ) in parameter list");
@@ -509,25 +509,25 @@ ASTStatement Parser::parse_statement() {
     auto tok = lexer.peek_token();
     debug("parse_statement {0}", std::string(tok));
     switch (tok.type) {
-    case TokenType::ret:
+    case TokenType::RETURN:
         return parse_return();
-    case TokenType::if_k:
+    case TokenType::IF:
         return parse_if();
-    case TokenType::cse:
+    case TokenType::CASE:
         return parse_case();
-    case TokenType::for_k:
+    case TokenType::FOR:
         return parse_for();
-    case TokenType::while_k:
+    case TokenType::WHILE:
         return parse_while();
-    case TokenType::repeat:
+    case TokenType::REPEAT:
         return parse_repeat();
-    case TokenType::exit:
+    case TokenType::EXIT:
         return parse_exit();
-    case TokenType::loop:
+    case TokenType::LOOP:
         return parse_loop();
-    case TokenType::begin:
+    case TokenType::BEGIN:
         return parse_block();
-    case TokenType::ident: {
+    case TokenType::IDENT: {
         // This can be an assignment or function call
 
         const auto designator = parse_designator();
@@ -535,8 +535,8 @@ ASTStatement Parser::parse_statement() {
         tok = lexer.peek_token();
         debug("parse_statement next {0}", std::string(tok));
 
-        if (tok.type == TokenType::l_paren || tok.type == TokenType::semicolon ||
-            tok.type == TokenType::end) {
+        if (tok.type == TokenType::L_PAREN || tok.type == TokenType::SEMICOLON ||
+            tok.type == TokenType::END) {
             return parse_call(designator);
         }
         return parse_assignment(designator);
@@ -551,8 +551,8 @@ void Parser::parse_statement_block(std::vector<ASTStatement> &stats,
 
     while (true) {
         auto tok = lexer.peek_token();
-        if (tok.type == TokenType::semicolon) {
-            get_token(TokenType::semicolon);
+        if (tok.type == TokenType::SEMICOLON) {
+            get_token(TokenType::SEMICOLON);
         } else if (end_tokens.contains(tok.type)) {
             return;
         } else {
@@ -571,7 +571,7 @@ ASTAssignment Parser::parse_assignment(ASTDesignator d) {
     auto assign = makeAST<ASTAssignment_>(lexer);
 
     assign->ident = std::move(d);
-    get_token(TokenType::assign);
+    get_token(TokenType::ASSIGN);
     assign->expr = parse_expr();
     return assign;
 }
@@ -584,9 +584,9 @@ ASTAssignment Parser::parse_assignment(ASTDesignator d) {
 ASTReturn Parser::parse_return() {
     debug("parse_return");
     auto ret = makeAST<ASTReturn_>(lexer);
-    get_token(TokenType::ret);
+    get_token(TokenType::RETURN);
     auto tok = lexer.peek_token();
-    if (tok.type != TokenType::semicolon && tok.type != TokenType::end) {
+    if (tok.type != TokenType::SEMICOLON && tok.type != TokenType::END) {
         ret->expr = parse_expr();
     }
     return ret;
@@ -598,7 +598,7 @@ ASTReturn Parser::parse_return() {
  * @return ASTExitPtr
  */
 ASTExit Parser::parse_exit() const {
-    get_token(TokenType::exit);
+    get_token(TokenType::EXIT);
     auto ex = makeAST<ASTExit_>(lexer);
     return ex;
 };
@@ -613,29 +613,29 @@ ASTCall Parser::parse_call(ASTDesignator d) {
 
     call->name = std::move(d);
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::l_paren) {
+    if (tok.type == TokenType::L_PAREN) {
         // Parse arguments
-        get_token(TokenType::l_paren);
+        get_token(TokenType::L_PAREN);
         tok = lexer.peek_token();
-        while (tok.type != TokenType::r_paren) {
+        while (tok.type != TokenType::R_PAREN) {
             auto expr = parse_expr();
             call->args.push_back(expr);
             tok = lexer.peek_token();
-            if (tok.type == TokenType::r_paren) {
+            if (tok.type == TokenType::R_PAREN) {
                 break;
             }
-            if (tok.type == TokenType::comma) {
+            if (tok.type == TokenType::COMMA) {
                 lexer.get_token(); // get ,
                 continue;
             }
             throw ParseException(lexer.get_location(), "Unexpected {0} expecting , or )", tok.val);
         }
-        get_token(TokenType::r_paren);
+        get_token(TokenType::R_PAREN);
     }
     return call;
 }
 
-inline const std::set<TokenType> if_ends{TokenType::end, TokenType::elsif, TokenType::else_k};
+inline const std::set<TokenType> if_ends{TokenType::END, TokenType::ELSIF, TokenType::ELSE};
 
 /**
  * @brief "IF" expression "THEN" statement_seq
@@ -649,34 +649,34 @@ ASTIf Parser::parse_if() {
     auto stat = makeAST<ASTIf_>(lexer);
 
     // IF
-    get_token(TokenType::if_k);
+    get_token(TokenType::IF);
     stat->if_clause.expr = parse_expr();
 
     // THEN
-    get_token(TokenType::then);
+    get_token(TokenType::THEN);
     parse_statement_block(stat->if_clause.stats, if_ends);
 
     // ELSIF
     auto tok = lexer.peek_token();
-    while (tok.type == TokenType::elsif) {
+    while (tok.type == TokenType::ELSIF) {
         debug("parse_if elsif");
         lexer.get_token();
         ASTIf_::IFClause clause;
         clause.expr = parse_expr();
-        get_token(TokenType::then);
+        get_token(TokenType::THEN);
         parse_statement_block(clause.stats, if_ends);
         stat->elsif_clause.push_back(clause);
         tok = lexer.peek_token();
     }
     // ELSE
-    if (tok.type == TokenType::else_k) {
+    if (tok.type == TokenType::ELSE) {
         debug("parse_if else\n");
         lexer.get_token();
         stat->else_clause = std::make_optional<std::vector<ASTStatement>>();
         parse_statement_block(*stat->else_clause, module_ends);
     }
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return stat;
 };
 
@@ -691,7 +691,7 @@ ASTIf Parser::parse_if() {
 std::variant<ASTSimpleExpr, ASTRange> Parser::parse_caseLabel() {
     debug("parse_caseLabel");
     auto e = parse_simpleexpr();
-    if (lexer.peek_token().type == TokenType::dotdot) {
+    if (lexer.peek_token().type == TokenType::DOTDOT) {
         lexer.get_token(); // ..
         auto range = makeAST<ASTRange_>(lexer);
         range->first = e;
@@ -704,8 +704,8 @@ std::variant<ASTSimpleExpr, ASTRange> Parser::parse_caseLabel() {
     return {e};
 }
 
-inline const std::set<TokenType> case_element_ends{TokenType::bar, TokenType::else_k,
-                                                   TokenType::end};
+inline const std::set<TokenType> case_element_ends{TokenType::BAR, TokenType::ELSE,
+                                                   TokenType::END};
 
 /**
  * @brief  = [CaseLabelList ":" StatementSequence].
@@ -718,32 +718,32 @@ void Parser::parse_caseElements(std::vector<ASTCaseElement> &elements) {
     debug("parse_caseElements");
 
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::bar) {
+    if (tok.type == TokenType::BAR) {
         lexer.get_token();
         tok = lexer.peek_token();
     }
-    while (tok.type != TokenType::end && tok.type != TokenType::else_k) {
+    while (tok.type != TokenType::END && tok.type != TokenType::ELSE) {
         debug("parse_caseElement {0}", std::string(tok));
         auto element = makeAST<ASTCaseElement_>(lexer);
 
-        while (tok.type != TokenType::colon) {
+        while (tok.type != TokenType::COLON) {
             auto v = parse_caseLabel();
             element->exprs.push_back(v);
 
             tok = lexer.peek_token();
-            if (tok.type != TokenType::comma) {
+            if (tok.type != TokenType::COMMA) {
                 break;
             }
             lexer.get_token(); // ,
         };
 
-        get_token(TokenType::colon);
+        get_token(TokenType::COLON);
         parse_statement_block(element->stats, case_element_ends);
         elements.push_back(element);
 
         tok = lexer.peek_token();
         debug("parse_caseElement {0}", std::string(tok));
-        if (tok.type == TokenType::bar) {
+        if (tok.type == TokenType::BAR) {
             lexer.get_token();
             tok = lexer.peek_token();
         }
@@ -760,22 +760,22 @@ ASTCase Parser::parse_case() {
     auto ast = makeAST<ASTCase_>(lexer);
 
     // CASE
-    get_token(TokenType::cse);
+    get_token(TokenType::CASE);
     ast->expr = parse_simpleexpr();
-    get_token(TokenType::of);
+    get_token(TokenType::OF);
 
     parse_caseElements(ast->elements);
 
     // ELSE
     auto tok = lexer.peek_token();
     debug("parse_case {0}", std::string(tok));
-    if (tok.type == TokenType::else_k) {
+    if (tok.type == TokenType::ELSE) {
         lexer.get_token();
         parse_statement_block(ast->else_stats, module_ends);
     }
 
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
@@ -790,27 +790,27 @@ ASTFor Parser::parse_for() {
     auto ast = makeAST<ASTFor_>(lexer);
 
     // FOR
-    get_token(TokenType::for_k);
+    get_token(TokenType::FOR);
     ast->ident = parse_identifier();
     // :=
-    get_token(TokenType::assign);
+    get_token(TokenType::ASSIGN);
     ast->start = parse_expr();
     // TO
-    get_token(TokenType::to);
+    get_token(TokenType::TO);
     ast->end = parse_expr();
 
     // BY
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::by) {
+    if (tok.type == TokenType::BY) {
         lexer.get_token();
         ast->by = parse_expr();
     }
 
     // DO
-    get_token(TokenType::do_k);
+    get_token(TokenType::DO);
     parse_statement_block(ast->stats, module_ends);
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
@@ -818,29 +818,29 @@ ASTWhile Parser::parse_while() {
     auto ast = makeAST<ASTWhile_>(lexer);
 
     // WHILE
-    get_token(TokenType::while_k);
+    get_token(TokenType::WHILE);
     ast->expr = parse_expr();
 
     // DO
-    get_token(TokenType::do_k);
+    get_token(TokenType::DO);
     parse_statement_block(ast->stats, module_ends);
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
-inline const std::set<TokenType> repeat_ends{TokenType::until};
+inline const std::set<TokenType> repeat_ends{TokenType::UNTIL};
 
 ASTRepeat Parser::parse_repeat() {
     auto ast = makeAST<ASTRepeat_>(lexer);
 
     // REPEAT
-    get_token(TokenType::repeat);
+    get_token(TokenType::REPEAT);
 
     parse_statement_block(ast->stats, repeat_ends);
 
     // UNTIL
-    get_token(TokenType::until);
+    get_token(TokenType::UNTIL);
     ast->expr = parse_expr();
 
     return ast;
@@ -850,24 +850,24 @@ ASTLoop Parser::parse_loop() {
     auto ast = makeAST<ASTLoop_>(lexer);
 
     // LOOP
-    get_token(TokenType::loop);
+    get_token(TokenType::LOOP);
 
     parse_statement_block(ast->stats, module_ends);
 
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
 ASTBlock Parser::parse_block() {
     auto ast = makeAST<ASTBlock_>(lexer);
     // BEGIN
-    get_token(TokenType::begin);
+    get_token(TokenType::BEGIN);
 
     parse_statement_block(ast->stats, module_ends);
 
     // END
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
@@ -880,8 +880,8 @@ ASTBlock Parser::parse_block() {
  */
 
 inline const std::set<TokenType> relationOps = {
-    TokenType::equals,  TokenType::hash, TokenType::less, TokenType::leq,
-    TokenType::greater, TokenType::gteq, TokenType::in};
+    TokenType::EQUALS,  TokenType::HASH, TokenType::LESS, TokenType::LEQ,
+    TokenType::GREATER, TokenType::GTEQ, TokenType::IN};
 
 ASTExpr Parser::parse_expr() {
     debug("parse_expr");
@@ -907,14 +907,14 @@ ASTSimpleExpr Parser::parse_simpleexpr() {
     auto expr = makeAST<ASTSimpleExpr_>(lexer);
 
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::plus || tok.type == TokenType::dash) {
+    if (tok.type == TokenType::PLUS || tok.type == TokenType::DASH) {
         lexer.get_token();
         expr->first_sign = std::optional<TokenType>{tok.type};
     }
     expr->term = parse_term();
     tok = lexer.peek_token();
-    while (tok.type == TokenType::plus || tok.type == TokenType::dash ||
-           tok.type == TokenType::or_k) {
+    while (tok.type == TokenType::PLUS || tok.type == TokenType::DASH ||
+           tok.type == TokenType::OR) {
         lexer.get_token();
         ASTSimpleExpr_::Expr_add add{tok.type, parse_term()};
         expr->rest.push_back(add);
@@ -929,8 +929,8 @@ ASTSimpleExpr Parser::parse_simpleexpr() {
  * @return ASTTermPtr
  */
 
-inline const std::set<TokenType> termOps = {TokenType::asterisk, TokenType::slash, TokenType::div,
-                                            TokenType::mod, TokenType::ampersand};
+inline const std::set<TokenType> termOps = {TokenType::ASTÉRIX, TokenType::SLASH, TokenType::DIV,
+                                            TokenType::MOD, TokenType::AMPERSAND};
 
 ASTTerm Parser::parse_term() {
     debug("parse_term");
@@ -969,49 +969,49 @@ ASTFactor Parser::parse_factor() {
     const auto tok = lexer.peek_token();
     debug("factor {0}", std::string(tok));
     switch (tok.type) {
-    case TokenType::l_paren:
+    case TokenType::L_PAREN:
         // Expression
         lexer.get_token(); // get (
         ast->factor = parse_expr();
-        get_token(TokenType::r_paren);
+        get_token(TokenType::R_PAREN);
         return ast;
-    case TokenType::integer:
-    case TokenType::hexinteger: {
+    case TokenType::INTEGER:
+    case TokenType::HEXINTEGER: {
         ast->factor = parse_integer();
         return ast;
     }
-    case TokenType::real:
+    case TokenType::REAL:
         ast->factor = parse_real();
         return ast;
-    case TokenType::hexchr:
-    case TokenType::chr:
+    case TokenType::HEXCHR:
+    case TokenType::CHR:
         ast->factor = parse_char();
         return ast;
-    case TokenType::string:
+    case TokenType::STRING:
         ast->factor = parse_string();
         return ast;
-    case TokenType::true_k:
-    case TokenType::false_k:
+    case TokenType::TRUE:
+    case TokenType::FALSE:
         ast->factor = parse_boolean();
         return ast;
-    case TokenType::nil:
+    case TokenType::NIL:
         ast->factor = parse_nil();
         return ast;
-    case TokenType::l_brace:
+    case TokenType::L_BRACE:
         ast->factor = parse_set();
         return ast;
-    case TokenType::tilde:
+    case TokenType::TILDE:
         lexer.get_token(); // get ~
         ast->is_not = true;
         ast->factor = parse_factor();
         return ast;
-    case TokenType::ident: {
+    case TokenType::IDENT: {
 
         auto       d = parse_designator();
         auto       nexttok = lexer.peek_token();
         const auto res = symbols.find(std::string(*d));
         debug("parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok), std::string(*d));
-        if (nexttok.type == TokenType::l_paren || (res && res->type->id == TypeId::procedureFwd)) {
+        if (nexttok.type == TokenType::L_PAREN || (res && res->type->id == TypeId::procedureFwd)) {
             debug("parse_factor call: {0}");
             ast->factor = parse_call(d);
             return ast;
@@ -1035,8 +1035,8 @@ ASTFactor Parser::parse_factor() {
  * @return ASTDesignatorPtr
  */
 
-inline const std::set<TokenType> designatorOps = {TokenType::l_bracket, TokenType::period,
-                                                  TokenType::caret};
+inline const std::set<TokenType> designatorOps = {TokenType::L_BRACKET, TokenType::PERIOD,
+                                                  TokenType::CARET};
 
 ASTDesignator Parser::parse_designator() {
     debug("parse_designator");
@@ -1047,27 +1047,27 @@ ASTDesignator Parser::parse_designator() {
     auto tok = lexer.peek_token();
     while (designatorOps.contains(tok.type)) {
         switch (tok.type) {
-        case TokenType::l_bracket: {
+        case TokenType::L_BRACKET: {
             lexer.get_token(); // [
             ArrayRef ref;
             debug("parse_designator array ref");
             do {
                 ref.push_back(parse_simpleexpr());
                 tok = lexer.peek_token();
-                if (tok.type == TokenType::comma) {
+                if (tok.type == TokenType::COMMA) {
                     lexer.get_token();
                     continue;
                 }
-            } while (tok.type != TokenType::r_bracket);
-            get_token(TokenType::r_bracket);
+            } while (tok.type != TokenType::R_BRACKET);
+            get_token(TokenType::R_BRACKET);
             ast->selectors.emplace_back(ref);
             break;
         }
-        case TokenType::period:
+        case TokenType::PERIOD:
             lexer.get_token(); // .
             ast->selectors.emplace_back(FieldRef{parse_identifier(), -1});
             break;
-        case TokenType::caret:
+        case TokenType::CARET:
             lexer.get_token(); // ^
             ast->selectors.emplace_back(PointerRef{true});
             break;
@@ -1088,13 +1088,13 @@ ASTType Parser::parse_type() {
     auto ast = makeAST<ASTType_>(lexer);
 
     switch (lexer.peek_token().type) {
-    case TokenType::array:
+    case TokenType::ARRAY:
         ast->type = parse_array();
         return ast;
-    case TokenType::record:
+    case TokenType::RECORD:
         ast->type = parse_record();
         return ast;
-    case TokenType::pointer:
+    case TokenType::POINTER:
         ast->type = parse_pointer();
         return ast;
     default:
@@ -1111,20 +1111,20 @@ ASTType Parser::parse_type() {
 ASTArray Parser::parse_array() {
     auto ast = makeAST<ASTArray_>(lexer);
 
-    get_token(TokenType::array);
+    get_token(TokenType::ARRAY);
     auto tok = lexer.peek_token();
-    while (tok.type != TokenType::of) {
+    while (tok.type != TokenType::OF) {
         auto expr = parse_integer();
         ast->dimensions.push_back(expr);
         tok = lexer.peek_token();
-        if (tok.type == TokenType::comma) {
+        if (tok.type == TokenType::COMMA) {
             lexer.get_token();
             tok = lexer.peek_token();
         } else {
             break;
         }
     }
-    get_token(TokenType::of);
+    get_token(TokenType::OF);
     ast->type = parse_type();
     return ast;
 }
@@ -1138,32 +1138,32 @@ ASTRecord Parser::parse_record() {
     debug("parse_record");
     auto ast = makeAST<ASTRecord_>(lexer);
 
-    get_token(TokenType::record);
+    get_token(TokenType::RECORD);
     auto tok = lexer.peek_token();
-    if (tok.type == TokenType::l_paren) {
+    if (tok.type == TokenType::L_PAREN) {
         lexer.get_token();
         ast->base = parse_qualident();
-        get_token(TokenType::r_paren);
+        get_token(TokenType::R_PAREN);
         tok = lexer.peek_token();
     }
-    while (tok.type == TokenType::ident) {
+    while (tok.type == TokenType::IDENT) {
         std::vector<ASTIdentifier> ids;
         parse_identList(ids);
 
-        get_token(TokenType::colon);
+        get_token(TokenType::COLON);
         auto type = parse_type();
 
         for (auto const &ident : ids) {
             ast->fields.emplace_back(ident, type);
         }
         tok = lexer.peek_token();
-        if (tok.type == TokenType::semicolon) {
+        if (tok.type == TokenType::SEMICOLON) {
             lexer.get_token();
             tok = lexer.peek_token();
             continue;
         }
     }
-    get_token(TokenType::end);
+    get_token(TokenType::END);
     return ast;
 }
 
@@ -1176,8 +1176,8 @@ ASTPointerType Parser::parse_pointer() {
     debug("parse_record");
     auto ast = makeAST<ASTPointerType_>(lexer);
 
-    get_token(TokenType::pointer);
-    get_token(TokenType::to);
+    get_token(TokenType::POINTER);
+    get_token(TokenType::TO);
     ast->reference = parse_type();
     return ast;
 }
@@ -1191,16 +1191,16 @@ ASTQualident Parser::parse_qualident() const {
     debug("parse_qualident");
     auto ast = makeAST<ASTQualident_>(lexer);
 
-    const auto first = get_token(TokenType::ident);
+    const auto first = get_token(TokenType::IDENT);
     auto       tok = lexer.peek_token();
-    if (tok.type == TokenType::period) {
+    if (tok.type == TokenType::PERIOD) {
 
         // Check if identifier is a imported module
         // If a module then make a full qualified identifier,
         // else it is a record access.
 
         lexer.get_token(); // .
-        const auto ident = get_token(TokenType::ident);
+        const auto ident = get_token(TokenType::IDENT);
 
         auto res = symbols.find(first.val);
         if (res && std::dynamic_pointer_cast<ModuleType>(res->type)) {
@@ -1233,7 +1233,7 @@ ASTIdentifier Parser::parse_identifier() const {
     debug("parse_identifier");
     auto ast = makeAST<ASTIdentifier_>(lexer);
 
-    const auto tok = get_token(TokenType::ident);
+    const auto tok = get_token(TokenType::IDENT);
     ast->value = tok.val;
     return ast;
 }
@@ -1251,14 +1251,14 @@ ASTSet Parser::parse_set() {
 
     lexer.get_token(); // {
     auto tok = lexer.peek_token();
-    while (tok.type != TokenType::r_brace) {
+    while (tok.type != TokenType::R_BRACE) {
         ast->values.push_back(parse_caseLabel());
         tok = lexer.peek_token();
-        if (tok.type == TokenType::r_brace) {
+        if (tok.type == TokenType::R_BRACE) {
             break;
         }
 
-        get_token(TokenType::comma);
+        get_token(TokenType::COMMA);
         tok = lexer.peek_token();
     }
     lexer.get_token(); // }
@@ -1278,18 +1278,18 @@ ASTInteger Parser::parse_integer() const {
     auto  ast = makeAST<ASTInteger_>(lexer);
     char *end = nullptr;
 
-    // Either TokenType::hexinteger or TokenType::integer
+    // Either TokenType::HEXINTEGER or TokenType::INTEGER
 
     int        radix = dec_radix;
     const auto tok = lexer.peek_token();
-    if (tok.type == TokenType::hexinteger) {
+    if (tok.type == TokenType::HEXINTEGER) {
         lexer.get_token();
         radix = hex_radix;
         ast->hex = true;
         ast->value = std::strtol(tok.val.c_str(), &end, radix);
         return ast;
     }
-    if (tok.type == TokenType::integer) {
+    if (tok.type == TokenType::INTEGER) {
         lexer.get_token();
         debug("parse_integer: {0}", std::string(tok));
         ast->value = std::strtol(tok.val.c_str(), &end, radix);
@@ -1328,10 +1328,10 @@ ASTCharPtr Parser::parse_char() const {
     debug("parse_char");
     auto ast = makeAST<ASTChar_>(lexer);
 
-    // Either TokenType::hexchr or TokenType::chr
+    // Either TokenType::HEXCHR or TokenType::CHR
 
     const auto tok = lexer.get_token();
-    if (tok.type == TokenType::hexchr) {
+    if (tok.type == TokenType::HEXCHR) {
         char *end = nullptr;
         debug("parse_char hex {0}", tok.val);
         ast->value = static_cast<Char>(std::strtol(tok.val.c_str(), &end, hex_radix));
@@ -1360,7 +1360,7 @@ ASTString Parser::parse_string() const {
 ASTBool Parser::parse_boolean() const {
     auto       ast = makeAST<ASTBool_>(lexer);
     const auto tok = lexer.get_token();
-    ast->value = (tok.type == TokenType::true_k);
+    ast->value = (tok.type == TokenType::TRUE);
     return ast;
 }
 
@@ -1371,7 +1371,7 @@ ASTBool Parser::parse_boolean() const {
  */
 ASTNil Parser::parse_nil() const {
     auto ast = makeAST<ASTNil_>(lexer);
-    get_token(TokenType::nil);
+    get_token(TokenType::NIL);
     return ast;
 }
 

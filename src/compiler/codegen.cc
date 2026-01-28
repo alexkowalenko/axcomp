@@ -1071,32 +1071,32 @@ void CodeGenerator::visit(ASTExpr const &ast) {
     if (ast->relation) {
         auto *L = last_value;
         visit(ast->relation_expr);
-        auto  *R = last_value;
-        auto    lhs_type = ast->expr->get_type();
-        auto    rhs_type = ast->relation_expr->get_type();
+        auto      *R = last_value;
+        auto       lhs_type = ast->expr->get_type();
+        auto       rhs_type = ast->relation_expr->get_type();
         const bool lhs_is_string = is_string_type(lhs_type);
         const bool rhs_is_string = is_string_type(rhs_type);
         if (lhs_is_string && rhs_is_string) {
             // String comparisons
             last_value = call_function("Strings_Compare", TypeTable::IntType->get_llvm(), {L, R});
             switch (*ast->relation) {
-            case TokenType::equals:
+            case TokenType::EQUALS:
                 last_value = builder.CreateNot(last_value);
                 break;
-            case TokenType::hash:
+            case TokenType::HASH:
                 // Correct
                 break;
-            case TokenType::less:
+            case TokenType::LESS:
                 last_value = builder.CreateICmpSLT(
                     last_value, TypeTable::IntType->get_init()); // last_value > 0
                 break;
-            case TokenType::leq:
+            case TokenType::LEQ:
                 last_value = builder.CreateICmpSLE(last_value, TypeTable::IntType->get_init());
                 break;
-            case TokenType::greater:
+            case TokenType::GREATER:
                 last_value = builder.CreateICmpSGT(last_value, TypeTable::IntType->get_init());
                 break;
-            case TokenType::gteq:
+            case TokenType::GTEQ:
                 last_value = builder.CreateICmpSGE(last_value, TypeTable::IntType->get_init());
                 break;
             default:;
@@ -1111,10 +1111,10 @@ void CodeGenerator::visit(ASTExpr const &ast) {
             }
             R = builder.CreateBitCast(R, L->getType());
             switch (*ast->relation) {
-            case TokenType::equals:
+            case TokenType::EQUALS:
                 last_value = builder.CreateICmpEQ(L, R);
                 break;
-            case TokenType::hash:
+            case TokenType::HASH:
                 last_value = builder.CreateICmpNE(L, R);
                 break;
             default:;
@@ -1123,16 +1123,16 @@ void CodeGenerator::visit(ASTExpr const &ast) {
             // SET comparisons
             debug("ASTExpr set comparisons");
             switch (*ast->relation) {
-            case TokenType::in: {
+            case TokenType::IN: {
                 auto *index = builder.CreateShl(TypeTable::IntType->make_value(1), L);
                 last_value = builder.CreateAnd(R, index);
                 last_value = builder.CreateICmpUGT(last_value, TypeTable::IntType->get_init());
                 break;
             }
-            case TokenType::equals:
+            case TokenType::EQUALS:
                 last_value = builder.CreateICmpEQ(L, R);
                 break;
-            case TokenType::hash:
+            case TokenType::HASH:
                 last_value = builder.CreateICmpNE(L, R);
                 break;
             default:;
@@ -1142,22 +1142,22 @@ void CodeGenerator::visit(ASTExpr const &ast) {
                    TypeTable::is_int_instruct(R->getType())) {
             // Do integer versions
             switch (*ast->relation) {
-            case TokenType::equals:
+            case TokenType::EQUALS:
                 last_value = builder.CreateICmpEQ(L, R);
                 break;
-            case TokenType::hash:
+            case TokenType::HASH:
                 last_value = builder.CreateICmpNE(L, R);
                 break;
-            case TokenType::less:
+            case TokenType::LESS:
                 last_value = builder.CreateICmpSLT(L, R);
                 break;
-            case TokenType::leq:
+            case TokenType::LEQ:
                 last_value = builder.CreateICmpSLE(L, R);
                 break;
-            case TokenType::greater:
+            case TokenType::GREATER:
                 last_value = builder.CreateICmpSGT(L, R);
                 break;
-            case TokenType::gteq:
+            case TokenType::GTEQ:
                 last_value = builder.CreateICmpSGE(L, R);
                 break;
             default:;
@@ -1172,22 +1172,22 @@ void CodeGenerator::visit(ASTExpr const &ast) {
             }
             // do float equivalent
             switch (*ast->relation) {
-            case TokenType::equals:
+            case TokenType::EQUALS:
                 last_value = builder.CreateFCmpOEQ(L, R);
                 break;
-            case TokenType::hash:
+            case TokenType::HASH:
                 last_value = builder.CreateFCmpONE(L, R);
                 break;
-            case TokenType::less:
+            case TokenType::LESS:
                 last_value = builder.CreateFCmpOLT(L, R);
                 break;
-            case TokenType::leq:
+            case TokenType::LEQ:
                 last_value = builder.CreateFCmpOLE(L, R);
                 break;
-            case TokenType::greater:
+            case TokenType::GREATER:
                 last_value = builder.CreateFCmpOGT(L, R);
                 break;
-            case TokenType::gteq:
+            case TokenType::GTEQ:
                 last_value = builder.CreateFCmpOGE(L, R);
                 break;
             default:;
@@ -1200,9 +1200,9 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
     debug("ASTSimpleExpr");
     visit(ast->term);
     Value *L = last_value;
-    auto  current_type = ast->term->get_type();
+    auto   current_type = ast->term->get_type();
     // if the initial sign exists and is negative, negate the integer
-    if (ast->first_sign && ast->first_sign.value() == TokenType::dash) {
+    if (ast->first_sign && ast->first_sign.value() == TokenType::DASH) {
         if (TypeTable::is_int_instruct(L->getType())) {
             L = builder.CreateSub(TypeTable::IntType->get_init(), L, "negtmp");
         } else {
@@ -1217,7 +1217,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
 
     for (auto const &[op, right] : ast->rest) {
 
-        if (op == TokenType::or_k && builder.GetInsertBlock()) {
+        if (op == TokenType::OR && builder.GetInsertBlock()) {
             // Lazy evaluation of OR, only when we are in a block
             next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
             auto       *funct = builder.GetInsertBlock()->getParent();
@@ -1231,12 +1231,12 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         }
 
         visit(right);
-        Value      *R = last_value;
-        const auto  right_type = right->get_type();
-        const bool  left_is_string = is_string_type(current_type);
-        const bool  right_is_string = is_string_type(right_type);
-        const bool  left_is_char = is_char_type(current_type);
-        const bool  right_is_char = is_char_type(right_type);
+        Value     *R = last_value;
+        const auto right_type = right->get_type();
+        const bool left_is_string = is_string_type(current_type);
+        const bool right_is_string = is_string_type(right_type);
+        const bool left_is_char = is_char_type(current_type);
+        const bool right_is_char = is_char_type(right_type);
 #if 0
         llvm::dbgs() << "L and R ";
         L->getType()->print(llvm::dbgs());
@@ -1247,10 +1247,10 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         if (right_type == TypeTable::SetType) {
             // SET operations
             switch (op) {
-            case TokenType::plus:
+            case TokenType::PLUS:
                 last_value = builder.CreateOr(L, R, "setunion");
                 break;
-            case TokenType::dash:
+            case TokenType::DASH:
                 last_value = builder.CreateNot(R, "setdiff");
                 last_value = builder.CreateAnd(L, last_value, "setdiff");
                 break;
@@ -1279,13 +1279,13 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
                    TypeTable::is_int_instruct(R->getType())) {
             // INTEGER operations
             switch (op) {
-            case TokenType::plus:
+            case TokenType::PLUS:
                 last_value = builder.CreateAdd(L, R, "addtmp");
                 break;
-            case TokenType::dash:
+            case TokenType::DASH:
                 last_value = builder.CreateSub(L, R, "subtmp");
                 break;
-            case TokenType::or_k: // leave in for CONST calculations
+            case TokenType::OR: // leave in for CONST calculations
                 last_value = builder.CreateOr(L, R, "subtmp");
                 break;
             default:
@@ -1303,10 +1303,10 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
                 R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
             }
             switch (op) {
-            case TokenType::plus:
+            case TokenType::PLUS:
                 last_value = builder.CreateFAdd(L, R, "addtmp");
                 break;
-            case TokenType::dash:
+            case TokenType::DASH:
                 last_value = builder.CreateFSub(L, R, "subtmp");
                 break;
             default:
@@ -1343,7 +1343,7 @@ void CodeGenerator::visit(ASTTerm const &ast) {
 
     for (auto const &[op, right] : ast->rest) {
 
-        if (op == TokenType::ampersand && builder.GetInsertBlock()) {
+        if (op == TokenType::AMPERSAND && builder.GetInsertBlock()) {
             // Lazy evaluation of & AND, only when we are in a block
             next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
             auto       *funct = builder.GetInsertBlock()->getParent();
@@ -1369,10 +1369,10 @@ void CodeGenerator::visit(ASTTerm const &ast) {
         if (right->get_type() == TypeTable::SetType) {
             // SET operations
             switch (op) {
-            case TokenType::asterisk:
+            case TokenType::ASTÉRIX:
                 last_value = builder.CreateAnd(L, R, "setintersect");
                 break;
-            case TokenType::slash: {
+            case TokenType::SLASH: {
                 // (x-y) + (y-x)
                 auto *a = builder.CreateNot(R, "setsdiff");
                 a = builder.CreateAnd(L, a, "setsdiff");
@@ -1388,16 +1388,16 @@ void CodeGenerator::visit(ASTTerm const &ast) {
                    TypeTable::is_int_instruct(R->getType())) {
             // Do integer calculations
             switch (op) {
-            case TokenType::asterisk:
+            case TokenType::ASTÉRIX:
                 last_value = builder.CreateMul(L, R, "multmp");
                 break;
-            case TokenType::div:
+            case TokenType::DIV:
                 last_value = builder.CreateSDiv(L, R, "divtmp");
                 break;
-            case TokenType::mod:
+            case TokenType::MOD:
                 last_value = builder.CreateSRem(L, R, "modtmp");
                 break;
-            case TokenType::ampersand:
+            case TokenType::AMPERSAND:
                 last_value = builder.CreateAnd(L, R, "modtmp");
                 break;
             default:
@@ -1413,10 +1413,10 @@ void CodeGenerator::visit(ASTTerm const &ast) {
                 R = builder.CreateSIToFP(R, TypeTable::RealType->get_llvm());
             }
             switch (op) {
-            case TokenType::asterisk:
+            case TokenType::ASTÉRIX:
                 last_value = builder.CreateFMul(L, R, "multmp");
                 break;
-            case TokenType::slash:
+            case TokenType::SLASH:
                 last_value = builder.CreateFDiv(L, R, "divtmp");
                 break;
             default:
@@ -1472,8 +1472,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     auto *arg_ptr = last_value;
 
     const auto ident_type = ast->ident->get_type();
-    const bool is_string_type =
-        ident_type->id == TypeId::string || ident_type->id == TypeId::str1;
+    const bool is_string_type = ident_type->id == TypeId::string || ident_type->id == TypeId::str1;
 
     std::vector<Value *> index;
     if (!is_string_type) {

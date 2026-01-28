@@ -4,6 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
+#include <cctype>
 #include <exception>
 #include <map>
 
@@ -22,63 +23,63 @@ namespace ax {
 namespace {
 
 inline const std::map<std::string, Token> keyword_map = {
-    {"MODULE", Token(TokenType::module, "MODULE")},
-    {"BEGIN", Token(TokenType::begin, "BEGIN")},
-    {"END", Token(TokenType::end, "END")},
-    {"DIV", Token(TokenType::div, "DIV")},
-    {"MOD", Token(TokenType::mod, "MOD")},
-    {"CONST", Token(TokenType::cnst, "CONST")},
-    {"TYPE", Token(TokenType::type, "TYPE")},
-    {"VAR", Token(TokenType::var, "VAR")},
-    {"RETURN", Token(TokenType::ret, "RETURN")},
-    {"PROCEDURE", Token(TokenType::procedure, "PROCEDURE")},
-    {"TRUE", Token(TokenType::true_k, "TRUE")},
-    {"FALSE", Token(TokenType::false_k, "FALSE")},
-    {"OR", Token(TokenType::or_k, "OR")},
-    {"IF", Token(TokenType::if_k, "IF")},
-    {"THEN", Token(TokenType::then, "THEN")},
-    {"ELSIF", Token(TokenType::elsif, "ELSIF")},
-    {"ELSE", Token(TokenType::else_k, "ELSE")},
-    {"FOR", Token(TokenType::for_k, "FOR")},
-    {"TO", Token(TokenType::to, "TO")},
-    {"BY", Token(TokenType::by, "BY")},
-    {"DO", Token(TokenType::do_k, "DO")},
-    {"WHILE", Token(TokenType::while_k, "WHILE")},
-    {"REPEAT", Token(TokenType::repeat, "REPEAT")},
-    {"UNTIL", Token(TokenType::until, "UNTIL")},
-    {"LOOP", Token(TokenType::loop, "LOOP")},
-    {"EXIT", Token(TokenType::exit, "EXIT")},
-    {"ARRAY", Token(TokenType::array, "ARRAY")},
-    {"OF", Token(TokenType::of, "OF")},
-    {"RECORD", Token(TokenType::record, "RECORD")},
-    {"DEFINITION", Token(TokenType::definition, "DEFINITION")},
-    {"IMPORT", Token(TokenType::import, "IMPORT")},
-    {"CASE", Token(TokenType::cse, "CASE")},
-    {"POINTER", Token(TokenType::pointer, "POINTER")},
-    {"NIL", Token(TokenType::nil, "NIL")},
-    {"IN", Token(TokenType::in, "IN")},
+    {"MODULE", Token(TokenType::MODULE, "MODULE")},
+    {"BEGIN", Token(TokenType::BEGIN, "BEGIN")},
+    {"END", Token(TokenType::END, "END")},
+    {"DIV", Token(TokenType::DIV, "DIV")},
+    {"MOD", Token(TokenType::MOD, "MOD")},
+    {"CONST", Token(TokenType::CONST, "CONST")},
+    {"TYPE", Token(TokenType::TYPE, "TYPE")},
+    {"VAR", Token(TokenType::VAR, "VAR")},
+    {"RETURN", Token(TokenType::RETURN, "RETURN")},
+    {"PROCEDURE", Token(TokenType::PROCEDURE, "PROCEDURE")},
+    {"TRUE", Token(TokenType::TRUE, "TRUE")},
+    {"FALSE", Token(TokenType::FALSE, "FALSE")},
+    {"OR", Token(TokenType::OR, "OR")},
+    {"IF", Token(TokenType::IF, "IF")},
+    {"THEN", Token(TokenType::THEN, "THEN")},
+    {"ELSIF", Token(TokenType::ELSIF, "ELSIF")},
+    {"ELSE", Token(TokenType::ELSE, "ELSE")},
+    {"FOR", Token(TokenType::FOR, "FOR")},
+    {"TO", Token(TokenType::TO, "TO")},
+    {"BY", Token(TokenType::BY, "BY")},
+    {"DO", Token(TokenType::DO, "DO")},
+    {"WHILE", Token(TokenType::WHILE, "WHILE")},
+    {"REPEAT", Token(TokenType::REPEAT, "REPEAT")},
+    {"UNTIL", Token(TokenType::UNTIL, "UNTIL")},
+    {"LOOP", Token(TokenType::LOOP, "LOOP")},
+    {"EXIT", Token(TokenType::EXIT, "EXIT")},
+    {"ARRAY", Token(TokenType::ARRAY, "ARRAY")},
+    {"OF", Token(TokenType::OF, "OF")},
+    {"RECORD", Token(TokenType::RECORD, "RECORD")},
+    {"DEFINITION", Token(TokenType::DEFINITION, "DEFINITION")},
+    {"IMPORT", Token(TokenType::IMPORT, "IMPORT")},
+    {"CASE", Token(TokenType::CASE, "CASE")},
+    {"POINTER", Token(TokenType::POINTER, "POINTER")},
+    {"NIL", Token(TokenType::NIL, "NIL")},
+    {"IN", Token(TokenType::IN, "IN")},
 };
 
 const std::map<char, Token> single_tokens = {
-    {-1, Token(TokenType::eof)},
-    {';', Token(TokenType::semicolon, ";")},
-    {',', Token(TokenType::comma, ",")},
-    {'+', Token(TokenType::plus, "+")},
-    {'-', Token(TokenType::dash, "-")},
-    {'*', Token(TokenType::asterisk, "*")},
-    {'(', Token(TokenType::l_paren, "(")},
-    {')', Token(TokenType::r_paren, ")")},
-    {'=', Token(TokenType::equals, "=")},
-    {'#', Token(TokenType::hash, "#")},
-    {'~', Token(TokenType::tilde, "~")},
-    {'&', Token(TokenType::ampersand, "&")},
-    {'[', Token(TokenType::l_bracket, "[")},
-    {']', Token(TokenType::r_bracket, "]")},
-    {'|', Token(TokenType::bar, "|")},
-    {'/', Token(TokenType::slash, "/")},
-    {'^', Token(TokenType::caret, "^")},
-    {'{', Token(TokenType::l_brace, "{")},
-    {'}', Token(TokenType::r_brace, "}")},
+    {-1, Token(TokenType::Eof)},
+    {';', Token(TokenType::SEMICOLON, ";")},
+    {',', Token(TokenType::COMMA, ",")},
+    {'+', Token(TokenType::PLUS, "+")},
+    {'-', Token(TokenType::DASH, "-")},
+    {'*', Token(TokenType::ASTÉRIX, "*")},
+    {'(', Token(TokenType::L_PAREN, "(")},
+    {')', Token(TokenType::R_PAREN, ")")},
+    {'=', Token(TokenType::EQUALS, "=")},
+    {'#', Token(TokenType::HASH, "#")},
+    {'~', Token(TokenType::TILDE, "~")},
+    {'&', Token(TokenType::AMPERSAND, "&")},
+    {'[', Token(TokenType::L_BRACKET, "[")},
+    {']', Token(TokenType::R_BRACKET, "]")},
+    {'|', Token(TokenType::BAR, "|")},
+    {'/', Token(TokenType::SLASH, "/")},
+    {'^', Token(TokenType::CARET, "^")},
+    {'{', Token(TokenType::L_BRACE, "{")},
+    {'}', Token(TokenType::R_BRACE, "}")},
 };
 
 // Custom emoji checker
@@ -140,27 +141,27 @@ Token LexerUTF8::get_token() {
     case ':':
         if (peek() == '=') {
             get_char();
-            return {TokenType::assign, ":="};
+            return {TokenType::ASSIGN, ":="};
         }
-        return {TokenType::colon, ":"};
+        return {TokenType::COLON, ":"};
     case '<':
         if (peek() == '=') {
             get_char();
-            return {TokenType::leq, "<="};
+            return {TokenType::LEQ, "<="};
         }
-        return {TokenType::less, "<"};
+        return {TokenType::LESS, "<"};
     case '>':
         if (peek() == '=') {
             get_char();
-            return {TokenType::gteq, ">="};
+            return {TokenType::GTEQ, ">="};
         }
-        return {TokenType::greater, ">"};
+        return {TokenType::GREATER, ">"};
     case '.':
         if (peek() == '.') {
             get_char();
-            return {TokenType::dotdot, ".."};
+            return {TokenType::DOTDOT, ".."};
         }
-        return {TokenType::period, "."};
+        return {TokenType::PERIOD, "."};
     case '\'':
     case '\"':
         return scan_string(c);
@@ -210,7 +211,7 @@ Token LexerUTF8::scan_digit(Char c) {
     if (c == 'H') {
         // Numbers in this format 0cafeH
         get();
-        return {TokenType::hexinteger, digit};
+        return {TokenType::HEXINTEGER, digit};
     }
     if (c == '.') {
         // maybe float
@@ -222,7 +223,7 @@ Token LexerUTF8::scan_digit(Char c) {
             // put back '.'
             push_char('.');
             // is integer
-            return {TokenType::integer, digit};
+            return {TokenType::INTEGER, digit};
         }
         digit += '.';
         while (std::iswdigit(c)) {
@@ -245,14 +246,14 @@ Token LexerUTF8::scan_digit(Char c) {
             digit += static_cast<char>(c);
             c = peek();
         }
-        return {TokenType::real, digit};
+        return {TokenType::REAL, digit};
     }
     if (c == 'X') {
         // Characters in this format 0d34X
         get();
-        return {TokenType::hexchr, digit};
+        return {TokenType::HEXCHR, digit};
     };
-    return {TokenType::integer, digit};
+    return {TokenType::INTEGER, digit};
 }
 
 Token LexerUTF8::scan_ident(Char c) {
@@ -266,10 +267,35 @@ Token LexerUTF8::scan_ident(Char c) {
         c = peek();
     }
     // Look for keywords
-    if (const auto res = keyword_map.find(ident); res != keyword_map.end()) {
-        return res->second;
+    bool has_upper = false;
+    bool has_lower = false;
+    for (unsigned char const ch : ident) {
+        if (ch > 0x7F) {
+            continue;
+        }
+        if (std::isupper(ch)) {
+            has_upper = true;
+        } else if (std::islower(ch)) {
+            has_lower = true;
+        }
     }
-    return {TokenType::ident, ident};
+    if (!(has_upper && has_lower)) {
+        if (const auto res = keyword_map.find(ident); res != keyword_map.end()) {
+            return res->second;
+        }
+        if (has_lower) {
+            std::string upper_ident = ident;
+            for (char &ch : upper_ident) {
+                if (ch >= 'a' && ch <= 'z') {
+                    ch = static_cast<char>(ch - 'a' + 'A');
+                }
+            }
+            if (const auto res = keyword_map.find(upper_ident); res != keyword_map.end()) {
+                return res->second;
+            }
+        }
+    }
+    return {TokenType::IDENT, ident};
 }
 
 Token LexerUTF8::scan_string(Char const start) {
@@ -279,15 +305,15 @@ Token LexerUTF8::scan_string(Char const start) {
     Char c = get();
     if (c == start) {
         // empty string
-        return {TokenType::string, str};
+        return {TokenType::STRING, str};
     }
     utf8::append(static_cast<char32_t>(c), str);
     const Char final = get();
     if (final == '\'' && start == '\'') {
-        return {TokenType::chr, static_cast<long>(c)};
+        return {TokenType::CHR, static_cast<long>(c)};
     };
     if (final == start) {
-        return {TokenType::string, str};
+        return {TokenType::STRING, str};
     };
     utf8::append(static_cast<char32_t>(final), str);
     c = get();
@@ -303,7 +329,7 @@ Token LexerUTF8::scan_string(Char const start) {
         }
         c = get();
     };
-    return {TokenType::string, str};
+    return {TokenType::STRING, str};
 }
 
 /**

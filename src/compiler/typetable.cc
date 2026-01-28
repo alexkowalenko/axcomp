@@ -70,110 +70,110 @@ void TypeTable::initialise() {
     // Type Rules
 
     // 1-Arity
-    reg(TokenType::tilde, BoolType, BoolType);
+    reg(TokenType::TILDE, BoolType, BoolType);
 
     // 2-Arity
-    reg(TokenType::plus, IntType, IntType, IntType);
-    reg(TokenType::plus, IntType, RealType, RealType);
-    reg(TokenType::plus, RealType, IntType, RealType);
-    reg(TokenType::plus, RealType, RealType, RealType);
+    reg(TokenType::PLUS, IntType, IntType, IntType);
+    reg(TokenType::PLUS, IntType, RealType, RealType);
+    reg(TokenType::PLUS, RealType, IntType, RealType);
+    reg(TokenType::PLUS, RealType, RealType, RealType);
 
-    reg(TokenType::plus, StrType, StrType, StrType);
-    reg(TokenType::plus, StrType, CharType, StrType);
-    reg(TokenType::plus, CharType, StrType, StrType);
+    reg(TokenType::PLUS, StrType, StrType, StrType);
+    reg(TokenType::PLUS, StrType, CharType, StrType);
+    reg(TokenType::PLUS, CharType, StrType, StrType);
 
-    reg(TokenType::dash, IntType, IntType, IntType);
-    reg(TokenType::dash, IntType, RealType, RealType);
-    reg(TokenType::dash, RealType, IntType, RealType);
-    reg(TokenType::dash, RealType, RealType, RealType);
+    reg(TokenType::DASH, IntType, IntType, IntType);
+    reg(TokenType::DASH, IntType, RealType, RealType);
+    reg(TokenType::DASH, RealType, IntType, RealType);
+    reg(TokenType::DASH, RealType, RealType, RealType);
 
-    reg(TokenType::asterisk, IntType, IntType, IntType);
-    reg(TokenType::asterisk, IntType, RealType, RealType);
-    reg(TokenType::asterisk, RealType, IntType, RealType);
-    reg(TokenType::asterisk, RealType, RealType, RealType);
+    reg(TokenType::ASTÉRIX, IntType, IntType, IntType);
+    reg(TokenType::ASTÉRIX, IntType, RealType, RealType);
+    reg(TokenType::ASTÉRIX, RealType, IntType, RealType);
+    reg(TokenType::ASTÉRIX, RealType, RealType, RealType);
 
-    reg(TokenType::slash, IntType, IntType, RealType);
-    reg(TokenType::slash, IntType, RealType, RealType);
-    reg(TokenType::slash, RealType, IntType, RealType);
-    reg(TokenType::slash, RealType, RealType, RealType);
+    reg(TokenType::SLASH, IntType, IntType, RealType);
+    reg(TokenType::SLASH, IntType, RealType, RealType);
+    reg(TokenType::SLASH, RealType, IntType, RealType);
+    reg(TokenType::SLASH, RealType, RealType, RealType);
 
-    reg(TokenType::div, IntType, IntType, IntType);
-    reg(TokenType::mod, IntType, IntType, IntType);
+    reg(TokenType::DIV, IntType, IntType, IntType);
+    reg(TokenType::MOD, IntType, IntType, IntType);
 
     // logical operators
-    reg(TokenType::equals, IntType, IntType, BoolType);
-    reg(TokenType::equals, RealType, IntType, BoolType);
-    reg(TokenType::equals, IntType, RealType, BoolType);
-    reg(TokenType::equals, RealType, RealType, BoolType);
+    reg(TokenType::EQUALS, IntType, IntType, BoolType);
+    reg(TokenType::EQUALS, RealType, IntType, BoolType);
+    reg(TokenType::EQUALS, IntType, RealType, BoolType);
+    reg(TokenType::EQUALS, RealType, RealType, BoolType);
 
-    reg(TokenType::hash, IntType, IntType, BoolType);
-    reg(TokenType::hash, RealType, IntType, BoolType);
-    reg(TokenType::hash, IntType, RealType, BoolType);
-    reg(TokenType::hash, RealType, RealType, BoolType);
+    reg(TokenType::HASH, IntType, IntType, BoolType);
+    reg(TokenType::HASH, RealType, IntType, BoolType);
+    reg(TokenType::HASH, IntType, RealType, BoolType);
+    reg(TokenType::HASH, RealType, RealType, BoolType);
 
-    reg(TokenType::less, IntType, IntType, BoolType);
-    reg(TokenType::less, RealType, IntType, BoolType);
-    reg(TokenType::less, IntType, RealType, BoolType);
-    reg(TokenType::less, RealType, RealType, BoolType);
+    reg(TokenType::LESS, IntType, IntType, BoolType);
+    reg(TokenType::LESS, RealType, IntType, BoolType);
+    reg(TokenType::LESS, IntType, RealType, BoolType);
+    reg(TokenType::LESS, RealType, RealType, BoolType);
 
-    reg(TokenType::leq, IntType, IntType, BoolType);
-    reg(TokenType::leq, RealType, IntType, BoolType);
-    reg(TokenType::leq, IntType, RealType, BoolType);
-    reg(TokenType::leq, RealType, RealType, BoolType);
+    reg(TokenType::LEQ, IntType, IntType, BoolType);
+    reg(TokenType::LEQ, RealType, IntType, BoolType);
+    reg(TokenType::LEQ, IntType, RealType, BoolType);
+    reg(TokenType::LEQ, RealType, RealType, BoolType);
 
-    reg(TokenType::greater, IntType, IntType, BoolType);
-    reg(TokenType::greater, RealType, IntType, BoolType);
-    reg(TokenType::greater, IntType, RealType, BoolType);
-    reg(TokenType::greater, RealType, RealType, BoolType);
+    reg(TokenType::GREATER, IntType, IntType, BoolType);
+    reg(TokenType::GREATER, RealType, IntType, BoolType);
+    reg(TokenType::GREATER, IntType, RealType, BoolType);
+    reg(TokenType::GREATER, RealType, RealType, BoolType);
 
-    reg(TokenType::gteq, IntType, IntType, BoolType);
-    reg(TokenType::gteq, RealType, IntType, BoolType);
-    reg(TokenType::gteq, IntType, RealType, BoolType);
-    reg(TokenType::gteq, RealType, RealType, BoolType);
+    reg(TokenType::GTEQ, IntType, IntType, BoolType);
+    reg(TokenType::GTEQ, RealType, IntType, BoolType);
+    reg(TokenType::GTEQ, IntType, RealType, BoolType);
+    reg(TokenType::GTEQ, RealType, RealType, BoolType);
 
     // String comparison operators
-    reg(TokenType::equals, StrType, StrType, BoolType);
-    reg(TokenType::hash, StrType, StrType, BoolType);
-    reg(TokenType::less, StrType, StrType, BoolType);
-    reg(TokenType::leq, StrType, StrType, BoolType);
-    reg(TokenType::greater, StrType, StrType, BoolType);
-    reg(TokenType::gteq, StrType, StrType, BoolType);
+    reg(TokenType::EQUALS, StrType, StrType, BoolType);
+    reg(TokenType::HASH, StrType, StrType, BoolType);
+    reg(TokenType::LESS, StrType, StrType, BoolType);
+    reg(TokenType::LEQ, StrType, StrType, BoolType);
+    reg(TokenType::GREATER, StrType, StrType, BoolType);
+    reg(TokenType::GTEQ, StrType, StrType, BoolType);
 
-    reg(TokenType::ampersand, BoolType, BoolType, BoolType);
-    reg(TokenType::or_k, BoolType, BoolType, BoolType);
-    reg(TokenType::equals, BoolType, BoolType, BoolType);
-    reg(TokenType::hash, BoolType, BoolType, BoolType);
+    reg(TokenType::AMPERSAND, BoolType, BoolType, BoolType);
+    reg(TokenType::OR, BoolType, BoolType, BoolType);
+    reg(TokenType::EQUALS, BoolType, BoolType, BoolType);
+    reg(TokenType::HASH, BoolType, BoolType, BoolType);
 
-    reg(TokenType::equals, CharType, CharType, BoolType);
-    reg(TokenType::hash, CharType, CharType, BoolType);
-    reg(TokenType::less, CharType, CharType, BoolType);
-    reg(TokenType::leq, CharType, CharType, BoolType);
-    reg(TokenType::greater, CharType, CharType, BoolType);
-    reg(TokenType::gteq, CharType, CharType, BoolType);
+    reg(TokenType::EQUALS, CharType, CharType, BoolType);
+    reg(TokenType::HASH, CharType, CharType, BoolType);
+    reg(TokenType::LESS, CharType, CharType, BoolType);
+    reg(TokenType::LEQ, CharType, CharType, BoolType);
+    reg(TokenType::GREATER, CharType, CharType, BoolType);
+    reg(TokenType::GTEQ, CharType, CharType, BoolType);
 
     // Set operations
-    reg(TokenType::equals, SetType, SetType, BoolType);
-    reg(TokenType::hash, SetType, SetType, BoolType);
-    reg(TokenType::in, IntType, SetType, BoolType);
+    reg(TokenType::EQUALS, SetType, SetType, BoolType);
+    reg(TokenType::HASH, SetType, SetType, BoolType);
+    reg(TokenType::IN, IntType, SetType, BoolType);
 
-    reg(TokenType::plus, SetType, SetType, SetType);
-    reg(TokenType::dash, SetType, SetType, SetType);
-    reg(TokenType::asterisk, SetType, SetType, SetType);
-    reg(TokenType::slash, SetType, SetType, SetType);
+    reg(TokenType::PLUS, SetType, SetType, SetType);
+    reg(TokenType::DASH, SetType, SetType, SetType);
+    reg(TokenType::ASTÉRIX, SetType, SetType, SetType);
+    reg(TokenType::SLASH, SetType, SetType, SetType);
 
     // assignment
-    reg(TokenType::assign, IntType, IntType, VoidType);
-    reg(TokenType::assign, BoolType, BoolType, VoidType);
-    reg(TokenType::assign, RealType, RealType, VoidType);
-    reg(TokenType::assign, CharType, CharType, VoidType);
-    reg(TokenType::assign, StrType, StrType, VoidType);
-    reg(TokenType::assign, SetType, SetType, VoidType);
+    reg(TokenType::ASSIGN, IntType, IntType, VoidType);
+    reg(TokenType::ASSIGN, BoolType, BoolType, VoidType);
+    reg(TokenType::ASSIGN, RealType, RealType, VoidType);
+    reg(TokenType::ASSIGN, CharType, CharType, VoidType);
+    reg(TokenType::ASSIGN, StrType, StrType, VoidType);
+    reg(TokenType::ASSIGN, SetType, SetType, VoidType);
 
-    reg(TokenType::assign, IntType, AnyType, VoidType); // Any type can be assigned to anything
-    reg(TokenType::assign, BoolType, AnyType, VoidType);
-    reg(TokenType::assign, RealType, AnyType, VoidType);
-    reg(TokenType::assign, CharType, AnyType, VoidType);
-    reg(TokenType::assign, StrType, AnyType, VoidType);
+    reg(TokenType::ASSIGN, IntType, AnyType, VoidType); // Any type can be assigned to anything
+    reg(TokenType::ASSIGN, BoolType, AnyType, VoidType);
+    reg(TokenType::ASSIGN, RealType, AnyType, VoidType);
+    reg(TokenType::ASSIGN, CharType, AnyType, VoidType);
+    reg(TokenType::ASSIGN, StrType, AnyType, VoidType);
 } // namespace ax
 
 void TypeTable::setTypes(llvm::LLVMContext &context) {
@@ -244,10 +244,10 @@ Type TypeTable::check(const TokenType op, Type const &Lt, Type const &Rt) {
     }
     // Deal with the assignment and comparison of NIL to pointers
     // debug("TypeTable::check {0} {1} {2}", string(op), L->get_name(), R->get_name());
-    if (op == TokenType::assign && L->id == TypeId::pointer && R->id == TypeId::null) {
+    if (op == TokenType::ASSIGN && L->id == TypeId::pointer && R->id == TypeId::null) {
         return TypeTable::VoidType;
     }
-    if ((op == TokenType::equals || op == TokenType::hash) && L->id == TypeId::pointer &&
+    if ((op == TokenType::EQUALS || op == TokenType::HASH) && L->id == TypeId::pointer &&
         R->id == TypeId::null) {
         return TypeTable::BoolType;
     }

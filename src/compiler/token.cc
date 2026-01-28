@@ -14,82 +14,82 @@ namespace ax {
 namespace {
 
 const std::map<TokenType, std::string> mapping{
-    {TokenType::null, "null"},
+    {TokenType::None, "null"},
 
-    {TokenType::ident, "indent"},
-    {TokenType::semicolon, "semicolon"},
-    {TokenType::period, "period"},
-    {TokenType::comma, ","},
+    {TokenType::IDENT, "indent"},
+    {TokenType::SEMICOLON, "semicolon"},
+    {TokenType::PERIOD, "period"},
+    {TokenType::COMMA, ","},
 
-    {TokenType::integer, "integer"},
-    {TokenType::hexinteger, "hexinteger"},
-    {TokenType::chr, "chr"},
-    {TokenType::hexchr, "hexchr"},
-    {TokenType::string, "string"},
+    {TokenType::INTEGER, "integer"},
+    {TokenType::HEXINTEGER, "hexinteger"},
+    {TokenType::CHR, "chr"},
+    {TokenType::HEXCHR, "hexchr"},
+    {TokenType::STRING, "string"},
 
-    {TokenType::plus, "+"},
-    {TokenType::dash, "-"},
-    {TokenType::asterisk, "*"},
+    {TokenType::PLUS, "+"},
+    {TokenType::DASH, "-"},
+    {TokenType::ASTÉRIX, "*"},
 
-    {TokenType::l_paren, "("},
-    {TokenType::r_paren, ")"},
-    {TokenType::colon, ":"},
-    {TokenType::equals, "="},
-    {TokenType::assign, ":="},
-    {TokenType::hash, "#"},
-    {TokenType::less, "<"},
-    {TokenType::leq, "<="},
-    {TokenType::greater, ">"},
-    {TokenType::gteq, ">="},
-    {TokenType::tilde, "~"},
-    {TokenType::ampersand, "&"},
-    {TokenType::l_bracket, "["},
-    {TokenType::r_bracket, "]"},
-    {TokenType::dotdot, ".."},
-    {TokenType::bar, "|"},
-    {TokenType::slash, "/"},
-    {TokenType::caret, "^"},
-    {TokenType::l_brace, "{"},
-    {TokenType::r_brace, "}"},
+    {TokenType::L_PAREN, "("},
+    {TokenType::R_PAREN, ")"},
+    {TokenType::COLON, ":"},
+    {TokenType::EQUALS, "="},
+    {TokenType::ASSIGN, ":="},
+    {TokenType::HASH, "#"},
+    {TokenType::LESS, "<"},
+    {TokenType::LEQ, "<="},
+    {TokenType::GREATER, ">"},
+    {TokenType::GTEQ, ">="},
+    {TokenType::TILDE, "~"},
+    {TokenType::AMPERSAND, "&"},
+    {TokenType::L_BRACKET, "["},
+    {TokenType::R_BRACKET, "]"},
+    {TokenType::DOTDOT, ".."},
+    {TokenType::BAR, "|"},
+    {TokenType::SLASH, "/"},
+    {TokenType::CARET, "^"},
+    {TokenType::L_BRACE, "{"},
+    {TokenType::R_BRACE, "}"},
 
     // Keywords
-    {TokenType::module, "MODULE"},
-    {TokenType::begin, "BEGIN"},
-    {TokenType::end, "END"},
-    {TokenType::div, "DIV"},
-    {TokenType::mod, "MOD"},
-    {TokenType::cnst, "CONST"},
-    {TokenType::type, "TYPE"},
-    {TokenType::var, "VAR"},
-    {TokenType::ret, "RETURN"},
-    {TokenType::procedure, "PROCEDURE"},
-    {TokenType::true_k, "TRUE"},
-    {TokenType::false_k, "FALSE"},
-    {TokenType::or_k, "OR"},
-    {TokenType::if_k, "IF"},
-    {TokenType::then, "THEN"},
-    {TokenType::elsif, "ELSIF"},
-    {TokenType::else_k, "ELSE"},
-    {TokenType::for_k, "FOR"},
-    {TokenType::to, "TO"},
-    {TokenType::by, "BY"},
-    {TokenType::do_k, "DO"},
-    {TokenType::while_k, "WHILE"},
-    {TokenType::repeat, "REPEAT"},
-    {TokenType::until, "UNTIL"},
-    {TokenType::loop, "LOOP"},
-    {TokenType::exit, "EXIT"},
-    {TokenType::array, "ARRAY"},
-    {TokenType::of, "OF"},
-    {TokenType::record, "RECORD"},
-    {TokenType::definition, "DEFINITION"},
-    {TokenType::import, "IMPORT"},
-    {TokenType::cse, "CASE"},
-    {TokenType::pointer, "POINTER"},
-    {TokenType::nil, "NIL"},
-    {TokenType::in, "IN"},
+    {TokenType::MODULE, "MODULE"},
+    {TokenType::BEGIN, "BEGIN"},
+    {TokenType::END, "END"},
+    {TokenType::DIV, "DIV"},
+    {TokenType::MOD, "MOD"},
+    {TokenType::CONST, "CONST"},
+    {TokenType::TYPE, "TYPE"},
+    {TokenType::VAR, "VAR"},
+    {TokenType::RETURN, "RETURN"},
+    {TokenType::PROCEDURE, "PROCEDURE"},
+    {TokenType::TRUE, "TRUE"},
+    {TokenType::FALSE, "FALSE"},
+    {TokenType::OR, "OR"},
+    {TokenType::IF, "IF"},
+    {TokenType::THEN, "THEN"},
+    {TokenType::ELSIF, "ELSIF"},
+    {TokenType::ELSE, "ELSE"},
+    {TokenType::FOR, "FOR"},
+    {TokenType::TO, "TO"},
+    {TokenType::BY, "BY"},
+    {TokenType::DO, "DO"},
+    {TokenType::WHILE, "WHILE"},
+    {TokenType::REPEAT, "REPEAT"},
+    {TokenType::UNTIL, "UNTIL"},
+    {TokenType::LOOP, "LOOP"},
+    {TokenType::EXIT, "EXIT"},
+    {TokenType::ARRAY, "ARRAY"},
+    {TokenType::OF, "OF"},
+    {TokenType::RECORD, "RECORD"},
+    {TokenType::DEFINITION, "DEFINITION"},
+    {TokenType::IMPORT, "IMPORT"},
+    {TokenType::CASE, "CASE"},
+    {TokenType::POINTER, "POINTER"},
+    {TokenType::NIL, "NIL"},
+    {TokenType::IN, "IN"},
 
-    {TokenType::eof, "EOF"},
+    {TokenType::Eof, "EOF"},
 };
 
 }
@@ -103,17 +103,16 @@ std::string string(const TokenType t) {
 
 Token::operator std::string() const {
     switch (type) {
-    case TokenType::integer:
+    case TokenType::INTEGER:
         return std::format("integer({0})", val);
-    case TokenType::hexinteger:
+    case TokenType::HEXINTEGER:
         return std::format("hexinteger({0})", val);
-    case TokenType::chr:
+    case TokenType::CHR:
         return std::format("'{0}'", val_int);
-    case TokenType::hexchr:
+    case TokenType::HEXCHR:
         return std::format("hexchar({0})", val);
-    case TokenType::ident:
+    case TokenType::IDENT:
         return val;
-
     default:
         return string(type);
     }
