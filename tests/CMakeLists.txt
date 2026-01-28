@@ -46,21 +46,9 @@ target_sources(ax.test PRIVATE
             lib_test.cc
             fake_importer.cc)
 
-package_add_test(lex.1 lex.1.cc)
-
-package_add_test(parse.1 parse.1.cc)
-package_add_test(parse.2 parse.2.cc)
-package_add_test(parse.3 parse.3.cc)
-package_add_test(parse.4 parse.4.cc)
-package_add_test(parse.5 parse.5.cc)
-
-package_add_test(inspect.1 inspect.1.cc)
-package_add_test(inspect.2 inspect.2.cc)
-package_add_test(inspect.4 inspect.4.cc)
-package_add_test(inspect.5 inspect.5.cc)
-
-package_add_test(definition.1 definition.cc)
-
-package_add_test(type.1 type.1.cc)
-
+package_add_test(lex lex.1.cc)
+package_add_test(parse parse.cc)
+package_add_test(inspect inspect.cc)
+package_add_test(definition definition.cc)
+package_add_test(type type.1.cc)
 package_add_test(importer importer_test.cc)
