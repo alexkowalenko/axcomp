@@ -26,7 +26,7 @@
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/TargetParser/Host.h>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "astvisitor.hh"
 #include "builtin.hh"
 #include "error.hh"

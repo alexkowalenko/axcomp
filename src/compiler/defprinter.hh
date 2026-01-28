@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "printer.hh"
 
 namespace ax {

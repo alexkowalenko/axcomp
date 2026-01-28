@@ -25,4 +25,12 @@ using String = wchar_t *;
 using Set = unsigned long;
 constexpr int SET_MAX = sizeof(Set) * CHAR_BIT - 1;
 
+// Template overloading for std::visit()
+
+template <class... Ts> struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
 } // namespace ax

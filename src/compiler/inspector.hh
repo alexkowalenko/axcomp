@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "astvisitor.hh"
 #include "error.hh"
 #include "importer.hh"

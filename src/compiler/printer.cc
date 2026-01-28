@@ -10,7 +10,7 @@
 #include <experimental/iterator>
 #include <format>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "token.hh"
 
 namespace ax {

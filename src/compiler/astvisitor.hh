@@ -126,15 +126,15 @@ class ASTVisitor {
     virtual void visit(ASTArray const &ast);
     virtual void visit(ASTPointerType const &ast);
     virtual void visit(ASTRecord const &ast);
-    virtual void visit(ASTQualident const & /*not used*/){};   // NOLINT
-    virtual void visit(ASTIdentifier const & /*not used*/){}; // NOLINT
-    virtual void visit(ASTSet const & /*not used*/){};               // NOLINT
-    virtual void visit(ASTInteger const & /*not used*/){};       // NOLINT
-    virtual void visit(ASTReal const & /*not used*/){};             // NOLINT
-    virtual void visit(ASTCharPtr const & /*not used*/){};          // NOLINT
-    virtual void visit(ASTString const & /*not used*/){};         // NOLINT
-    virtual void visit(ASTBool const & /*not used*/){};             // NOLINT
-    virtual void visit(ASTNil const & /*not used*/){};               // NOLINT
+    virtual void visit(ASTQualident const & /*not used*/) {};
+    virtual void visit(ASTIdentifier const & /*not used*/) {};
+    virtual void visit(ASTSet const & /*not used*/) {};
+    virtual void visit(ASTInteger const & /*not used*/) {};
+    virtual void visit(ASTReal const & /*not used*/) {};
+    virtual void visit(ASTCharPtr const & /*not used*/) {};
+    virtual void visit(ASTString const & /*not used*/) {};
+    virtual void visit(ASTBool const & /*not used*/) {};
+    virtual void visit(ASTNil const & /*not used*/) {};
 };
 
 } // namespace ax

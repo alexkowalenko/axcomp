@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "ast.hh"
+#include "ast/all.hh"
 
 namespace ax {
 

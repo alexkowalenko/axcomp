@@ -16,7 +16,7 @@
 #include <llvm/ADT/Statistic.h>
 #include <llvm/Support/Debug.h>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "defparser.hh"
 #include "error.hh"
 #include "inspector.hh"

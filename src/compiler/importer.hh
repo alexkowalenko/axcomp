@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "error.hh"
 #include "symboltable.hh"
 #include "typetable.hh"

@@ -183,9 +183,9 @@ class ProcedureType : public Type_ {
     Type receiver{nullptr};
     Attr receiver_type{Attr::null};
     using ParamsList = std::vector<std::pair<Type, Attr>>;
-    ParamsList params{};
+    ParamsList params;
     using FreeList = std::vector<std::pair<std::string, Type>>;
-    FreeList free_vars{};
+    FreeList free_vars;
 
   protected:
     std::string get_print(bool forward);

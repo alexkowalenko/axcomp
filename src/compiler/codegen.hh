@@ -19,7 +19,7 @@
 #include <llvm/IR/Module.h>
 #pragma clang diagnostic pop
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "astvisitor.hh"
 #include "importer.hh"
 #include "options.hh"

@@ -4,7 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 //
 
-#include "ast.hh"
+#include "ast/all.hh"
 
 #include <sstream>
 

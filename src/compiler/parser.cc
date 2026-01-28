@@ -13,7 +13,7 @@
 
 #include <llvm/Support/Debug.h>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "astvisitor.hh"
 #include "error.hh"
 #include "symbol.hh"

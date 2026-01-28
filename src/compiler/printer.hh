@@ -8,7 +8,7 @@
 
 #include <ostream>
 
-#include "ast.hh"
+#include "ast/all.hh"
 #include "astvisitor.hh"
 #include "defparser.hh"
 
