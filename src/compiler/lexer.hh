@@ -16,9 +16,11 @@
 
 namespace ax {
 
+struct Options;
+
 class LexerUTF8 {
   public:
-    LexerUTF8(std::string text, ErrorManager const &e);
+    LexerUTF8(std::string text, ErrorManager const &e, Options *options = nullptr);
 
     ~LexerUTF8() = default;
 
@@ -40,6 +42,7 @@ class LexerUTF8 {
     }
 
     void get_comment();
+    void scan_directive();
 
     Token scan_digit(Char c);
     Token scan_ident(Char c);
@@ -49,6 +52,7 @@ class LexerUTF8 {
     std::string::const_iterator cursor;
     ErrorManager const         &errors;
     std::stack<Token>           next_token;
+    Options                    *options{nullptr};
 
     int line_no{1};
     int char_pos{0};

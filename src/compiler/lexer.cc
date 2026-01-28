@@ -17,6 +17,7 @@
 
 #include "error.hh"
 #include "lexer.hh"
+#include "options.hh"
 
 namespace ax {
 
@@ -103,8 +104,8 @@ constexpr bool is_emoji(const Char c) {
 
 std::string wcharToString(const wchar_t wchar);
 
-LexerUTF8::LexerUTF8(std::string text, ErrorManager const &e)
-    : buffer(std::move(text)), errors(e) {
+LexerUTF8::LexerUTF8(std::string text, ErrorManager const &e, Options *opts)
+    : buffer(std::move(text)), errors(e), options(opts) {
     if (!utf8::is_valid(buffer.begin(), buffer.end())) {
         throw LexicalException(get_location(), "Not valid UTF-8 text");
     }
@@ -129,7 +130,11 @@ Token LexerUTF8::get_token() {
     }
 
     // Get the next token
-    const Char c = get_char();
+    Char c = get_char();
+    while (c == '<' && peek() == '*') {
+        scan_directive();
+        c = get_char();
+    }
 
     // Check single-digit character tokens
     if (const auto res = single_tokens.find(static_cast<char>(c)); res != single_tokens.end()) {
@@ -296,6 +301,58 @@ Token LexerUTF8::scan_ident(Char c) {
         }
     }
     return {TokenType::IDENT, ident};
+}
+
+void LexerUTF8::scan_directive() {
+    // Consume '<' already read by get_token, next char is '*'
+    get(); // consume '*'
+    Char c = get();
+    auto skip_ws = [&]() {
+        while (c != -1 && std::iswspace(c)) {
+            if (c == '\n') {
+                set_newline();
+            }
+            c = get();
+        }
+    };
+    skip_ws();
+    if (c == -1) {
+        throw LexicalException(get_location(), "Unterminated directive");
+    }
+    if (!(u_isalnum(c) || c == '_')) {
+        throw LexicalException(get_location(), "Invalid directive");
+    }
+    std::string ident;
+    utf8::append(static_cast<char32_t>(c), ident);
+    c = peek();
+    while (u_isalnum(c) || c == '_') {
+        get();
+        utf8::append(static_cast<char32_t>(c), ident);
+        c = peek();
+    }
+
+    c = get();
+    skip_ws();
+    if (c != '+' && c != '-') {
+        throw LexicalException(get_location(), "Invalid directive");
+    }
+    const bool enable = (c == '+');
+
+    c = get();
+    skip_ws();
+    if (c != '*') {
+        throw LexicalException(get_location(), "Invalid directive");
+    }
+    c = get();
+    if (c != '>') {
+        throw LexicalException(get_location(), "Invalid directive");
+    }
+
+    if (options && (ident == "MAIN" || ident == "main")) {
+        options->output_main = enable;
+    } else if (!(ident == "MAIN" || ident == "main")) {
+        throw LexicalException(get_location(), "Unknown directive: " + ident);
+    }
 }
 
 Token LexerUTF8::scan_string(Char const start) {

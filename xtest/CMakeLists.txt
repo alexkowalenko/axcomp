@@ -36,6 +36,8 @@ xtest_add_lit_tests(demo demo lit.compile)
 xtest_add_lit_tests(extra extra lit.compile)
 
 xtest_add_lit_tests(lang-basic lang/basic lit.compile)
+xtest_add_lit_tests(lang-directive lang/directive lit.compile)
+
 xtest_add_lit_tests(lang-const lang/const lit.compile)
 xtest_add_lit_tests(lang-type lang/type lit.compile)
 xtest_add_lit_tests(lang-var lang/var lit.compile)

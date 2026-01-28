@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
         input_text.assign(std::istreambuf_iterator<char>(std::cin),
                           std::istreambuf_iterator<char>());
     }
-    LexerUTF8 lexer(std::move(input_text), errors);
+    LexerUTF8 lexer(std::move(input_text), errors, &options);
 
     TypeTable types;
     types.initialise();

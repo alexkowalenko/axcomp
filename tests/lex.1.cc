@@ -14,6 +14,7 @@
 #pragma clang diagnostic ignored "-Wshadow"
 #include "error.hh"
 #include "lexer.hh"
+#include "options.hh"
 #include "token.hh"
 #pragma clang diagnostic pop
 
@@ -202,6 +203,21 @@ TEST(Lexer, Keywords) {
         {"IN", TokenType::IN, "IN"},
     };
     do_lex_tests(myTests);
+}
+
+TEST(Lexer, Directives) {
+    const ErrorManager errors;
+    Options            options;
+
+    LexerUTF8 lex("<* MAIN + *>MODULE M; END M.", errors, &options);
+    auto      token = lex.get_token();
+    EXPECT_EQ(token.type, TokenType::MODULE);
+    EXPECT_TRUE(options.output_main);
+
+    Options options_disabled;
+    LexerUTF8 lex_disabled("<* main - *>MODULE M; END M.", errors, &options_disabled);
+    lex_disabled.get_token();
+    EXPECT_FALSE(options_disabled.output_main);
 }
 
 TEST(Lexer, UTF8) {
