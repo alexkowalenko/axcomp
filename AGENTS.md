@@ -56,7 +56,7 @@ bin/ax -m --run prog.mod
 ## Testing Guidelines
 
 * Add GoogleTest cases next to the subsystem you extend and register them in `tests/CMakeLists.txt`.
-* Follow the `component.N.cc` naming to keep diffs narrow and fixtures readable.
+* Follow the `component.cc` naming to keep diffs narrow and fixtures readable.
 * `xtest` use LLVM lit and FileCheck to verify compiler output and runtime behaviour.
   At the end of `*.Mod` and `*.mod` files there is a comment with RUN: and CHECK: lines which specify how to run the
   compiler and check the output.

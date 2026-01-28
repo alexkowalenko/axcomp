@@ -214,7 +214,7 @@ TEST(Lexer, Directives) {
     EXPECT_EQ(token.type, TokenType::MODULE);
     EXPECT_TRUE(options.output_main);
 
-    Options options_disabled;
+    Options   options_disabled;
     LexerUTF8 lex_disabled("<* main - *>MODULE M; END M.", errors, &options_disabled);
     lex_disabled.get_token();
     EXPECT_FALSE(options_disabled.output_main);
@@ -279,7 +279,7 @@ TEST(Lexer, Real) {
         {"12.0E+2", TokenType::REAL, "12.0E+2"},
         {"1.2D-3", TokenType::REAL, "1.2D-3"},
         {"1.23E+45", TokenType::REAL, "1.23E+45"},
-        {"0.123D-12", TokenType::REAL, "0.123D-12"},
+        {"0.123e-12", TokenType::REAL, "0.123e-12"},
     };
 
     do_lex_tests(tests1);

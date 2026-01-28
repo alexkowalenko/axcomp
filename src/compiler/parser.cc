@@ -23,10 +23,11 @@
 
 namespace ax {
 
-constexpr auto DEBUG_TYPE{"parser "};
+constexpr auto DEBUG_TYPE{"parser"};
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' '
+                            << std::vformat(format, std::make_format_args(msg...))
                             << '\n'); // NOLINT
 }
 
@@ -1011,7 +1012,8 @@ ASTFactor Parser::parse_factor() {
         auto       nexttok = lexer.peek_token();
         const auto res = symbols.find(std::string(*d));
         debug("parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok), std::string(*d));
-        if (nexttok.type == TokenType::L_PAREN || (res && res->type->id == TypeId::PROCEDURE_FWD)) {
+        if (nexttok.type == TokenType::L_PAREN ||
+            (res && res->type->id == TypeId::PROCEDURE_FWD)) {
             debug("parse_factor call: {0}");
             ast->factor = parse_call(d);
             return ast;
@@ -1287,6 +1289,7 @@ ASTInteger Parser::parse_integer() const {
         radix = hex_radix;
         ast->hex = true;
         ast->value = std::strtol(tok.val.c_str(), &end, radix);
+        debug("parse_integer hex: {0}", ast->value);
         return ast;
     }
     if (tok.type == TokenType::INTEGER) {

@@ -236,7 +236,7 @@ Token LexerUTF8::scan_digit(Char c) {
             digit += static_cast<char>(c);
             c = peek();
         }
-        if (c == 'D' || c == 'E') {
+        if (c == 'e' || c == 'E' || c == 'D') {
             get();
             digit += static_cast<char>(c);
             c = peek();
