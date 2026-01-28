@@ -11,7 +11,7 @@
 #include "error.hh"
 #include "importer.hh"
 #include "symboltable.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 namespace ax {

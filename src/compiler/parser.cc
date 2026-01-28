@@ -18,7 +18,7 @@
 #include "error.hh"
 #include "symbol.hh"
 #include "token.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -1011,7 +1011,7 @@ ASTFactor Parser::parse_factor() {
         auto       nexttok = lexer.peek_token();
         const auto res = symbols.find(std::string(*d));
         debug("parse_factor nexttok: {0} find: {1} {2}", std::string(nexttok), std::string(*d));
-        if (nexttok.type == TokenType::L_PAREN || (res && res->type->id == TypeId::procedureFwd)) {
+        if (nexttok.type == TokenType::L_PAREN || (res && res->type->id == TypeId::PROCEDURE_FWD)) {
             debug("parse_factor call: {0}");
             ast->factor = parse_call(d);
             return ast;

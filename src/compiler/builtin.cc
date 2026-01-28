@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "codegen.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -77,14 +77,14 @@ BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
         return codegen->call_function("NEW_String", TypeTable::IntType->get_llvm(),
                                       {args[0], args[1]});
     }
-    if (ast->args.size() == 1 && ast->args[0]->get_type()->id == TypeId::pointer) {
+    if (ast->args.size() == 1 && ast->args[0]->get_type()->id == TypeId::POINTER) {
         debug("builtin NEW POINTER");
         const auto ptr_type = std::dynamic_pointer_cast<ax::PointerType>(ast->args[0]->get_type());
         const auto size = ptr_type->get_reference()->get_size();
         return codegen->call_function("NEW_ptr", TypeTable::IntType->get_llvm(),
                                       {args[0], TypeTable::IntType->make_value(size)});
     }
-    if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::openarray) {
+    if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::OPENARRAY) {
         debug("builtin NEW ARRAY");
 
         const auto array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());

@@ -21,7 +21,7 @@
 #include "error.hh"
 #include "inspector.hh"
 #include "lexer.hh"
-#include "type.hh"
+#include "types/all.hh"
 
 namespace ax {
 

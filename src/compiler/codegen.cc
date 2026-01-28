@@ -33,7 +33,7 @@
 #include "symbol.hh"
 #include "symboltable.hh"
 #include "token.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 namespace ax {
@@ -54,11 +54,11 @@ constexpr auto file_ext_llvmri{".ll"};
 constexpr auto file_ext_obj{".o"};
 
 bool is_string_type(Type const &type) {
-    return type && (type->id == TypeId::string || type->id == TypeId::str1);
+    return type && (type->id == TypeId::STRING || type->id == TypeId::STR1);
 }
 
 bool is_char_type(Type const &type) {
-    return type && type->id == TypeId::chr;
+    return type && type->id == TypeId::CHAR;
 }
 
 } // namespace
@@ -146,7 +146,7 @@ void CodeGenerator::visit(ASTImport const &ast) {
                 GlobalVariable *gVar = generate_global(name, type->get_llvm());
                 debug("ASTImport var {0}", name);
                 symboltable.set_value(name, gVar, Attr::global);
-            } else if (type->id == TypeId::procedure) {
+            } else if (type->id == TypeId::PROCEDURE) {
                 debug("ASTImport proc {0}", name);
                 if (const auto res = symboltable.find(name); res->is(Attr::used)) {
                     auto *funcType = static_cast<FunctionType *>(type->get_llvm());
@@ -593,9 +593,9 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
             // Reference Parameter
 
             // Check for STRING1 to CHAR conversion
-            do_strchar_conv = a->get_type()->id == TypeId::str1 &&
+            do_strchar_conv = a->get_type()->id == TypeId::STR1 &&
                               (typeFunction->params[i].first &&
-                               typeFunction->params[i].first->id == TypeId::chr);
+                               typeFunction->params[i].first->id == TypeId::CHAR);
             visit(a);
         }
         args.push_back(last_value);
@@ -1101,12 +1101,12 @@ void CodeGenerator::visit(ASTExpr const &ast) {
                 break;
             default:;
             }
-        } else if ((lhs_type && lhs_type->id == TypeId::pointer && rhs_type &&
-                    rhs_type->id == TypeId::null) ||
-                   (lhs_type && lhs_type->id == TypeId::null && rhs_type &&
-                    rhs_type->id == TypeId::pointer)) {
+        } else if ((lhs_type && lhs_type->id == TypeId::POINTER && rhs_type &&
+                    rhs_type->id == TypeId::VOID) ||
+                   (lhs_type && lhs_type->id == TypeId::VOID && rhs_type &&
+                    rhs_type->id == TypeId::POINTER)) {
             // Pointer comparisons
-            if (lhs_type->id == TypeId::null) {
+            if (lhs_type->id == TypeId::VOID) {
                 std::swap(L, R);
             }
             R = builder.CreateBitCast(R, L->getType());
@@ -1472,7 +1472,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     auto *arg_ptr = last_value;
 
     const auto ident_type = ast->ident->get_type();
-    const bool is_string_type = ident_type->id == TypeId::string || ident_type->id == TypeId::str1;
+    const bool is_string_type = ident_type->id == TypeId::STRING || ident_type->id == TypeId::STR1;
 
     std::vector<Value *> index;
     if (!is_string_type) {
@@ -1509,11 +1509,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     // arg_ptr->getType()->print(llvm::dbgs());
 
     assert(arg_ptr->getType()->isPointerTy()); // NOLINT
-    if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::openarray ||
+    if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::OPENARRAY ||
         is_var || is_string_type) {
         debug("Create load");
 #if 0
-        if (ast->ident->get_type()->id == TypeId::openarray) {
+        if (ast->ident->get_type()->id == TypeId::OPENARRAY) {
             debug("openarray");
             const auto array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
             arg_ptr = builder.CreateLoad(array_type->get_llvm(), arg_ptr);

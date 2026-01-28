@@ -13,7 +13,7 @@
 
 #include "symboltable.hh"
 #include "token.hh"
-#include "type.hh"
+#include "types/all.hh"
 
 namespace ax {
 

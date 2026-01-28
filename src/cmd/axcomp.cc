@@ -28,8 +28,6 @@
 #include "options.hh"
 #include "parser.hh"
 #include "printer.hh"
-#include "type.hh"
-#include "typetable.hh"
 
 using namespace ax;
 

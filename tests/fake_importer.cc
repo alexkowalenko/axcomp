@@ -6,7 +6,7 @@
 
 #include "fake_importer.hh"
 #include "symbol.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 #include <memory>
 

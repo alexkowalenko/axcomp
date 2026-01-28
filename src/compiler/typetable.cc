@@ -4,7 +4,7 @@
 // Copyright © 2020 Alex Kowalenko
 
 #include "typetable.hh"
-#include "type.hh"
+#include "types/all.hh"
 
 #include <format>
 
@@ -48,16 +48,16 @@ void TypeTable::initialise() {
     put(std::string(*StrType), StrType);
 
     Str1Type = std::make_shared<StringType>();
-    Str1Type->id = TypeId::str1;
+    Str1Type->id = TypeId::STR1;
     Str1Type->name = "STRING1";
     put(std::string(*Str1Type), Str1Type);
 
     SetType = std::make_shared<SetCType>();
     put(std::string(*SetType), SetType);
 
-    VoidType = std::make_shared<SimpleType>("void", TypeId::null);
+    VoidType = std::make_shared<SimpleType>("void", TypeId::VOID);
     put(std::string(*VoidType), VoidType);
-    AnyType = std::make_shared<SimpleType>("any", TypeId::any);
+    AnyType = std::make_shared<SimpleType>("any", TypeId::ANY);
     put(std::string(*AnyType), AnyType);
 
     // Type aliases for compatibility
@@ -244,11 +244,11 @@ Type TypeTable::check(const TokenType op, Type const &Lt, Type const &Rt) {
     }
     // Deal with the assignment and comparison of NIL to pointers
     // debug("TypeTable::check {0} {1} {2}", string(op), L->get_name(), R->get_name());
-    if (op == TokenType::ASSIGN && L->id == TypeId::pointer && R->id == TypeId::null) {
+    if (op == TokenType::ASSIGN && L->id == TypeId::POINTER && R->id == TypeId::VOID) {
         return TypeTable::VoidType;
     }
-    if ((op == TokenType::EQUALS || op == TokenType::HASH) && L->id == TypeId::pointer &&
-        R->id == TypeId::null) {
+    if ((op == TokenType::EQUALS || op == TokenType::HASH) && L->id == TypeId::POINTER &&
+        R->id == TypeId::VOID) {
         return TypeTable::BoolType;
     }
     return nullptr;

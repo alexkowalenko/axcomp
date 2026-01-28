@@ -12,7 +12,7 @@
 #include "../astvisitor.hh"
 #include "../location.hh"
 #include "../token.hh"
-#include "../type.hh"
+#include "../types/type.hh"
 
 namespace ax {
 

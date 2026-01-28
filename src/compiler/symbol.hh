@@ -18,7 +18,7 @@
 #include <llvm/IR/Value.h>
 #pragma clang diagnostic pop
 
-#include "type.hh"
+#include "types/all.hh"
 
 namespace ax {
 

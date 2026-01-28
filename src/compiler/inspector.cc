@@ -18,7 +18,7 @@
 #include "error.hh"
 #include "symbol.hh"
 #include "token.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 #include <ranges>
@@ -113,7 +113,7 @@ void Inspector::visit(ASTTypeDec const &ast) {
             continue;
         }
         visit(type_expr);
-        if (last_type->id == TypeId::record) {
+        if (last_type->id == TypeId::RECORD) {
             std::dynamic_pointer_cast<RecordType>(last_type)->set_identified(name->value);
         }
         auto type = std::make_shared<TypeAlias>(name->value, last_type);
@@ -160,7 +160,7 @@ void Inspector::do_receiver(const RecVar &r) const {
         errors.add(e);
         return;
     }
-    if (t->id != TypeId::record && !is_ptr_to_record(t)) {
+    if (t->id != TypeId::RECORD && !is_ptr_to_record(t)) {
         const auto e = TypeError(
             r.second->get_location(),
             "bound type {0} must be a RECORD or POINTER TO RECORD in type-bound PROCEDURE",
@@ -174,7 +174,7 @@ void Inspector::do_receiver(const RecVar &r) const {
 std::pair<Type, ProcedureType::ParamsList> Inspector::do_proc(const ASTProc_ &ast) {
     // Check name if not defined;
     if (const auto name_check = symboltable.find(ast.name->value);
-        name_check && name_check->type->id != TypeId::procedureFwd) {
+        name_check && name_check->type->id != TypeId::PROCEDURE_FWD) {
         const auto e = TypeError(ast.get_location(),
                                  "PROCEDURE {0}, identifier is already defined", ast.name->value);
         errors.add(e);
@@ -492,7 +492,7 @@ void Inspector::visit(ASTCall const &ast) {
         auto base_last = types.resolve(last_type->get_name());
         auto proc_base = types.resolve((*proc_iter).first->get_name());
 
-        if (proc_base->id == TypeId::null || base_last->id == TypeId::any) {
+        if (proc_base->id == TypeId::VOID || base_last->id == TypeId::ANY) {
             // Void type - accepts any type, used for builtin compile time functions
             continue;
         }
@@ -786,9 +786,9 @@ void Inspector::visit(ASTDesignator const &ast) {
         return;
     }
     bool       is_array = last_type->is_array();
-    bool       is_record = last_type->id == TypeId::record;
-    bool       is_string = last_type->id == TypeId::string;
-    bool const is_pointer = last_type->id == TypeId::pointer;
+    bool       is_record = last_type->id == TypeId::RECORD;
+    bool       is_string = last_type->id == TypeId::STRING;
+    bool const is_pointer = last_type->id == TypeId::POINTER;
     auto       b_type = last_type;
     if (!(is_array || is_record || is_string || is_pointer) && !ast->selectors.empty()) {
         auto e = TypeError(ast->get_location(), "variable {0} is not an indexable type",
@@ -888,8 +888,8 @@ void Inspector::visit(ASTDesignator const &ast) {
         }
         b_type = types.resolve(last_type->get_name());
         is_array = b_type->is_array();
-        is_record = b_type->id == TypeId::record;
-        is_string = b_type->id == TypeId::string;
+        is_record = b_type->id == TypeId::RECORD;
+        is_string = b_type->id == TypeId::STRING;
     }
 } // namespace ax
 
@@ -967,7 +967,7 @@ void Inspector::visit(ASTRecord const &ast) {
             const auto e = TypeError(ast->base->get_location(), "RECORD base type {0} not found",
                                      baseType_name);
             errors.add(e);
-        } else if (baseType->id != TypeId::record) {
+        } else if (baseType->id != TypeId::RECORD) {
             const auto e = TypeError(ast->base->get_location(),
                                      "RECORD base type {0} is not a record", baseType_name);
             errors.add(e);
@@ -1019,7 +1019,7 @@ std::string Inspector::get_Qualident(ASTQualident const &ast) const {
     if (ast->qual.empty()) {
         return ast->id->value;
     }
-    if (res && res->type->id == TypeId::module) {
+    if (res && res->type->id == TypeId::MODULE) {
         const auto module_name = std::dynamic_pointer_cast<ModuleType>(res->type)->module_name();
         result = ASTQualident_::make_coded_id(module_name, ast->id->value);
         // Rewrite AST with real module name
@@ -1083,7 +1083,7 @@ void Inspector::visit(ASTIdentifier const &ast) {
     last_type = resType;
     ast->set_type(last_type);
     is_const = res->is(Attr::cnst);
-    if (last_type->id == TypeId::string) {
+    if (last_type->id == TypeId::STRING) {
         ast->set(Attr::ptr);
     }
     is_lvalue = true;

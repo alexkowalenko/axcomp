@@ -9,7 +9,7 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 #pragma clang diagnostic pop
 
@@ -135,7 +135,7 @@ TEST(Type, String1) {
     TypeTable types;
     types.initialise();
 
-    auto str1 = std::make_shared<ax::SimpleType>("STRING1", TypeId::str1);
+    auto str1 = std::make_shared<ax::SimpleType>("STRING1", TypeId::STR1);
 
     EXPECT_EQ(TypeTable::CharType->equiv(str1), true);
     EXPECT_EQ(TypeTable::StrType->equiv(str1), true);

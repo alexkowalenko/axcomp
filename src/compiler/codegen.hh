@@ -24,7 +24,7 @@
 #include "importer.hh"
 #include "options.hh"
 #include "symboltable.hh"
-#include "type.hh"
+#include "types/all.hh"
 #include "typetable.hh"
 
 using namespace llvm;
