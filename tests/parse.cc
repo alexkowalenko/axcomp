@@ -90,6 +90,9 @@ TEST(Parser, Plus) {
         {"MODULE y; BEGIN RETURN - 1 END y.", "MODULE y;\nBEGIN\nRETURN -1\nEND y.", ""},
         {"MODULE y; BEGIN RETURN + 1 END y.", "MODULE y;\nBEGIN\nRETURN +1\nEND y.", ""},
 
+        // Grammar does not support - - NUMBER, need parentheses.
+        {"MODULE y; BEGIN RETURN - (- 1) END y.", "MODULE y;\nBEGIN\nRETURN - (-1) \nEND y.", ""},
+
         {"MODULE y; BEGIN RETURN 1 + 1 END y.", "MODULE y;\nBEGIN\nRETURN 1+1\nEND y.", ""},
         {"MODULE y; BEGIN RETURN 2 - 2 END y.", "MODULE y;\nBEGIN\nRETURN 2-2\nEND y.", ""},
         {"MODULE y; BEGIN RETURN 1 + 2 - 3 END y.", "MODULE y;\nBEGIN\nRETURN 1+2-3\nEND y.", ""},
