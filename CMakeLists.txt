@@ -9,6 +9,8 @@ cmake_minimum_required(VERSION 4.0)
 # Change compiler here
 set(AX_BASE_CLANG /opt/homebrew/opt/llvm)
 set(CMAKE_CXX_COMPILER ${AX_BASE_CLANG}/bin/clang++)
+set(CMAKE_C_COMPILER  ${AX_BASE_CLANG}/bin/clang)
+
 message(STATUS "C++ compiler = ${CMAKE_CXX_COMPILER}")
 
 project (axcomp VERSION 0.3

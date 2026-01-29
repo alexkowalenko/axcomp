@@ -1,4 +1,5 @@
-build/***
+build/**
+cmake-build-debug/**
 bin/**
 lib/**
 .vscode/***
@@ -11,6 +12,7 @@ compile_commands.json
 demo/**
 xtest/lit.parse.cfg.py
 xtest/lit.compile.cfg.py
+
 
 **/*.o
 **/*.ll

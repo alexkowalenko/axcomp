@@ -283,6 +283,7 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     std::vector<llvm::Type *>                              proto;
     std::vector<std::pair<int, llvm::Attribute::AttrKind>> argAttr;
     auto                                                   index{0};
+    llvm::Type                                            *closure_type = nullptr;
 
     // Do receiver first
     if (ast->receiver.first) {
@@ -300,7 +301,11 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
         index++;
         if (index == 1 && sym->is(Attr::closure)) {
             debug("ASTProcedure {0} is closure function", ast->name->value);
-            argAttr.emplace_back(index, llvm::Attribute::Nest);
+            if (!closure_type) {
+                closure_type = std::dynamic_pointer_cast<ProcedureType>(sym->type)
+                                   ->get_closure_struct()
+                                   ->get_llvm();
+            }
             proto.push_back(llvm::PointerType::get(context, 0));
             continue;
         }
@@ -407,28 +412,41 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     // Do closure variables
     if (sym->is(Attr::closure)) {
         // Set closure variables
-        // from lacsap PrototypeAST::CreateArgumentAlloca
-        debug("ASTProcedure set up closure variables", ast->name->value);
+        debug("ASTProcedure set up closure variables {}", ast->name->value);
 
         std::vector<llvm::Value *> ind = {TypeTable::IntType->make_value(0), nullptr};
         unsigned                   i = 0;
         auto                      *cls_arg = f->arg_begin();
+        if (!closure_type) {
+            closure_type = std::dynamic_pointer_cast<ProcedureType>(sym->type)
+                               ->get_closure_struct()
+                               ->get_llvm();
+        }
         for (auto const &[cls_var, cls_type] :
              std::dynamic_pointer_cast<ProcedureType>(sym->type)->free_vars) {
             ind[1] = TypeTable::IntType->make_value(i);
 
-            llvm::Value *a = builder.CreateGEP(cls_arg->getType(), &*cls_arg, ind, cls_var);
+            LLVM_DEBUG({
+                llvm::dbgs() << "closure callee GEP cls_var=" << cls_var << " cls_arg_type=";
+                cls_arg->getType()->print(llvm::dbgs());
+                llvm::dbgs() << " closure_type=";
+                closure_type->print(llvm::dbgs());
+                llvm::dbgs() << " idx_type=";
+                ind[1]->getType()->print(llvm::dbgs());
+                llvm::dbgs() << "\n";
+            });
+            llvm::Value *a = builder.CreateGEP(closure_type, &*cls_arg, ind, cls_var);
             a = builder.CreateLoad(a->getType(), a, cls_var);
 
             // put into symbol table
-            // * this is meant to shadow the variable in the outer scope otherwise the
-            // outer scope
-            // * variable changes.
-            // debug("ASTProcedure set_value {0} : {1}", cls_arg->getName(),
-            // a->getName());
-            auto sym = mkSym(cls_type);
-            sym->value = a;
-            symboltable.put(cls_var, sym);
+            // this is meant to shadow the variable in the outer scope otherwise the
+            // outer scope variable changes.
+            debug("ASTProcedure set_value {} : {}, type: {}", cls_arg->getName(), a->getName(),
+                  cls_type->get_name());
+
+            auto closure_sym = mkSym(cls_type);
+            closure_sym->value = a;
+            symboltable.put(cls_var, closure_sym);
             i++;
         }
     }
@@ -440,7 +458,7 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     builder.SetInsertPoint(block);
 
     // for recursion
-    debug("ASTProcedure set function {0}", ast->name->value);
+    debug("ASTProcedure set function {}", ast->name->value);
     symboltable.set_value(ast->name->value, f);
 
     // Clear the last_end stack
@@ -583,7 +601,9 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
     }
     auto i = 0;
     for (auto const &a : ast->args) {
-        if (typeFunction->params[i].second == Attr::var) {
+        const bool is_var_param = i < static_cast<int>(typeFunction->params.size()) &&
+                                  typeFunction->params[i].second == Attr::var;
+        if (is_var_param) {
             debug("ASTCall VAR parameter");
             // Var Parameter
 
@@ -643,7 +663,16 @@ void CodeGenerator::visit(ASTCall const &ast) {
             auto         r = symboltable.find(name);
             llvm::Value *v = r->value;
             ind[1] = TypeTable::IntType->make_value(index);
-            llvm::Value *ptr = builder.CreateGEP(closure->getType(), closure, ind, "cls");
+            LLVM_DEBUG({
+                llvm::dbgs() << "closure caller GEP name=" << name << " closure_type=";
+                cls_ty->print(llvm::dbgs());
+                llvm::dbgs() << " closure_value_type=";
+                closure->getType()->print(llvm::dbgs());
+                llvm::dbgs() << " idx_type=";
+                ind[1]->getType()->print(llvm::dbgs());
+                llvm::dbgs() << "\n";
+            });
+            llvm::Value *ptr = builder.CreateGEP(cls_ty, closure, ind, "cls");
             // debug("ASTCall closure call {0} : {1}", v->getName(), name);
             builder.CreateStore(v, ptr);
             index++;
@@ -651,9 +680,6 @@ void CodeGenerator::visit(ASTCall const &ast) {
         args.insert(args.begin(), closure);
     }
     auto *inst = builder.CreateCall(callee, args);
-    if (res->is(Attr::closure)) {
-        inst->addAttributeAtIndex(1, llvm::Attribute::Nest);
-    }
     last_value = inst;
 }
 
