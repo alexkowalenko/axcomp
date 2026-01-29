@@ -7,6 +7,7 @@
 #pragma once
 
 #include <memory>
+#include <stack>
 #include <string>
 
 #pragma clang diagnostic push
@@ -135,10 +136,10 @@ class CodeGenerator : ASTVisitor {
     IRBuilder<>             builder;
     std::unique_ptr<Module> module;
 
-    bool        top_level{true};        // am I in the top level of the module?
-    Value      *last_value{nullptr};    // holds last value of compilation
-    BasicBlock *last_end{nullptr};      // last end block in loop, used for EXIT
-    bool        do_strchar_conv{false}; // Convert STRING1 to CHAR
+    bool                     top_level{true};        // am I in the top level of the module?
+    Value                   *last_value{nullptr};    // holds last value of compilation
+    std::stack<BasicBlock *> last_end;               // last end block in loop, used for EXIT
+    bool                     do_strchar_conv{false}; // Convert STRING1 to CHAR
 
     int                               string_const{0}; // const_strings counter
     llvm::StringMap<GlobalVariable *> global_strings;

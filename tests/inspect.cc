@@ -8,9 +8,7 @@
 
 #include "parse_test.hh"
 
-
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
-
 
 TEST(Inspector, VarType) {
     std::vector<ParseTests> tests = {
@@ -1229,7 +1227,6 @@ TEST(Inspector, RealExpr) {
     do_inspect_tests(tests);
 }
 
-
 TEST(Inspector, IF) {
     std::vector<ParseTests> tests = {
         {R"(MODULE alpha;
@@ -1456,8 +1453,7 @@ TEST(Inspector, LOOP) {
         END alpha.)",
          "MODULE alpha;\nVAR\nx: INTEGER;\nBEGIN\nLOOP\nx := "
          "x+1;\nEXIT\nEND;\nRETURN x\nEND alpha.",
-         ""},
-    };
+         ""}};
     do_inspect_tests(tests);
 }
 
@@ -1864,7 +1860,6 @@ TEST(Inspector, ImportAccess) {
     };
     do_inspect_fimport_tests(tests);
 }
-
 
 TEST(Inspector, CHAR) {
     std::vector<ParseTests> tests = {
@@ -2455,7 +2450,6 @@ TEST(Inspector, SetOps2) {
     };
     do_inspect_tests(tests);
 }
-
 
 TEST(Inspector, Arrays) {
     std::vector<ParseTests> tests = {

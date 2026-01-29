@@ -14,6 +14,7 @@
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Function.h>
+#include <llvm/IR/Instructions.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/MC/TargetRegistry.h>
@@ -442,6 +443,12 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     debug("ASTProcedure set function {0}", ast->name->value);
     symboltable.set_value(ast->name->value, f);
 
+    // Clear the last_end stack
+    while (!last_end.empty()) {
+        last_end.pop();
+    }
+
+    // Work through the statements
     for (auto const &stat : ast->stats) {
         stat->accept(this);
     }
@@ -525,8 +532,8 @@ void CodeGenerator::visit(ASTReturn const &ast) {
 
 void CodeGenerator::visit(ASTExit const &ast) {
     debug("ASTExit");
-    if (last_end) {
-        builder.CreateBr(last_end);
+    if (!last_end.empty()) {
+        builder.CreateBr(last_end.top());
     } else {
         throw CodeGenException(ast->get_location(), "EXIT: no enclosing loop.");
     }
@@ -877,7 +884,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
     BasicBlock *forpos = BasicBlock::Create(context, "forpos", funct);
     BasicBlock *forneg = BasicBlock::Create(context, "forneg", funct);
     BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
-    last_end = after;
+    last_end.push(after);
 
     debug("index: {}", ast->ident->value);
     auto *index = symboltable.find(ast->ident->value)->value;
@@ -948,6 +955,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
 
     // Any new code will be inserted in AfterBB.
     builder.SetInsertPoint(after);
+    last_end.pop();
 
     // debug("ASTFor after:{0}", last_end);
 }
@@ -960,7 +968,7 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     BasicBlock *while_block = BasicBlock::Create(context, "while", funct);
     BasicBlock *loop = BasicBlock::Create(context, "loop");
     BasicBlock *end_block = BasicBlock::Create(context, "end");
-    last_end = end_block;
+    last_end.push(end_block);
 
     builder.CreateBr(while_block);
     builder.SetInsertPoint(while_block);
@@ -984,6 +992,7 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     // END
     funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
+    last_end.pop();
 }
 
 void CodeGenerator::visit(ASTRepeat const &ast) {
@@ -993,7 +1002,7 @@ void CodeGenerator::visit(ASTRepeat const &ast) {
     auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *repeat_block = BasicBlock::Create(context, "repeat", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
-    last_end = end_block;
+    last_end.push(end_block);
 
     // REPEAT
     builder.CreateBr(repeat_block);
@@ -1011,6 +1020,7 @@ void CodeGenerator::visit(ASTRepeat const &ast) {
     // END
     funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
+    last_end.pop();
 }
 
 void CodeGenerator::visit(ASTLoop const &ast) {
@@ -1020,7 +1030,7 @@ void CodeGenerator::visit(ASTLoop const &ast) {
     auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *loop_block = BasicBlock::Create(context, "loop", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
-    last_end = end_block;
+    last_end.push(end_block);
 
     // LOOP
     builder.CreateBr(loop_block);
@@ -1035,7 +1045,7 @@ void CodeGenerator::visit(ASTLoop const &ast) {
     // END
     funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
-    // end_block = builder.GetInsertBlock();
+    last_end.pop();
 }
 
 void CodeGenerator::visit(ASTBlock const &ast) {
@@ -1045,7 +1055,7 @@ void CodeGenerator::visit(ASTBlock const &ast) {
     auto       *funct = builder.GetInsertBlock()->getParent();
     BasicBlock *begin_block = BasicBlock::Create(context, "begin", funct);
     BasicBlock *end_block = BasicBlock::Create(context, "end");
-    last_end = end_block;
+    last_end.push(end_block);
 
     // BEGIN
     builder.CreateBr(begin_block);
@@ -1062,6 +1072,7 @@ void CodeGenerator::visit(ASTBlock const &ast) {
     // END
     funct->insert(funct->end(), end_block);
     builder.SetInsertPoint(end_block);
+    last_end.push(end_block);
 }
 
 void CodeGenerator::visit(ASTExpr const &ast) {
