@@ -24,3 +24,13 @@ END f;
 BEGIN
     f(); 
 END nested2.
+
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:  f y = 1
+CHECK-NEXT:        g y = 1
+CHECK-NEXT:        g y = 3
+CHECK-NEXT:        f y = 3
+CHECK-NEXT: 0
+*)

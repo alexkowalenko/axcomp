@@ -31,3 +31,13 @@ BEGIN
     Out.Int(x, x); Out.Ln;
     g();
 END nested.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK:   3
+CHECK-NEXT:       1
+CHECK-NEXT:        2
+CHECK-NEXT:         3
+CHECK-NEXT:          4
+*)
+

@@ -21,3 +21,8 @@ PROCEDURE P*();
 BEGIN
  P;
 END Undef25.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 0
+*)

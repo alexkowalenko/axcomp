@@ -15,3 +15,9 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END NestedProc1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: Hello World
+CHECK-NEXT: 0
+*)

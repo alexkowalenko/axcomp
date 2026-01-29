@@ -25,3 +25,9 @@ PROCEDURE P*(): INTEGER;
 BEGIN
   Out.Int(P, 0); Out.Ln;
 END Undef22.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: 1
+CHECK-NEXT: 0
+*)
