@@ -127,6 +127,8 @@ TEST(Lexer, Comments) {
         {"(* hello *) 1", TokenType::INTEGER, "1"},
         {"(**) 1", TokenType::INTEGER, "1"},
         {"(* hello (* there! *) *)1", TokenType::INTEGER, "1"},
+        {"// hello\n1", TokenType::INTEGER, "1"},
+        {"// hello\r\n1", TokenType::INTEGER, "1"},
         // error in comment
         {"(* hello (* there! *)1", TokenType::Eof, "[1,22]: Unterminated comment"},
     };

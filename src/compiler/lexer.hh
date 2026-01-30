@@ -42,6 +42,7 @@ class LexerUTF8 {
     }
 
     void get_comment();
+    void get_line_comment();
     void scan_directive();
 
     Token scan_digit(Char c);

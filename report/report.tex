@@ -77,6 +77,7 @@ There is some support for emoji characters as identifiers, emoji characters are 
 \subsection{Identifiers}
 
 Identifiers are sequences of letters and digits. The first character must be a letter.
+Unicode letters from all alphabets are allowed and emoji characters are also allowed as letters.
 
 Syntax:
 \begin{lstlisting}[style=ebnf]
@@ -110,12 +111,12 @@ ScaleFactor = ("E" | "e" | "D" ) ["+" | "-"] digit {digit}.
 
 Examples:
 \begin{lstlisting}[style=example]
-    2020 0DH 12.3 4.567E8 0.55712566D-6
+    2020 0DH 12.3 4.567E8 0.55712566D-6 2.3e-10
 \end{lstlisting}
 
 \subsection{\BOOLEAN}
 
-\BOOLEAN\ constants are \TRUE\ and \FALSE. \label{bool-consts}
+\BOOLEAN\ constants are \TRUE\ and \FALSE. \label{subsec:bool-consts}
 
 \subsection{Characters}
 Character constants are denoted by the ordinal number of the character in hexadecimal notation followed by the letter !X!
@@ -189,13 +190,15 @@ In contrast to \TRUE\ and \FALSE\ the type of \NIL\ cannot be expressed.
 
 Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between !(* *)!.
 Comments do not affect the meaning of a program.
+Also C++ style line comments are supported, starting with \lstinline!//! and continuing to the end of the line.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Declarations and scope rules}
 \label{declarations}
 
-Every identifier occurring in a program must be introduced by a declaration, unless it is a predefined identifier. Declarations also serve to specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure.
+Every identifier occurring in a program must be introduced by a declaration, unless it is a predefined identifier.
+Declarations also serve to specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure.
 
 The scope of an object \lstinline!x! extends textually from the point of its declaration to the end of the block (module, procedure, record or class) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks.
 
@@ -211,7 +214,10 @@ The scope rule has the following amendments:
 
 \subsection{Visibility}
 
-An identifier declared in a module block may be followed by an export mark (\lstinline!*! or \lstinline!-!) in its declaration to indicate that it is exported. An identifier \lstinline!x! exported by a module \lstinline!M! may be used in other modules, if they import \lstinline!M! (see \ref{modules}). The identifier is then denoted as \lstinline!M.x! in these modules and is called a qualified identifier. Variables and record fields marked with \lstinline!-! in their declaration are read-only in importing modules.
+An identifier declared in a module block may be followed by an export mark (\lstinline!*! or \lstinline!-!) in its declaration to indicate that it is exported.
+An identifier \lstinline!x! exported by a module \lstinline!M! may be used in other modules, if they import \lstinline!M! (see \ref{modules}).
+The identifier is then denoted as \lstinline!M.x! in these modules and is called a qualified identifier.
+Variables and record fields marked with \lstinline!-! in their declaration are read-only in importing modules.
 
 Syntax:
 \begin{lstlisting}[style=ebnf]
@@ -235,7 +241,7 @@ The following identifiers are predefined; their meaning is defined in the indica
     \COPY \> (\ref{predefined}) \\
     \DEC \> (\ref{predefined}) \\
     \EXCL \> (\ref{predefined}) \\
-    \FALSE \> (\ref{bool-consts}) \\
+    \FALSE \> (\ref{subsec:bool-consts}) \\
     \FLOOR \> (\ref{predefined}) \\
     \FLT \> (\ref{predefined}) \\
     \HALT \> (\ref{predefined}) \\
@@ -254,7 +260,7 @@ The following identifiers are predefined; their meaning is defined in the indica
     \SIZE \> (\ref{predefined}) \\
     \SHORT \> (\ref{predefined}) \\
     \STRING \> (\ref{types-basic}) \\
-    \TRUE \>  (\ref{bool-consts}) \\
+    \TRUE \>  (\ref{subsec:bool-consts}) \\
     \WriteInt \> (\ref{predefined}) \\
     \WriteBoolean \> (\ref{predefined}) \\
     \WriteLn \> (\ref{predefined}) \\

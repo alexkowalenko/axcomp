@@ -203,6 +203,21 @@ void LexerUTF8::get_comment() {
     }
 }
 
+void LexerUTF8::get_line_comment() {
+    // Consume the second '/'
+    get();
+    while (true) {
+        const auto c = get();
+        if (c == -1) {
+            return;
+        }
+        if (c == '\n') {
+            set_newline();
+            return;
+        }
+    }
+}
+
 Token LexerUTF8::scan_digit(Char c) {
     // We are assuming that all characters for digits fit in the type char, i.e. they are normal
     // western digits.
@@ -406,6 +421,10 @@ Char LexerUTF8::get_char() {
         }
         if (c == '(' && peek() == '*') {
             get_comment();
+            continue;
+        }
+        if (c == '/' && peek() == '/') {
+            get_line_comment();
             continue;
         }
         if (std::iswspace(c)) {
