@@ -996,6 +996,7 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     BasicBlock *loop = BasicBlock::Create(context, "loop");
     BasicBlock *end_block = BasicBlock::Create(context, "end");
     last_end.push(end_block);
+    auto *cond_block = while_block;
 
     builder.CreateBr(while_block);
     builder.SetInsertPoint(while_block);
@@ -1003,7 +1004,6 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     // Expr
     visit(ast->expr);
     builder.CreateCondBr(last_value, loop, end_block);
-    while_block = builder.GetInsertBlock();
 
     // DO
     funct->insert(funct->end(), loop);
@@ -1014,7 +1014,7 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     }
 
     loop = builder.GetInsertBlock(); // necessary for correct generation of code
-    ejectBranch(ast->stats, loop, while_block);
+    ejectBranch(ast->stats, loop, cond_block);
 
     // END
     funct->insert(funct->end(), end_block);
@@ -1514,7 +1514,8 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 
     std::vector<Value *> index;
     if (ident_type->id != TypeId::OPENARRAY && !is_string_type) {
-        index.push_back(TypeTable::IntType->make_value(0));
+        auto *zero = ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
+        index.push_back(zero);
     }
 
     for (auto const &s : ast->selectors) {
@@ -1524,6 +1525,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                                (visit(iter));
                                debug("GEP index is Int: {0}",
                                      last_value->getType()->isIntegerTy());
+                               if (last_value->getType() !=
+                                   llvm::Type::getInt32Ty(context)) {
+                                   last_value = builder.CreateSExtOrTrunc(
+                                       last_value, llvm::Type::getInt32Ty(context), "idx");
+                               }
                                index.push_back(last_value);
                            }
                        },
@@ -1579,6 +1585,18 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     }
     debug("get_index: GEP number of indices: {0}", index.size());
     debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
+    LLVM_DEBUG({
+        llvm::dbgs() << "get_index non-openarray GEP base_type=";
+        ast->ident->get_type()->get_llvm()->print(llvm::dbgs());
+        llvm::dbgs() << " arg_ptr_type=";
+        arg_ptr->getType()->print(llvm::dbgs());
+        llvm::dbgs() << " index_count=" << index.size() << "\n";
+        for (size_t idx = 0; idx < index.size(); ++idx) {
+            llvm::dbgs() << "  idx[" << idx << "]=";
+            index[idx]->getType()->print(llvm::dbgs());
+            llvm::dbgs() << "\n";
+        }
+    });
     auto *gep_type = ast->ident->get_type()->get_llvm();
     if (is_string_type) {
         gep_type = TypeTable::CharType->get_llvm();
