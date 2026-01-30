@@ -105,7 +105,7 @@ class CodeGenerator : ASTVisitor {
 
     void init();
 
-    AllocaInst *createEntryBlockAlloca(Function *TheFunction, std::string const &name,
+    AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,
                                        const ASTType &type, bool var = false);
 
     static AllocaInst *createEntryBlockAlloca(Function *function, std::string const &name,

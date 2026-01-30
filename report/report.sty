@@ -3,12 +3,19 @@
 \usepackage{fontspec}
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{xcolor}
+\usepackage{shortvrb}
 \usepackage{listings}
-\usepackage{xunicode}
+\usepackage[backend=biber,style=numeric,citestyle=numeric]{biblatex}
+\addbibresource{references.bib}
 
-\setromanfont{Minion Pro}
+
+\setromanfont{Minion Pro}[Scale=1.1]
 
 \definecolor{darkgrey}{rgb}{0.4,0.4,0.4}
+
+
+\lstMakeShortInline{\!}
+
 
 \lstdefinelanguage{ebnf}[]{}
 {morekeywords={},
@@ -20,7 +27,12 @@ morestring=[b]",
 }
 
 \lstdefinelanguage{Oberon}%
-{morekeywords={ARRAY,BEGIN,BY,CASE,CONST,DEFINITION,DIV,DO,ELSE,ELSIF,END,EXIT,FOR,IF,IMPORT,IN,LOOP,MOD,MODULE,NIL,OF,OR,POINTER,PROCEDURE,RECORD,REPEAT,RETURN,THEN,TO,TYPE,UNTIL,VAR,WHILE,ABS,ASH,ASSERT,BOOLEAN,CAP,CHAR,CHR,COPY,DEC,EXCL,FALSE,FLOOR,FLT,HALT,INC,INCL,INTEGER,LEN,LONG,MAX,MIN,NEW,ODD,ORD,REAL,SIZE,STRING,SHORT,SET,TRUE,WriteInt,WriteBoolean,WriteLn},%
+{morekeywords={ARRAY,BEGIN,BY,CASE,CLASS,CONST,DEFINITION,DIV,DO,ELSE,ELSIF,END,EXIT,
+FOR,IF,IMPORT,IN,IS,LOOP,MOD,MODULE,NIL,OF,OR,POINTER,PROCEDURE,RECORD,REPEAT,RETURN,
+THEN,TO,TYPE,UNTIL,VAR,WHILE,WITH,ABS,ASH,ASSERT,BOOLEAN,CAP,CHAR,CHR,COPY,DEC,EXCL,
+FALSE,FLOOR,FLT,HALT,INC,INCL,INTEGER,LONGINT,LEN,LONG,MAX,MIN,NEW,ODD,ORD,REAL,SIZE,STRING,SHORT,
+SET,TRUE,WriteInt,WriteBoolean,WriteLn,SELF,SUPER,ACCEPTS,BITAND,BITASR,BITNOT,BITOR,
+BITSHL,BITSHR,BITXOR,CAST,DEFAULT,STRLEN,BYTES,NUMBER,SEND},%
   sensitive=true,%
   comment=[s]{(*}{*)},
 }%
@@ -65,6 +77,7 @@ frame=lines
 }
 
 \newcommand{\MODULE}{\lstinline"MODULE"}
+\newcommand{\DEFINITION}{\lstinline"DEFINITION"}
 \newcommand{\IMPORT}{\lstinline"IMPORT"}
 \newcommand{\IF}{\lstinline"IF"}
 \newcommand{\THEN}{\lstinline"THEN"}
@@ -81,7 +94,7 @@ frame=lines
 \newcommand{\LOOP}{\lstinline"LOOP"}
 \newcommand{\EXIT}{\lstinline"EXIT"}
 \newcommand{\RECORD}{\lstinline"RECORD"}
-\newcommand{\OBJECT}{\lstinline"OBJECT"}
+\newcommand{\CLASS}{\lstinline"CLASS"}
 \newcommand{\BEGIN}{\lstinline"BEGIN"}
 \newcommand{\WITH}{\lstinline"WITH"}
 \newcommand{\PROCEDURE}{\lstinline"PROCEDURE"}
@@ -114,9 +127,11 @@ frame=lines
 
 \newcommand{\SYSTEM}{\lstinline"SYSTEM"}
 \newcommand{\SELF}{\lstinline"SELF"}
+\newcommand{\SUPER}{\lstinline"SUPER"}
 \newcommand{\CHAR}{\lstinline"CHAR"}
 \newcommand{\STRING}{\lstinline"STRING"}
 \newcommand{\INTEGER}{\lstinline"INTEGER"}
+\newcommand{\LONGINT}{\lstinline"LONGINT"}
 \newcommand{\SIGNED}{\lstinline"SIGNED"}
 \newcommand{\UNSIGNED}{\lstinline"UNSIGNED"}
 \newcommand{\REAL}{\lstinline"REAL"}
@@ -124,10 +139,6 @@ frame=lines
 \newcommand{\FLOAT}{\lstinline"FLOAT"}
 \newcommand{\BOOLEAN}{\lstinline"BOOLEAN"}
 \newcommand{\SET}{\lstinline"SET"}
-\newcommand{\SETS}{\lstinline"SET8"}
-\newcommand{\SETI}{\lstinline"SET16"}
-\newcommand{\SETL}{\lstinline"SET32"}
-\newcommand{\SETH}{\lstinline"SET64"}
 \newcommand{\ANY}{\lstinline"ANY"}
 \newcommand{\ABS}{\lstinline"ABS"}
 \newcommand{\CAP}{\lstinline"CAP"}
@@ -147,6 +158,7 @@ frame=lines
 \newcommand{\SIZE}{\lstinline"SIZE"}
 \newcommand{\ASSERT}{\lstinline"ASSERT"}
 \newcommand{\COPY}{\lstinline"COPY"}
+\newcommand{\CAST}{\lstinline"CAST"}
 \newcommand{\DEC}{\lstinline"DEC"}
 \newcommand{\EXCL}{\lstinline"EXCL"}
 \newcommand{\HALT}{\lstinline"HALT"}
@@ -186,9 +198,15 @@ frame=lines
 \newcommand{\STI}{\lstinline"\SYSTEM.sti"}
 \newcommand{\RESHAPE}{\lstinline"\SYSTEM.reshape"}
 \newcommand{\SYSTEMHALT}{\lstinline"\SYSTEM.halt"}
+\newcommand{\STRLEN}{\lstinline"STRLEN"}
 
 \newcommand{\WriteInt}{\lstinline"WriteInt"}
 \newcommand{\WriteBoolean}{\lstinline"WriteBoolean"}
 \newcommand{\WriteLn}{\lstinline"WriteLn"}
+\newcommand{\ACCEPTS}{\lstinline"ACCEPTS"}
+\newcommand{\MESSAGE}{\lstinline"MESSAGE"}
+
 
 \usepackage{hyperref}
+
+\setlength{\parindent}{0pt}

@@ -2,14 +2,14 @@
 
 \usepackage{report}
 
-\title{AX Oberon-2/07 Language Report}
+\title{Oberon Language Report}
 
 \begin{document}
     
 \maketitle
 
 \abstract{
-This report describes the syntax and semantics of the programming language Oberon-2/07 as it is supported by the AX Oberon compiler.
+This report describes the syntax and semantics of the programming language Oberon.
 }
 
 \tableofcontents
@@ -17,15 +17,37 @@ This report describes the syntax and semantics of the programming language Obero
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-This report is in the tradition of other Oberon language reports, defining the language supported by the compiler. This document used {\em The Programming Language Oberon-2} by H. Hössenböck and N. Wirth as it's base. Also the Oberon-07 document {\em The Programming Language Oberon (Revision 1.10.2013/3.5.2016)}, by N. Wirth.
+This report is in the tradition of other Oberon language reports, defining the language supported by the compiler.
+This document used {\em The Programming Language Oberon-2} by H. Hössenböck and N. Wirth as its base (\cite{oberon2}.
+Also the Oberon-07 document {\em The Programming Language Oberon (Revision 1.10.2013/3.5.2016)}, by N. Wirth (\cite{wirth2013oberon07}).
+Oberon-07 seems to be a refinement of Oberon-2 with some features taken out.
 
-Oberon-07 seems to be a refinement of Oberon-2 with some features taken out. We will support a common maximum variant of the language.
+Other features are from {\em Object Oberon: An Object-Oriented Extension of Oberon} by H. Mössenböck, J. Templ, and R. Griesemer (\cite{moessenboeck1991objectoberon}); and {\em The Programming Language Oberon+} by Rochus Keller (\cite{oberonKeller}).
+Also the {\em Oakwood Oberon-2 Compiler Developers} document has been consulted (\cite{OakwordGuidelines}).
 
-Also we extend the definition of Oberon to include the following updates:
-\begin{itemize}
-    \item Source files can be UTF-8 files. Identifiers, characters and strings can be composed of valid UTF-8 characters.
-    \item \STRING\ type which is equivalent to \ARRAY\ \OF\ \CHAR.
-\end{itemize}
+Example module in Oberon:
+\begin{lstlisting}[style=oberon]
+MODULE Fibonacci;
+  VAR res: INTEGER;
+  PROCEDURE calc*(n : INTEGER): INTEGER;
+    VAR a, b: INTEGER;
+  BEGIN
+    IF n > 1 THEN
+      a := calc(n - 1);
+      b := calc(n - 2);
+      RETURN a + b
+    ELSIF n = 0 THEN
+      RETURN 0
+    ELSE
+      RETURN 1
+    END
+  END calc;
+BEGIN
+    res := calc(21);
+    ASSERT(res = 10946)
+END Fibonacci.
+\end{lstlisting}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Syntax}
@@ -33,30 +55,41 @@ Also we extend the definition of Oberon to include the following updates:
 To describe the syntax, an extended Backus-Naur Formalism called EBNF is used. 
 
 \begin{itemize}
+    \item Alternatives are separated by |.
     \item Brackets [ and ] denote optionality of the enclosed sentential form.
     \item Braces \{ and \} denote its repetition (possibly 0 times). 
     \item Syntactic entities (non-terminal symbols) are denoted by English words expressing their intuitive meaning. 
     \item Symbols of the language vocabulary (terminal symbols) are denoted by strings enclosed in quote marks or words written in capital letters, so-called reserved words.
 \end{itemize}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Vocabulary and representation}
+\section{Vocabulary and Representation}
 
-The representation of symbols in terms of characters is defined using UTF-8. Symbols are identifiers, numbers, operators, delimiters, and comments. The following lexical rules must be observed. Blanks and line breaks must not occur within symbols (except in comments). They are ignored unless they are essential to separate two consecutive symbols. Capital and lower-case letters are considered as being distinct. 
+The representation of symbols in terms of characters is defined using UTF-8.
+Symbols are identifiers, numbers, operators, delimiters, and comments.
+The following lexical rules must be observed.
+Blanks and line breaks must not occur within symbols (except in comments).
+They are ignored unless they are essential to separate two consecutive symbols. Capital and lower-case letters are considered as being distinct.
 
-There is some support for emoji as identifiers, emoji are treated as a non-digit alphabetic characters.
+There is some support for emoji characters as identifiers, emoji characters are treated as a non-digit alphabetic characters.
 
-\begin{enumerate}
-    \item Identifiers are sequences of letters and digits. The first character must be a letter.
-    
+\subsection{Identifiers}
+
+Identifiers are sequences of letters and digits. The first character must be a letter.
+
+Syntax:
 \begin{lstlisting}[style=ebnf]
 Identifier = Letter {Letter | Digit | '_' }.
 \end{lstlisting}
 
 Examples: \lstinline!x scan Oberon G3 first_Letter olá Liberté χαῖρε! 
 
-\item Numbers are (unsigned) integers. Integers are sequences of digits. 
+\subsection{Numbers}
+Number literals are (unsigned) integers or reals. Integers are sequences of digits.
 If the constant is specified with the suffix \lstinline!H!, the representation is hexadecimal otherwise it is decimal.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 integer = digit {digit} | digit {hexDigit} "H".
 
@@ -68,53 +101,95 @@ digit = "0"|"1"|"2"|"3"|"4"|"5"|"6"|"7"|"8"|"9".
 A real number always contains a decimal point. Optionally it may also contain a decimal scale factor.
 The letter \lstinline!E! (or \lstinline!D!) means "times ten to the power of". A real number is of type \REAL.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 real = digit {digit} "." {digit} [ScaleFactor]. 
 
-ScaleFactor = ("E" | "D") ["+" | "-"] digit {digit}.
+ScaleFactor = ("E" | "e" | "D" ) ["+" | "-"] digit {digit}.
 \end{lstlisting}
 
+Examples:
 \begin{lstlisting}[style=example]
     2020 0DH 12.3 4.567E8 0.55712566D-6
-\end{lstlisting} 
+\end{lstlisting}
 
-\item \BOOLEAN\ constants are \TRUE\ and \FALSE. \label{bool-consts}
+\subsection{\BOOLEAN}
 
-\item Character constants are denoted by the ordinal number of the character in hexadecimal notation followed by the letter X or by the ASCII symbol of the character embraced by single quotes.
+\BOOLEAN\ constants are \TRUE\ and \FALSE. \label{bool-consts}
 
+\subsection{Characters}
+Character constants are denoted by the ordinal number of the character in hexadecimal notation followed by the letter !X!
+or by the Unicode value of the character embraced by single quotes.
+
+Syntax:
 \begin{lstlisting}[style=ebnf]
 character = digit {hexDigit} "X" | "’" char "’".
 \end{lstlisting}
 
+Examples:
 \begin{lstlisting}[style=example]
 CONST a = 'A';
     b = 13X;
 \end{lstlisting} 
 
-\item Strings are sequences of characters enclosed in single (\lstinline!'!) or double (\lstinline!"!) quote marks. The opening quote must be the same as the closing quote and must not occur within the string. The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
+\subsection{Strings}
+Strings are sequences of characters enclosed in single (\lstinline!'!) or double (\lstinline!"!) quote marks.
+The opening quote must be the same as the closing quote and must not occur within the string.
+The number of characters in a string is called its length. A string of length 1 can be used wherever a character constant is allowed and vice versa.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 \end{lstlisting}
 
+Examples:
 \begin{lstlisting}[style=example]
 "Oberon-2" "Don't worry!" "x"
-\end{lstlisting} 
+\end{lstlisting}
 
-\item Operators and delimiters are the special characters, character pairs, or reserved words listed below. These reserved words  cannot be used in the role of identifiers. Reversed words can be uppercase or lowercase, not combinations of both. 
+\subsubsection{Hex Strings}
+
+Hex strings are sequences of bytes encoded in hexadecimal format and enclosed in dollar signs. The
+number of hex digits in the string must be even, two hex digits per byte. The number of bytes in a
+hex string is called its length. Line breaks and other white space between the dollar signs is
+ignored.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+hexstring = '$' {hexDigit} '$'
+\end{lstlisting}
+
+Examples:
+\begin{lstlisting}[style=example]
+CONST arrow = $0F0F 0060 0070 0038 001C 000E 0007 8003
+C101 E300 7700 3F00 1F00 3F00 7F00 FF00$
+\end{lstlisting}
+
+\subsection{Operators}
+Operators and delimiters are the special characters, character pairs, or reserved words listed below.
+These reserved words cannot be used in the role of identifiers.
+Reversed words can be uppercase or lowercase, not combinations of both.
 
 \begin{lstlisting}[style=example]
 + := - * = / # ~ < &  > . <= , >= ( ) : [ ] ; | .. ^ { }
     
-ARRAY BEGIN BY CASE CONST DIV DO ELSE ELSIF END EXIT FOR IF IMPORT IN LOOP
-MOD MODULE NIL OF OR POINTER PROCEDURE RECORD REPEAT RETURN THEN TO TYPE
-UNTIL VAR WHILE
+ARRAY BEGIN BY CASE CLASS CONST DIV DO DEFINITION ELSE ELSIF END EXIT FALSE
+FOR IF IMPORT IN IS LOOP MOD MODULE NIL OF OR POINTER PROCEDURE RECORD
+REPEAT RETURN THEN TO TRUE TYPE UNTIL VAR WITH WHILE
 \end{lstlisting}
 
-\item Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between (* *). 
+All lowercase versions of the reserved words are also accepted.
+
+\subsection{\NIL}
+
+\NIL\ is a reserved word denoting a predefined value.
+In contrast to \TRUE\ and \FALSE\ the type of \NIL\ cannot be expressed.
+
+\subsection{Comments}
+
+Comments may be inserted between any two symbols in a program. They are arbitrary character sequences between !(* *)!.
 Comments do not affect the meaning of a program.
 
-\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Declarations and scope rules}
@@ -122,23 +197,30 @@ Comments do not affect the meaning of a program.
 
 Every identifier occurring in a program must be introduced by a declaration, unless it is a predefined identifier. Declarations also serve to specify certain permanent properties of an object, such as whether it is a constant, a type, a variable, or a procedure.
 
-The scope of an object x extends textually from the point of its declaration to the end of the block (module, procedure, or record) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks. The scope rules are:
+The scope of an object \lstinline!x! extends textually from the point of its declaration to the end of the block (module, procedure, record or class) to which the declaration belongs and hence to which the object is local. It excludes the scopes of equally named objects which are declared in nested blocks.
 
 The scope rule has the following amendments:
 \begin{enumerate}
     \item No identifier may denote more than one object within a given scope (i.e. no identifier may be declared twice in a block);
     \item An object may only be referenced within its scope;
-    \item A type T of the form \POINTER\ \TO\ T1 (see \ref{pointers}) can be declared at a point where T1 is unknown. The declaration of T1 must follow in the same block to which T is local;
-    \item Field identifiers of a record declaration (see \ref{records}) are valid in field designators only.
+    \item The order of declarations is not significant.
+    \item A type \lstinline!T! of the form \POINTER\ \TO\ \lstinline!T1! (see \ref{pointers}) can be declared at a point where \lstinline!T1! is unknown. The declaration of \lstinline!T1! must follow in the same block to which \lstinline!T! is local;
+    \item Field identifiers of a record declaration (see \ref{records}) or in type-procedures are valid in record designators only.
+    \item Similarly, field identifiers of a class declaration (see \ref{classes}) are valid in method designators only.
 \end{enumerate}
 
-An identifier declared in a module block may be followed by an export mark (\lstinline!*! or \lstinline!-!) in its declaration to indicate that it is exported. An identifier \lstinline!x! exported by a module \lstinline!M! may be used in other modules, if they import M (see \ref{modules}). The identifier is then denoted as \lstinline!M.x! in these modules and is called a qualified identifier. Variables and record fields marked with \lstinline!-! in their declaration are read-only in importing modules.
+\subsection{Visibility}
 
+An identifier declared in a module block may be followed by an export mark (\lstinline!*! or \lstinline!-!) in its declaration to indicate that it is exported. An identifier \lstinline!x! exported by a module \lstinline!M! may be used in other modules, if they import \lstinline!M! (see \ref{modules}). The identifier is then denoted as \lstinline!M.x! in these modules and is called a qualified identifier. Variables and record fields marked with \lstinline!-! in their declaration are read-only in importing modules.
+
+Syntax:
 \begin{lstlisting}[style=ebnf]
 Qualident = [ident "."] ident. 
 
 IdentDef = ident ["*" | "-"].
 \end{lstlisting}
+
+\subsection{Predefined Identifiers}
 
 The following identifiers are predefined; their meaning is defined in the indicated sections:
 \begin{tabbing}
@@ -183,6 +265,7 @@ The following identifiers are predefined; their meaning is defined in the indica
 
 A constant declaration associates an identifier with a constant value.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 ConstantDeclaration = IdentDef "=" ConstExpression. 
 
@@ -190,7 +273,6 @@ ConstExpression = expression.
 \end{lstlisting}
 
 A constant expression is an expression based on constant values and constant variables. Examples of constant declarations are:
-
 \begin{lstlisting}[style=example]
 N     =   100
 limit =   2 * N - 1
@@ -201,22 +283,29 @@ fullSet = {MIN(SET) .. MAX(SET)}
 \section{Type declarations}
 \label{types}
 
-A data type determines the set of values which variables of that type may assume, and the operators that are applicable. A type declaration is used to associate an identifier with the type. Such association may be with unstructured (basic) types, or it may be with structured types, in which case it defines the structure of variables of this type and, by implication, the operators that are applicable to the components. There are two different structures, namely arrays and records, with different component selectors.
+A data type determines the set of values which variables of that type may assume, and the operators that are applicable. A type declaration is used to associate an identifier with the type. Such association may be with unstructured (basic) types, or it may be with structured types, in which case it defines the structure of variables of this type and, by implication, the operators that are applicable to the components.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
-    TypeDeclaration = IdentDef "=" type.
+TypeDeclaration = IdentDef "=" type.
 
-    type = Qualident | ArrayType | RecordType | PointerType.
+type = Qualident
+       | ArrayType
+       | RecordType
+       | PointerType
+       | ProcedureType
+       | Enumeration
+       | ClassType.
 \end{lstlisting}
 
 Examples:
-
 \begin{lstlisting}[style=example]
 Table = ARRAY 10 OF INTEGER
 Tree = POINTER TO Node
 Node =  RECORD key: INTEGER; 
                left, right: Tree 
         END
+Function = PROCEDURE(x: INTEGER): INTEGER
 \end{lstlisting}
 
 \subsection{Basic types}
@@ -225,22 +314,227 @@ The following basic types are denoted by predeclared identifiers. The associated
 
 \begin{enumerate}
     \item \BOOLEAN\ -- the truth values \TRUE\ and \FALSE.
-    \item \INTEGER\ -- the integers of a 64-bit signed integer, between \MIN(\INTEGER)\ and \MAX(\INTEGER).
-    \item \REAL\ -- double precision floating point type. Usually IEEE-754 64 bit floating point, numbers between \MIN(\REAL) and \MAX(\REAL).
+    \item \INTEGER\ -- the integers of a 32-bit signed integer, between \MIN(\INTEGER)\ and \MAX(\INTEGER).
+    \item \LONGINT\ -- the integers of a 64-bit signed integer, between \MIN(\LONGINT)\ and \MAX(\LONGINT).
+    \item \REAL\ -- double precision floating point type. IEEE-754 64 bit floating point, numbers between \MIN(\REAL) and \MAX(\REAL).
     \item \CHAR\ -- character type, sufficient large enough to represent any supported character code point (32 bits on systems that support Unicode), between \MIN(\CHAR)\ and \MAX(\CHAR).
-    \item \STRING\ -- character array type. \ARRAY\ \OF\ \CHAR\ is equivalent to \STRING.
+    \item \STRING\ -- character array type. \ARRAY\ \OF\ \CHAR\ is equivalent to \STRING\.
     \item \SET\ -- the sets of integers between 0 and \MAX(\SET).
 \end{enumerate}
 
-Types \INTEGER\ and \REAL\ together they are called numeric types. They form a hierarchy; the larger type includes (the values of) the smaller type:
+Either all capitals or all lower-case letters may be used to denote these types.
+
+Types \INTEGER\, \LONGINT\ and \REAL\ together they are called numeric types. They form a hierarchy; the larger type includes (the values of) the smaller type:
 \begin{quote}
-    \REAL\ $\supseteq$ \INTEGER\
+    \REAL\ $\supseteq$ \LONGINT\ $\supseteq$ \INTEGER\
 \end{quote}
 
-Types \lstinline!SMALLINT!, \lstinline!LONGINT!, and \lstinline!HUGEINT!, are predefined and aliased to \INTEGER. Likewise \lstinline!LONGREAL!, is alliased to \REAL.
+\subsubsection{Type \INTEGER}
+
+This type represents the whole numbers, and any value of type \INTEGER\ is therefore an integer.
+Operators applicable to integers include the basic arithmetic operations:
+
+\begin{tabular}{c|l}
++ & addition \\
+- & subtraction \\
+\** & multiplication \\
+\DIV & division \\
+\MOD & modulus (remainder) \\
+\end{tabular}
+
+Integer division is denoted by \DIV. If we define the integer quotient and the modulus of !x! and !y! by
+\begin{lstlisting}[style=example]
+q = x DIV y, r = x MOD y
+\end{lstlisting}
+
+then !q! and !r! are related by the equation !x = q*y + r! and by the constraint 0 <= !r! < !y!. For example:
+\begin{lstlisting}[style=example]
+15 DIV 4 = 3      15 MOD 4 = 3   15 = 3*4 + 3
+-15 DIV 4 = -4   -15 MOD 4 = 1   -15 = (-4)*4 + 1
+\end{lstlisting}
+
+Sign inversion is denoted by the monadic minus sign. Furthermore, there exist the operators
+!ABS(x)! and !ODD(x)!, the former yielding the absolute value of !x!, the latter the Boolean result ``x is
+odd".
+
+Every computer will restrict the set of values of type \INTEGER\ to a finite set of integers, usually the
+interval $-2^{N-1} ... 2^{N-1}-1$, where N is a small integer, depending on the number of bits a
+computer uses to represent an integer. If an arithmetic operation produces a result that lies outside
+that interval, then overflow is said to have occured.
+The programmer should ensure that overflows will not result during execution of the program.
+
+\subsubsection{Type \REAL}
+
+Values of type \REAL\ are real numbers. The available operators are again the basic arithmetic
+operations and \ABS. Division is denoted by / (instead of \DIV). Constants of type \REAL\ are
+characterized by having a decimal point and possibly a decimal scale factor. Examples of real
+number denotations are:
+\begin{lstlisting}[style=example]
+1.5 1.50 1.5E2 2.34E-2 0.0
+\end{lstlisting}
+The scale factor consists of the letter !E! or !e! or !D! followed by an integer. 
+
+The major reason for strictly distinguishing between real numbers and integers lies in the different
+representation used internally. Hence, also the arithmetic operations are implemented by
+instructions which are distinct for each type. Oberon postulates that expressions with mixed
+operands always are of type \REAL.
+
+A real number !x! is transformed into an integer by the standard function !FLOOR(x)!. It yields the
+largest integer not greater than x.
+\begin{lstlisting}[style=example]
+FLOOR(3.1416) = 3 FLOOR(-2.7) = -3 FLOOR(-5.0) = -5
+\end{lstlisting}
+
+\subsubsection{Type \BOOLEAN}
+
+A \BOOLEAN\ value is one of the two logical truth values denoted by the symbols \TRUE\ and \FALSE.
+Boolean variables are usually denoted by identifiers which are adjectives, the value \TRUE\ implying
+the presence, \FALSE\ the absence of the indicated property. A set of logical operators is provided
+which, together with \BOOLEAN\ variables, form \BOOLEAN\ expressions. These operators are !&!
+(and), \OR\, and !~! (not). Their results are explained as follows:
+
+\begin{tabular}{c|l}
+!p & q! & both !p! and !q! are \TRUE \\
+!p OR q! & either !p! or !q! or both are \TRUE \\
+!~p! & !p! is \FALSE
+\end{tabular}
+
+The operators' exact definition, however, is slightly different, although the results are identical:
+\begin{lstlisting}[style=example]
+p & q = IF p THEN q ELSE FALSE
+p OR q = IF p THEN TRUE ELSE q
+\end{lstlisting}
+
+This definition implies that the second operand need not be evaluated, if the result is already known
+from the evaluation of the first operand. The notable property of this definition of Boolean
+connectives is that their result may be well-defined even in cases where the second operand is
+undefined. As a consequence, the order of the operands may be significant.
+
+Sometimes it is possible to simplify Boolean expressions by application of simple transformation
+rules. A particularly useful rule is de Morgan's law stating the equivalences
+\begin{lstlisting}[style=example]
+~p & ~q = ~(p OR q)
+~p OR ~q = ~(p & q)
+\end{lstlisting}
+
+Relations produce a result of type \BOOLEAN, i.e. \TRUE\ if the relation is satisfied, \FALSE\ if not. For
+example:
+\begin{lstlisting}[style=example]
+7 = 12 FALSE
+7 < 12 TRUE
+1.5 >= 1.6 FALSE
+\end{lstlisting}
+
+The result of a comparison
+is of type \BOOLEAN\ and can be used in control structures such as \IF, \WHILE, and \REPEAT\ statements.
+The symbol !#!  stands for unequal.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+expression = SimpleExpression [relation SimpleExpression].
+
+relation = "=" | "#" | "<" | "<=" | ">" | ">=" | "IN".
+\end{lstlisting}
+
+It should be noted that, similar to arithmetic operators, there exists a precedence hierarchy among
+the Boolean operators. !~! has the highest precedence, then follows !&!, then \OR, and last are the
+relations. As with arithmetic expressions, parentheses may be used freely to make the association
+of operators explicit. Examples of Boolean expressions are:
+
+\begin{lstlisting}[style=example]
+x = y
+(x <= y) & (y < z)
+(x > y) OR (y >= z)
+~p OR q
+\end{lstlisting}
+
+Note that a construct such as !x < y & z < w! is illegal.
+The example above draws attention to the rule that the operands of an operator (including relational
+operators) must be of the same type. The following relations are therefore illegal:
+
+\begin{lstlisting}[style=example]
+1 = TRUE
+5 = 5.0
+i+j = p OR q
+\end{lstlisting}
+
+Also incorrect is !x <= y < z!, which must be expanded into !(x <= y) & (y < z)!. However, the
+following are correct Boolean expressions:
+\begin{lstlisting}[style=example]
+i+j < k-m
+p OR q = (i<j)
+\end{lstlisting}
+
+Although !p = TRUE! is legal, it is considered poor style and better expressed as !p!.
+Similarly, replace !p = FALSE! by !~p!.
+
+\subsubsection{Type \CHAR}
+
+Constants of type \CHAR\ are denoted by the character being enclosed in quote marks (single-
+character string). They can be assigned to variables of type \CHAR. These values cannot be used in
+arithmetic operations. Arithmetic operators can be applied, however, to their ordinal numbers
+obtained from the transfer function !ORD(ch)!. Inversely the character with the ordinal number !n! is
+obtained with the transfer function !CHR(n)!. These two complementary functions are related by the
+equations
+\begin{lstlisting}[style=example]
+CHR(ORD(ch)) = ch and ORD(CHR(n)) = n
+\end{lstlisting}
+
+They permit to compute the numeric value represented by the digit ch as
+!ORD(ch) - ORD("0")!
+and to compute the digit representing the numeric value n as
+!CHR(n + ORD("0"))!
+
+In order to be able to denote non-printable characters, Oberon uses their hexadecimal ordinal
+number followed by the capital letter !X!. For example, !0DX! is the value of type !CHAR! denoting the
+control character {\em cr} (carriage return, line end) with ordinal number 13.
+
+\subsubsection{Type \SET}
+
+The values which belong to the type \SET\ are sets of integers between 0 and N-1, where N is a
+constant defined by the computer system used. It is usually the computer's wordlength or a small
+multiple of it. Constants of this type are denoted as sets. 
+
+Examples are:
+\begin{lstlisting}[style=example]
+{2, 3, 5, 7, 11} {0} {8 .. 15} {}
+\end{lstlisting}
+The notation !m..n! is a shorthand for !m, m+1, ... , n-1, n!.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+set = [qualident] "{" [element {"," element}] "}".
+
+element = expression [".." expression].
+\end{lstlisting}
+
+Operations on sets are:
+
+\begin{tabular}{c|l|l}
++ & set union & u+v = set of elements that are in u or in v\\
+- & set difference & u-v = set of elements that are in u but not in v\\
+\** & set intersection & u*v = set of elements that are in both u and v\\
+/ & symmetric set difference & u/v = set of elements that are in u or in v, but not in both\\
+- & complement & ~u = the complement of u.
+\end{tabular}
+
+The membership operator \IN\ is regarded as a relational operator. The expression !i! \IN\ !u! is of type
+\BOOLEAN. It is \TRUE, if !i! is a member of the set !u!.
+ Sets are represented in computer systems as
+sets of bits, i.e. by the characteristic function of the set. The !i!'th bit of !u!, for example, is 1, if !i! is a
+member of !u!, 0 otherwise. Hence, the set operators are implemented as logical operations applied
+to the N members of the set variable. They are therefore very efficient and their execution time is
+usually even less than that of an addition of integers.
 
 \subsection{Array types}
 
+
+An array is a structure consisting of a number of elements which are all of the same type, called the
+element type. The number of elements of an array is called its length. The length is a positive
+integer. The elements of the array are designated by indices, which are integers between 0 and the
+length minus 1.
+
+Syntax:
 \begin{lstlisting}[style=ebnf]
 ArrayType = ARRAY  [Length {"," Length}] OF Type.
 
@@ -266,10 +560,15 @@ ARRAY OF CHAR
 
 Arrays can't be assigned to each other, the elements have to be copied individually.
 
+Arrays declared without length are called open arrays. Array lengths at least up to \lstinline!MAX(LONGINT)! shall be supported by a compiler, for both constant and
+variable lengths.
+
 \subsection{Record types}
 \label{records}
 A record type is a structure consisting of a fixed number of elements of possibly different types. The record type declaration specifies for each element, called field, its type and an identifier which denotes the field. The scope of these field identifiers is the record definition itself, but they are also visible within field designators (see \ref{operands}) referring to elements of record variables.
+Field types can not recursive refer to the record type being defined, but they can refer to other record types.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 RecordType = RECORD  ["("BaseType")"] FieldListSequence END.
 
@@ -302,8 +601,9 @@ T0 = RECORD x: INTEGER END
 T1 = RECORD (T0) y: REAL END
 \end{lstlisting}
 
-T1 is a (direct) extension of T0 and T0 is the (direct) base type of T1 (see Appendix \ref{type-rule}). 
-An extended type T1 consists of the fields of its base type and of the fields which are declared in T1. Identifiers declared in the extension must be different from the identifiers declared in its base type(s).
+!T1! is a (direct) extension of !T0! and !T0! is the (direct) base type of !T1! (see Appendix \ref{type-rule}).
+An extended type !T1! consists of the fields of its base type and of the fields which are declared in !T1!.
+Identifiers declared in the extension must be different from the identifiers declared in its base type(s).
 
 Records can't be assigned to each other, the elements have to be copied individually.
 
@@ -311,20 +611,62 @@ Records can't be assigned to each other, the elements have to be copied individu
 \subsection{Pointer types}
 \label{pointers}
 
-Variables of a pointer type P assume as values pointers to variables of some type T. T is called the pointer base type of P and must be a record or array type.
+Variables of a pointer type !P! assume as values pointers to variables of some type !T!.
+!T! is called the pointer base type of !P! and must be a record or array type.
 
 \begin{lstlisting}[style=ebnf]
-PointerType = POINTER TO Type.
+PointerType = (POINTER TO | ^) Type.
 \end{lstlisting}
 
 \begin{itemize}
-    \item If p is a variable of type P = \POINTER\ \TO\ T, a call of the predeclared procedure \NEW(p) (see \ref{predefined}) allocates a variable of type T in free storage. 
-    \item If T is a record type or an array type with fixed length, the allocation has to be done with NEW(p).
-    \item If T is an n-dimensional open array the allocation has to be done with \NEW(p, $e_0$, ... $e_{n-1}$), where T is allocated with lengths given by the expressions $e_0$, ... $e_{n-1}$.
+    \item If !p! is a variable of type !P = POINTER TO T!, a call of the predeclared procedure \NEW(p) (see \ref{predefined}) allocates a variable of type !T! in free storage.
+    \item If !T! is a record type or an array type with fixed length, the allocation has to be done with \NEW(p).
+    \item If !T! is an !n!-dimensional open array the allocation has to be done with \NEW(p, $e_0$, ... $e_{n-1}$), where !T! is allocated with lengths given by the expressions $e_0$, ... $e_{n-1}$.
 \end{itemize}
-In either case a pointer to the allocated variable is assigned to p, p is of type P. The referenced variable p\lstinline!^! (pronounced as p-referenced) is of type T.
+In either case a pointer to the allocated variable is assigned to !p!, !p! is of type !P!. The referenced variable p\lstinline!^! (pronounced as ``p-referenced") is of type !T!.
 
 Any pointer variable may assume the value \NIL, which points to no variable at all. All pointer variables are initialized to \NIL.
+
+\subsection{Procedure types}
+
+Variables of a procedure type !T! have a procedure (or \NIL) as value. If a procedure !P! is assigned to a
+variable of type !T!, the formal parameter lists and result types (see Formal parameters \ref{parameters}) of !P! and !T!
+must match. A procedure !P! assigned to a variable or a formal parameter
+must not be a predeclared, nor a type-bound procedure, nor may it access local variables or
+parameters declared in outer (type-bound) procedures or call procedure which access local
+variables or parameters declared in outer (type-bound) procedures.
+
+\begin{lstlisting}[style=ebnf]
+ProcedureType = PROCEDURE [FormalParameters]
+\end{lstlisting}
+
+\subsection{Enumeration types}
+
+An enumeration is a list of identifiers that denote the values which constitute a data type. These
+identifiers are used as constants in the program. They, and no other values, belong to this type. The
+values are ordered. and the ordering relation is defined by their sequence in the enumeration. The
+ordinal number of the first value is O.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+enumeration = '(' ident { [','] ident } ')'
+\end{lstlisting}
+
+Examples:
+\begin{lstlisting}[style=example]
+(red, green, blue)
+(club, diamond, heart, spade)
+(Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
+\end{lstlisting}
+
+The ordinal number of an enumeration identifier can be obtained using the \ORD\ predeclared
+function procedure, or by just assigning/passing to an integer type variable or parameter. \CAST\ is
+the reverse operation. \MIN\ returns the first and \MAX\ the last ident of the enumeration. \INC\ returns the
+next and \DEC\ the previous ident. If T is an enumeration type then \lstinline!MIN(MAX(T))! and \lstinline!DEC(MIN(T))! are
+undefined.
+
+\subsection{Class types}
+See Classes - \ref{classes}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Variable declarations}
@@ -334,6 +676,12 @@ Variable declarations serve to introduce variables and associate them with ident
 \begin{lstlisting}[style=ebnf]
 VariableDeclaration = IdentList ":" type.
 \end{lstlisting}
+
+Record, pointer and class variables have both a static type (the type with which they are declared - simply
+called their type) and a dynamic type (the type of their value at run time). For pointers and variable
+parameters of record type, and class object variables the dynamic type may be an extension of their static type. The static type
+determines which fields of a record are accessible. The dynamic type is used to call type-bound
+procedures.
 
 Variables whose identifiers appear in the same list are all of the same type. Examples of variable declarations (refer to examples in section \ref{types}):
 
@@ -362,19 +710,30 @@ With the exception of sets and literal constants, i.e. numbers, operands are den
 This identifier may possibly be followed by selectors, if the designated object is an element of a structure.
 
 \begin{lstlisting}[style=ebnf]
-    designator = Qualident {"." ident | "[" ExprList "]" | "^" }.
-    
-    ExprList = Expr {"," Expr}.
+designator = Qualident {"." ident | "[" ExprList "]" | "^" }.
+
+ExprList = Expr {"," Expr}.
 \end{lstlisting}
 
-
-If A designates an array, then A[E] denotes that element of A whose index is the current value of the expression E. The type of E must be an integer type. A designator of the form a[$e_0$, $e_1$, ..., $e_n$] stands for a[$e_0$][$e_1$]...[$e_n$]. A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
-
-If r designates a record, then r.f denotes the field f of r.
-
-If p designates a pointer, p\^{} denotes the variable which is referenced by p. The designators p\^{}.f and p\^{}[e] may be abbreviated as p.f and p[e], i.e. record and array selectors imply dereferencing. If a or r are read-only, then also a[e] and r.f are read-only.
-
-If the designated object is a variable, then the designator refers to the variable's current value.
+\begin{itemize}
+\item If !A! designates an array, then !A[E]! denotes that element of !A! whose index is the current value of the expression !E!.
+The type of !E! must be an integer type. A designator of the form a[$e_0$, $e_1$, ..., $e_n$] stands for a[$e_0$][$e_1$]...[$e_n$].
+\item A \STRING\ variable functions as an \ARRAY\ of \CHAR, thus accepts array selectors.
+\item If !r! designates a record, then !r.f! denotes the field !f! of !r!.
+\item If !p! designates a pointer, !p!\^{} denotes the variable which is referenced by !p!. The designators !p!\^{}!.f! and !p!\^{}![e]! may be abbreviated as !p.f! and !p[e]!, i.e. record and array selectors imply dereferencing. If !a! or !r! are read-only, then also !a[e]! and !r.f! are read-only.
+\item If the designated object is a variable, then the designator refers to the variable's current value.
+\item A type guard !v(T)! asserts that the dynamic type of !v! is !T! (or an extension of !T!), i.e. program
+execution is aborted, if the dynamic type of !v! is not !T! (or an extension of !T!). Within the designator, !v!
+is then regarded as having the static type !T!. The guard is applicable, if
+\begin{enumerate}
+\item !v! is a variable parameter of record type or !v! is a pointer to record type, and if
+\item !T! is an extension of the static type of !v!.
+\end{enumerate}
+\item If it is a procedure, the designator refers to that procedure unless it is followed by a (possibly empty)
+  parameter list in which case it implies an activation of that procedure and stands for the value
+  resulting from its execution. The actual parameters must correspond to the formal parameters as in
+  proper procedure calls (see Formal parameters\ \ref{parameters}).
+\end{itemize}
 
 Examples of designators (see examples in section \ref{types}):
 
@@ -386,17 +745,20 @@ Examples of designators (see examples in section \ref{types}):
     a[i] & (\INTEGER) \\
     w[3].name[0] & (\CHAR) \\
     w[3].count & (\INTEGER) \\
+    t(CenterTree).subnode & Tree \\
 \end{tabular}
 
 \subsection{Operators}
 \label{operators}
 
-The syntax of expressions distinguishes between four classes of operators with different precedences (binding strengths). The operator ~ has the highest precedence, followed by multiplication operators, addition operators, and relations. Operators of the same precedence associate from left to right. For example, x-y-z stands for (x-y)-z.
+The syntax of expressions distinguishes between four classes of operators with different precedences (binding strengths).
+The operator !~! has the highest precedence, followed by multiplication operators, addition operators, and relations.
+Operators of the same precedence associate from left to right. For example, !x-y-z! stands for !(x-y)-z!.
 
 \begin{lstlisting}[style=ebnf]
 expression = SimpleExpression [relation SimpleExpression]. 
 
-relation = "=" | "#" | "<" | "<=" | ">" | ">=" | IN. 
+relation = "=" | "#" | "<" | "<=" | ">" | ">=" | IN | IS.
 
 SimpleExpression = [ "+" | "-" ] term {AddOperator term}.
 
@@ -406,30 +768,45 @@ term = factor {MulOperator factor}.
 
 MulOperator = "*" | "/" | DIV | MOD | "&".
 
-factor = number | character | string | NIL | set 
+factor = number | character | string | NIL | set
         | designator [ experssion ] 
         | "(" expression ")" 
         | "~" factor.
-        
+
 set =  "{" [element {"," element}] "}".
 
 element = expression [ ".." expression]
 \end{lstlisting}
 
+Examples of expressions:
+
+\begin{tabbing}
+    XXXXXXXXXXX \= \kill
+    !1987! \> (\INTEGER) \\
+    !i DIV 3! \> (\INTEGER) \\
+    !~p OR q! \> (\BOOLEAN) \\
+    !a[i+j] * a[i-j]! \> (\INTEGER) \\
+    !(0<=i) \& (i<100)! \> (\BOOLEAN) \\
+    !k IN {i..j-1}! \> (\BOOLEAN) \\
+    !t.key = 0! \> (\BOOLEAN) \\
+    !t IS CenterTree! \> (\BOOLEAN)
+\end{tabbing}
+
+
 The available operators are listed in the following tables. In some instances, several different operations are designated by the same operator symbol. In these cases, the actual operation is identified by the type of the operands.
 
 \subsubsection{Logical operators}
 
-\begin{tabular}{l|l}
-    symbol & result \\
+\begin{tabular}{l|l|c|l}
+    symbol & result & &\\
     \hline
-    \OR & logical disjunction \\
-    \& & logical conjuction \\
-    \~{} & negation
+    \OR & logical disjunction & !p or q! & if p then \TRUE, else q \\
+    \& & logical conjuction & !p & q ! & if p then q else \FALSE \\
+    \~{} & negation & !~p! & not p\\
 \end{tabular}
 \vspace{2mm}
 
-The operators \& and \OR\ evaluate their operands only until an conclusive result is obtained (first \TRUE\ value for \OR, first \FALSE\ value for \&).
+The operators !&! and \OR\ evaluate their operands only until an conclusive result is obtained (first \TRUE\ value for \OR, first \FALSE\ value for !&!).
 
 \subsubsection{Arithmetic operators}
 
@@ -439,21 +816,31 @@ The operators \& and \OR\ evaluate their operands only until an conclusive resul
     + & sum \\
     - & difference \\
     \** & product \\
-    / & quotient \\
+    / & real quotient \\
     \DIV & integer quotient \\
     \MOD & modulus \\
 \end{tabular}   
 \vspace{2mm}
 
-The operators +, -, *, and / apply to operands of numeric types. The type of the result is that
-operand's type which includes the other operand's type, except for division (/), where the result is the real type which includes both operand types. When used as operators with a single operand, - denotes sign inversion and + denotes the identity operation.
+The operators !+!, !-!, !*!, and !/! apply to operands of numeric types.
+The type of the result is that operand's type which includes the other operand's type, except for division (!/!), where the result is the real type which includes both operand types.
+When used as operators with a single operand, !-! denotes sign inversion and !+! denotes the identity operation.
 
-The operators \DIV\ and \MOD\ apply to integer operands only. They are related by the following formulas defined for any dividend x and positive divisors y:
+The operators \DIV\ and \MOD\ apply to integer operands only. They are related by the following formulas defined for any dividend !x! and positive divisors !y!:
 
 \begin{lstlisting}[style=example]
 x = (x DIV y) * y + (x MOD y)
 0 ≤ (x MOD y) < y
 \end{lstlisting}   
+
+Examples:
+
+\begin{tabular}{cccc}
+x & y & x \DIV\ y & x \MOD\ y \\
+\hline
+5 & 3 & 1 & 2 \\
+-5 & 3 & -2 & 1 \\
+\end{tabular}
 
 \subsubsection{Set Operators}
 
@@ -464,13 +851,16 @@ x = (x DIV y) * y + (x MOD y)
     - & difference (x - y = x * (-y)) \\
     \** & intersection \\
     / & symmetric set difference (x / y = (x-y) + (y-x))\\
+    - & complement 
 \end{tabular}   
 \vspace{2mm}
 
 Set operators apply to operands of type \SET\ and yield a result of type \SET. 
-The monadic minus sign denotes the complement of x, i.e. -x denotes the set of integers between 0 and \MAX(\SET) which are not elements of x. Set operators are not associative ((a+b)-c \# a+(b-c)).
+The monadic minus sign denotes the complement of !x!, i.e. !-x! denotes the set of integers between !0! and !MAX(SET)! which are not elements of !x!.
+Set operators are not associative !((a+b)-c # a+(b-c))!.
 
-A set constructor defines the value of a set by listing its elements between curly brackets. The elements must be integers in the range 0..\MAX(\SET). A range a..b denotes all integers in the interval [a, b].
+A set constructor defines the value of a set by listing its elements between curly brackets.
+The elements must be integers in the range !0..MAX(SET)!. A range !a..b! denotes all integers in the interval [a, b].
 
 \subsubsection{Relations}
 
@@ -484,46 +874,86 @@ A set constructor defines the value of a set by listing its elements between cur
     >= & greater \\
     > & greater or equal \\
     \IN & set membership \\
+    \IS & type test \\
 \end{tabular}
 \vspace{2mm}
 
-Relations yield \BOOLEAN\ results. The ordering relations <, <=, >, and >= apply to the numeric types, CHAR, strings and character arrays containing 0X as a terminator. The relations = and \# also apply to the type \BOOLEAN\ and \SET, as well as to pointer types (including the value \NIL). x \IN\ s stands for "x is an element of s". x must be of an integer type, and s of type \SET. 
+Relations yield \BOOLEAN\ results.
+The ordering relations !<!, !<=!, !>!, and !>=! apply to the numeric types, enumerations, \CHAR, strings and character arrays containing !0X! as a terminator.
+The relations !=! and !#! also apply to the type \BOOLEAN\ and \SET, as well as to pointer types (including the value \NIL).
+
+!x! \IN\ !s! stands for ``!x! is an element of !s!". x must be of an integer type, and !s! of type \SET.
+
+!v! \IS\ !T! stands for ``the dynamic type of !v! is !T! or an extension of !T!". v must be a variable parameter of record type or a pointer to record typem or an object, and !T! must be an extension of the static type of !v!.
+
+\subsubsection{String operators}
+
+\begin{tabular}{l|l}
+    symbol & result \\
+    \hline
+    + & concatenation \\
+\end{tabular}
+\vspace{2mm}
+
+The concatenation operator applies to operands of string types (literals as well as \CHAR\
+arrays). The resulting string consists of the characters of the first operand followed by the
+characters of the second operand.
 
 
-Examples of expressions:
+\subsubsection{Function call}
 
-\begin{tabbing}
-    XXXXXXXXXXX \= \kill
-    1987 \> (\INTEGER) \\
-    i \DIV\ 3 \> (\INTEGER) \\
-    ~p \OR\ q \> (\BOOLEAN) \\
-    a[i+j] * a[i-j] \> (\INTEGER) \\
-    (0<=i) \& (i<100) \> (\BOOLEAN) \\
-    k \IN\ {i..j-1} \> (\BOOLEAN) \\
-    t.key = 0 \> (\BOOLEAN) \\
-\end{tabbing}
+A function call is a factor in an expression. In contrast to procedure calls in a function call the
+actual parameter list is mandatory. Each expression in the actual parameters list (if any) is used to
+initialize a corresponding formal parameter. The number of expressions in the actual parameter
+list must correspond the number of formal parameters. See also Formal parameters -- \ref{parameters}.
+
+\begin{lstlisting}[style=ebnf]
+FunctionCall = designator ActualParameters
+
+ActualParameters = '(' [ ExpList ] ')'
+\end{lstlisting}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Statements}
 
-Statements denote actions. There are elementary and structured statements. Elementary statements are not composed of any parts that are themselves statements. They are the assignment, the procedure call, and the return. 
+Statements denote actions. There are elementary and structured statements. Elementary statements are not composed of any parts that are themselves statements. They are the assignment, the procedure call, return and exit statement. 
 Structured statements are composed of parts that are themselves statements. They are used to express sequencing and conditional, selective, and repetitive execution.
 
 \begin{lstlisting}[style=ebnf]
-statement = [assignment | ProcedureCall | IfStatement | WhileStatement 
-            | RETURN [expression] ].
+statement = assignment
+          | ProcedureCall
+          | IfStatement
+          | WhileStatement
+          | RepeatStatement
+          | CaseStatement
+          | LoopStatement
+          | WithStatement
+          | ExitStatement
+          | ReturnStatement.
 \end{lstlisting}
 
 \subsection{Assignments}
 \label{assignment}
 
-The assignment serves to replace the current value of a variable by a new value specified by an expression. The assignment operator is written as ":=" and pronounced as becomes.
+The assignment serves to replace the current value of a variable by a new value specified by an expression.
+The assignment operator is written as !:=! and pronounced as ``becomes".
+The expression must be assignment compatible with the variable.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
-    assignment = designator ":=" expression.
+assignment = designator ":=" expression.
 \end{lstlisting} 
 
-The type of the expression must be included by the type of the variable
+
+If an expression !e! of type !Te! is assigned to a variable !v! of type !Tv!, the following happens:
+\begin{enumerate}
+\item if !Tv! and !Te! are pointer types, the dynamic type of !v! becomes the dynamic type of !e!;
+\item if !Tv! is !ARRAY n OF CHAR! or \STRING\ and !e! is a string of length !m < n!, !v[i]! becomes !ei! for !i = 0..m-1!
+and !v[m]! becomes !0X!;
+\item if !Tv! and !Te! are open or non-open \CHAR\ arrays, !v[i]! becomes e[i] for !i = 0..STRLEN(e)!; if !LEN(v) <= STRLEN(e)! or !e! is not terminated by 0X the program halts;
+\item if !Tv! is an open \CHAR\ array or \STRING\ and !e! is a string !v[i]! becomes !e[i]! for !i = 0..LEN(e)-1! and !v[LEN(e)]!
+becomes !0X!; if !LEN(v) <= LEN(e)! the program halts;
+\end{enumerate}
 
 Examples of assignments (see examples in \ref{types}):
 
@@ -534,7 +964,8 @@ x := i + 1
 a[i] := (x+y) * (x-y)
 t.key := i
 w[i+1].count := 100
-\end{lstlisting} 
+x := "Hello"
+\end{lstlisting}
 
 \subsection{Procedure calls}
 
@@ -543,85 +974,159 @@ A procedure call serves to activate a procedure. The procedure call may contain 
 In the case of variable parameters, the actual parameter must be a designator denoting a variable. If it designates an element of a structured variable, the selector is evaluated when the formal/actual parameter substitution takes place, i.e. before the execution of the procedure. If the parameter is a value parameter, the corresponding actual parameter must be an expression. This expression is evaluated prior to the procedure activation, and the resulting value is assigned to the formal parameter which now constitutes a local variable (see also \ref{parameters}).
 
 \begin{lstlisting}[style=ebnf]
-    ProcedureCall = designator [ActualParameters].
-\end{lstlisting} 
+ProcedureCall = designator [ActualParameters].
+\end{lstlisting}
 
 Examples of procedure calls:
 
 \begin{lstlisting}[style=example]
-    WriteInt(j * 2 + 1) 
-\end{lstlisting} 
+    WriteInt(j * 2 + 1)
+    t.Insert("Hello")
+\end{lstlisting}
 
 \subsection{Statement sequences}
 
 Statement sequences denote the sequence of actions specified by the component statements which are separated by semicolons.
 
 \begin{lstlisting}[style=ebnf]
-    StatementSequence = statement {";" statement}.
-\end{lstlisting} 
+StatementSequence = statement {";" statement}.
+\end{lstlisting}
 
 \subsection{\IF\ statements}
 
-\begin{lstlisting}[style=ebnf]
-IfStatement = IF expression THEN StatementSequence 
-              {ELSIF expression THEN StatementSequence} 
-              [ELSE StatementSequence]
-              END.
-\end{lstlisting} 
-
 \IF\ statements specify the conditional execution of guarded statements. The boolean expression preceding a statement is called its guard. The guards are evaluated in sequence of occurrence, until one evaluates to \TRUE, whereafter its associated statement sequence is executed. If no guard is satisfied, the statement sequence following the symbol \ELSE\ is executed, if there is one.
 
+\begin{lstlisting}[style=ebnf]
+IfStatement = IF expression THEN StatementSequence
+              {ELSIF expression THEN StatementSequence}
+              [ELSE StatementSequence]
+              END.
+\end{lstlisting}
+
+Example:
 \begin{lstlisting}[style=example]
-    IF (ch >= "A") & (ch <= "Z") THEN ReadIdentifier 
-    ELSIF (ch >= "0") & (ch <= "9") THEN ReadNumber 
+    IF (ch >= "A") & (ch <= "Z") THEN ReadIdentifier
+    ELSIF (ch >= "0") & (ch <= "9") THEN ReadNumber
     ELSIF ch = 22X THEN ReadString
     END
 \end{lstlisting}
 
 \subsection{\CASE\ statement}
 
-\CASE\ statements specify the selection and execution of a statement sequence according to the value of an expression. 
-First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value. 
-The case expression must either be of an integer type that includes the types of all case labels, or both the case expression and the case labels must be of type \CHAR. Case labels are constants, and no value must occur more than once. If the value of the expression does not occur as a label of any case, the statement sequence following the symbol \ELSE\ is selected, if there is one, otherwise the program is aborted.
+\CASE\ statements specify the selection and execution of a statement sequence according to the value of an expression.
+First the case expression is evaluated, then that statement sequence is executed whose case label list contains the obtained value.
+The case expression must either be of an integer type or enumeration that includes the types of all case labels,
+or both the case expression and the case labels must be of type \CHAR.
+
+Case labels are constants, and no value must occur more than once.
+If the value of the expression does not occur as a label of any case, the statement sequence following the symbol \ELSE\ is selected,
+if there is one, otherwise the program is aborted.
+
+The type !T! of the case expression (case variable) may also be a variable parameter of record type or
+a pointer to record variable. Then each case consists of exactly one case label which must be an
+extension of !T!, and in the statements !Si! labelled by !Ti!, the case variable is
+considered as of type !Ti!. If the case variable is of \POINTER\ type, then one case label can also be \NIL.
+
+The evaluation order corresponds to the case label order; the first statement sequence is executed
+whose case label meets the condition.
+
 
 \begin{lstlisting}[style=ebnf]
-CaseStatement = CASE Expression OF 
-                Case 
-                {"|" Case} 
-                [ELSE StatementSequence] 
-                END. 
+CaseStatement = CASE Expression OF
+                Case
+                {"|" Case}
+                [ELSE StatementSequence]
+                END.
 
 Case = [CaseLabelList ":" StatementSequence].
 
 CaseLabelList = CaseLabels {"," CaseLabels}.
 
 CaseLabels = ConstExpression [".." ConstExpression].
-\end{lstlisting} 
+\end{lstlisting}
 
+Example:
 \begin{lstlisting}[style=example]
+
+CASE i OF
+  1: Out.String ("one");
+| 2: Out.String ("two");
+| 3: Out.String ("three");
+| 4, 5: Out.String ("many");
+| 6..9: Out.String ("too many");
+ELSE
+    Out.String ("no match");
+END;
+
 CASE ch OF
     "A" .. "Z": ReadIdentifier
-    | "0" .. "9": ReadNumber 
-    | "'",'"':ReadString 
-ELSE SpecialCharacter 
-END    
+    | "0" .. "9": ReadNumber
+    | "'",'"':ReadString
+ELSE SpecialCharacter
+END
+
+TYPE R = RECORD a: INTEGER END;
+    R0 = RECORD (R) b: REAL END;
+    R1 = RECORD (R) c: CHAR END;
+    R2 = RECORD (R) d: BOOLEAN END;
+    P = POINTER TO R;
+    P0 = POINTER TO R0;
+    P1 = POINTER TO R1;
+    P2 = POINTER TO R2;
+VAR p: P;
+    ...
+CASE p OF
+    | P0: p.b := 0.0
+    | P1: p.c := "X"
+    | P2: p.d := TRUE
+    | NIL: ...
+END
 \end{lstlisting}
 
 \subsection{\WHILE\ statements}
 
 \WHILE\ statements specify repetition. If the Boolean expression (guard) yields \TRUE, the statement sequence is executed. The expression evaluation and the statement execution are repeated as long as the Boolean expression yields \TRUE.
+The \ELSIF\ part is integrated in the loop; as long as any of the Boolean expressions (either
+the \WHILE\ or \ELSIF\ guard) yields \TRUE, the corresponding statement sequence is executed;
+repetition only terminates, when all guards are \FALSE.
 
 \begin{lstlisting}[style=ebnf]
-WhileStatement = WHILE expression DO StatementSequence END.
-\end{lstlisting} 
-    
+WhileStatement = WHILE expression DO StatementSequence
+                {ELSIF expression DO StatementSequence} END
+\end{lstlisting}
+
 Examples:
-    
+
 \begin{lstlisting}[style=example]
 WHILE j > 0 DO
     j := j DIV 2; i := i+1
 END
-\end{lstlisting} 
+\end{lstlisting}
+
+The following \WHILE\ statement:
+\begin{lstlisting}[style=example]
+WHILE m > n DO
+    m := m – n
+ELSIF n > m DO
+    n := n – m
+END
+\end{lstlisting}
+is equivalent to:
+\begin{lstlisting}[style=example]
+LOOP
+    IF m > 0 THEN
+        m := m – n
+    ELSIF n > m THEN
+        n := n – m
+    ELSE
+        EXIT
+    END
+END
+\end{lstlisting}
+
+Contrary to intuition, the \ELSIF\ part is not executed only if the first check of
+the \WHILE\ guard evaluates to \FALSE; instead, both parts are checked and executed
+until both guards evaluate to \FALSE.
 
 \subsection{\REPEAT\ statments}
 
@@ -629,187 +1134,297 @@ A \REPEAT\ statement specifies the repeated execution of a statement sequence un
 
 \begin{lstlisting}[style=ebnf]
 RepeatStatement = REPEAT StatementSequence UNTIL Expression.
-\end{lstlisting} 
+\end{lstlisting}
+
+\begin{lstlisting}[style=example]
+REPEAT
+    j := 1;
+    REPEAT
+        Out.Int (j, 2);
+        INC (j);
+     UNTIL (j > i);
+     Out.Ln;
+     INC (i);
+UNTIL (i = 5);
+\end{lstlisting}
 
 \subsection{\FOR\ statements}
 
-A \FOR\ statement specifies the repeated execution of a statement sequence for a fixed number of times while a progression of values is assigned to an numeric integer or \CHAR\ variable called the control variable of the for statement. The variable should be pre-defined earlier in the program. 
+A \FOR\ statement specifies the repeated execution of a statement sequence for a fixed number of times while a progression of values is assigned to an numeric integer or \CHAR\ variable called the control variable of the for statement. The variable should be pre-defined earlier in the program.
 
 \begin{lstlisting}[style=ebnf]
-ForStatement = FOR ident ":=" Expression TO Expression 
+ForStatement = FOR ident ":=" Expression TO Expression
                [BY ConstExpression] DO StatementSequence END.
-\end{lstlisting} 
+\end{lstlisting}
 
 The statement
-
 \begin{lstlisting}[style=example]
 FOR v := low TO high BY step DO statements END
-\end{lstlisting} 
-
+\end{lstlisting}
 is equivalent to
-
 \begin{lstlisting}[style=example]
-v := low; temp := high; 
+v := low; temp := high;
 IF step > 0 THEN
-    WHILE v <= temp DO statements; v := v + step END 
+    WHILE v <= temp DO statements; v := v + step END
 ELSE
-    WHILE v >= temp DO statements; v := v + step END 
+    WHILE v >= temp DO statements; v := v + step END
 END
-\end{lstlisting} 
-    
-\lstinline!low! must be assignment compatible with \lstinline!v!, \lstinline!high! must be expression compatible (i.e. comparable) with \lstinline!v!, and step must be a nonzero constant expression of an integer type. If step is not specified, it is assumed to be 1.
+\end{lstlisting}
+!temp! has the same type as !v!.
+
+\lstinline!low! must be assignment compatible with \lstinline!v!, \lstinline!high! must be expression compatible (i.e. comparable) with \lstinline!v!, and step must be a nonzero constant expression of an integer type.
+If step is not specified, it is assumed to be 1.
+For enumeration control variables, there is no explicit step, but the \INC\ or \DEC\ version of the while loop is used depending on !ORD(first) <= ORD(last)!.
 
 Examples:
 \begin{lstlisting}[style=example]
 FOR i := 0 TO 79 DO k := k + a[i] END
 FOR i := 79 TO 1 BY -1 DO a[i] := a[i-1] END
-\end{lstlisting} 
+\end{lstlisting}
 
 \subsection{\LOOP\ statements}
 
 A \LOOP\ statement specifies the repeated execution of a statement sequence. It is terminated upon execution of an exit statement within that sequence (see \ref{return}).
 
-\begin{lstlisting}[style=example]
+\begin{lstlisting}[style=ebnf]
 LoopStatement = LOOP StatementSequence END.
-\end{lstlisting} 
+\end{lstlisting}
 
 Example:
 \begin{lstlisting}[style=example]
 LOOP
     ReadInt(i);
-    IF i < 0 THEN EXIT END; 
+    IF i < 0 THEN EXIT END;
     WriteInt(i)
 END
-\end{lstlisting} 
+\end{lstlisting}
 
 Loop statements are useful to express repetitions with several exit points or cases where the exit condition is in the middle of the repeated statement sequence.
-
-\subsection{\BEGIN\ statements}
-
-This is non-standard Oberon. A begin statement specifies a collection of statements. There is no looping function.  It is terminated upon execution of an exit statement within that sequence (see \ref{return}), or completion of the final statement in the \BEGIN\ \END\ block.
-
-\begin{lstlisting}[style=example]
-LoopStatement = BEGIN StatementSequence END.
-\end{lstlisting} 
-
-Example:
-\begin{lstlisting}[style=example]
-BEGIN
-    ReadInt(i);
-    IF i < 0 THEN EXIT END; 
-    WriteInt(i)
-END
-\end{lstlisting} 
 
 \subsection{\RETURN\ and \EXIT\ statements}
 \label{return}
 
 A return statement consists of the symbol \RETURN, possibly followed by an expression. It indicates the termination of a procedure, and the expression specifies the result of a function procedure. Its type must be identical to the result type specified in the procedure heading (see \ref{procedures}).
 
-Function procedures require the presence of a return statement indicating the result value. There may be several, although only one will be executed. In proper procedures, a return statement is implied by the end of the procedure body. An explicit return statement therefore appears as an additional (probably exceptional) termination point.
+Syntax:
+\begin{lstlisting}[style=ebnf]
+ReturnStatement = RETURN [Expression].
 
-An exit statement is denoted by the symbol \EXIT. It specifies termination of the enclosing loop
-statement and continuation with the statement following that loop statement. Exit statements are contextually, although not syntactically associated with the loop statement which contains them.
+ExitStatement = EXIT.
+\end{lstlisting}
+
+Function procedures require the presence of a return statement indicating the result value.
+There may be several, although only one will be executed.
+In proper procedures, a return statement is implied by the end of the procedure body.
+An explicit return statement therefore appears as an additional (probably exceptional) termination point.
+
+An exit statement is denoted by the symbol \EXIT.
+It specifies termination of the enclosing loop
+statement and continuation with the statement following that loop statement.
+Exit statements are contextually, although not syntactically associated with the loop statement which contains them.
+
+\subsection{\WITH\ statements}
+
+\WITH\ statements execute a statement sequence depending on the result of a type test and apply a
+type guard to every occurrence of the tested variable within this statement sequence.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+WithStatement = WITH ['|'] Guard DO StatementSequence
+                { '|' Guard DO StatementSequence}
+                [ ELSE StatementSequence ] END
+
+Guard = qualident ':' qualident
+\end{lstlisting}
+
+If !v! is a variable parameter of record type or a pointer to record variable, and if it is of a static type
+!T0!, the statement:
+\begin{lstlisting}[style=example]
+WITH v: T1 DO 
+   S1 
+| v: T2 DO 
+   S2 
+ELSE 
+   S3 
+END
+\end{lstlisting}
+has the following meaning: if the dynamic type of !v! is !T1!, then the statement sequence !S1! is
+executed where !v! is regarded as if it had the static type !T1!; else if the dynamic type of !v! is !T2!, then
+!S2! is executed where !v! is regarded as if it had the static type !T2!; else !S3! is executed.
+!T1! and !T2! must
+be extensions of !T0!. If no type test is satisfied and if an else clause is
+missing the program is aborted.
+
+Example:
+\begin{lstlisting}[style=example]
+WITH t: CenterTree DO 
+    i := t.width; 
+    c := t.subnode 
+END
+\end{lstlisting}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Procedure declarations}
+\section{Procedure Declarations}
 \label{procedures}
 
-Procedure declarations consist of a procedure heading and a procedure body. The heading specifies the procedure identifier, the formal parameters, and the result type (if any). The body contains declarations and statements. The procedure identifier is repeated at the end of the procedure declaration.
+Procedure declarations consist of a procedure heading and a procedure body.
+The heading specifies the procedure identifier, the formal parameters, and the result type (if any).
+For type- bound procedures it also specifies the receiver parameter.
+The body contains declarations and statements. The procedure identifier is repeated at the end of the procedure declaration.
 
-There are two kinds of procedures, namely proper procedures and function procedures. The latter are activated by a function designator as a constituent of an expression, and yield a result that is an operand in the expression. Proper procedures are activated by a procedure call. The function procedure is distinguished in the declaration by indication of the type of its result following the parameter list. Its body must contain a \RETURN\ statement which defines the result of the function procedure.
+There are two kinds of procedures, namely proper procedures and function procedures.
+The latter are activated by a function designator as a constituent of an expression, and yield a result that is an operand in the expression.
+Proper procedures are activated by a procedure call.
+The function procedure is distinguished in the declaration by indication of the type of its result following the parameter list.
+Its body must contain a \RETURN\ statement which defines the result of the function procedure.
 
-All constants, variables, types, and procedures declared within a procedure body are local to the procedure. The values of local variables are undefined upon entry to the procedure. Since procedures may be declared as local objects too, procedure declarations may be nested. The call of a procedure within its declaration implies recursive activation.
+All constants, variables, types, and procedures declared within a procedure body are local to the procedure.
+The values of local variables are undefined upon entry to the procedure.
+Since procedures may be declared as local objects too, procedure declarations may be nested.
+The call of a procedure within its declaration implies recursive activation.
 
 Objects declared in the environment of the procedure are also visible in those parts of the procedure in which they are not concealed by a locally declared object with the same name.
 
+Procedures can be nested, and inner procedures have access to the parameters or
+local variables of outer procedures ("non-local access").
+
+A procedure body may have no statements in which case the ident after the END reserved word can
+also be left out; in a function procedure with no statements a return statement with a default value
+is assumed.
 
 \begin{lstlisting}[style=ebnf]
-ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody [ident].
 
-ProcedureHeading = PROCEDURE IdentDef [FormalParameters]. 
+ProcedureHeading = PROCEDURE [Receiver] IdentDef [FormalParameters].
 
-ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END. 
+ProcedureBody = DeclarationSequence [BEGIN StatementSequence] END.
 
-DeclarationSequence = {CONST {ConstantDeclaration ";"} 
-                    | {TYPE {TypeDeclaration ";"} 
+DeclarationSequence = {CONST {ConstantDeclaration ";"}
+                    | {TYPE {TypeDeclaration ";"}
                     | VAR {VariableDeclaration ";"}}.
                     { ProcedureDeclaration ";" | ForwardDeclaration ";"}.
 
 ForwardDeclaration = PROCEDURE "^" IdentDef [FormalParameters].
-\end{lstlisting} 
+\end{lstlisting}
 
-A forward declaration serves to allow forward references to a procedure whose actual declaration appears later in the text. The formal parameter lists of the forward declaration and the actual declaration must be identical.
+A forward declaration serves to allow forward references to a procedure whose actual declaration appears later in the text.
+The formal parameter lists of the forward declaration and the actual declaration must be identical.
 
 \subsection{Formal parameters}
 \label{parameters}
 
-Formal parameters are identifiers which denote actual parameters specified in the procedure call. The correspondence between formal and actual parameters is established when the procedure is called. There are two kinds of parameters, namely value and variable parameters. The kind is indicated in the formal parameter list. Value parameters stand for local variables to which the result of the evaluation of the corresponding actual parameter is assigned as initial value. Variable parameters correspond to actual parameters that are variables, and they stand for these variables. Variable parameters are indicated by the symbol \VAR, value parameters by the absence of the symbol \VAR. A function procedure without parameters must have an empty parameter list. It must be called by a function designator whose actual parameter list is empty too.
+Formal parameters are identifiers which denote actual parameters specified in the procedure call.
+The correspondence between formal and actual parameters is established when the procedure is called.
+There are three kinds of parameters, namely value, variable and \IN\ parameters.
+The kind is indicated in the formal parameter list.
+Value parameters stand for local variables to which the result of the evaluation of the corresponding actual parameter is assigned as initial value.
+Variable parameters correspond to actual parameters that are variables, and they stand for these variables.
+Variable parameters are indicated by the symbol \VAR, value parameters by the absence of the symbol \VAR or \IN.
+
+\IN\ parameters are like \VAR\ parameters, but they are read-only in the procedure body. If an \IN\
+parameters is of \ARRAY\ or \RECORD\ type, then also the elements or fields are transitively read-only
+in the procedure body.
+
+A function procedure without parameters must have an empty parameter list.
+It must be called by a function designator whose actual parameter list is empty too.
 
 Formal parameters are local to the procedure, i.e. their scope is the program text which constitutes the procedure declaration.
 
 \begin{lstlisting}[style=ebnf]
-FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" type]. 
+FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" type].
 
-FPSection = [VAR] ident {"," ident} ":" type.
-\end{lstlisting} 
+FPSection = [VAR | IN] ident {"," ident} ":" type.
+\end{lstlisting}
 
-The type of each formal parameter is specified in the parameter list. For variable parameters, it must be identical to the corresponding actual parameter's type, except in the case of a record, where it must be a base type of the corresponding actual parameter's type. For value parameters, the rule of assignment holds (see \ref{assignment}).
+The type of each formal parameter is specified in the parameter list.
+
+Let !Tf! be the type of a formal parameter !f! and !Ta! the type of the corresponding actual parameter !a!.
+If !Tf! is an open array, then !Ta! must be array compatible to !f!; the lengths of !f! are taken from !a!.
+Otherwise !Ta! must be parameter compatible to !f!.
+
+Also value parameters can have an open array type, but for efficiency reasons (to
+avoid unneccessary copying) open arrays should be \VAR\ or \IN\ parameters.
 
 Examples of procedure declarations:
 
 \begin{lstlisting}[style=example]
 PROCEDURE add(x : INTEGER; y : INTEGER): INTEGER;
-  BEGIN
-      RETURN x + y
-  END add;
+BEGIN
+    RETURN x + y
+END add;
 
 PROCEDURE mult(x : INTEGER; y : INTEGER): INTEGER;
-  BEGIN
-      RETURN x * y
-  END mult;
-\end{lstlisting} 
+BEGIN
+    RETURN x * y
+END mult;
+\end{lstlisting}
 
 \subsection{Type-bound procedures}
 
-Globally declared procedures may be associated with a record type declared in the same module. The procedures are said to be bound to the record type. The binding is expressed by the type of the receiver in the heading of a procedure declaration. The receiver may be either a variable parameter of record type T or a value parameter of type \POINTER\ \TO\ T (where T is a record type). The procedure is bound to the type T and is considered local to it.
+Globally declared procedures may be associated with a record type declared in the same module.
+The procedures are said to be bound to the record type.
+The binding is expressed by the type of the receiver in the heading of a procedure declaration.
+The receiver may be either a variable parameter of record type !T! or a value parameter of type \POINTER\ \TO\ !T! (where !T! is a record type).
+The procedure is bound to the type !T! and is considered local to it.
 
 \begin{lstlisting}[style=ebnf]
-ProcedureHeading = PROCEDURE [Receiver] IdentDef [FormalParameters]. 
-    
-Receiver = "(" [VAR] ident ":" ident ")".
-\end{lstlisting} 
+ProcedureHeading = PROCEDURE [Receiver] IdentDef [FormalParameters].
 
-If a procedure P is bound to a type T0, it is implicitly also bound to any type T1 which is an extension of T0. However, a procedure P' (with the same name as P) may be explicitly bound to T1 in which case it overrides the binding of P. 
-P' is considered a redefinition of P for T1. The formal parameters of P and P' must match (see App. A). 
-If P and T1 are exported (see Chapter 4) P' must be exported too.
+Receiver = "(" [VAR | IN] ident ":" ident ")".
+\end{lstlisting}
 
-If v is a designator and P is a type-bound procedure, then v.P denotes that procedure P which is bound to the dynamic type of v. Note, that this may be a different procedure than the one bound to the static type of v. v is passed to P's receiver according to the parameter passing rules specified in \ref{parameters}.
+If a procedure !P! is bound to a type !T0!, it is implicitly also bound to any type !T1! which is an extension of !T0!.
+However, a procedure !P'! (with the same name as !P!) may be explicitly bound to !T1! in which case it overrides the binding of !P!.
+!P'! is considered a redefinition of !P! for !T1!. The formal parameters of !P! and !P'! must match (see Appendix\ \ref{appendix}).
+If !P! and !T1! are exported, !P'! must be exported too.
 
-If r is a receiver parameter declared with type T, r.P\^{} denotes the (redefined) procedure P bound to the base type of T.
+If !v! is a designator and !P! is a type-bound procedure, then !v.P! denotes that procedure !P! which is bound to the dynamic type of !v!.
+Note, that this may be a different procedure than the one bound to the static type of !v!.
+!v! is passed to !P!'s receiver according to the parameter passing rules specified in \ref{parameters}.
 
-In a forward declaration of a type-bound procedure the receiver parameter must be of the same type as in the actual procedure declaration. The formal parameter lists of both declarations must be identical.
+If !r! is a receiver parameter declared with type !T!, !r.P!\^{} denotes the (redefined) procedure !P! bound to the base type of !T!.
+
+In a forward declaration of a type-bound procedure the receiver parameter must be of the same type as in the actual procedure declaration.
+The formal parameter lists of both declarations must be identical.
 
 Examples:
 
 \begin{lstlisting}[style=example]
-PROCEDURE (t: Tree) Insert (node: Tree); 
+PROCEDURE (t: Tree) Insert (node: Tree);
     VAR p, father: Tree;
 BEGIN p := t;
     REPEAT father := p;
         IF node.key = p.key THEN RETURN END;
         IF node.key < p.key THEN p := p.left ELSE p := p.right END
     UNTIL p = NIL;
-    IF node.key < father.key THEN father.left := node ELSE father.right := node END; 
+    IF node.key < father.key THEN father.left := node ELSE father.right := node END;
     node.left := NIL; node.right := NIL
 END Insert;
 
-PROCEDURE (t: CenterTree) Insert (node: Tree); (*redefinition*) 
+PROCEDURE (t: CenterTree) Insert (node: Tree); (*redefinition*)
 BEGIN
     WriteInt(node(CenterTree).width);
-    t.Insert^ (node) (* calls the Insert procedure bound to Tree *) 
+    t.Insert^ (node) (* calls the Insert procedure bound to Tree *)
 END Insert;
-\end{lstlisting} 
+\end{lstlisting}
+
+\subsection{Type-bound procedure types}
+
+A type-bound procedure type is a procedure type that includes a receiver parameter.
+Variables of a type-bound procedure type !T! have a type-bound procedure or \NIL\ as value.
+
+To assign
+a type-bound procedure !P! to a variable of a type-bound procedure type !T!, the right side of the
+assignment must be a designator of the form !v!\^{}!.P! or !v.P!, where !v! is a pointer to record and !P! is a
+procedure bound to this record. Note, that the dynamic type of !v! determines which procedure is
+assigned; this may be a different procedure than the one bound to the static type of !v!. The formal
+parameter lists and result types of !P! and !T! must match.
+The same rules apply when passing a type-bound procedure to a formal argument of a type- bound procedure type.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+ProcedureType = PROCEDURE '(' ( POINTER | '^' ) ')' [FormalParameters]
+\end{lstlisting}
 
 \subsection{Predefined Procedures}
 \label{predefined}
@@ -819,27 +1434,46 @@ The following table lists the predefined procedures. Some are generic procedures
 Function procedures:
 
 \vspace{2mm}
-\begin{tabular}{lllp{7cm}}
+\begin{tabular}{lllp{6cm}}
     Name & Argument type & Result type &Function \\
     \hline
     \ABS(x) & numeric type & type of x & absolute value of x \\ % Runtime
-    \ASH(x,n) & x, n: integer type & \INTEGER & arithmetic shift ( $x * 2^n$) \\ % Runtime
-    \CAP(x) & \CHAR & \CHAR & x is letter, corresponding capital letter \\ % Runtime
-    \CHR(x) & integer type & \CHAR & character with ordinal number x \\ % Runtime
+    \ACCEPTS(x,m) & !x!: object, !m!: \MESSAGE\ type & \BOOLEAN & !x! can process message !m! \\ % Runtime
+    !BITAND(x, y)! & integer type & type of !x! & bitwise and \\ % Runtime
+    !BITASR(x, n)! & integer type & type of !x! & arithmetic shift right !x! by !n! bits \\ % Runtime
+    !BITNOT(x)! & integer type & type of !x! & bitwise not \\ % Runtime
+    !BITOR(x, y)! & integer type & type of !x! & bitwise or \\ % Runtime
+    !BITSHL(x, n)! & integer type & type of !x! & shift left !x! by !n! bits \\ % Runtime
+    !BITSHR(x, n)! & integer type & type of !x! & logical shift right !x! by !n! bits \\ % Runtime
+    !BITXOR(x, y)! & integer type & type of !x! & bitwise exclusive or \\ % Runtime
+    \CAP(x) & \CHAR & \CHAR & !x! is letter, corresponding capital letter \\ % Runtime
+    !CAST(T, x)! & !x!: any type, !T!: basic type & !T! & convert !x! to type !T! \\ % Compile time
+    \CHR(x) & integer type & \CHAR & character with ordinal number !x! \\ % Runtime
+    !DEFAULT(T)! & !T! = basic type & !T! & default value of type !T! \\ % Compile time
+      & !T! = enumeration type & !T! &  same as \MIN(!T!) \\
+      & !T! = pointer/procedure type & !T! & \NIL \\
+      & !T! = record/array type & !T! & all fields/elements are default values \\
     \FLOOR(x) & \REAL & \INTEGER & round down \\ % Runtime
     \FLT(x) & \INTEGER & \REAL & identity \\ % Runtime
-    \LEN(v) & \ARRAY & \INTEGER & length of \ARRAY\ v, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
-    \LONG(x) & any integer type & \INTEGER & identity \\% Compile time
-        & any real type & \REAL &  \\% Compile time
-    \MAX(T) & T = basic type & T & maximum value of type T\\ % Compile time
-      & T = \SET\ &  \INTEGER & maximum element of a set\\ % Compile time
-    \MIN(T) & T = basic type & T & minimum value of type T\\ % Compile time
-      & T = \SET\ &  \INTEGER & 0\\ % Compile time
-    \ODD(x) & integer type & \BOOLEAN & x \MOD\ 2 = 1 \\ % Runtime
-    \ORD(x) & \CHAR & \INTEGER & ordinal number of x \\ % Runtime
-    \SIZE(T) & T or v & \INTEGER & size of type T or variable v \\ % Compile time
+    \LEN(v) & \ARRAY & \INTEGER & length of \ARRAY\ !v!, else 1 (scalar) for everything else. \\ % Compile time - constant for arrays, strings Runtime
+    \LONG(x) & any integer type & \LONGINT & identity \\% Compile time
+        & any real type & \REAL &  identity \\% Compile time
+    \MAX(T) & !T! = basic type & !T! & maximum value of type T\\ % Compile time
+      & !T! = \SET\ &  \INTEGER & maximum element of a set\\ % Compile time
+      & !T! = enumeration type & !T! & last element of the enumeration\\
+    \MAX(x, y) & numeric type & type of !x! & maximum of !x! and !y! \\ % Runtime
+               & character type & \CHAR & the greater of !x! and !y! \\ % Runtime
+    \MIN(T) & !T! = basic type & !T! & minimum value of type !T!\\ % Compile time
+      & !T! = \SET\ &  \INTEGER & 0\\ % Compile time
+        & !T! = enumeration type & !T! & first element of the enumeration\\
+    \MIN(x, y) & numeric type & type of !x! & minimum of !x! and !y! \\ % Runtime
+               & character type & \CHAR & the lesser of !x! and !y! \\ % Runtime
+    \ODD(x) & integer type & \BOOLEAN & !x! \MOD\ 2 = 1 \\ % Runtime
+    \ORD(x) & \CHAR & \INTEGER & ordinal number of !x! \\ % Runtime
+    \SIZE(T) & T or v & \INTEGER & size of type !T! or variable !v! \\ % Compile time
     \SHORT(x) & any integer type & \INTEGER & identity \\% Compile time
         & any real type & \REAL &  \\% Compile time
+    \STRLEN(v) & \ARRAY\ OF \CHAR\ or \STRING & \INTEGER & length of string !v! excluding terminating !0X!. \\ % Runtime
     \hline
 \end{tabular}
 \vspace{5mm}
@@ -847,59 +1481,366 @@ Function procedures:
 Proper procedures:
 
 \vspace{2mm}
-\begin{tabular}{lp{4.5cm}p{4.5cm}}
-    Name & Argument types & Function \\ 
+\begin{tabular}{lp{4.5cm}p{6cm}}
+    Name & Argument types & Function \\
     \hline
-    \ASSERT(x) & x: \BOOLEAN & terminate if not x \\
-    \ASSERT(x, n) & x: \BOOLEAN, n: \INTEGER & terminate if not x, return n to the OS. \\
-    \COPY(x, v) & x: character array, v: character array & v := x \\ % Runtime
-    \DEC(v) & integer type & v := v - 1 \\ % Runtime
-    \DEC(v, n) & v, n: integer type & v := v - n \\ % Runtime
-    \EXCL(v, x) & v:\SET\ x:\INTEGER & v := v - {x} \\ % Runtime
+    \ASSERT(x) & !x!: \BOOLEAN & terminate if not !x! \\
+    \ASSERT(x, n) & !x!: \BOOLEAN, !n!: \INTEGER & terminate if not !x!, return !n! to the operating system. \\
+    !BYTES(a,n)! & !a!: \ARRAY\ \OF\ \CHAR, !n!: integer type &  stores the raw memory of !n! in !a!. \\ % Runtime
+    \COPY(x, v) & !x!: character array, !v!: character array & !v := x! \\ % Runtime
+    \DEC(v) & integer type & !v := v - 1! \\ % Runtime
+    \DEC(v, n) & !v!, !n!: integer type & !v := v - n! \\ % Runtime
+    \EXCL(v, x) & !v!:\SET\ !x!:\INTEGER & !v := v - {x}! \\ % Runtime
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
-    \INC(v) & integer type & v := v + 1 \\  % Runtime
-    \INC(v, n) & v, n: integer type & v := v + n \\  % Runtime
-    \INCL(v, x) & v:\SET\ x:\INTEGER & v := v + {x} \\ % Runtime
-    \NEW(v) & pointer to record or array type & allocate v\^{} \\  % Runtime
-    \NEW(v, $x_0$, ... $x_n$) & v: pointer to open array, $x_i$: integer type & allocate v with lengths $x_0$, ... $x_n$ \\
-    \NEW(s, n) & s \STRING, n \INTEGER & allocate s, size n. \\  % Runtime
-    \WriteInt(x) & \INTEGER & print x to standard output. \\ % Runtime
-    \WriteBoolean(x) & \BOOLEAN & print x to standard output as 0 or 1. \\ % Runtime
+    \INC(v) & integer type & !v := v + 1! \\  % Runtime
+    \INC(v, n) & !v!, !n!: integer type & !v := v + n! \\  % Runtime
+    \INCL(v, x) & !v!:\SET\ !x!:\INTEGER & !v := v + {x}! \\ % Runtime
+    \NEW(v) & pointer to record, array or class type & allocate !v!\^{} \\  % Runtime
+    \NEW(v, $x_0$, ... $x_n$) & !v!: pointer to open array, $x_i$: integer type & allocate !v! with lengths $x_0$, ... $x_n$ \\
+    \NEW(s, n) & !s! \STRING, !n! \INTEGER & allocate !s!, size !n!. \\  % Runtime
+    !NUMBER(n,a)! & !n!: integer type, !a!: \ARRAY\ \OF\ \CHAR & interprets the bytes in !a! number of type !n!, and assigns it to !n!.\\ % Runtime
+    !SEND(x, m)! & !x!: object, !m!: \MESSAGE\ type & send message !m! to object !x! \\ % Runtime
+    \WriteInt(x) & \INTEGER & print !x! to standard output. \\ % Runtime
+    \WriteBoolean(x) & \BOOLEAN & print !x! to standard output as \TRUE\ or \FALSE. \\ % Runtime
     \WriteLn() &  & print new line character to standard output. \\ % Runtime
     \hline
 \end{tabular}
 \vspace{5mm}
 
-\COPY\ allows the assignment of a string or a character array containing a terminating 0X to another character array. If necessary, the assigned value is truncated to the target length minus one. The target will always contain a terminating 0X. 
+\COPY\ allows the assignment of a string or a character array containing a terminating !0X! to another character array. 
+If necessary, the assigned value is truncated to the target length minus one. The target will always contain a terminating !0X!.
 
 In \HALT(x), the interpretation of x is left to the underlying system implementation.
+
+The predeclared procedure \NEW\ is used to allocate data blocks in free memory. There is, however, no way to explicitly
+dispose an allocated block. Rather, the Oberon runtime uses a garbage collector to find the blocks that are not used any
+more and to make them available for allocation again. A block is in use as long as it can be reached from a global pointer
+variable via a pointer chain. Cutting this chain (e.g., setting a pointer to \NIL) makes the block collectable.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Classes}
+\label{classes}
+
+A class is an abstract data type consisting of private data and operations defined on this data.
+Classes and objects overcome some of the limitations of record types and procedures in Oberon.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+ClassDeclaration = CLASS ident [SuperClass] “;” Body END ident.
+
+Body = Fields Methods [BEGIN StatementSequence].
+\end{lstlisting}
+
+A class constitutes a scope for all names declared in the
+body. The visibility rules for names declared in a class scope are the same as for names declared in a
+record scope. The statement sequence in body is executed whenever an object of this class is allocated
+It can be used to initialize the instance variables of an object.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+SuperClass = “(” qualident “)”.
+\end{lstlisting}
+
+A class !C! may be derived from another class !C0! specified by qualident. In the declaration
+
+\begin{lstlisting}[style=example]
+CLASS C (C0); ... END C;
+\end{lstlisting}
+
+!C0! is called the direct superclass of !C! and !C! a direct subclass of !C0!. The term superclass (subclass)
+means the direct superclass (subclass) or a superclass (subclass) thereof. A subclass inherits all
+instance variables and methods from its superclass(es).
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+Fields = {IdentList ":" Type }. 
+
+Methods = {ProcedureDeclaration “;”}.
+\end{lstlisting}
+
+Fields (also referred to as instance variables) are equivalent to record fields and methods are equivalent
+to procedure declarations in Oberon.
+
+Example:
+\begin{lstlisting}[style=oberon]
+CLASS Viewer(Frame);
+    mode: INTEGER;
+    visible: BOOLEAN;
+    PROCEDURE Open(x, y: INTEGER; mode: INTEGER); BEGIN . . . END Open;
+    PROCEDURE Close; BEGIN ... END Close;
+    PROCEDURE Move(x, y: INTEGER); BEGIN . . . END Move;
+BEGIN visible := FALSE
+END Viewer;
+\end{lstlisting}
+
+\subsection{Objects}
+
+Objects are variables whose type is a class. If an object !v! is of type !Viewer!, its fields can be accessed by
+!v.mode! and !v.visible!. Its methods can be called by !v.Open(100, 100, 0)!, etc. Both fields and methods
+may be used without qualification within the class that declares or inherits them.
+
+Objects must be allocated by the standard procedure \NEW\ before they can be used. \NEW\ allocates
+memory for the fields of the object and causes the statement sequence in the class body to be executed.
+As with pointers, there is no explicit way to deallocate an object.
+
+Within methods the predeclared pseudovariable \SELF\ denotes the object for which the method has been
+called (the receiver of the message). \SELF\ can also be used in class bodies to refer to the newly
+allocated object. It must not be used as the target of an assignment.
+
+Although it is not necessary to qualify private fields and methods by \SELF\ (i.e. !mode! and !SELF.mode!
+are equivalent within a !Viewer! method), it may sometimes improve readability to do so, especially for
+inherited fields and methods whose declarations are not at hand. A reference to \SELF\ is only necessary
+when the object itself is assigned to some other object.
+
+Example for the use of objects:
+\begin{lstlisting}[style=oberon]
+VAR v1, v2: Viewer;
+. . .
+NEW(v1); v1.Open(x0, y0, mode);
+NEW(v2); v2.Open(x1, y1, mode);
+. . .
+v1.Close; v2.Close;
+\end{lstlisting}
+
+\subsection{Declaration Order}
+
+Constant, types, variables, procedures and classes may be declared in any sequence within a block.
+Classes may only be declared in a module block.
+
+\begin{lstlisting}[style=ebnf]
+DeclarationSequence = { CONST {ConstantDeclaration “;” }
+                    | TYPE {TypeDeclaration “;”}
+                    | VAR {VariableDeclaration “;”}
+                    | ProcedureDeclaration “;” | ForwardDeclaration “;”
+                    | ClassDeclaration “;” | ClassForwardDeclaration “;”}
+\end{lstlisting}
+
+When two classes refer to each other recursively, one-pass compilation requires a forward declaration of
+(parts of) a class.
+
+\begin{lstlisting}[style=ebnf]
+ClassForwardDeclaration = CLASS “^” ident [SuperClass] “;”
+                          DefinitionBody END ident.
+
+DefinitionBody = Fields MethodHeadings.
+
+MethodHeadings = {ProcedureHeading “;”}.
+\end{lstlisting}
+
+Fields or methods from the actual class declaration may be omitted in the forward declaration. However
+the fields and methods declared in !DefinitionBody! must occur as the first declarations in !Body! of the
+actual class declaration and must appear in the same order. The types of the fields and the parameter
+lists of the methods must be identical in the class declaration and in its forward declaration. If a class has
+a superclass its name must be specified in the class declaration as well as in the forward declaration.
+
+\subsection{Superclasses and Subclasses}
+
+A subclass inherits all fields and methods from its superclass. An inherited method can be overridden by
+redeclaring it in the subclass. The redeclared method must have the same parameter list as the
+overridden method. Overridden methods can still be accessed by the pseudovariable \SUPER\ (see
+example at the end of this section). A \SUPER\ reference in a class !C! denotes the object \SELF\ with a run
+time type forced to the superclass of !C!. \SUPER\ may only be used for qualification of methods. Fields
+cannot be overridden, therefore their names must be different from the names of the fields in all
+superclasses.
+
+Before the body of a class is executed, the body of its superclass is executed.
+
+The compatibility rules between superclasses and subclasses are the same as between records and
+extended records in Oberon. Given the two class declarations:
+
+\begin{lstlisting}[style=example]
+CLASS C0; . . . END CO;
+CLASS C1(C0); . . . END C1;
+\end{lstlisting}
+
+objects of the subclass !C1! can be assigned or passed as a value parameter to objects of the superclass
+!C0! but not the other way round. In the case of variable parameters the actual and formal parameter
+types must be identical. Given the following declarations:
+
+\begin{lstlisting}[style=example]
+VAR c0: C0; c1: C1;
+\end{lstlisting}
+
+the assignment
+
+\begin{lstlisting}[style=example]
+c0 := c1
+\end{lstlisting}
+
+has the effect that !c0! refers to the same object as !c1!. The static type of !c0! is !C0!, but its dynamic type is
+!C1!. Both objects share the values of their fields. To get a physical copy of an object, one has to write the
+assignment
+
+\begin{lstlisting}[style=example]
+c0^ := c1^
+\end{lstlisting}
+
+Here, only the common fields of !c0! and !c1! are copied. !c0! must already have been allocated. It retains
+the dynamic type it had before the assignment.
+
+
+To summarize, the rules of assignment compatibility between objects are:
+\begin{enumerate}
+    \item An object of class !C! may be assigned to an object of the same class or a superclass of !C!,
+    \item \NIL\ may be assigned to any object, (hint: this can be used to mark an object’s space as free for the garbage collector.)
+    \item The pseudovariables \SELF\ and \SUPER\ must not be the target of an assignment.
+\end{enumerate}
+
+Type test, type guard and with statement are defined for objects and classes in an analogous way to
+records in Oberon.
+
+Example for subclasses and \SUPER:
+
+\begin{lstlisting}[style=oberon]
+CLASS Stack;
+    s: ARRAY 128 OF INTEGER;
+    sp: INTEGER;
+    PROCEDURE Push (x: INTEGER); BEGIN . . . END Push;
+    PROCEDURE Pop (): INTEGER; BEGIN . . . END Pop;
+BEGIN sp := 0
+END Stack;
+
+CLASS CountStack (Stack);
+    max: INTEGER;
+    PROCEDURE Push(x: INTEGER); (* overrides inherited Push *)
+    BEGIN
+       SUPER.Push(x); IF sp > max THEN max := sp END
+    END Push;
+BEGIN max := sp         (* body of Stack is executed prior to this body *)
+END CountStack;
+\end{lstlisting}
+
+Example for the compatibility of classes:
+\begin{lstlisting}[style=oberon]
+VAR s0: Stack; s1: CountStack;
+
+NEW(s0); NEW(s1);
+s0 := s1; . . .
+IF s0 IS CountStack THEN s1 := s0 (CountStack) END
+\end{lstlisting}
+
+
+\subsection{Export of Classes}
+
+Classes declared in the definition part of a module are exported.
+\begin{lstlisting}[style=ebnf]
+ClassDefinition = CLASS ident [SuperClass] “;”
+                  DefinitionBody END ident.
+\end{lstlisting}
+
+Fields or methods declared in the implementation part may be omitted in the definition part. Only the
+names declared in the definition part are visible to clients of the module.
+
+The fields types and the parameter lists of the methods must be identical in both declarations. If a class
+has a superclass its name must be specified in both class declarations.
+
+In definition parts there are no forward declarations of procedures, but forward declarations of classes
+may still be necessary, as two classes can each have fields which are objects of the other class.
+
+\subsection{Message Variables}
+
+In some situations it is necessary to send a message not only to a single object but to all objects in a
+data structure. The conventional solution would be to traverse the data structure and to call the
+appropriate method for every encountered object. This is inconvenient, however, since the traversion
+algorithm has to be repeated again and again. Besides, the data structure may be hidden and therefore
+not available for traversing. A more elegant solution is to pass the message as a parameter to a general
+traversion procedure which sends it to every object in the data structure.
+
+We define a new standard type !MESSAGE!. Variables of this type may assume message constants as
+their values. A message constant is a message name qualified by the name of the class of which the
+receiving objects are supposed to be. It also has an actual parameter list. It is called a constant since
+the message is not sent immediately but stored as a whole in the message variable to be sent later on.
+Syntactically, a message constant is a factor:
+
+\begin{lstlisting}[style=ebnf]
+factor = . . . | MessageConst.
+
+MessageConst = ClassName “.” MethodName [ActualParameters].
+
+ClassName = qualident.
+
+MethodName = ident.
+\end{lstlisting}
+
+!MethodName! must not denote a function. !ClassName! denotes the class an object must be derived from
+in order to receive this message (It does not explicitly select a method from that particular class.)
+Message constants may only be used as value parameters or assigned to local variables. If a message
+variable a is assigned to another message variable b then a and b must be declared in the same scope.
+In order to send a message to an object there are two standard procedures:
+
+\begin{tabular}{lp{10cm}}
+    !SEND(x, m)! & !x! must designate an object and !m! must be a variable of type !MESSAGE!.
+  The message m with the actual parameters specified in the corresponding
+  message constant is sent to the object !x!. The class of !x! must be equal to
+  (or a subclass of) the class specified by ClassName in the message
+  constant. Messages must not be sent to \SUPER. \\
+    !ACCEPTS(x, m)! & !x! must designate an object and !m! must be a variable of type !MESSAGE!.
+The function !ACCEPTS! returns \TRUE\ if !x! “understands” the message !m!, i.e.
+if the class of !x! is equal to (or a subclass of) the class specified by
+!ClassName! in the message constant corresponding to !m!.
+ \\
+\end{tabular}
+
+In the Oberon system, messages can be used to implement a broadcast to all viewers on the screen. To
+show the deletion of a piece of text in all viewers containing this text, one could write:
+
+\begin{lstlisting}[style=example]
+Views.Broadcast(TFrames.Delete(beg, end), text)
+\end{lstlisting}
+
+The procedure !Broadcast! would then be implemented as follows:
+
+\begin{lstlisting}[style=oberon]
+PROCEDURE Broadcast(msg: MESSAGE; text: Txt.Text);
+    VAR v: Viewer; frame: Frames.Frame;
+BEGIN
+    v := firstViewer;
+    WHILE v # NIL DO (* for all viewers on the screen *)
+        frame := v.down;
+        WHILE frame # NIL DO (* for all subframes *)
+            IF ACCEPTS(frame, msg) & (frame.text = text) THEN
+                SEND(frame, msg)
+            END;
+             frame := frame.next
+        END;
+        v := v.next;
+    END;
+END Broadcast;
+\end{lstlisting}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modules}
 \label{modules}
 
-A module is a collection of declarations of constants, types, variables, and procedures, and a sequence of statements for the purpose of assigning initial values to the variables. A module typically constitutes a text that is compilable as a unit.
+A module is a collection of declarations of constants, types, variables, and procedures, and a sequence of statements for the purpose of assigning initial values to the variables.
+A module typically constitutes a text that is compilable as a unit.
 
+Syntax:
 \begin{lstlisting}[style=ebnf]
 Module = MODULE ident ";"
-         [ImportList] 
-         DeclarationSequence 
-         [BEGIN StatementSequence] 
+         [ImportList]
+         DeclarationSequence
+         [BEGIN StatementSequence]
          END ident "." .
 
 ImportList = IMPORT Import {"," Import} ";".
 
 Import = = [ident ":="] ident.
-\end{lstlisting} 
+\end{lstlisting}
 
-The import list specifies the names of the imported modules. If a module A is imported by a module M and A exports an identifier x, then x is referred to as A.x within M. If A is imported as B := A, the object x must be referenced as B.x. This allows short alias names in qualified identifiers. A module must not import itself. Identifiers that are to be exported (i.e. that are to be visible in client modules) must be marked by an export mark in their declaration (see section \ref{declarations}).
-
+The import list specifies the names of the imported modules.
+If a module !A! is imported by a module !M! and !A! exports an identifier !x!, then !x! is referred to as !A.x! within !M!.
+If !A! is imported as !B := A!, the object !x! must be referenced as !B.x!.
+This allows short alias names in qualified identifiers.
+A module must not import itself.
+Identifiers that are to be exported (i.e. that are to be visible in client modules) must be marked by an export mark in their declaration (see section \ref{declarations}).
 
 The statement sequence following the symbol \BEGIN\ is executed when the module is executed as the entry point in an executable.
 
 \begin{lstlisting}[style=oberon]
 MODULE g10; (* ARRAY and RECORD *)
-    
+
 VAR pt : ARRAY 3 OF RECORD
         x, y: INTEGER;
     END;
@@ -910,12 +1851,184 @@ BEGIN
         pt[i].y := i * 3
     END;
     RETURN pt[1].x + pt[1].y
-END g10.    
-\end{lstlisting} 
+END g10.
+\end{lstlisting}
+
+\subsection{Generics}
+
+Modules can be made generic by adding formal meta
+parameters. Meta parameters represent types or constants; the latter include procedures. Meta
+parameters default to types, but can be explicitly prefixed with the \TYPE\ reserved word; the \CONST\
+prefix designates a constant meta parameter. A meta parameter can be constrained with a named
+type, in which case the actual meta parameter must correspond to this type; the correspondence is
+established when the generic module is instantiated; the type of the actual meta parameter must be
+assignment compatible with the constraint type.
+
+Generic modules can be instantiated with different sets of meta actuals which enables the design of
+reusable algorithms and data structures. The instantiation of a generic module occurs when
+importing it. A generic module can be instantiated more than once in the same module with
+different actual meta parameters. See also Modules - \ref{modules}.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+MetaParams = '(' MetaSection { [';'] MetaSection } ')'
+
+MetaSection = [ TYPE | CONST ] ident { [','] ident } [ ':' TypeConstraint ]
+
+TypeConstraint = NamedType
+
+MetaActuals = '(' ConstExpression { [','] ConstExpression } ')'
+
+module = MODULE ident [ MetaParams ] [';']
+         { ImportList | DeclarationSequence }
+         [ BEGIN StatementSequence ]
+         END ident ['.']
+
+ImportList = IMPORT import { [','] import } [';']
+
+import = [ ident ':=' ] ImportPath ident [ MetaActuals ]
+\end{lstlisting}
+
+Meta parameters can be used within the generic module like normal types or constants. If no type
+constraint is present, the types and constants can be used wherever no information about the
+actual type is required; otherwise the type constraint determines the permitted operations. The
+rules for same types and equal types apply analogously to meta parameters, and subsequently also
+the corresponding assignment, parameter and array compatibility rules.
+
+Example:
+\begin{lstlisting}[style=oberon]
+MODULE Lists(T);
+   TYPE
+      List* = ^RECORD
+         value* : T;
+         next* : List
+      END
+   PROCEDURE (l : List) Add* (v : T)
+   BEGIN
+     NEW( l.next );
+     l.next.value := v
+   END Add
+
+   PROCEDURE (l : List) Print*()
+   BEGIN
+      PrintLn(l.value)
+   END Print
+END Lists
+
+MODULE ListTest;
+  IMPORT
+    L := Lists(integer)
+  VAR
+    l : L.List
+  BEGIN
+    NEW(l);
+    l.value := 123;
+    l.Add(456);
+    l.Print();
+    l.next.Print()
+END ListTest.
+\end{lstlisting}
+
+\subsection{Definitions}
+
+A \DEFINITION\ is a special kind of \MODULE\ which only includes public declarations. The export
+mark !*! is redundant, but !-! can be used to mark read-only exports.
+
+Definitions can be used when the implementation of a module is not available or done in another
+programming language than Oberon.
+
+Syntax:
+\begin{lstlisting}[style=ebnf]
+definition = DEFINITION ident [';'] 
+             [ ImportList ] 
+             DeclarationSequence2 
+             END ident '.'
+
+DeclarationSequence2 = { CONST { ConstDeclaration [';'] }
+    | TYPE { TypeDeclaration [';'] }
+    | VAR { VariableDeclaration [';'] }
+    | ProcedureHeading [';'] }
+\end{lstlisting}
+
+See examples in the standard library --\ref{stdlib}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Source Code Directives}
+
+Source code directives are used to set configuration variables in the source text and to select
+specific pieces of the source text to be compiled (conditional compilation).
+
+\subsection{Configuration variables}
+
+Configuration variables can be set or unset in the source code using the following syntax:
+
+\begin{lstlisting}[style=ebnf]
+directive = '<*' ident ( '+' | '-' ) '*>'
+\end{lstlisting}
+
+
+Each variable is named by an ident which follows the syntax specified in Identifiers. Variable
+names have compilation unit scope which is separate from all other scopes of the program.
+Configuration variable directives can be placed anywhere in the source code. The directive only
+affects the present compilation unit, starting from its position in the source code.
+
+Example:
+\begin{lstlisting}[style=oberon]
+<*  MAIN+ *>
+\end{lstlisting}
+
+Usually the compiler provides the possibility to set configuration variables, e.g. via
+command line interface.
+
+\subsection{Conditional compilation}
+
+
+Conditional compilation directives can be placed anywhere in the source code. The following
+syntax applies:
+
+\begin{lstlisting}[style=ebnf]
+directive = '<*' [ scIf | scElsif | scElse | scEnd ] '*>'
+
+scIf = IF scExpr THEN
+
+scElsif = ELSIF condition THEN
+
+scElse = ELSE
+
+scEnd = END
+
+condition = scTerm { OR scTerm }
+
+scTerm = scFactor {'&' scFactor}
+
+scFactor = ident | '(' condition ')' | '~' scFactor
+\end{lstlisting}
+
+An \ELSIF\ or \ELSE\ directive must be preceded by an \IF\ or another \ELSIF\ directive. Each \IF\ directive
+must be ended by an \END\ directive. The directives form sections of the source code. Only the
+section the condition of which is \TRUE\ (or the section framed by \ELSE\ and \END\ directive otherwise)
+is visible to the compiler. Conditions are boolean expressions. Ident refers to a configuration
+variable. When a configuration variable is not explicitly set it is assumed to be \FALSE. Each section
+can contain nested conditional compilation directives.
+
+Example:
+\begin{lstlisting}[style=oberon]
+<*  IF A THEN *>
+    println("A")
+<* ELSIF B & ~C THEN *>
+    println("B & ~C")
+<* ELSE *>
+    println("D")
+<* END *>
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Standard Library}
+\label{stdlib}
 
-\subsection{Math.mod}
+\subsection{Module Math}
 
 Standard functions and values on the \REAL\ floating point type.
 
@@ -929,26 +2042,55 @@ CONST
     PROCEDURE Equal*(x : REAL; y : REAL): BOOLEAN;
     PROCEDURE sin*(x : REAL): REAL;
     PROCEDURE cos*(x : REAL): REAL;
+    PROCEDURE tan*(x : REAL): REAL;
+    PROCEDURE arcsin*(y : REAL): REAL;
+    PROCEDURE arccos*(y : REAL): REAL;
     PROCEDURE arctan*(y : REAL): REAL;
+    PROCEDURE arctan2*(y, x : REAL): REAL;
     PROCEDURE sqrt*(x : REAL): REAL;
+    PROCEDURE power*(x, y: REAL): REAL;
     PROCEDURE ln*(x : REAL): REAL;
+    PROCEDURE log*(x, base : REAL): REAL;
     PROCEDURE exp*(x : REAL): REAL;
+    PROCEDURE sinh*(x : REAL): REAL;
+    PROCEDURE cosh*(x : REAL): REAL;
+    PROCEDURE tanh*(x : REAL): REAL;
+    PROCEDURE arcsinh*(y : REAL): REAL;
+    PROCEDURE arccosh*(y : REAL): REAL;
+    PROCEDURE arctanh*(y : REAL): REAL;
 END Math.
-\end{lstlisting} 
+\end{lstlisting}
 
-\subsection{Out.mod}
+\subsection{Module In}
 
-Standard output.
+Module !In! provides a set of basic routines for formatted input of characters, character
+sequences, numbers, and names. It assumes a standard input stream with a current position
+that can be reset to the beginning of the stream.
+
+\begin{lstlisting}[style=oberon]
+DEFINITION Out;
+    VAR Done: BOOLEAN;
+    PROCEDURE Open;
+    PROCEDURE Char (VAR ch: CHAR);
+    PROCEDURE Int (VAR i: INTEGER);
+    PROCEDURE LongInt (VAR i: LONGINT);
+    PROCEDURE Real (VAR x: REAL);
+    PROCEDURE LongReal (VAR y: LONGREAL);
+    PROCEDURE String (VAR str: ARRAY OF CHAR);
+    PROCEDURE Name (VAR name: ARRAY OF CHAR);
+END In.
+\end{lstlisting}
+
+\subsection{Module Out}
+
+Module !Out! provides a set of basic routines for formatted output of characters, numbers,
+and strings. It assumes a standard output stream to which the symbols are written.
 
 \begin{lstlisting}[style=oberon]
 DEFINITION Out;
     PROCEDURE Open*;
     PROCEDURE Flush*;
 
-    (* Convert 'x' to a string of at least 'n' chars and write it to standard output. 
-    If 'n' is too small it will be extended. 
-    If 'n' is greater then necessary spaces will be added after the number, i.e.
-    it is left justified. *)
     PROCEDURE Int*(x, n : INTEGER);
     PROCEDURE Hex*(x, n : INTEGER);
     PROCEDURE Real*(x : REAL;  n : INTEGER);
@@ -959,21 +2101,78 @@ DEFINITION Out;
     PROCEDURE String*(x : STRING);
     PROCEDURE Ln*;
 END Out.
-\end{lstlisting} 
+\end{lstlisting}
 
-\subsection{Strings.mod}
+\subsection{Module Files}
 
-String routines.
+Module !Files! provides operations on files and the file directory.
+
+\begin{lstlisting}[style=oberon]
+DEFINITION Files;
+  IMPORT SYSTEM;
+  TYPE
+    File = POINTER TO Handle;
+    Rider = RECORD
+      eof: BOOLEAN;
+      res: LONGINT;
+    END;
+  PROCEDURE Old (name: ARRAY OF CHAR): File;
+  PROCEDURE New (name: ARRAY OF CHAR): File;
+  PROCEDURE Register (f: File);
+  PROCEDURE Close (f: File);
+  PROCEDURE Purge (f: File);
+  PROCEDURE Delete (name: ARRAY OF CHAR; VAR res: INTEGER);
+  PROCEDURE Rename (old, new: ARRAY OF CHAR; VAR res: INTEGER);
+  PROCEDURE Length (f: File): LONGINT;
+  PROCEDURE GetDate (f: File; VAR t, d: LONGINT);
+  PROCEDURE Set (VAR r: Rider; f: File; pos: LONGINT);
+  PROCEDURE Pos (VAR r: Rider): LONGINT;
+  PROCEDURE Base (VAR r: Rider): File;
+  PROCEDURE Read (VAR r: Rider; VAR x: SYSTEM.BYTE);
+  PROCEDURE ReadInt (VAR R: Rider; VAR x: INTEGER);
+  PROCEDURE ReadLInt (VAR R: Rider; VAR x: LONGINT);
+  PROCEDURE ReadReal (VAR R: Rider; VAR x: REAL);
+  PROCEDURE ReadLReal (VAR R: Rider; VAR x: LONGREAL);
+  PROCEDURE ReadNum (VAR R: Rider; VAR x: LONGINT);
+  PROCEDURE ReadString (VAR R: Rider; VAR x: ARRAY OF CHAR);
+  PROCEDURE ReadSet (VAR R: Rider; VAR x: SET);
+  PROCEDURE ReadBool (VAR R: Rider; VAR x: BOOLEAN;
+  PROCEDURE ReadBytes (VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT);
+
+  PROCEDURE Write (VAR r: Rider; x: SYSTEM.BYTE);
+  PROCEDURE WriteInt (VAR R: Rider; x: INTEGER);
+  PROCEDURE WriteLInt (VAR R: Rider; x: LONGINT);
+  PROCEDURE WriteReal (VAR R: Rider; x: REAL);
+  PROCEDURE WriteLReal (VAR R: Rider; x: LONGREAL);
+  PROCEDURE WriteNum (VAR R: Rider; x: LONGINT);
+  PROCEDURE WriteString (VAR R: Rider; x: ARRAY OF CHAR);
+  PROCEDURE WriteSet (VAR R: Rider; x: SET);
+  PROCEDURE WriteBool (VAR R: Rider; x: BOOLEAN);
+  PROCEDURE WriteBytes (VAR r: Rider; VAR x: ARRAY OF SYSTEM.BYTE; n: LONGINT)
+END Files.
+\end{lstlisting}
+
+\subsection{String Module}
+
+Module !Strings! provides a set of operations on strings (i.e., on string constants and charac-
+ter arrays, both of which contain the character 0X as a terminator). All positions in strings
+start at 0.
 
 \begin{lstlisting}[style=oberon]
 DEFINITION Strings;
     PROCEDURE Length*(s : STRING): INTEGER;
-    PROCEDURE Concat*(s1 : STRING; s2 : STRING): STRING;
+    PROCEDURE Append*(s1 : STRING; s2 : STRING): STRING;
     PROCEDURE ConcatChar*(s : STRING; c : CHAR): STRING;
     PROCEDURE AppendChar*(c : CHAR; s : STRING): STRING;
     PROCEDURE Compare*(s1 : STRING; s2 : STRING): INTEGER;
+    PROCEDURE Append(extra: ARRAY OF CHAR; VAR dest: ARRAY OF CHAR);
+    PROCEDURE Delete(VAR s: ARRAY OF CHAR; pos, n: INTEGER);
+    PROCEDURE Replace(source: ARRAY OF CHAR; pos: INTEGER; VAR dest: ARRAY OF CHAR);
+    PROCEDURE Extract(source: ARRAY OF CHAR; pos, n: INTEGER; VAR dest: ARRAY OF CHAR);
+    PROCEDURE Pos(pattern, s: ARRAY OF CHAR; pos: INTEGER): INTEGER;
+    PROCEDURE Cap(VAR s: ARRAY OF CHAR);
 END Strings.
-\end{lstlisting} 
+\end{lstlisting}
 
 
 \newpage
@@ -981,14 +2180,15 @@ END Strings.
 \appendix
 
 \section{Type Rules}
+\label{appendix}
 \label{type-rule}
 
 \subsection{Numeric Types}
 
 \begin{itemize}
-    \item Integer types: \INTEGER.
+    \item Integer types: \INTEGER, \LONGINT.
     \item Real types: \REAL.
-    \item Numeric types: Integer types, Real Types. 
+    \item Numeric types: Integer types, Real types.
 \end{itemize}
 
 \subsection{Same types}
@@ -1004,16 +2204,17 @@ Two variables a and b with types $T_a$ and $T_b$ are of the same type if
 Two types $T_a$ and $T_b$ are equal if
 \begin{itemize}
     \item $T_a$ and $T_b$ are the same type, or
-    \item $T_a$ and $T_b$ are open array types with equal element types, % or
-    %\item $T_a$ and $T_b$ are procedure types whose formal parameter lists match.
+    \item $T_a$ and $T_b$ are open array types with equal element types,  or
+    \item $T_a$ and $T_b$ are procedure types whose formal parameter lists match, or
+    \item $T_a$ and $T_b$ are pointer types with equal base types.
 \end{itemize}
 
 \subsection{Type inclusion}
 
-Numeric types include (the values of) smaller numeric types according to the following hierarchy: \REAL\ $\supseteq$ \INTEGER.
+Numeric types include (the values of) smaller numeric types according to the following hierarchy: \REAL\ $\supseteq$ \LONGINT\ $\supseteq$ \INTEGER.
 
 \subsection{Type extension (base type)}
-Given a type declaration $T_b$ = \RECORD\ ($T_a$) ... \END, $T_b$ is a direct extension of $T_a$, and $T_a$ is a direct base type of $T_b$. 
+Given a type declaration $T_b$ = \RECORD\ ($T_a$) ... \END, $T_b$ is a direct extension of $T_a$, and $T_a$ is a direct base type of $T_b$.
 
 A type $T_b$ is an extension of a type $T_a$ ($T_a$ is a base type of $T_b$) if
 \begin{itemize}
@@ -1021,6 +2222,7 @@ A type $T_b$ is an extension of a type $T_a$ ($T_a$ is a base type of $T_b$) if
     \item $T_b$ is a direct extension of an extension of $T_a$
 \end{itemize}
 
+\subsection{Pointer type extension}
 If $P_a$ = \POINTER\ \TO\ $T_a$ and $P_b$ = \POINTER\ \TO\ $T_b$, $P_b$ is an extension of $P_a$ ($P_a$ is a base type of $P_b$) if $T_b$ is an extension of $T_a$.
 
 \subsection{Assignment compatible}
@@ -1031,10 +2233,18 @@ An expression $e$ of type $T_e$ is assignment compatible with a variable $v$ of 
     % 2. Te and Tv are numeric types and Tv includes Te;
     \item $T_e$ and $T_v$ are record types and $T_e$ is an extension of $T_v$ and the dynamic type of v is $T_v$;
     \item $T_e$ and $T_v$ are pointer types and $T_e$ is an extension of $T_v$;
-    \item  $T_v$ is a pointer % or a procedure type  
+    \item  $T_v$ is a pointer % or a procedure type
     and $e$ is \NIL;
     \item $T_v$ is \STRING\ or \ARRAY\ \OF\ \CHAR, e is a string constant;
     % 7. Tv is a procedure type and e is the name of a procedure whose formal parameters match those of Tv.
+\end{itemize}
+
+\subsection{Parameter compatible}
+An actual parameter a of type $T_a$ is parameter compatible with a formal parameter f of type $T_f$ if
+\begin{itemize}
+    \item $T_a$ and $T_f$ are the same type, or
+    \item f is a value parameter and $T_a$ is assignment compatible with $T_f$, or
+    \item f is a \IN\ or \VAR\ paramter $T_a$ must be the same type as $T_b$ or $T_f$ must be a record type and $T_a$ an extension of $T_f$.
 \end{itemize}
 
 \subsection{Array compatible}
@@ -1048,7 +2258,7 @@ An actual parameter a of type $T_a$ is array compatible with a formal parameter 
 \subsection{Expression compatible}
 
 For a given operator, the types of its operands are expression compatible if they conform to the following table (which shows also the result type of the expression). \STRING s that are to be compared must contain \lstinline!0X! as a terminator.
-\vspace{2mm} 
+\vspace{2mm}
 
 \begin{tabular}{l|l|l|l}
     operator & first operand & second operand & result type \\
@@ -1065,7 +2275,8 @@ For a given operator, the types of its operands are expression compatible if the
     = \# &  \BOOLEAN & \BOOLEAN & \BOOLEAN \\
         & \SET & \SET & \BOOLEAN \\
          & \POINTER\  \TO\ type & \NIL & \BOOLEAN \\
-    \IN & integer & \SET & \BOOLEAN\\ 
+    \IN & integer & \SET & \BOOLEAN\\
+    \IS & type !T0! & type !T1! & \BOOLEAN\ \\
     \hline
 \end{tabular}
 
@@ -1078,27 +2289,41 @@ Two formal parameter lists match if
     \item parameters at corresponding positions are both either value or variable parameters.
 \end{itemize}
 
+\subsection{Matching result types}
+
+The result types of two procedures match if they are either the same type or none.
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Syntax of AX Oberon}
+\section{Syntax of Oberon}
 
-What is currently implemented.
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]
-Module = MODULE ident ";" 
-         [ImportList] 
-         DeclSeq 
+Module = MODULE ident ";"
+         [ImportList]
+         DeclSeq
          [BEGIN StatementSeq] END ident ".".
+
+Definition = DEFINITION ident ';' 
+             [ ImportList ] 
+             DeclarationSequence2 
+             END ident '.'
+
+DeclarationSequence2 = { CONST { ConstDeclaration ';' }
+                     | TYPE { TypeDeclaration ';' }
+                     | VAR { VariableDeclaration ';' }
+                     | ProcedureHeading ';' 
+                     | ClassDefinition ';'}
 
 ImportList = IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
 
-DeclSeq = { CONST {ConstDecl ";" } 
-            | TYPE {TypeDecl ";"} 
-            | VAR {VarDecl ";"}} 
-            {ProcDecl ";" | ForwardDecl ";"}.
+DeclSeq = { CONST {ConstDecl ";" }
+            | TYPE {TypeDecl ";"}
+            | VAR {VarDecl ";"}}
+            {ProcDecl ";" | ForwardDecl ";"
+            | ClassDeclaration “;” | ClassForwardDeclaration “;”}.
 
 ConstDecl = IdentDef "=" ConstExpr.
 
@@ -1106,8 +2331,29 @@ TypeDecl = IdentDef "=" Type.
 
 VarDecl = IdentList ":" Type.
 
-ProcDecl = PROCEDURE  [Receiver] IdentDef [FormalPars] ";" DeclSeq 
+ProcDecl = PROCEDURE  [Receiver] IdentDef [FormalPars] ";" 
+           ProcDeclSeq
            [BEGIN StatementSeq] END ident.
+
+ClassDeclaration = CLASS ident [SuperClass] “;” Body END ident.
+
+SuperClass = “(” qualident “)”.
+
+Body = Fields Methods [BEGIN StatementSequence].
+
+Fields = {IdentList ":" Type }. 
+
+Methods = {ProcedureDeclaration “;”}.
+
+ClassForwardDeclaration = CLASS “^” ident [SuperClass] “;”
+                          DefinitionBody END ident.
+
+DefinitionBody = Fields MethodHeadings.
+
+MethodHeadings = {ProcedureHeading “;”}.
+
+ClassDefinition = CLASS ident [SuperClass] “;”
+                  DefinitionBody END ident.
 
 ForwardDecl = PROCEDURE  [Receiver] "^" IdentDef [FormalPars].
 
@@ -1117,28 +2363,31 @@ FormalPars = "(" [FPSection {";" FPSection}] ")" [":" Type].
 
 FPSection = [VAR] ident {"," ident} ":" Type.
 
+ProcDecl = PROCEDURE [Receiver] IdentDef [FormalPars] ";" ProcDeclSeq
+           [BEGIN StatementSeq] END ident.
+
 Type = Qualident
     | ARRAY [ConstExpr { "," ConstExpr }] OF Type
     | RECORD FieldList { ";" FieldList } END.
     | POINTER TO Type.
 
 FieldList = [ IdentList ":" Type ].
-    
+
 StatementSeq = Statement { ";" Statement }.
 
 Statement = [ Designator ":=" Expr
       | Designator ["(" [ExprList] ")"]
-      | IF Expr THEN StatementSeq 
-        {ELSIF Expr THEN StatementSeq } 
+      | IF Expr THEN StatementSeq
+        {ELSIF Expr THEN StatementSeq }
         [ ELSE StatementSeq ] END
-      | CASE Expr OF Case {"|" Case} [ELSE StatementSequence] END. 
+      | CASE Expr OF Case {"|" Case} [ELSE StatementSequence] END.
       | WHILE Expr DO StatementSeq END
       | REPEAT StatementSeq UNTIL Expr
       | FOR ident ":=" Expr TO Expr [BY ConstExpr ] DO StatementSeq END
       | LOOP StatementSeq END
       | BEGIN StatementSeq END
       | EXIT
-      | RETURN [Expr] 
+      | RETURN [Expr]
       ].
 
 Case = [CaseLabelList ":" StatementSequence].
@@ -1155,13 +2404,14 @@ SimpleExpr = ["+" | "-"] Term {AddOp Term}.
 
 Term = Factor {MulOp Factor}.
 
-Factor = Designator ["(" [ExprList] ")"] 
-         | number 
+Factor = Designator ["(" [ExprList] ")"]
+         | number
          | character
          | string
          | NIL
+         | SELF
          | Set
-         | "(" Expr ")" 
+         | "(" Expr ")"
          | "~" Factor.
 
 Set = "{" [Element {"," Element}] "}".
@@ -1174,7 +2424,9 @@ AddOp = "+" | "-" | OR.
 
 MulOp = "*" | "/" | DIV | MOD | "&".
 
-Designator = Qualident { "." ident | "[" ExprList "]" | "^" }. 
+Designator = Qualident { "." ident [ActualParameters] 
+                       | "[" ExprList "]" 
+                       | "^" }.
 
 ExprList = Expr {"," Expr}.
 
@@ -1188,7 +2440,7 @@ number = integer | real.
 
 integer = digit {digit} | digit {hexDigit} "H".
 
-real = digit {digit} "." {digit} [ScaleFactor]. 
+real = digit {digit} "." {digit} [ScaleFactor].
 
 ScaleFactor = ("E" | "D") ["+" | "-"] digit {digit}.
 
@@ -1203,8 +2455,10 @@ string = ' " ' {char} ' " ' | " ' " {char} " ' ".
 ident = letter {letter | digit | '_' }.
 
 letter = <Unicode code point that is a letter character>.
- 
+
 \end{lstlisting}}
+
+\newpage
 
 \section{Syntax of Oberon-2/07}
 
@@ -1216,16 +2470,16 @@ Oberon-2 as defined in {\em The Programming Language Oberon-2} (1991).
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]
-Module = MODULE ident ";" 
-         [ImportList] 
-         DeclSeq 
+Module = MODULE ident ";"
+         [ImportList]
+         DeclSeq
          [BEGIN StatementSeq] END ident ".".
 
 ImportList = IMPORT [ident ":="] ident {"," [ident ":="] ident} ";".
 
-DeclSeq = { CONST {ConstDecl ";" } 
-            | TYPE {TypeDecl ";"} 
-            | VAR {VarDecl ";"}} 
+DeclSeq = { CONST {ConstDecl ";" }
+            | TYPE {TypeDecl ";"}
+            | VAR {VarDecl ";"}}
             {ProcDecl ";" | ForwardDecl ";"}.
 
 ConstDecl = IdentDef "=" ConstExpr.
@@ -1234,7 +2488,7 @@ TypeDecl = IdentDef "=" Type.
 
 VarDecl = IdentList ":" Type.
 
-ProcDecl = PROCEDURE [Receiver] IdentDef [FormalPars] ";" DeclSeq 
+ProcDecl = PROCEDURE [Receiver] IdentDef [FormalPars] ";" DeclSeq
            [BEGIN StatementSeq] END ident.
 
 ForwardDecl = PROCEDURE "^" [Receiver] IdentDef [FormalPars].
@@ -1247,29 +2501,29 @@ Receiver = "(" [VAR] ident ":" ident ")".
 
 Type = Qualident
     | ARRAY [ConstExpr { "," ConstExpr }] OF Type
-    | RECORD [ "(" Qualident ")" ] FieldList { ";" FieldList } END 
+    | RECORD [ "(" Qualident ")" ] FieldList { ";" FieldList } END
     | POINTER TO Type
     | PROCEDURE [ FormalPars ].
 
 FieldList = [ IdentList ":" Type ].
-    
+
 StatementSeq = Statement { ";" Statement }.
 
 Statement = [ Designator ":=" Expr
       | Designator ["(" [ExprList] ")"]
-      | IF Expr THEN StatementSeq 
-        {ELSIF Expr THEN StatementSeq } 
+      | IF Expr THEN StatementSeq
+        {ELSIF Expr THEN StatementSeq }
         [ ELSE StatementSeq ] END
       | CASE Expr OF Case { "|" Case } [ ELSE StatementSeq ] END
       | WHILE Expr DO StatementSeq END
       | REPEAT StatementSeq UNTIL Expr
       | FOR ident ":=" Expr TO Expr [BY ConstExpr ] DO StatementSeq END
       | LOOP StatementSeq END
-      | WITH Guard DO StatementSeq 
-        { "|" Guard DO StatementSeq } 
+      | WITH Guard DO StatementSeq
+        { "|" Guard DO StatementSeq }
         [ ELSE StatementSeq ] END
       | EXIT
-      | RETURN [Expr] 
+      | RETURN [Expr]
       ].
 
 Case = [ CaseLabels {"," CaseLabels} ":" StatementSeq ].
@@ -1286,14 +2540,14 @@ SimpleExpr = ["+" | "-"] Term {AddOp Term}.
 
 Term = Factor {MulOp Factor}.
 
-Factor = Designator ["(" [ExprList] ")"] 
-         | number 
-         | character 
-         | string 
-         | NIL 
-         | Set 
-         | "(" Expr ")" 
-         | "~" Factor. 
+Factor = Designator ["(" [ExprList] ")"]
+         | number
+         | character
+         | string
+         | NIL
+         | Set
+         | "(" Expr ")"
+         | "~" Factor.
 
 Set = "{" [Element {"," Element}] "}".
 
@@ -1305,7 +2559,7 @@ AddOp = "+" | "-" | OR.
 
 MulOp = "*" | "/" | DIV | MOD | "&".
 
-Designator = Qualident { "." ident | "[" ExprList "]" | " ^ " | "(" Qualident ")" }. 
+Designator = Qualident { "." ident | "[" ExprList "]" | " ^ " | "(" Qualident ")" }.
 
 ExprList = Expr {"," Expr}.
 
@@ -1322,32 +2576,32 @@ Oberon-07 as defined in {\em The Programming Language Oberon (Revision 1.10.2013
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]
-module = MODULE ident ";" 
+module = MODULE ident ";"
 [ImportList] DeclarationSequence [BEGIN StatementSequence] END ident "."
 
 ImportList = IMPORT import {"," import} ";". import = ident [":=" ident]
 
-statement = [assignment 
-             | ProcedureCall 
-             | IfStatement 
-             | CaseStatement 
-             | WhileStatement 
-             | RepeatStatement 
+statement = [assignment
+             | ProcedureCall
+             | IfStatement
+             | CaseStatement
+             | WhileStatement
+             | RepeatStatement
              | ForStatement].
 
-assignment = designator ":=" expression. 
+assignment = designator ":=" expression.
 
-ProcedureCall = designator [ActualParameters]. 
+ProcedureCall = designator [ActualParameters].
 
-StatementSequence = statement {";" statement}. 
+StatementSequence = statement {";" statement}.
 
 IfStatement = IF expression THEN StatementSequence
-              {ELSIF expression THEN StatementSequence} 
-              [ELSE StatementSequence] 
+              {ELSIF expression THEN StatementSequence}
+              [ELSE StatementSequence]
               END.
 
-CaseStatement = CASE expression OF case {"|" case} END. 
-case = [CaseLabelList ":" StatementSequence]. 
+CaseStatement = CASE expression OF case {"|" case} END.
+case = [CaseLabelList ":" StatementSequence].
 CaseLabelList = LabelRange {"," LabelRange}.
 LabelRange = label [".." label].
 label = integer | string | qualident.
@@ -1355,61 +2609,61 @@ label = integer | string | qualident.
 WhileStatement = WHILE expression DO StatementSequence
                  {ELSIF expression DO StatementSequence} END.
 
-RepeatStatement = REPEAT StatementSequence UNTIL expression. 
+RepeatStatement = REPEAT StatementSequence UNTIL expression.
 
 ForStatement = FOR ident ":=" expression TO expression [BY ConstExpression]
                DO StatementSequence END.
 
-ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident. 
-ProcedureHeading = PROCEDURE identdef [FormalParameters]. 
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody ident.
+ProcedureHeading = PROCEDURE identdef [FormalParameters].
 ProcedureBody = DeclarationSequence [BEGIN StatementSequence] [RETURN expression] END.
 
 DeclarationSequence = [CONST {ConstDeclaration ";"}]
-                      [TYPE {TypeDeclaration ";"}] 
-                      [VAR {VariableDeclaration ";"}] 
+                      [TYPE {TypeDeclaration ";"}]
+                      [VAR {VariableDeclaration ";"}]
                       {ProcedureDeclaration ";"}.
 
-FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" qualident]. 
+FormalParameters = "(" [FPSection {";" FPSection}] ")" [":" qualident].
 FPSection = [VAR] ident {"," ident} ":" FormalType.
 FormalType = {ARRAY OF} qualident.
 
-expression = SimpleExpression [relation SimpleExpression]. 
-relation = "="|"#"|"<"|"<="|">"|">="|IN|IS. 
+expression = SimpleExpression [relation SimpleExpression].
+relation = "="|"#"|"<"|"<="|">"|">="|IN|IS.
 
-SimpleExpression = ["+" | "-"] term {AddOperator term}. 
+SimpleExpression = ["+" | "-"] term {AddOperator term}.
 AddOperator = "+" | "-" | OR.
 
-term = factor {MulOperator factor}. 
+term = factor {MulOperator factor}.
 MulOperator = "*" | "/" | DIV | MOD | "&".
 
-factor = number 
-         | string 
-         | NIL 
-         | TRUE | FALSE 
-         | set 
-         | designator [ActualParameters] 
-         | "(" expression ")" 
-         | "~" factor. 
-         
+factor = number
+         | string
+         | NIL
+         | TRUE | FALSE
+         | set
+         | designator [ActualParameters]
+         | "(" expression ")"
+         | "~" factor.
+
 designator = qualident {selector}.
 selector = "." ident | "[" ExpList "]" | "^" | "(" qualident ")".
 
 set = "{" [element {"," element}] "}".
-element = expression [".." expression]. 
+element = expression [".." expression].
 
-ExpList = expression {"," expression}. 
+ExpList = expression {"," expression}.
 ActualParameters = "(" [ExpList] ")" .
 
-ConstDeclaration = identdef "=" ConstExpression. 
+ConstDeclaration = identdef "=" ConstExpression.
 ConstExpression = expression.
 
 TypeDeclaration = identdef "=" type.
-type = qualident | ArrayType | RecordType | PointerType | ProcedureType. 
+type = qualident | ArrayType | RecordType | PointerType | ProcedureType.
 
 ArrayType = ARRAY length {"," length} OF type.
 length = ConstExpression.
 
-RecordType = RECORD ["(" BaseType ")"] [FieldListSequence] END. 
+RecordType = RECORD ["(" BaseType ")"] [FieldListSequence] END.
 BaseType = qualident.
 FieldListSequence = FieldList {";" FieldList}.
 FieldList = IdentList ":" type.
@@ -1422,9 +2676,9 @@ ProcedureType = PROCEDURE [FormalParameters].
 
 VariableDeclaration = IdentList ":" type.
 
-integer = digit {digit} | digit {hexDigit} "H". 
-real = digit {digit} "." {digit} [ScaleFactor]. 
-ScaleFactor = "E" ["+" | "-"] digit {digit}. 
+integer = digit {digit} | digit {hexDigit} "H".
+real = digit {digit} "." {digit} [ScaleFactor].
+ScaleFactor = "E" ["+" | "-"] digit {digit}.
 number = integer | real.
 
 string = """ {character} """ | digit {hexDigit} "X".
@@ -1440,20 +2694,20 @@ Oberon-0 as defined in {\em Compiler Construction} (1996, 2017). This was the ba
 
 {\scriptsize
 \begin{lstlisting}[style=EBNF]
-module = "MODULE" ident ";" declarations 
-         ["BEGIN" StatementSequence] 
+module = "MODULE" ident ";" declarations
+         ["BEGIN" StatementSequence]
          "END" ident "."
 
 declarations = ["CONST" {ident "=" expression ";"}]
-         ["TYPE" {ident "=" type ";"}] 
-         ["VAR" {IdentList ":" type ";"}] 
+         ["TYPE" {ident "=" type ";"}]
+         ["VAR" {IdentList ":" type ";"}]
          {ProcedureDeclaration ";"}.
 
-ProcedureDeclaration = ProcedureHeading ";" ProcedureBody. 
+ProcedureDeclaration = ProcedureHeading ";" ProcedureBody.
 
-ProcedureBody = declarations ["BEGIN" StatementSequence]"END" ident. 
+ProcedureBody = declarations ["BEGIN" StatementSequence]"END" ident.
 
-ProcedureHeading = "PROCEDURE" ident [FormalParameters]. 
+ProcedureHeading = "PROCEDURE" ident [FormalParameters].
 
 FormalParameters = "(" [FPSection {";" FPSection}] ")".
 
@@ -1473,25 +2727,25 @@ StatementSequence = statement {";" statement}.
 
 statement = [assignment | ProcedureCall | IfStatement | WhileStatement].
 
-WhileStatement = "WHILE" expression "DO" StatementSequence "END". 
+WhileStatement = "WHILE" expression "DO" StatementSequence "END".
 
 IfStatement = "IF" expression "THEN" StatementSequence
   {"ELSIF" expression "THEN" StatementSequence}
   ["ELSE" StatementSequence] "END".
 
-ProcedureCall = ident selector [ActualParameters]. 
+ProcedureCall = ident selector [ActualParameters].
 
-ActualParameters = "(" [expression {"," expression}] ")" . 
+ActualParameters = "(" [expression {"," expression}] ")" .
 
-assignment = ident selector ":=" expression. 
+assignment = ident selector ":=" expression.
 
 expression = SimpleExpression [("=" | "#" | "<" | "<=" | ">" | ">=") SimpleExpression].
 
-SimpleExpression = ["+"|"-"] term {("+"|"-" | "OR") term}. 
+SimpleExpression = ["+"|"-"] term {("+"|"-" | "OR") term}.
 
-term = factor {("*" | "DIV" | "MOD" | "&") factor}. 
+term = factor {("*" | "DIV" | "MOD" | "&") factor}.
 
-factor = ident selector | number | "(" expression ")" | "~" factor. 
+factor = ident selector | number | "(" expression ")" | "~" factor.
 
 number = integer.
 
@@ -1499,30 +2753,8 @@ selector = {"." ident | "[" expression "]"}.
 
 integer = digit {digit}.
 
-ident = letter {letter | digit}. 
+ident = letter {letter | digit}.
 \end{lstlisting}}
 
-\newpage
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The ax compiler}
-
-The program \lstinline"ax" has the following options: 
-\begin{itemize}
-    \item \lstinline"-d" \lstinline"--defs" generate only the \lstinline".def" file.
-    \item \lstinline"-l" \lstinline"--ll" just produce the LLVM IR assembly output (no object code). Otherwise both are produced.
-    \item \lstinline"-m" \lstinline"--main" generate function \lstinline"main()" (the entry point) for the \BEGIN\ section of the module.
-    \item \lstinline"-O1",  \lstinline"-O2", \lstinline"-O3" switch on optimizers: levels 1, 2 or 3.
-    \item \lstinline"-o" \lstinline"--output_funct" change the \BEGIN\ section of the module from being the entry point, to the function \lstinline"output()". Used in unit tests for the compiler.
-    \item  \lstinline"-s" \lstinline"--symbols" print the symbol table.
-    \item \lstinline"-L" \lstinline"--axlib_path" set the path to search for \lstinline".def" files for \IMPORT\ statements.
-    \item \lstinline"-p" - Parse the file and output the parsed file and stop (debugging the compiler).
-\end{itemize}
-
-\subsection{Implementation limitations}
-\begin{itemize}
-    \item \ARRAY\ sizes must be \INTEGER s, not expressions.
-    \item Open \ARRAY s only work with 1 dimensional open arrays.
-\end{itemize}
-
-
+\printbibliography
 \end{document}

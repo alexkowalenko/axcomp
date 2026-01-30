@@ -29,3 +29,5 @@ __latexindent_temp.tex
 *.fls
 
 .DS_Store
+/report/report.bcf
+/report/report.run.xml

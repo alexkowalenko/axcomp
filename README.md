@@ -1,32 +1,32 @@
 # AX compiler
 
-Compiler for the Oberon-0 language and progressing towards implementing Oberon-2, implemented in C++26, using the LLVM
+Compiler for the Oberon language, implemented in C++26, using the LLVM
 compiler infrastructure for code generation.
 
-Supports at the moment:
+Supports:
 
 - The Oberon0 definition in Writh's _Compiler Construction_ (1996, 2017).
 - Modules with the IMPORT statement.
-- REALs, CHARs, SET types. (SMALLINT, etc. aliased to INTEGER (i64), LONGREAL aliased to REAL (double)).
-- Nested PROCEDUREs (with closures in LLVM!).
-- RECORD types, with base RECORD.
-- Multidimensional ARRAY types.
-- Open ARRAYs.
-- POINTER TO ...
-- Oberon-2 statements FOR, LOOP, EXIT, REPEAT, CASE, RETURN.
+- `REAL`s, `CHAR`s, `SET` types. (`SMALLINT`, etc. aliased to `INTEGER` (i64), `LONGREAL` aliased to `REAL` (double)).
+- Nested `PROCEDURE`s (with closures in LLVM!).
+- `RECORD` types, with base `RECORD` types.
+- Multidimensional `ARRAY` types.
+- Open `ARRAY`s.
+- `POINTER TO` ...
+- Oberon-2 statements like: `FOR`, `LOOP`, `EXIT`, `REPEAT`, `WHILE`, `CASE`, `RETURN`.
 
 Beyond the Oberon-2 definition:
 
-- UTF-8 source code, identifiers, and CHARs.
-- STRING type which supports UTF-8.
+- UTF-8 source code, identifiers, and `CHAR`s.
+- `STRING` type which supports UTF-8.
 
-See the [_AX Oberon-2/07 Language Report_](report/report.tex) in the [report](report) directory.
+See the [AX Oberon-2/07 Language Report_](report/report.tex) in the [report](report) directory.
 
 ## Dependencies
 
 To build the compiler:
 
-- C++ 26 compiler - tested with Clang++ 21.1.
+- C++ 26 compiler - tested with Clang++ 21.1 on macOS.
 - LLVM 21.0.0.
 - UTFCPP v3.2.1 - support UTF-8 text (https://github.com/nemtrif/utfcpp.git).
 - Boehm garbage collection
@@ -36,17 +36,15 @@ To build the compiler:
 To test:
 
 - GoogleTest release-1.17 - test suites (https://github.com/google/googletest.git).
-- LLVM lit and FileCheck - parser regression tests.
+- LLVM lit and FileCheck - regression tests.
 
 To generate the language report – TeX.
 
 ## Usage
 
-How to run the compiler is explained in the [_AX Oberon-2/07 Language Report_](report/report.tex).
-
-## Known issues
-
-Limitations are listed in the [_AX Oberon-2/07 Language Report_](report/report.tex).
+The compiler is `axcomp`, and the wrapper is `ax`. Use the `--help` option to list various compilation options.
+See the [AGENTS.md](AGENTS.md) file for more information about running the compiler, and the layout of the source code
+and test directories.
 
 ## Open Source Licensing information
 
