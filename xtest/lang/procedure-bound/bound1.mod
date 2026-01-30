@@ -1,4 +1,4 @@
-MODULE bound1; (* Procedures with recievers *)
+MODULE bound1; (* Procedures with receivers *)
 IMPORT Out;
 TYPE pt = RECORD x, y : INTEGER; END;
 VAR x: pt;
@@ -10,12 +10,14 @@ END print;
 
 PROCEDURE (VAR a : pt) clear();
 BEGIN
-    a.x := 0; a.y := 0;
+    a.x := 0;
+    a.y := 0;
 END clear;
 
 PROCEDURE (VAR a : pt) set(x, y: INTEGER);
 BEGIN
-    a.x := x; a.y := y;
+    a.x := x;
+    a.y := y;
 END set;
 
 BEGIN

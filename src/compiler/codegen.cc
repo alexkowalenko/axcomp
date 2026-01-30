@@ -592,12 +592,11 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
         debug("do_arguments receiver {0} send {1}", string(typeFunction->receiver),
               string(ast->name->ident->id->get_type()));
         if (typeFunction->receiver_type != Attr::var) {
-            last_value = builder.CreateLoad(last_value->getType(), last_value);
+            auto *recv_type = typeFunction->receiver->get_llvm();
+            last_value = builder.CreateLoad(recv_type, last_value);
         }
 
         args.push_back(last_value);
-
-        // llvm::dbgs() << *last_value << '\n';
     }
     auto i = 0;
     for (auto const &a : ast->args) {

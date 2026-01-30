@@ -60,7 +60,7 @@ xtest_add_lit_tests(lang-pointers lang/pointers lit.compile)
 xtest_add_lit_tests(lang-procedure lang/procedure lit.compile)
 xtest_add_lit_tests(lang-forward lang/forward lit.compile)
 xtest_add_lit_tests(lang-closures lang/closures lit.compile)
-## xtest_add_test(lang/procedure-bound)
+xtest_add_lit_tests(lang-procedure-bound lang/procedure-bound lit.compile)
 
 xtest_add_lit_tests(lang-if lang/if lit.compile)
 xtest_add_lit_tests(lang-while lang/while lit.compile)
