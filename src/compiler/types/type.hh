@@ -36,6 +36,7 @@ enum class TypeId : std::uint8_t {
     INTEGER,
     REAL,
     BOOLEAN,
+    ENUMERATION,
     CHAR,
     PROCEDURE,
     PROCEDURE_FWD,

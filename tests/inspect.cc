@@ -25,15 +25,34 @@ TEST(Inspector, Enumeration) {
     std::vector<ParseTests> tests = {
         {R"(MODULE enum1;
             TYPE color = (red, green);
+            VAR c: color;
             BEGIN
+                c := red
             END enum1.)",
-         "MODULE enum1;\nTYPE\ncolor = (red, green);\nEND enum1.", ""},
+         "MODULE enum1;\nTYPE\ncolor = (red, green);\nVAR\nc: color;\nBEGIN\nc := red\nEND "
+         "enum1.",
+         ""},
         // Error
         {R"(MODULE enumdup;
             TYPE color = (red, green, red);
             BEGIN
             END enumdup.)",
          "", "[2,26]: Enumeration identifier red already defined"},
+        {R"(MODULE enum1;
+            TYPE color = (red, green);
+            VAR c: color;
+            BEGIN
+                c := blue
+            END enum1.)",
+         "", "[6,15]: undefined identifier blue"},
+        {R"(MODULE enum1;
+            TYPE color = (red, green);
+                 quality = (up, down, charm, strange, top, bottom);
+            VAR c: color;
+            BEGIN
+                c := up
+            END enum1.)",
+         "", "[6,20]: Can't assign expression of type quality to c"},
     };
     do_inspect_tests(tests);
 }

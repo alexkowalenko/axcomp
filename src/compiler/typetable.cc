@@ -197,6 +197,24 @@ void TypeTable::setTypes(llvm::LLVMContext &context) {
 
     VoidType->set_llvm(llvm::Type::getVoidTy(context));
     VoidType->set_init(llvm::ConstantPointerNull::get(llvm::PointerType::get(context, 0)));
+
+    // Set enumeration types to i32 if needed.
+    if (auto *table = TypeTable::sgl()) {
+        for (auto const &[name, type] : *table) {
+            auto resolved = type;
+            if (const auto alias = std::dynamic_pointer_cast<TypeAlias>(type)) {
+                resolved = alias->get_alias();
+            }
+            if (resolved && resolved->id == TypeId::ENUMERATION && !resolved->get_llvm()) {
+                resolved->set_llvm(llvm::Type::getInt32Ty(context));
+                if (const auto enum_type = std::dynamic_pointer_cast<EnumType>(resolved)) {
+                    resolved->set_init(enum_type->make_value(0));
+                } else {
+                    resolved->set_init(llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), 0));
+                }
+            }
+        }
+    }
 }
 
 Type TypeTable::resolve(std::string const &n) const {
@@ -219,7 +237,11 @@ Type TypeTable::resolve(std::string const &n) const {
             // normal type
             return res;
         }
-        name = alias->get_alias()->get_name();
+        const auto next = alias->get_alias()->get_name();
+        if (next == name) {
+            return alias->get_alias();
+        }
+        name = next;
     }
 }
 

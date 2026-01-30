@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <format>
-#include <iterator>
 #include <memory>
 
 #include <llvm/Support/Debug.h>
@@ -28,10 +27,10 @@ namespace ax {
 namespace {
 constexpr auto closure_arg{"_closure"};
 
-#define DEBUG_TYPE "inspector "
+#define DEBUG_TYPE "inspector"
 template <typename S, typename... Args> void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
-                            << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' '
+                            << std::vformat(format, std::make_format_args(msg...)) << '\n');
 }
 
 } // namespace
@@ -58,6 +57,7 @@ void Inspector::visit(ASTModule const &ast) {
     for (auto const &stat : ast->stats) {
         stat->accept(this);
     }
+    debug("ASTModule done");
 }
 
 void Inspector::visit(ASTDeclaration const &ast) {
@@ -113,6 +113,11 @@ void Inspector::visit(ASTTypeDec const &ast) {
             continue;
         }
         visit(type_expr);
+        if (last_type && last_type->id == TypeId::ENUMERATION) {
+            if (const auto enum_type = std::dynamic_pointer_cast<EnumType>(last_type)) {
+                enum_type->name = name->value;
+            }
+        }
         if (last_type->id == TypeId::RECORD) {
             std::dynamic_pointer_cast<RecordType>(last_type)->set_identified(name->value);
         }
@@ -1018,17 +1023,18 @@ void Inspector::visit(ASTPointerType const &ast) {
 
 void Inspector::visit(ASTEnumeration const &ast) {
     debug("ASTEnumeration");
+    auto enum_type = std::make_shared<EnumType>("");
     for (auto const &ident : ast->values) {
         if (symboltable.find(ident->value)) {
-            const auto e =
-                TypeError(ast->get_location(), "Enumeration identifier {0} already defined",
-                          ident->value);
+            const auto e = TypeError(ast->get_location(),
+                                     "Enumeration identifier {0} already defined", ident->value);
             errors.add(e);
             continue;
         }
-        symboltable.put(ident->value, mkSym(TypeTable::IntType, Attr::cnst));
+        enum_type->add_value(ident->value);
+        symboltable.put(ident->value, mkSym(enum_type, Attr::cnst));
     }
-    last_type = TypeTable::IntType;
+    last_type = enum_type;
     ast->set_type(last_type);
 }
 

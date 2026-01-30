@@ -1622,6 +1622,14 @@ void CodeGenerator::visitPtr(ASTQualident const &ast, const bool ptr) {
 void CodeGenerator::visitPtr(ASTIdentifier const &ast, const bool ptr) {
     debug("ASTIdentifierPtr {0} {1}", ast->value, ptr);
     if (const auto res = symboltable.find(ast->value); res) {
+        if (!ptr && res->type->id == TypeId::ENUMERATION) {
+            if (const auto enum_type = std::dynamic_pointer_cast<EnumType>(res->type)) {
+                if (const auto ordinal = enum_type->get_ordinal(ast->value); ordinal) {
+                    last_value = enum_type->make_value(*ordinal);
+                    return;
+                }
+            }
+        }
         last_value = res->value;
         if (res->is(Attr::var)) {
             debug("ASTIdentifierPtr VAR ");

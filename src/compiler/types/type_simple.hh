@@ -6,6 +6,10 @@
 
 #pragma once
 
+#include <optional>
+#include <unordered_map>
+#include <vector>
+
 #include "type.hh"
 
 namespace ax {
@@ -47,6 +51,35 @@ class BooleanType : public SimpleType {
 
     [[nodiscard]] llvm::Value *min() const override { return make_value(false); };
     [[nodiscard]] llvm::Value *max() const override { return make_value(true); };
+};
+
+class EnumType : public SimpleType {
+  public:
+    explicit EnumType(std::string n) : SimpleType(std::move(n), TypeId::ENUMERATION) {};
+    ~EnumType() override = default;
+
+    void add_value(std::string name) {
+        const auto ordinal = static_cast<Int>(values.size());
+        values.push_back(name);
+        ordinals.emplace(std::move(name), ordinal);
+    }
+
+    std::optional<Int> get_ordinal(std::string const &name) const {
+        const auto it = ordinals.find(name);
+        if (it == ordinals.end()) {
+            return std::nullopt;
+        }
+        return it->second;
+    }
+
+    [[nodiscard]] llvm::Constant *make_value(const Int i) const {
+        return llvm::ConstantInt::get(get_llvm(), static_cast<uint64_t>(i));
+    }
+
+    std::vector<std::string> values;
+
+  private:
+    std::unordered_map<std::string, Int> ordinals;
 };
 
 class RealCType : public SimpleType {

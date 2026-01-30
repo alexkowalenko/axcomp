@@ -19,7 +19,9 @@ namespace {
 
 const std::map<TypeId, std::string> mapping{
     {TypeId::VOID, "void"},           {TypeId::ANY, "any"},         {TypeId::INTEGER, "integer"},
-    {TypeId::REAL, "real"},           {TypeId::BOOLEAN, "boolean"}, {TypeId::CHAR, "chr"},
+    {TypeId::REAL, "real"},           {TypeId::BOOLEAN, "boolean"},
+    {TypeId::ENUMERATION, "enumeration"},
+    {TypeId::CHAR, "chr"},
     {TypeId::PROCEDURE, "procedure"}, {TypeId::ARRAY, "array"},     {TypeId::STRING, "string"},
     {TypeId::RECORD, "record"},       {TypeId::ALIAS, "alias"},     {TypeId::POINTER, "pointer"},
     {TypeId::MODULE, "module"},
@@ -38,6 +40,9 @@ bool Type_::equiv(Type const &t) {
     }
     if (id != t->id) {
         return false;
+    }
+    if (id == TypeId::ENUMERATION) {
+        return get_name() == t->get_name();
     }
     if (id == TypeId::RECORD) {
         auto *recordTypePtr = dynamic_cast<RecordType *>(this);

@@ -116,6 +116,7 @@ ASTModule Parser::parse_module() {
                              module->name);
     }
     get_token(TokenType::PERIOD);
+    debug("parse_module finish {0}", module->name);
     return module;
 }
 
