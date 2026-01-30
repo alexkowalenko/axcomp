@@ -597,6 +597,8 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
         }
 
         args.push_back(last_value);
+
+        // llvm::dbgs() << *last_value << '\n';
     }
     auto i = 0;
     for (auto const &a : ast->args) {
@@ -1511,12 +1513,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     const bool is_string_type = ident_type->id == TypeId::STRING || ident_type->id == TypeId::STR1;
 
     std::vector<Value *> index;
-    if (!is_string_type) {
+    if (ident_type->id != TypeId::OPENARRAY && !is_string_type) {
         index.push_back(TypeTable::IntType->make_value(0));
     }
 
     for (auto const &s : ast->selectors) {
-
         std::visit(
             overloaded{[this, &index](ArrayRef const &s) {
                            for (const auto &iter : std::ranges::reverse_view(s)) {
@@ -1541,28 +1542,39 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                        }},
             s);
     }
-    // debug("GEP is Ptr: {0}", arg_ptr->getType()->isPointerTy());
-    // arg_ptr->getType()->print(llvm::dbgs());
 
-    assert(arg_ptr->getType()->isPointerTy()); // NOLINT
-    if (ast->ident->id->is(Attr::ptr) || ast->ident->get_type()->id == TypeId::OPENARRAY ||
-        is_var || is_string_type) {
-        debug("Create load");
-#if 0
-        if (ast->ident->get_type()->id == TypeId::OPENARRAY) {
-            debug("openarray");
-            const auto array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
-            arg_ptr = builder.CreateLoad(array_type->get_llvm(), arg_ptr);
-            debug("arg_ptr ");
-            arg_ptr->print(llvm::dbgs());
+    assert(arg_ptr->getType()->isPointerTy());
+    if (ast->ident->get_type()->id == TypeId::OPENARRAY) {
+        const auto *array_type = dynamic_cast<OpenArrayType *>(ast->ident->get_type().get());
+        auto       *elem_type = array_type->base_type->get_llvm();
+        auto       *elem_ptr_type = llvm::PointerType::get(context, 0);
+        LLVM_DEBUG({
+            llvm::dbgs() << "openarray get_index elem_type=";
+            elem_type->print(llvm::dbgs());
+            llvm::dbgs() << " elem_ptr_type=";
+            elem_ptr_type->print(llvm::dbgs());
+            llvm::dbgs() << " arg_ptr_type(before)=";
+            arg_ptr->getType()->print(llvm::dbgs());
             llvm::dbgs() << "\n";
-            ast->ident->get_type()->get_llvm()->print(llvm::dbgs());
-            llvm::dbgs() << "\n";
-            last_value =
-                builder.CreateGEP(array_type->base_type->get_llvm(), arg_ptr, index, "idx");
-            return;
+        });
+        if (llvm::isa<AllocaInst>(arg_ptr) || llvm::isa<GlobalVariable>(arg_ptr)) {
+            arg_ptr = builder.CreateLoad(elem_ptr_type, arg_ptr);
         }
-#endif
+
+        LLVM_DEBUG({
+            llvm::dbgs() << "openarray get_index arg_ptr_type(after load)=";
+            arg_ptr->getType()->print(llvm::dbgs());
+            llvm::dbgs() << "\n";
+            arg_ptr = builder.CreateBitCast(arg_ptr, elem_ptr_type, "openarray.elem");
+            llvm::dbgs() << "openarray get_index arg_ptr_type(after cast)=";
+            arg_ptr->getType()->print(llvm::dbgs());
+            llvm::dbgs() << " index_count=" << index.size() << "\n";
+        });
+        last_value = builder.CreateGEP(elem_type, arg_ptr, index, "idx");
+        return;
+    }
+    if (ast->ident->id->is(Attr::ptr) || is_var || is_string_type) {
+        debug("Create load");
         arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
     }
     debug("get_index: GEP number of indices: {0}", index.size());

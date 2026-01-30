@@ -16,6 +16,6 @@ END array3.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0 1 4 9 16 25 36 49 64 81
+CHECK: 1 3 7 13 21 31 43 57 73 91
 CHECK-NEXT: 0
 *)

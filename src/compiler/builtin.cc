@@ -20,23 +20,23 @@ namespace ax {
 
 namespace {
 
-constexpr auto DEBUG_TYPE{"builtin "};
+constexpr auto DEBUG_TYPE{"builtin"};
 
 template <typename S, typename... Args> static void debug(const S &format, const Args &...msg) {
-    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << std::vformat(format, std::make_format_args(msg...))
-                            << '\n'); // NOLINT
+    LLVM_DEBUG(llvm::dbgs() << DEBUG_TYPE << ' '
+                            << std::vformat(format, std::make_format_args(msg...)) << '\n');
 }
 
 BIFunctor abs{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    debug("builtin ABS");
+    debug("ABS");
     const auto args = codegen->do_arguments(ast);
     auto      *arg = args[0];
     if (arg->getType()->isIntegerTy()) {
-        debug("builtin abs int");
+        debug("abs int");
         return codegen->call_function("ABS", TypeTable::IntType->get_llvm(), {arg});
     }
     if (arg->getType()->isFloatingPointTy()) {
-        debug("builtin abs fabs");
+        debug("abs fabs");
         std::vector<llvm::Type *> const type_args{TypeTable::RealType->get_llvm()};
         auto *fun = Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::fabs,
                                                       type_args);
@@ -60,7 +60,7 @@ BIFunctor len{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 BIFunctor size{[](const CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     const auto name = std::string(*ast->args[0]);
-    debug("builtin SIZE {0}", name);
+    debug("SIZE {0}", name);
     auto type = codegen->get_types().find(name);
     if (type) {
         return TypeTable::IntType->make_value(type->get_size());
@@ -70,22 +70,22 @@ BIFunctor size{[](const CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 }};
 
 BIFunctor newfunct{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    debug("builtin NEW");
+    debug("NEW");
     auto args = codegen->do_arguments(ast);
     if (ast->args.size() > 1 && ast->args[0]->get_type() == TypeTable::StrType) {
-        debug("builtin NEW STRING");
+        debug("NEW STRING");
         return codegen->call_function("NEW_String", TypeTable::IntType->get_llvm(),
                                       {args[0], args[1]});
     }
     if (ast->args.size() == 1 && ast->args[0]->get_type()->id == TypeId::POINTER) {
-        debug("builtin NEW POINTER");
+        debug("NEW POINTER");
         const auto ptr_type = std::dynamic_pointer_cast<ax::PointerType>(ast->args[0]->get_type());
         const auto size = ptr_type->get_reference()->get_size();
         return codegen->call_function("NEW_ptr", TypeTable::IntType->get_llvm(),
                                       {args[0], TypeTable::IntType->make_value(size)});
     }
     if (ast->args.size() > 1 && ast->args[0]->get_type()->id == TypeId::OPENARRAY) {
-        debug("builtin NEW ARRAY");
+        debug("NEW ARRAY");
 
         const auto array_type = std::dynamic_pointer_cast<ArrayType>(ast->args[0]->get_type());
         const Int  base_size = array_type->base_type->get_size();
@@ -113,10 +113,9 @@ BIFunctor max{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 
 template <bool inc_f>
 BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    debug("builtin INC/DEC");
+    debug("INC/DEC");
     const auto args = codegen->do_arguments(ast);
     if (auto *arg = args[0]; arg->getType()->isPointerTy()) {
-        // debug("builtin INC/DEC 2");
         Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
         Value *inc = nullptr;
         if (args.size() == 1) {
@@ -142,7 +141,7 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 }};
 
 BIFunctor floor{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    debug("builtin FLOOR");
+    debug("FLOOR");
     const auto                      args = codegen->do_arguments(ast);
     std::vector<llvm::Type *> const type_args{TypeTable::RealType->get_llvm()};
     auto *fun = Intrinsic::getOrInsertDeclaration(codegen->get_module().get(), Intrinsic::floor,
@@ -157,7 +156,7 @@ BIFunctor flt{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
 }};
 
 BIFunctor assert{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
-    debug("builtin ASSERT");
+    debug("ASSERT");
     const auto args = codegen->do_arguments(ast);
     auto      *arg = args[0];
 

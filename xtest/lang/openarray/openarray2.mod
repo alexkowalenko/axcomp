@@ -1,4 +1,4 @@
-MODULE openarray; (* open arrays *)
+MODULE openarray2; (* open arrays *)
 IMPORT Out;
 VAR x : ARRAY OF INTEGER;
     sum, i: INTEGER;
@@ -9,7 +9,7 @@ BEGIN
         x[i] := i*i + i + 1;
     END
     RETURN 0;
-END openarray.
+END openarray2.
 
 (*
 RUN: %comp %s | filecheck %s

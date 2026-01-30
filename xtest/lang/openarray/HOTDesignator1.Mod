@@ -17,3 +17,10 @@ PROCEDURE Test* ();
 BEGIN
   Test
 END HOTDesignator1.
+
+(*
+RUN: %comp %s | filecheck %s
+CHECK: a
+CHECK-NEXT: b
+CHECK: 0
+*)
