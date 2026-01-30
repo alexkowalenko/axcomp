@@ -54,6 +54,7 @@ class ASTPrinter : public ASTVisitor {
     void visit(ASTArray const &ast) override;
     void visit(ASTRecord const &ast) override;
     void visit(ASTPointerType const &ast) override;
+    void visit(ASTEnumeration const &ast) override;
     void visit(ASTIdentifier const &ast) override;
     void visit(ASTQualident const &ast) override;
     void visit(ASTSet const &ast) override;

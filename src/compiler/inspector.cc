@@ -916,6 +916,10 @@ void Inspector::visit(ASTType const &ast) {
                           [this, ast](ASTPointerType const &arg) {
                               visit(arg);
                               ast->set_type(last_type);
+                          },
+                          [this, ast](ASTEnumeration const &arg) {
+                              visit(arg);
+                              ast->set_type(last_type);
                           }},
                ast->type);
 }
@@ -1010,6 +1014,22 @@ void Inspector::visit(ASTPointerType const &ast) {
     // Put into type table
     types.put(last_type->get_name(), ptr_type);
     pointer_types.push_back(ptr_type);
+}
+
+void Inspector::visit(ASTEnumeration const &ast) {
+    debug("ASTEnumeration");
+    for (auto const &ident : ast->values) {
+        if (symboltable.find(ident->value)) {
+            const auto e =
+                TypeError(ast->get_location(), "Enumeration identifier {0} already defined",
+                          ident->value);
+            errors.add(e);
+            continue;
+        }
+        symboltable.put(ident->value, mkSym(TypeTable::IntType, Attr::cnst));
+    }
+    last_type = TypeTable::IntType;
+    ast->set_type(last_type);
 }
 
 std::string Inspector::get_Qualident(ASTQualident const &ast) const {

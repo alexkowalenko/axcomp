@@ -64,6 +64,7 @@ class Parser {
     ASTArray       parse_array();
     ASTRecord      parse_record();
     ASTPointerType parse_pointer();
+    ASTEnumeration parse_enumeration();
     ASTQualident   parse_qualident() const;
     ASTIdentifier  parse_identifier() const;
     ASTInteger     parse_integer() const;

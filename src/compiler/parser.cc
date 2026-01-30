@@ -1090,6 +1090,9 @@ ASTType Parser::parse_type() {
     auto ast = makeAST<ASTType_>(lexer);
 
     switch (lexer.peek_token().type) {
+    case TokenType::L_PAREN:
+        ast->type = parse_enumeration();
+        return ast;
     case TokenType::ARRAY:
         ast->type = parse_array();
         return ast;
@@ -1181,6 +1184,38 @@ ASTPointerType Parser::parse_pointer() {
     get_token(TokenType::POINTER);
     get_token(TokenType::TO);
     ast->reference = parse_type();
+    return ast;
+}
+
+/**
+ * @brief "(" ident { [","] ident } ")"
+ *
+ * @return ASTEnumeration
+ */
+ASTEnumeration Parser::parse_enumeration() {
+    auto ast = makeAST<ASTEnumeration_>(lexer);
+
+    get_token(TokenType::L_PAREN);
+    auto tok = lexer.peek_token();
+    if (tok.type != TokenType::IDENT) {
+        throw ParseException(lexer.get_location(), "Expected identifier in enumeration");
+    }
+
+    while (true) {
+        ast->values.push_back(parse_identifier());
+        tok = lexer.peek_token();
+        if (tok.type == TokenType::COMMA) {
+            lexer.get_token();
+            tok = lexer.peek_token();
+        }
+        if (tok.type == TokenType::R_PAREN) {
+            break;
+        }
+        if (tok.type != TokenType::IDENT) {
+            throw ParseException(lexer.get_location(), "Expected identifier in enumeration");
+        }
+    }
+    get_token(TokenType::R_PAREN);
     return ast;
 }
 

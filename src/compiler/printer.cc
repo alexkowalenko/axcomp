@@ -460,6 +460,17 @@ void ASTPrinter::visit(ASTPointerType const &ast) {
     visit(ast->reference);
 }
 
+void ASTPrinter::visit(ASTEnumeration const &ast) {
+    os << '(';
+    for (auto iter = ast->values.begin(); iter != ast->values.end(); ++iter) {
+        visit(*iter);
+        if (std::next(iter) != ast->values.end()) {
+            os << ", ";
+        }
+    }
+    os << ')';
+}
+
 void ASTPrinter::visit(ASTQualident const &ast) {
     if (!ast->qual.empty()) {
         os << ast->qual + ".";

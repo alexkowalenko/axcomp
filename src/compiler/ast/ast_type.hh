@@ -14,17 +14,30 @@
 namespace ax {
 
 /**
+ * @brief "(" ident { [","] ident } ")"
+ *
+ */
+class ASTEnumeration_ : public ASTBase_, public std::enable_shared_from_this<ASTEnumeration_> {
+  public:
+    ~ASTEnumeration_() override = default;
+
+    void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
+
+    std::vector<ASTIdentifier> values;
+};
+using ASTEnumeration = std::shared_ptr<ASTEnumeration_>;
+
+/**
  * @brief Qualident | arrayType | recordType | pointerType
  *
  */
-
 class ASTType_ : public ASTBase_, public std::enable_shared_from_this<ASTType_> {
   public:
     ~ASTType_() override = default;
 
     void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
-    std::variant<ASTQualident, ASTArray, ASTRecord, ASTPointerType> type;
+    std::variant<ASTQualident, ASTArray, ASTRecord, ASTPointerType, ASTEnumeration> type;
 };
 using ASTType = std::shared_ptr<ASTType_>;
 
@@ -32,7 +45,6 @@ using ASTType = std::shared_ptr<ASTType_>;
  * @brief  "ARRAY" [ expr ( , expr ) ] "OF" type
  *
  */
-
 class ASTArray_ : public ASTBase_, public std::enable_shared_from_this<ASTArray_> {
   public:
     ~ASTArray_() override = default;
@@ -66,7 +78,6 @@ using ASTRecord = std::shared_ptr<ASTRecord_>;
  * @brief "POINTER" "TO" type
  *
  */
-
 class ASTPointerType_ : public ASTBase_, public std::enable_shared_from_this<ASTPointerType_> {
   public:
     ~ASTPointerType_() override = default;

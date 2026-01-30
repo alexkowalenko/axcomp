@@ -69,6 +69,8 @@ class ASTRecord_;
 using ASTRecord = std::shared_ptr<ASTRecord_>;
 class ASTPointerType_;
 using ASTPointerType = std::shared_ptr<ASTPointerType_>;
+class ASTEnumeration_;
+using ASTEnumeration = std::shared_ptr<ASTEnumeration_>;
 class ASTQualident_;
 using ASTQualident = std::shared_ptr<ASTQualident_>;
 class ASTIdentifier_;
@@ -126,6 +128,7 @@ class ASTVisitor {
     virtual void visit(ASTArray const &ast);
     virtual void visit(ASTPointerType const &ast);
     virtual void visit(ASTRecord const &ast);
+    virtual void visit(ASTEnumeration const &ast);
     virtual void visit(ASTQualident const & /*not used*/) {};
     virtual void visit(ASTIdentifier const & /*not used*/) {};
     virtual void visit(ASTSet const & /*not used*/) {};

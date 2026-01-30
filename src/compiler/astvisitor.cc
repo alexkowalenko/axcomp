@@ -216,4 +216,10 @@ void ASTVisitor::visit(ASTPointerType const &ast) { // NOLINT
     ast->reference->accept(this);
 }
 
+void ASTVisitor::visit(ASTEnumeration const &ast) { // NOLINT
+    for (auto const &value : ast->values) {
+        value->accept(this);
+    }
+}
+
 } // namespace ax

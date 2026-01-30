@@ -21,6 +21,23 @@ TEST(Inspector, VarType) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, Enumeration) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE enum1;
+            TYPE color = (red, green);
+            BEGIN
+            END enum1.)",
+         "MODULE enum1;\nTYPE\ncolor = (red, green);\nEND enum1.", ""},
+        // Error
+        {R"(MODULE enumdup;
+            TYPE color = (red, green, red);
+            BEGIN
+            END enumdup.)",
+         "", "[2,26]: Enumeration identifier red already defined"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, UnknownExpr) {
     std::vector<ParseTests> tests = {
         {"MODULE y; VAR x : INTEGER; BEGIN RETURN x END y.",

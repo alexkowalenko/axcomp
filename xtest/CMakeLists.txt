@@ -46,6 +46,7 @@ xtest_add_lit_tests(lang-record lang/record lit.compile)
 xtest_add_lit_tests(lang-array lang/array lit.compile)
 xtest_add_lit_tests(lang-openarray lang/openarray lit.compile)
 xtest_add_lit_tests(lang-set lang/set lit.compile)
+xtest_add_lit_tests(lang-enumeration lang/enumeration lit.compile)
 
 xtest_add_lit_tests(lang-literals lang/literals lit.compile)
 xtest_add_lit_tests(lang-expr lang/expr lit.compile)

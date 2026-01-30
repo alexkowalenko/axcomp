@@ -321,6 +321,36 @@ TEST(Parser, TYPES) {
     do_parse_tests(tests);
 }
 
+TEST(Parser, Enumerations) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE enum1;
+                TYPE color = (red, green, blue);
+                VAR c: color;
+                BEGIN
+                    RETURN 0
+                END enum1.)",
+         "MODULE enum1;\nTYPE\ncolor = (red, green, blue);\nVAR\nc: color;\nBEGIN\nRETURN 0\nEND "
+         "enum1.",
+         ""},
+        // Errors
+        {R"(MODULE enum1;
+                TYPE color = (red, green, blue;
+                VAR c: color;
+                BEGIN
+                    RETURN 0
+                END enum1.)",
+         "", "[2,47]: Expected identifier in enumeration"},
+        {R"(MODULE enum1;
+                TYPE color = ();
+                VAR c: color;
+                BEGIN
+                    RETURN 0
+                END enum1.)",
+         "", "[2,47]: Expected identifier in enumeration"},
+    };
+    do_parse_tests(tests);
+}
+
 TEST(Parser, Proc) {
     std::vector<ParseTests> tests = {
 
