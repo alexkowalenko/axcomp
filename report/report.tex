@@ -1051,7 +1051,7 @@ CaseLabelList = CaseLabels {"," CaseLabels}.
 CaseLabels = ConstExpression [".." ConstExpression].
 \end{lstlisting}
 
-Example:
+Examples of \INTEGER, \CHAR, and Enumeration \CASE\ statements:
 \begin{lstlisting}[style=example]
 
 CASE i OF
@@ -1082,11 +1082,21 @@ TYPE R = RECORD a: INTEGER END;
 VAR p: P;
     ...
 CASE p OF
-    | P0: p.b := 0.0
+    P0: p.b := 0.0
     | P1: p.c := "X"
     | P2: p.d := TRUE
     | NIL: ...
 END
+
+TYPE colour = (red, green, blue);
+VAR c: colour;
+    ...
+CASE c OF
+    red: ...
+    | green: ...
+    | blue: ...
+END
+
 \end{lstlisting}
 
 \subsection{\WHILE\ statements}

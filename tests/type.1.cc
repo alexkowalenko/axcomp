@@ -140,3 +140,25 @@ TEST(Type, String1) {
     EXPECT_EQ(TypeTable::CharType->equiv(str1), true);
     EXPECT_EQ(TypeTable::StrType->equiv(str1), true);
 }
+
+TEST(Type, Enumeration) {
+    TypeTable types;
+    types.initialise();
+
+    auto colors = std::make_shared<EnumType>("color");
+    colors->add_value("red");
+    colors->add_value("green");
+    auto shades = std::make_shared<EnumType>("shade");
+
+    EXPECT_EQ(colors->id, TypeId::ENUMERATION);
+    EXPECT_EQ(colors->get_name(), "color");
+    EXPECT_EQ(colors->equiv(colors), true);
+    EXPECT_EQ(colors->equiv(shades), false);
+
+    const auto red = colors->get_ordinal("red");
+    const auto green = colors->get_ordinal("green");
+    EXPECT_TRUE(red.has_value());
+    EXPECT_TRUE(green.has_value());
+    EXPECT_EQ(*red, 0);
+    EXPECT_EQ(*green, 1);
+}

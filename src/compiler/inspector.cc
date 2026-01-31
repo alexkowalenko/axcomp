@@ -276,7 +276,7 @@ void Inspector::visit(ASTProcedure const &ast) {
             continue;
         }
         auto sym = symboltable.find(f);
-        if (sym->is(Attr::global_var)) {
+        if (sym->is(Attr::global_var) || sym->is(Attr::cnst)) {
             continue;
         }
 
@@ -559,9 +559,10 @@ void Inspector::visit(ASTCaseElement const &ast) {
 void Inspector::visit(ASTCase const &ast) {
 
     visit(ast->expr);
-    if (!last_type->equiv(TypeTable::IntType) && !last_type->equiv(TypeTable::CharType)) {
-        auto ex =
-            TypeError(ast->expr->get_location(), "CASE expression has to be INTEGER or CHAR");
+    if (!last_type->equiv(TypeTable::IntType) && !last_type->equiv(TypeTable::CharType) &&
+        last_type->id != TypeId::ENUMERATION) {
+        auto ex = TypeError(ast->expr->get_location(),
+                            "CASE expression has to be INTEGER, CHAR, or enumeration");
         errors.add(ex);
     }
     Type const case_type = last_type;

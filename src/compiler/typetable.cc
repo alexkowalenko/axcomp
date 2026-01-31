@@ -273,6 +273,10 @@ Type TypeTable::check(const TokenType op, Type const &Lt, Type const &Rt) {
         R->id == TypeId::VOID) {
         return TypeTable::BoolType;
     }
+    if ((op == TokenType::EQUALS || op == TokenType::HASH) && L->id == TypeId::ENUMERATION &&
+        R->id == TypeId::ENUMERATION && L->equiv(R)) {
+        return TypeTable::BoolType;
+    }
     return nullptr;
 }
 

@@ -602,6 +602,13 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
 
             debug("ASTCall identifier {0}", p2->id->value);
             visitPtr(p2->id, true);
+            if (typeFunction->params[i].first &&
+                typeFunction->params[i].first->id == TypeId::OPENARRAY && a->get_type() &&
+                (a->get_type()->id == TypeId::STRING || a->get_type()->id == TypeId::STR1)) {
+                if (llvm::isa<AllocaInst>(last_value) || llvm::isa<GlobalVariable>(last_value)) {
+                    last_value = builder.CreateLoad(last_value->getType(), last_value);
+                }
+            }
         } else {
             // Reference Parameter
 
@@ -1560,9 +1567,11 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
         last_value = builder.CreateGEP(elem_type, arg_ptr, index, "idx");
         return;
     }
-    if (ast->ident->id->is(Attr::ptr) || is_var || is_string_type) {
-        debug("Create load");
-        arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+    if (ast->ident->id->is(Attr::ptr) || is_string_type) {
+        if (llvm::isa<AllocaInst>(arg_ptr) || llvm::isa<GlobalVariable>(arg_ptr)) {
+            debug("Create load");
+            arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+        }
     }
     debug("get_index: GEP number of indices: {0}", index.size());
     debug("get_index: basetype: {0}", std::string(*ast->ident->get_type()));
@@ -1630,15 +1639,28 @@ void CodeGenerator::visitPtr(ASTIdentifier const &ast, const bool ptr) {
                 }
             }
         }
+
         last_value = res->value;
+
         if (res->is(Attr::var)) {
-            debug("ASTIdentifierPtr VAR ");
-            last_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
+            // VAR parameters are stored as pointers in the symbol table.
+            auto *ptr_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
+            if (is_var || ptr) {
+                last_value = ptr_value;
+                return;
+            }
+            debug("ASTIdentifierPtr VAR load {}", res->type->get_name());
+            const auto type = types.resolve(res->type->get_name());
+            last_value = builder.CreateLoad(type->get_llvm(), ptr_value, ast->value);
+            return;
         }
+
         if (is_var) {
-            // This is a write of a VAR variable, preserve this value
+            // This is a write of a non-VAR variable, preserve this value
             last_value = res->value;
+            return;
         }
+
         if (!ptr) {
             debug("ASTIdentifierPtr !ptr type: {}", res->type->get_name());
             const auto type = types.resolve(res->type->get_name());
