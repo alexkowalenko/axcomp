@@ -116,7 +116,9 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     debug("INC/DEC");
     const auto args = codegen->do_arguments(ast);
     if (auto *arg = args[0]; arg->getType()->isPointerTy()) {
-        Value *val = codegen->get_builder().CreateLoad(arg->getType(), arg);
+        const auto arg_type = ast->args[0]->get_type();
+        auto       *value_type = arg_type ? arg_type->get_llvm() : TypeTable::IntType->get_llvm();
+        Value      *val = codegen->get_builder().CreateLoad(value_type, arg);
         Value *inc = nullptr;
         if (args.size() == 1) {
             inc = TypeTable::IntType->make_value(1);
@@ -129,12 +131,16 @@ BIFunctor inc{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
                                        inc_f ? "INC" : "DEC");
             }
         }
+        if (value_type != inc->getType()) {
+            inc = codegen->get_builder().CreateTruncOrBitCast(inc, value_type);
+        }
         if (inc_f) {
             val = codegen->get_builder().CreateAdd(val, inc, "inc");
         } else {
             val = codegen->get_builder().CreateSub(val, inc, "dec");
         }
-        return codegen->get_builder().CreateStore(val, arg);
+        codegen->get_builder().CreateStore(val, arg);
+        return val;
     }
     throw CodeGenException(ast->get_location(), "Type {0} passed to {1}",
                            ast->args[0]->get_type()->get_name(), inc_f ? "INC" : "DEC");

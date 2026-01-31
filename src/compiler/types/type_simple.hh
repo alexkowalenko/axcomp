@@ -76,6 +76,20 @@ class EnumType : public SimpleType {
         return llvm::ConstantInt::get(get_llvm(), static_cast<uint64_t>(i));
     }
 
+    [[nodiscard]] llvm::Value *min() const override {
+        if (values.empty()) {
+            return make_value(0);
+        }
+        return make_value(0);
+    }
+
+    [[nodiscard]] llvm::Value *max() const override {
+        if (values.empty()) {
+            return make_value(0);
+        }
+        return make_value(static_cast<Int>(values.size() - 1));
+    }
+
     std::vector<std::string> values;
 
   private:

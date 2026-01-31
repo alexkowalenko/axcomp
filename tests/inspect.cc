@@ -57,7 +57,7 @@ TEST(Inspector, Enumeration) {
     do_inspect_tests(tests);
 }
 
-TEST(Inspector, EnumCastOrd) {
+TEST(Inspector, EnumerationCastOrd) {
     std::vector<ParseTests> tests = {
         {R"(MODULE enumcast;
             TYPE color = (red, green, blue);
@@ -93,6 +93,31 @@ TEST(Inspector, EnumCastOrd) {
                 c := CAST(color, TRUE)
             END enumcast3.)",
          "", "[5,26]: procedure call CAST has incorrect type BOOLEAN for parameter INTEGER"},
+    };
+    do_inspect_tests(tests);
+}
+
+TEST(Inspector, EnumerationMaxMinIncDec) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE enumbuiltins;
+            TYPE color = (red, green, blue);
+            VAR c: color;
+            BEGIN
+                c := MIN(color);
+                c := MAX(color);
+                c := INC(c);
+                c := DEC(c)
+            END enumbuiltins.)",
+         "MODULE enumbuiltins;\nTYPE\ncolor = (red, green, blue);\nVAR\nc: color;\nBEGIN\nc "
+         ":= MIN(color);\nc := MAX(color);\nc := INC(c);\nc := DEC(c)\nEND enumbuiltins.",
+         ""},
+
+        // Errors
+        {"MODULE enummaxerr;\nTYPE color = (red, green);\nVAR c: color;\nBEGIN\nc := "
+         "MAX(color, 1)\nEND enummaxerr.",
+         "", "[5,9]: calling PROCEDURE MAX, incorrect number of arguments: 2 instead of 1"},
+        {"MODULE enumincerr;\nTYPE color = (red, green);\nBEGIN\nINC(red)\nEND enumincerr.", "",
+         "[4,4]: procedure call INC does not have a variable reference for VAR parameter any"},
     };
     do_inspect_tests(tests);
 }

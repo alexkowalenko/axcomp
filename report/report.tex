@@ -1505,10 +1505,12 @@ Proper procedures:
     !BYTES(a,n)! & !a!: \ARRAY\ \OF\ \CHAR, !n!: integer type &  stores the raw memory of !n! in !a!. \\ % Runtime
     \COPY(x, v) & !x!: character array, !v!: character array & !v := x! \\ % Runtime
     \DEC(v) & integer type & !v := v - 1! \\ % Runtime
+    \DEC(e) & enumeration type & previous enumeration value \\ % Runtime
     \DEC(v, n) & !v!, !n!: integer type & !v := v - n! \\ % Runtime
     \EXCL(v, x) & !v!:\SET\ !x!:\INTEGER & !v := v - {x}! \\ % Runtime
     \HALT(x) & integer constant & terminate program execution \\ % Runtime
     \INC(v) & integer type & !v := v + 1! \\  % Runtime
+    \INC(e) & enumeration type & next enumeration value \\  % Runtime
     \INC(v, n) & !v!, !n!: integer type & !v := v + n! \\  % Runtime
     \INCL(v, x) & !v!:\SET\ !x!:\INTEGER & !v := v + {x}! \\ % Runtime
     \NEW(v) & pointer to record, array or class type & allocate !v!\^{} \\  % Runtime

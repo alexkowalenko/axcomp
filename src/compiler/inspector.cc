@@ -548,6 +548,27 @@ void Inspector::visit(ASTCall const &ast) {
         }
     }
 
+    if ((name == "MIN" || name == "MAX") && ast->args.size() == 1) {
+        const auto type_name = std::string(*ast->args[0]);
+        const auto type = types.resolve(type_name);
+        if (type && type->id == TypeId::ENUMERATION) {
+            last_type = type;
+            ast->set_type(last_type);
+            res->set(Attr::used);
+            return;
+        }
+    }
+
+    if ((name == "INC" || name == "DEC") && !ast->args.empty()) {
+        const auto arg_type = ast->args[0]->get_type();
+        if (arg_type && arg_type->id == TypeId::ENUMERATION) {
+            last_type = arg_type;
+            ast->set_type(last_type);
+            res->set(Attr::used);
+            return;
+        }
+    }
+
     // OK
     res->set(Attr::used);
     last_type = procType->ret;
