@@ -50,6 +50,7 @@ class CodeGenerator : ASTVisitor {
     std::vector<Value *> do_arguments(ASTCall const &ast);
     Value               *call_function(std::string const &name, llvm::Type *ret,
                                        std::vector<Value *> const &args);
+    Value               *eval_expr(ASTExpr const &expr);
 
     IRBuilder<>             &get_builder() { return builder; };
     std::unique_ptr<Module> &get_module() { return module; };

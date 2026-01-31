@@ -69,6 +69,11 @@ CodeGenerator::CodeGenerator(Options &o, SymbolFrameTable &s, TypeTable &t, Impo
     TypeTable::setTypes(context);
 }
 
+Value *CodeGenerator::eval_expr(ASTExpr const &expr) {
+    expr->accept(this);
+    return last_value;
+}
+
 void CodeGenerator::visit(ASTModule const &ast) {
     // Set up code generation
     module_name = ast->name;

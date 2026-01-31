@@ -504,6 +504,10 @@ void Inspector::visit(ASTCall const &ast) {
 
         debug("check parameter {0}: {1} with {2}", name, base_last->get_name(),
               proc_base->get_name());
+        if (name == "ORD" && base_last->id == TypeId::ENUMERATION &&
+            proc_base->id == TypeId::CHAR) {
+            continue;
+        }
         if (!proc_base->equiv(base_last)) {
             std::ranges::replace(name, '_', '.');
             debug("incorrect parameter");
@@ -512,6 +516,35 @@ void Inspector::visit(ASTCall const &ast) {
                                "type {1} for parameter {2}",
                                name, last_type->get_name(), (*proc_iter).first->get_name());
             errors.add(e);
+        }
+    }
+
+    // Handle CASE with first argument should be a type name.
+    if (name == "CAST") {
+        if (ast->args.size() != 2) {
+            auto e = TypeError(ast->get_location(), "CAST expects two arguments");
+            errors.add(e);
+        } else {
+            const auto type_name =
+                std::string(*ast->args[0]); // Convert the expression to a string.
+            const auto type = types.resolve(type_name);
+            if (!type || type->id != TypeId::ENUMERATION) {
+                auto e = TypeError(ast->get_location(), "CAST expects enumeration type, got {0}",
+                                   type_name);
+                errors.add(e);
+            }
+            ast->args[1]->accept(this);
+            if (!last_type->equiv(TypeTable::IntType)) {
+                auto e = TypeError(ast->get_location(), "CAST expects integer value, got {0}",
+                                   last_type->get_name());
+                errors.add(e);
+            }
+            if (type && type->id == TypeId::ENUMERATION) {
+                last_type = type;
+                ast->set_type(last_type);
+                res->set(Attr::used);
+                return;
+            }
         }
     }
 

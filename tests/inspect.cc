@@ -57,6 +57,46 @@ TEST(Inspector, Enumeration) {
     do_inspect_tests(tests);
 }
 
+TEST(Inspector, EnumCastOrd) {
+    std::vector<ParseTests> tests = {
+        {R"(MODULE enumcast;
+            TYPE color = (red, green, blue);
+            VAR i: INTEGER; c: color;
+            BEGIN
+                i := ORD(green);
+                c := CAST(color, 2)
+            END enumcast.)",
+         "MODULE enumcast;\nTYPE\ncolor = (red, green, blue);\nVAR\ni: INTEGER;\nc: "
+         "color;\nBEGIN\ni "
+         ":= ORD(green);\nc := CAST(color, 2)\nEND enumcast.",
+         ""},
+
+        // Errors
+        {R"(MODULE enumcast1;
+            TYPE color = (red, green, blue);
+            VAR i: INTEGER;
+            BEGIN
+                i := ORD(1)
+            END enumcast1.)",
+         "", "[5,25]: procedure call ORD has incorrect type INTEGER for parameter CHAR"},
+        {R"(MODULE enumcast2;
+            TYPE color = (red, green, blue);
+            VAR c: color;
+            BEGIN
+                c := CAST(INTEGER, 2)
+            END enumcast2.)",
+         "", "[5,26]: CAST expects enumeration type, got INTEGER"},
+        {R"(MODULE enumcast3;
+            TYPE color = (red, green, blue);
+            VAR c: color;
+            BEGIN
+                c := CAST(color, TRUE)
+            END enumcast3.)",
+         "", "[5,26]: procedure call CAST has incorrect type BOOLEAN for parameter INTEGER"},
+    };
+    do_inspect_tests(tests);
+}
+
 TEST(Inspector, UnknownExpr) {
     std::vector<ParseTests> tests = {
         {"MODULE y; VAR x : INTEGER; BEGIN RETURN x END y.",

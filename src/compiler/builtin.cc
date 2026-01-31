@@ -190,6 +190,17 @@ BIFunctor long_func{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
                            ast->args[0]->get_type()->get_name());
 }};
 
+BIFunctor cast{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
+    const auto type_name = std::string(*ast->args[0]);
+    const auto type = codegen->get_types().resolve(type_name);
+    auto *arg = codegen->eval_expr(ast->args[1]);
+    auto *enum_llvm = type->get_llvm();
+    if (arg->getType() == enum_llvm) {
+        return arg;
+    }
+    return codegen->get_builder().CreateTruncOrBitCast(arg, enum_llvm);
+}};
+
 template <bool inc>
 BIFunctor incl{[](CodeGenerator *codegen, ASTCall const &ast) -> Value * {
     const auto args = codegen->do_arguments(ast);
@@ -262,6 +273,12 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
                              TypeTable::AnyType,
                              ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null}}),
                          Attr::compile_function}},
+
+        {"CAST", Symbol{std::make_shared<ProcedureType>(
+                            TypeTable::AnyType,
+                            ProcedureType::ParamsList{{TypeTable::VoidType, Attr::null},
+                                                      {TypeTable::IntType, Attr::null}}),
+                        Attr::compile_function}},
 
         // CHARs
         {"CAP", Symbol{std::make_shared<ProcedureType>(
@@ -371,6 +388,7 @@ void Builtin::initialise(SymbolFrameTable &symbols) {
     compile_functions.try_emplace("ASSERT", assert);
     compile_functions.try_emplace("LONG", long_func);
     compile_functions.try_emplace("SHORT", long_func);
+    compile_functions.try_emplace("CAST", cast);
     compile_functions.try_emplace("INCL", incl<true>);
     compile_functions.try_emplace("EXCL", incl<false>);
 }
