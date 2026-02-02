@@ -115,6 +115,46 @@ class CodeGenerator : ASTVisitor {
     Type        resolve_type(ASTType const &t) const;
     llvm::Type *getType(ASTType const &type) const;
     Constant   *getType_init(ASTType const &type) const;
+    llvm::Type *llvm_type(Type const &type) const;
+    Constant   *llvm_init(Type const &type) const;
+
+    Value *load_value(Value *addr, llvm::Type *type, const char *name = nullptr);
+    void   store_value(Value *addr, Value *value);
+    Value *load_var_param(SymbolPtr const &sym, bool want_address, std::string const &name);
+    Value *emit_designator_address(ASTDesignator const &ast, bool var_param = false);
+    Value *emit_designator_value(ASTDesignator const &ast);
+    Value *emit_qualident_address(ASTQualident const &ast);
+    Value *emit_identifier_address(ASTIdentifier const &ast);
+
+    void      build_procedure_proto(ASTProcedure const &ast, SymbolPtr const &sym,
+                                    std::vector<llvm::Type *> &proto,
+                                    std::vector<std::pair<int, llvm::Attribute::AttrKind>> &argAttr,
+                                    llvm::Type *&closure_type, llvm::Type *&returnType);
+    Function *create_procedure_function(ASTProcedure const &ast,
+                                        std::vector<llvm::Type *> const &proto,
+                                        std::vector<std::pair<int, llvm::Attribute::AttrKind>> const
+                                            &argAttr,
+                                        llvm::Type *returnType);
+    void      setup_procedure_params(ASTProcedure const &ast, SymbolPtr const &sym, Function *f,
+                                     llvm::Type *closure_type);
+
+    BasicBlock *make_block(std::string const &name, Function *funct = nullptr,
+                           bool attach = true);
+    void        insert_block(BasicBlock *block, Function *funct = nullptr);
+    void        set_block(BasicBlock *block);
+    void        emit_br(BasicBlock *target);
+    void        emit_cond_br(Value *cond, BasicBlock *then_block, BasicBlock *else_block);
+    BasicBlock *emit_short_circuit_step(Value *cond, BasicBlock *end_block,
+                                        const char *next_name, bool is_or);
+    void        finalize_short_circuit(BasicBlock *end_block,
+                                       std::vector<std::pair<BasicBlock *, Value *>> &incoming,
+                                       const char *phi_name);
+    bool        try_short_circuit(TokenType op, TokenType target, BasicBlock *end_block,
+                                  std::vector<std::pair<BasicBlock *, Value *>> &incoming,
+                                  const char *next_name, bool is_or,
+                                  std::function<void()> eval_right, Value *&L);
+    Value      *emit_index_i32(ASTSimpleExpr const &expr);
+    std::vector<Value *> build_index_list(ArrayRef const &indices, bool with_leading_zero);
 
     void ejectBranch(std::vector<ASTStatement> const &stats, BasicBlock *block, BasicBlock *where);
 
@@ -124,6 +164,9 @@ class CodeGenerator : ASTVisitor {
     GlobalVariable *generate_global(std::string const &name, llvm::Type *t) const;
     FunctionCallee  generate_function(std::string const &name, llvm::Type *return_type,
                                       llvm::ArrayRef<llvm::Type *> const &params) const;
+    GlobalVariable *emit_global(const std::string &name, llvm::Type *type,
+                                llvm::Constant *init, bool is_const,
+                                GlobalValue::LinkageTypes linkage) const;
 
     Options                 &options;
     SymbolFrameTable        &symboltable;

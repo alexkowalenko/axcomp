@@ -8,6 +8,7 @@
 
 #include <exception>
 #include <format>
+#include <functional>
 #include <memory>
 #include <ranges>
 
@@ -185,15 +186,12 @@ void CodeGenerator::doTopVars(ASTVar const &ast) const {
 
         llvm::Type     *type = getType(c.second);
         auto            var_name = gen_module_id(c.first->value);
-        GlobalVariable *gVar = generate_global(var_name, type);
-
         GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.first->is(Attr::global)) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
         }
-        gVar->setLinkage(linkage);
         auto *init = getType_init(c.second);
-        gVar->setInitializer(init);
+        auto *gVar = emit_global(var_name, type, init, false, linkage);
         symboltable.set_value(c.first->value, gVar);
     }
 }
@@ -204,21 +202,19 @@ void CodeGenerator::doTopConsts(ASTConst const &ast) {
         debug("doTopConsts type: {0}", c.type->get_type()->get_name());
         auto           *type = getType(c.type);
         auto            const_name = gen_module_id(c.ident->value);
-        GlobalVariable *gVar = generate_global(const_name, type);
 
         visit(c.value);
         GlobalValue::LinkageTypes linkage = GlobalValue::LinkageTypes::InternalLinkage;
         if (c.ident->is(Attr::global)) {
             linkage = GlobalValue::LinkageTypes::ExternalLinkage;
         }
-        gVar->setLinkage(linkage);
         if (isa<Constant>(last_value)) {
-            gVar->setInitializer(dyn_cast<Constant>(last_value));
+            auto *init = dyn_cast<Constant>(last_value);
+            auto *gVar = emit_global(const_name, type, init, true, linkage);
+            symboltable.set_value(c.ident->value, gVar);
         } else {
             throw CodeGenException(ast->get_location(), "Expression based CONSTs not supported.");
         }
-        gVar->setConstant(true);
-        symboltable.set_value(c.ident->value, gVar);
     }
 }
 
@@ -286,129 +282,17 @@ void CodeGenerator::visit(ASTProcedure const &ast) {
     // Make the function arguments
     std::vector<llvm::Type *>                              proto;
     std::vector<std::pair<int, llvm::Attribute::AttrKind>> argAttr;
-    auto                                                   index{0};
     llvm::Type                                            *closure_type = nullptr;
-
-    // Do receiver first
-    if (ast->receiver.first) {
-        auto [name, typeName] = ast->receiver;
-        auto *type = typeName->get_type()->get_llvm();
-        if (name->is(Attr::var)) {
-            type = llvm::PointerType::get(context, 0);
-        }
-        proto.push_back(type);
-    }
-
-    for (auto const &[var, t_type] : ast->params) {
-        auto                   *type = getType(t_type);
-        llvm::AttrBuilder const attrs(context);
-        index++;
-        if (index == 1 && sym->is(Attr::closure)) {
-            debug("ASTProcedure {0} is closure function", ast->name->value);
-            if (!closure_type) {
-                closure_type = std::dynamic_pointer_cast<ProcedureType>(sym->type)
-                                   ->get_closure_struct()
-                                   ->get_llvm();
-            }
-            proto.push_back(llvm::PointerType::get(context, 0));
-            continue;
-        }
-        if (var->is(Attr::var)) {
-            debug(" CodeGenerator::visit VAR {0}", var->value);
-            type = llvm::PointerType::get(context, 0);
-
-        } else {
-            // Todo: Switch on later
-            // argAttr.emplace_back(index, llvm::Attribute::ByVal);
-        }
-        proto.push_back(type);
-    };
-
-    llvm::Type *returnType = nullptr;
-    if (ast->return_type == nullptr) {
-        returnType = llvm::Type::getVoidTy(context);
-    } else {
-        returnType = getType(ast->return_type);
-    }
-
-    auto                      proc_name = gen_module_id(get_nested_name());
-    FunctionType             *ft = FunctionType::get(returnType, proto, false);
-    GlobalValue::LinkageTypes linkage = Function::InternalLinkage;
-    if (ast->name->is(Attr::global)) {
-        linkage = Function::ExternalLinkage;
-    }
-    Function *f = module->getFunction(proc_name);
-    if (!f) {
-        f = Function::Create(ft, linkage, proc_name, module.get());
-    }
-    for (const auto &attr : argAttr | std::views::values) {
-        f->addFnAttr(attr);
-    }
-
-    // Create a new basic block to start insertion into.
-    BasicBlock *block = BasicBlock::Create(context, "entry", f);
-    builder.SetInsertPoint(block);
+    llvm::Type                                            *returnType = nullptr;
+    build_procedure_proto(ast, sym, proto, argAttr, closure_type, returnType);
+    Function *f = create_procedure_function(ast, proto, argAttr, returnType);
+    auto *block = builder.GetInsertBlock();
 
     // Push new frame
     debug("ASTProcedure push frame {0}", get_nested_name());
     symboltable.push_frame(ast->name->value);
 
-    // Set parameter names
-
-    if (ast->receiver.first) {
-        auto [name, typeName] = ast->receiver;
-        auto *type = typeName->get_type()->get_llvm();
-        if (name->is(Attr::var)) {
-            type = llvm::PointerType::get(context, 0);
-        }
-        proto.push_back(type);
-    }
-
-    unsigned i = 0;
-    bool     do_receiver{ast->receiver.first != nullptr};
-
-    for (auto &arg : f->args()) {
-        debug("ASTProcedure process parameter {0}", i);
-        if (i == 0 && sym->is(Attr::closure)) {
-            // skip closure variable
-            i++;
-            continue;
-        }
-
-        std::string param_name;
-        AllocaInst *alloca{nullptr};
-        auto        attr = Attr::null;
-        if (i == 0 && do_receiver) {
-            auto [name, typeName] = ast->receiver;
-            param_name = name->value;
-            auto *type = typeName->get_type()->get_llvm();
-            if (name->is(Attr::var)) {
-                type = llvm::PointerType::get(context, 0);
-                attr = Attr::var;
-            }
-            arg.setName(name->value);
-            alloca = createEntryBlockAlloca(f, name->value, type);
-            i--; // go back
-            do_receiver = false;
-        } else {
-            param_name = ast->params[i].first->value;
-            auto type_name = ast->params[i].second;
-            attr = Attr::null;
-            if (ast->params[i].first->is(Attr::var)) {
-                attr = Attr::var;
-            }
-            alloca = createEntryBlockAlloca(f, param_name, type_name, attr == Attr::var);
-        }
-        arg.setName(param_name);
-
-        // Store the initial value into the alloca.
-        builder.CreateStore(&arg, alloca);
-
-        // put also into the symbol table
-        symboltable.set_value(param_name, alloca, attr);
-        debug("put {0} into symbol table", param_name);
-        i++;
-    };
+    setup_procedure_params(ast, sym, f, closure_type);
 
     // Do declarations
     visit(ast->decs);
@@ -515,18 +399,8 @@ void CodeGenerator::visit(ASTAssignment const &ast) {
         }
     }
     debug("ASTAssignment VAR {0}", var);
-    if (var) {
-        // Handle VAR assignment
-        is_var = true; // Set change in visitPtr to notify
-                       // this is a write of a VAR variable
-        visitPtr(ast->ident, false);
-    } else {
-        visitPtr(ast->ident, true);
-    }
-    // debug("ASTAssignment store {0} in {1}", val->getName(), last_value->getName());
-
-    builder.CreateStore(val, last_value);
-    is_var = false;
+    auto *dest = emit_designator_address(ast->ident, var);
+    store_value(dest, val);
 }
 
 void CodeGenerator::visit(ASTReturn const &ast) {
@@ -606,7 +480,7 @@ std::vector<Value *> CodeGenerator::do_arguments(ASTCall const &ast) {
             auto p2 = std::get<ASTDesignator>(ptr)->ident;
 
             debug("ASTCall identifier {0}", p2->id->value);
-            visitPtr(p2->id, true);
+            emit_identifier_address(p2->id);
             if (typeFunction->params[i].first &&
                 typeFunction->params[i].first->id == TypeId::OPENARRAY && a->get_type() &&
                 (a->get_type()->id == TypeId::STRING || a->get_type()->id == TypeId::STR1)) {
@@ -689,29 +563,29 @@ void CodeGenerator::visit(ASTIf const &ast) {
 
     // Create blocks, insert then block
     auto                     *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock               *then_block = BasicBlock::Create(context, "then", funct);
-    BasicBlock               *else_block = BasicBlock::Create(context, "else");
+    BasicBlock               *then_block = make_block("then", funct);
+    BasicBlock               *else_block = make_block("else", funct, false);
     std::vector<BasicBlock *> elsif_blocks;
     if (!ast->elsif_clause.empty()) {
         for (size_t idx = 0; idx < ast->elsif_clause.size(); ++idx) {
-            auto *e_block = BasicBlock::Create(context, std::format("elsif{0}", idx));
+            auto *e_block = make_block(std::format("elsif{0}", idx), funct, false);
             elsif_blocks.push_back(e_block);
         }
     }
-    BasicBlock *merge_block = BasicBlock::Create(context, "ifcont");
+    BasicBlock *merge_block = make_block("ifcont", funct, false);
 
     if (!ast->elsif_clause.empty()) {
-        builder.CreateCondBr(last_value, then_block, elsif_blocks[0]);
+        emit_cond_br(last_value, then_block, elsif_blocks[0]);
     } else {
         if (ast->else_clause) {
-            builder.CreateCondBr(last_value, then_block, else_block);
+            emit_cond_br(last_value, then_block, else_block);
         } else {
-            builder.CreateCondBr(last_value, then_block, merge_block);
+            emit_cond_br(last_value, then_block, merge_block);
         }
     }
 
     // THEN
-    builder.SetInsertPoint(then_block);
+    set_block(then_block);
 
     for (auto const &stmt : ast->if_clause.stats) {
         stmt->accept(this);
@@ -723,26 +597,26 @@ void CodeGenerator::visit(ASTIf const &ast) {
     for (auto const &e : ast->elsif_clause) {
 
         // ELSEIF
-        funct->insert(funct->end(), elsif_blocks[i]);
-        builder.SetInsertPoint(elsif_blocks[i]);
+        insert_block(elsif_blocks[i], funct);
+        set_block(elsif_blocks[i]);
 
         // do expr
         visit(e.expr);
-        BasicBlock *t_block = BasicBlock::Create(context, "then", funct);
+        BasicBlock *t_block = make_block("then", funct);
 
         if (&e != &ast->elsif_clause.back()) {
-            builder.CreateCondBr(last_value, t_block, elsif_blocks[i + 1]);
+            emit_cond_br(last_value, t_block, elsif_blocks[i + 1]);
         } else {
             // last ELSIF block - branch to else_block
             if (ast->else_clause) {
-                builder.CreateCondBr(last_value, t_block, else_block);
+                emit_cond_br(last_value, t_block, else_block);
             } else {
-                builder.CreateCondBr(last_value, t_block, merge_block);
+                emit_cond_br(last_value, t_block, merge_block);
             }
         }
 
         // THEN
-        builder.SetInsertPoint(t_block);
+        set_block(t_block);
         for (auto const &stmt : e.stats) {
             stmt->accept(this);
         }
@@ -754,8 +628,8 @@ void CodeGenerator::visit(ASTIf const &ast) {
     // Emit ELSE block.
 
     if (ast->else_clause) {
-        funct->insert(funct->end(), else_block);
-        builder.SetInsertPoint(else_block);
+        insert_block(else_block, funct);
+        set_block(else_block);
         const auto elses = *ast->else_clause;
         for (auto const &stmt : elses) {
             stmt->accept(this);
@@ -768,8 +642,8 @@ void CodeGenerator::visit(ASTIf const &ast) {
     else_block = builder.GetInsertBlock();
 
     // Emit merge block.
-    funct->insert(funct->end(), merge_block);
-    builder.SetInsertPoint(merge_block);
+    insert_block(merge_block, funct);
+    set_block(merge_block);
 }
 
 void CodeGenerator::visit(ASTCase const &ast) {
@@ -903,20 +777,20 @@ void CodeGenerator::visit(ASTFor const &ast) {
     // Make the new basic block for the loop header, inserting after current
     // block.
     auto       *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *loop = BasicBlock::Create(context, "loop", funct);
-    BasicBlock *forpos = BasicBlock::Create(context, "forpos", funct);
-    BasicBlock *forneg = BasicBlock::Create(context, "forneg", funct);
-    BasicBlock *after = BasicBlock::Create(context, "afterloop", funct);
+    BasicBlock *loop = make_block("loop", funct);
+    BasicBlock *forpos = make_block("forpos", funct);
+    BasicBlock *forneg = make_block("forneg", funct);
+    BasicBlock *after = make_block("afterloop", funct);
     last_end.push(after);
 
     debug("index: {}", ast->ident->value);
     auto *index = symboltable.find(ast->ident->value)->value;
-    builder.CreateStore(start_value, index);
+    store_value(index, start_value);
 
     // Insert an explicit fall through from the current block to the Loop.
     // Start insertion in LoopBB.
-    builder.CreateBr(loop);
-    builder.SetInsertPoint(loop);
+    emit_br(loop);
+    set_block(loop);
 
     // DO
     for (auto const &stat : ast->stats) {
@@ -931,9 +805,9 @@ void CodeGenerator::visit(ASTFor const &ast) {
     } else {
         step = TypeTable::IntType->make_value(1);
     }
-    auto  *tmp = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "tmp");
+    auto  *tmp = load_value(index, TypeTable::IntType->get_llvm(), "tmp");
     Value *nextVar = builder.CreateAdd(tmp, step, "nextvar");
-    builder.CreateStore(nextVar, index);
+    store_value(index, nextVar);
 
     debug("Compute the end condition.");
     visit(ast->end);
@@ -941,7 +815,7 @@ void CodeGenerator::visit(ASTFor const &ast) {
 
     debug("check step");
     auto *cond = builder.CreateICmpSGE(step, TypeTable::IntType->get_init());
-    builder.CreateCondBr(cond, forpos, forneg);
+    emit_cond_br(cond, forpos, forneg);
 
     debug("Step is positive");
     if (llvm::isCurrentDebugType(DEBUG_TYPE) && options.debug) {
@@ -955,8 +829,8 @@ void CodeGenerator::visit(ASTFor const &ast) {
         end_value->getType()->print(llvm::dbgs());
     }
 
-    builder.SetInsertPoint(forpos);
-    auto *nextVar_value = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "nextvar");
+    set_block(forpos);
+    auto *nextVar_value = load_value(index, TypeTable::IntType->get_llvm(), "nextvar");
     if (llvm::isCurrentDebugType(DEBUG_TYPE) && options.debug) {
         llvm::dbgs() << "\nnextVar_value: ";
         nextVar_value->getType()->print(llvm::dbgs());
@@ -966,18 +840,18 @@ void CodeGenerator::visit(ASTFor const &ast) {
     Value *endCond = builder.CreateICmpSLE(nextVar_value, end_value, "loopcond");
 
     debug("Insert the conditional branch into the end of Loop.");
-    builder.CreateCondBr(endCond, loop, after);
+    emit_cond_br(endCond, loop, after);
 
     // Step is negative
-    builder.SetInsertPoint(forneg);
-    nextVar_value = builder.CreateLoad(TypeTable::IntType->get_llvm(), index, "nextvar");
+    set_block(forneg);
+    nextVar_value = load_value(index, TypeTable::IntType->get_llvm(), "nextvar");
     endCond = builder.CreateICmpSGE(nextVar_value, end_value, "loopcond");
 
     // Insert the conditional branch into the end of Loop.
-    builder.CreateCondBr(endCond, loop, after);
+    emit_cond_br(endCond, loop, after);
 
     // Any new code will be inserted in AfterBB.
-    builder.SetInsertPoint(after);
+    set_block(after);
     last_end.pop();
 
     // debug("ASTFor after:{0}", last_end);
@@ -988,22 +862,22 @@ void CodeGenerator::visit(ASTWhile const &ast) {
 
     // Create blocks
     auto       *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *while_block = BasicBlock::Create(context, "while", funct);
-    BasicBlock *loop = BasicBlock::Create(context, "loop");
-    BasicBlock *end_block = BasicBlock::Create(context, "end");
+    BasicBlock *while_block = make_block("while", funct);
+    BasicBlock *loop = make_block("loop", funct, false);
+    BasicBlock *end_block = make_block("end", funct, false);
     last_end.push(end_block);
     auto *cond_block = while_block;
 
-    builder.CreateBr(while_block);
-    builder.SetInsertPoint(while_block);
+    emit_br(while_block);
+    set_block(while_block);
 
     // WHILE Expr
     visit(ast->expr);
-    builder.CreateCondBr(last_value, loop, end_block);
+    emit_cond_br(last_value, loop, end_block);
 
     // DO
-    funct->insert(funct->end(), loop);
-    builder.SetInsertPoint(loop);
+    insert_block(loop, funct);
+    set_block(loop);
 
     for (auto const &stat : ast->stats) {
         stat->accept(this);
@@ -1013,8 +887,8 @@ void CodeGenerator::visit(ASTWhile const &ast) {
     ejectBranch(ast->stats, loop, cond_block);
 
     // END
-    funct->insert(funct->end(), end_block);
-    builder.SetInsertPoint(end_block);
+    insert_block(end_block, funct);
+    set_block(end_block);
     last_end.pop();
 }
 
@@ -1023,13 +897,13 @@ void CodeGenerator::visit(ASTRepeat const &ast) {
 
     // Create blocks
     auto       *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *repeat_block = BasicBlock::Create(context, "repeat", funct);
-    BasicBlock *end_block = BasicBlock::Create(context, "end");
+    BasicBlock *repeat_block = make_block("repeat", funct);
+    BasicBlock *end_block = make_block("end", funct, false);
     last_end.push(end_block);
 
     // REPEAT
-    builder.CreateBr(repeat_block);
-    builder.SetInsertPoint(repeat_block);
+    emit_br(repeat_block);
+    set_block(repeat_block);
 
     for (auto const &stat : ast->stats) {
         stat->accept(this);
@@ -1037,12 +911,12 @@ void CodeGenerator::visit(ASTRepeat const &ast) {
 
     // Expr
     visit(ast->expr);
-    builder.CreateCondBr(last_value, end_block, repeat_block);
+    emit_cond_br(last_value, end_block, repeat_block);
     repeat_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // END
-    funct->insert(funct->end(), end_block);
-    builder.SetInsertPoint(end_block);
+    insert_block(end_block, funct);
+    set_block(end_block);
     last_end.pop();
 }
 
@@ -1051,23 +925,23 @@ void CodeGenerator::visit(ASTLoop const &ast) {
 
     // Create blocks
     auto       *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *loop_block = BasicBlock::Create(context, "loop", funct);
-    BasicBlock *end_block = BasicBlock::Create(context, "end");
+    BasicBlock *loop_block = make_block("loop", funct);
+    BasicBlock *end_block = make_block("end", funct, false);
     last_end.push(end_block);
 
     // LOOP
-    builder.CreateBr(loop_block);
-    builder.SetInsertPoint(loop_block);
+    emit_br(loop_block);
+    set_block(loop_block);
 
     for (auto const &stat : ast->stats) {
         stat->accept(this);
     }
-    builder.CreateBr(loop_block);
+    emit_br(loop_block);
     loop_block = builder.GetInsertBlock(); // necessary for correct generation of code
 
     // END
-    funct->insert(funct->end(), end_block);
-    builder.SetInsertPoint(end_block);
+    insert_block(end_block, funct);
+    set_block(end_block);
     last_end.pop();
 }
 
@@ -1076,23 +950,23 @@ void CodeGenerator::visit(ASTBlock const &ast) {
 
     // Create blocks
     auto       *funct = builder.GetInsertBlock()->getParent();
-    BasicBlock *begin_block = BasicBlock::Create(context, "begin", funct);
-    BasicBlock *end_block = BasicBlock::Create(context, "end");
+    BasicBlock *begin_block = make_block("begin", funct);
+    BasicBlock *end_block = make_block("end", funct, false);
     last_end.push(end_block);
 
     // BEGIN
-    builder.CreateBr(begin_block);
-    builder.SetInsertPoint(begin_block);
+    emit_br(begin_block);
+    set_block(begin_block);
 
     for (auto const &stat : ast->stats) {
         stat->accept(this);
     }
 
-    builder.CreateBr(end_block);
+    emit_br(end_block);
     begin_block = builder.GetInsertBlock(); // necessary for correct generation of code
     // END
-    funct->insert(funct->end(), end_block);
-    builder.SetInsertPoint(end_block);
+    insert_block(end_block, funct);
+    set_block(end_block);
     last_end.push(end_block);
 }
 
@@ -1243,22 +1117,15 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         last_value = L;
     }
 
-    BasicBlock *or_end_block = BasicBlock::Create(context, "or_end");
+    BasicBlock *or_end_block = make_block("or_end", nullptr, false);
     std::vector<std::pair<BasicBlock *, Value *>> next_blocks;
     bool                                          use_end{false};
 
     for (auto const &[op, right] : ast->rest) {
 
-        if (op == TokenType::OR && builder.GetInsertBlock()) {
-            // Lazy evaluation of OR, only when we are in a block
-            next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-            auto       *funct = builder.GetInsertBlock()->getParent();
-            BasicBlock *or_next_block = BasicBlock::Create(context, "or_next", funct);
-            builder.CreateCondBr(last_value, or_end_block, or_next_block);
+        if (try_short_circuit(op, TokenType::OR, or_end_block, next_blocks, "or_next", true,
+                              [&] { visit(right); }, L)) {
             use_end = true;
-            builder.SetInsertPoint(or_next_block);
-            visit(right);
-            L = last_value;
             continue;
         }
 
@@ -1350,17 +1217,7 @@ void CodeGenerator::visit(ASTSimpleExpr const &ast) {
         L = last_value;
     }
     if (use_end) {
-        next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-        builder.CreateBr(or_end_block);
-        auto *funct = builder.GetInsertBlock()->getParent();
-        funct->insert(funct->end(), or_end_block);
-        builder.SetInsertPoint(or_end_block);
-        auto *phi_node =
-            builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "or");
-        for (auto const &[block, value] : next_blocks) {
-            phi_node->addIncoming(value, block);
-        };
-        last_value = phi_node;
+        finalize_short_circuit(or_end_block, next_blocks, "or");
     }
 }
 
@@ -1369,22 +1226,15 @@ void CodeGenerator::visit(ASTTerm const &ast) {
     visit(ast->factor);
     Value *L = last_value;
 
-    BasicBlock *end_block = BasicBlock::Create(context, "and_end");
+    BasicBlock *end_block = make_block("and_end", nullptr, false);
     std::vector<std::pair<BasicBlock *, Value *>> next_blocks;
     bool                                          use_end{false};
 
     for (auto const &[op, right] : ast->rest) {
 
-        if (op == TokenType::AMPERSAND && builder.GetInsertBlock()) {
-            // Lazy evaluation of & AND, only when we are in a block
-            next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-            auto       *funct = builder.GetInsertBlock()->getParent();
-            BasicBlock *next_block = BasicBlock::Create(context, "and_next", funct);
-            builder.CreateCondBr(last_value, next_block, end_block);
+        if (try_short_circuit(op, TokenType::AMPERSAND, end_block, next_blocks, "and_next", false,
+                              [&] { visit(right); }, L)) {
             use_end = true;
-            builder.SetInsertPoint(next_block);
-            visit(right);
-            L = last_value;
             continue;
         }
 
@@ -1459,17 +1309,7 @@ void CodeGenerator::visit(ASTTerm const &ast) {
         L = last_value;
     }
     if (use_end) {
-        next_blocks.emplace_back(builder.GetInsertBlock(), last_value);
-        builder.CreateBr(end_block);
-        auto *funct = builder.GetInsertBlock()->getParent();
-        funct->insert(funct->end(), end_block);
-        builder.SetInsertPoint(end_block);
-        auto *phi_node =
-            builder.CreatePHI(TypeTable::BoolType->get_llvm(), next_blocks.size(), "and");
-        for (auto const &[block, value] : next_blocks) {
-            phi_node->addIncoming(value, block);
-        };
-        last_value = phi_node;
+        finalize_short_circuit(end_block, next_blocks, "and");
     }
 }
 
@@ -1477,7 +1317,7 @@ void CodeGenerator::visit(ASTFactor const &ast) {
     // debug("ASTFactor {0}", std::string(*ast));
     // Visit the appropriate variant
     std::visit(overloaded{[this](auto arg) { visit(arg); },
-                          [this, ast](ASTDesignator const &arg) { visitPtr(arg, false); },
+                          [this, ast](ASTDesignator const &arg) { emit_designator_value(arg); },
                           [this, ast](ASTFactor const &arg) {
                               debug("visit: not ");
                               if (ast->is_not) {
@@ -1503,7 +1343,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     visitPtr(ast->ident, true);
     auto *arg_ptr = last_value;
 
-    auto ident_type = ast->ident->get_type();
+    auto       ident_type = ast->ident->get_type();
     const bool is_string_type = ident_type->id == TypeId::STRING || ident_type->id == TypeId::STR1;
     bool       implicit_ptr_deref = false;
 
@@ -1513,28 +1353,13 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     bool is_pointer = current_type->id == TypeId::POINTER;
     bool is_string = is_string_type;
 
-    std::vector<Value *> index;
-    if (ident_type->id != TypeId::OPENARRAY && !is_string_type) {
-        auto *zero = ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
-        index.push_back(zero);
-    }
+    auto index = build_index_list({}, ident_type->id != TypeId::OPENARRAY && !is_string_type);
 
     for (auto const &s : ast->selectors) {
         std::visit(
             overloaded{[this, &index, &is_array, &is_string, &current_type](ArrayRef const &s) {
-                           for (const auto &iter : std::ranges::reverse_view(s)) {
-                               const auto was_var = is_var;
-                               is_var = false;
-                               visit(iter);
-                               is_var = was_var;
-                               debug("GEP index is Int: {0}",
-                                     last_value->getType()->isIntegerTy());
-                               if (last_value->getType() != llvm::Type::getInt32Ty(context)) {
-                                   last_value = builder.CreateSExtOrTrunc(
-                                       last_value, llvm::Type::getInt32Ty(context), "idx");
-                               }
-                               index.push_back(last_value);
-                           }
+                           auto indices = build_index_list(s, false);
+                           index.insert(index.end(), indices.begin(), indices.end());
                            if (is_array) {
                                if (const auto array_type =
                                        std::dynamic_pointer_cast<ArrayType>(current_type)) {
@@ -1553,7 +1378,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                                if (const auto ptr_type =
                                        std::dynamic_pointer_cast<PointerType>(current_type)) {
                                    if (ptr_type->get_reference()->id == TypeId::RECORD) {
-                                       arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+                                       arg_ptr = load_value(arg_ptr, arg_ptr->getType());
                                        current_type = ptr_type->get_reference();
                                        is_record = true;
                                        is_pointer = false;
@@ -1572,7 +1397,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                        },
                        [this, &arg_ptr, &current_type, &is_record, &is_pointer, &is_array,
                         &is_string](PointerRef /* unused */) {
-                           arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+                           arg_ptr = load_value(arg_ptr, arg_ptr->getType());
                            if (const auto ptr_type =
                                    std::dynamic_pointer_cast<PointerType>(current_type)) {
                                current_type = ptr_type->get_reference();
@@ -1601,7 +1426,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
             llvm::dbgs() << "\n";
         });
         if (llvm::isa<AllocaInst>(arg_ptr) || llvm::isa<GlobalVariable>(arg_ptr)) {
-            arg_ptr = builder.CreateLoad(elem_ptr_type, arg_ptr);
+            arg_ptr = load_value(arg_ptr, elem_ptr_type);
         }
 
         LLVM_DEBUG({
@@ -1619,7 +1444,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     if (ast->ident->id->is(Attr::ptr) || is_string_type) {
         if (llvm::isa<AllocaInst>(arg_ptr) || llvm::isa<GlobalVariable>(arg_ptr)) {
             debug("Create load");
-            arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+            arg_ptr = load_value(arg_ptr, arg_ptr->getType());
         }
     }
     debug("get_index: GEP number of indices: {0}", index.size());
@@ -1667,8 +1492,7 @@ void CodeGenerator::visitPtr(ASTDesignator const &ast, const bool ptr) {
     // debug("ASTDesignator: ptr:{0} is_var:{1}", ptr, is_var);
     if (!ptr && !is_var) {
         debug("ASTDesignator: load {}", ast->get_type()->get_name());
-        const auto resolved_type = types.resolve(ast->get_type()->get_name());
-        last_value = builder.CreateLoad(resolved_type->get_llvm(), last_value, "idx");
+        last_value = load_value(last_value, llvm_type(ast->get_type()), "idx");
     }
 }
 
@@ -1697,14 +1521,7 @@ void CodeGenerator::visitPtr(ASTIdentifier const &ast, const bool ptr) {
 
         if (res->is(Attr::var)) {
             // VAR parameters are stored as pointers in the symbol table.
-            auto *ptr_value = builder.CreateLoad(last_value->getType(), last_value, ast->value);
-            if (is_var || ptr) {
-                last_value = ptr_value;
-                return;
-            }
-            debug("ASTIdentifierPtr VAR load {}", res->type->get_name());
-            const auto type = types.resolve(res->type->get_name());
-            last_value = builder.CreateLoad(type->get_llvm(), ptr_value, ast->value);
+            last_value = load_var_param(res, is_var || ptr, ast->value);
             return;
         }
 
@@ -1716,8 +1533,7 @@ void CodeGenerator::visitPtr(ASTIdentifier const &ast, const bool ptr) {
 
         if (!ptr) {
             debug("ASTIdentifierPtr !ptr type: {}", res->type->get_name());
-            const auto type = types.resolve(res->type->get_name());
-            last_value = builder.CreateLoad(type->get_llvm(), last_value, ast->value);
+            last_value = load_value(last_value, llvm_type(res->type), ast->value.c_str());
         }
         return;
     }
@@ -1880,6 +1696,287 @@ Constant *CodeGenerator::getType_init(ASTType const &type) const {
     return resolve_type(type)->get_init();
 }
 
+llvm::Type *CodeGenerator::llvm_type(Type const &type) const {
+    return types.resolve(type->get_name())->get_llvm();
+}
+
+Constant *CodeGenerator::llvm_init(Type const &type) const {
+    return types.resolve(type->get_name())->get_init();
+}
+
+Value *CodeGenerator::load_value(Value *addr, llvm::Type *type, const char *name) {
+    if (name) {
+        return builder.CreateLoad(type, addr, name);
+    }
+    return builder.CreateLoad(type, addr);
+}
+
+void CodeGenerator::store_value(Value *addr, Value *value) {
+    builder.CreateStore(value, addr);
+}
+
+Value *CodeGenerator::load_var_param(SymbolPtr const &sym, bool want_address,
+                                     std::string const &name) {
+    auto *ptr_storage = sym->value;
+    auto *ptr_value = load_value(ptr_storage, ptr_storage->getType(), name.c_str());
+    if (want_address) {
+        return ptr_value;
+    }
+    return load_value(ptr_value, llvm_type(sym->type), name.c_str());
+}
+
+Value *CodeGenerator::emit_designator_address(ASTDesignator const &ast, bool var_param) {
+    const auto was_var = is_var;
+    if (var_param) {
+        is_var = true;
+        visitPtr(ast, false);
+    } else {
+        is_var = false;
+        visitPtr(ast, true);
+    }
+    is_var = was_var;
+    return last_value;
+}
+
+Value *CodeGenerator::emit_designator_value(ASTDesignator const &ast) {
+    const auto was_var = is_var;
+    is_var = false;
+    visitPtr(ast, false);
+    is_var = was_var;
+    return last_value;
+}
+
+Value *CodeGenerator::emit_qualident_address(ASTQualident const &ast) {
+    const auto was_var = is_var;
+    is_var = false;
+    visitPtr(ast, true);
+    is_var = was_var;
+    return last_value;
+}
+
+Value *CodeGenerator::emit_identifier_address(ASTIdentifier const &ast) {
+    const auto was_var = is_var;
+    is_var = false;
+    visitPtr(ast, true);
+    is_var = was_var;
+    return last_value;
+}
+
+void CodeGenerator::build_procedure_proto(
+    ASTProcedure const &ast, SymbolPtr const &sym, std::vector<llvm::Type *> &proto,
+    std::vector<std::pair<int, llvm::Attribute::AttrKind>> &argAttr, llvm::Type *&closure_type,
+    llvm::Type *&returnType) {
+    auto index{0};
+    closure_type = nullptr;
+
+    if (ast->receiver.first) {
+        auto [name, typeName] = ast->receiver;
+        auto *type = typeName->get_type()->get_llvm();
+        if (name->is(Attr::var)) {
+            type = llvm::PointerType::get(context, 0);
+        }
+        proto.push_back(type);
+    }
+
+    for (auto const &[var, t_type] : ast->params) {
+        auto                   *type = getType(t_type);
+        llvm::AttrBuilder const attrs(context);
+        index++;
+        if (index == 1 && sym->is(Attr::closure)) {
+            debug("ASTProcedure {0} is closure function", ast->name->value);
+            if (!closure_type) {
+                closure_type = std::dynamic_pointer_cast<ProcedureType>(sym->type)
+                                   ->get_closure_struct()
+                                   ->get_llvm();
+            }
+            proto.push_back(llvm::PointerType::get(context, 0));
+            continue;
+        }
+        if (var->is(Attr::var)) {
+            debug(" CodeGenerator::visit VAR {0}", var->value);
+            type = llvm::PointerType::get(context, 0);
+        } else {
+            // Todo: Switch on later
+            // argAttr.emplace_back(index, llvm::Attribute::ByVal);
+        }
+        proto.push_back(type);
+    }
+
+    if (ast->return_type == nullptr) {
+        returnType = llvm::Type::getVoidTy(context);
+    } else {
+        returnType = getType(ast->return_type);
+    }
+}
+
+Function *CodeGenerator::create_procedure_function(
+    ASTProcedure const &ast, std::vector<llvm::Type *> const &proto,
+    std::vector<std::pair<int, llvm::Attribute::AttrKind>> const &argAttr,
+    llvm::Type *returnType) {
+    auto                      proc_name = gen_module_id(get_nested_name());
+    FunctionType             *ft = FunctionType::get(returnType, proto, false);
+    GlobalValue::LinkageTypes linkage = Function::InternalLinkage;
+    if (ast->name->is(Attr::global)) {
+        linkage = Function::ExternalLinkage;
+    }
+    Function *f = module->getFunction(proc_name);
+    if (!f) {
+        f = Function::Create(ft, linkage, proc_name, module.get());
+    }
+    for (const auto &attr : argAttr | std::views::values) {
+        f->addFnAttr(attr);
+    }
+
+    BasicBlock *block = BasicBlock::Create(context, "entry", f);
+    builder.SetInsertPoint(block);
+    return f;
+}
+
+void CodeGenerator::setup_procedure_params(ASTProcedure const &ast, SymbolPtr const &sym,
+                                           Function *f, llvm::Type *closure_type) {
+    unsigned i = 0;
+    bool     do_receiver{ast->receiver.first != nullptr};
+
+    for (auto &arg : f->args()) {
+        debug("ASTProcedure process parameter {0}", i);
+        if (i == 0 && sym->is(Attr::closure)) {
+            // skip closure variable
+            i++;
+            continue;
+        }
+
+        std::string param_name;
+        AllocaInst *alloca{nullptr};
+        auto        attr = Attr::null;
+        if (i == 0 && do_receiver) {
+            auto [name, typeName] = ast->receiver;
+            param_name = name->value;
+            auto *type = typeName->get_type()->get_llvm();
+            if (name->is(Attr::var)) {
+                type = llvm::PointerType::get(context, 0);
+                attr = Attr::var;
+            }
+            arg.setName(name->value);
+            alloca = createEntryBlockAlloca(f, name->value, type);
+            i--; // go back
+            do_receiver = false;
+        } else {
+            param_name = ast->params[i].first->value;
+            auto type_name = ast->params[i].second;
+            attr = Attr::null;
+            if (ast->params[i].first->is(Attr::var)) {
+                attr = Attr::var;
+            }
+            alloca = createEntryBlockAlloca(f, param_name, type_name, attr == Attr::var);
+        }
+        arg.setName(param_name);
+
+        // Store the initial value into the alloca.
+        store_value(alloca, &arg);
+
+        // put also into the symbol table
+        symboltable.set_value(param_name, alloca, attr);
+        debug("put {0} into symbol table", param_name);
+        i++;
+    }
+}
+
+BasicBlock *CodeGenerator::make_block(std::string const &name, Function *funct,
+                                      const bool attach) {
+    if (attach) {
+        if (!funct) {
+            funct = builder.GetInsertBlock()->getParent();
+        }
+        return BasicBlock::Create(context, name, funct);
+    }
+    return BasicBlock::Create(context, name);
+}
+
+void CodeGenerator::insert_block(BasicBlock *block, Function *funct) {
+    if (!funct) {
+        funct = builder.GetInsertBlock()->getParent();
+    }
+    funct->insert(funct->end(), block);
+}
+
+void CodeGenerator::set_block(BasicBlock *block) {
+    builder.SetInsertPoint(block);
+}
+
+void CodeGenerator::emit_br(BasicBlock *target) {
+    builder.CreateBr(target);
+}
+
+void CodeGenerator::emit_cond_br(Value *cond, BasicBlock *then_block, BasicBlock *else_block) {
+    builder.CreateCondBr(cond, then_block, else_block);
+}
+
+BasicBlock *CodeGenerator::emit_short_circuit_step(Value *cond, BasicBlock *end_block,
+                                                   const char *next_name, const bool is_or) {
+    auto       *funct = builder.GetInsertBlock()->getParent();
+    BasicBlock *next_block = BasicBlock::Create(context, next_name, funct);
+    if (is_or) {
+        emit_cond_br(cond, end_block, next_block);
+    } else {
+        emit_cond_br(cond, next_block, end_block);
+    }
+    set_block(next_block);
+    return next_block;
+}
+
+void CodeGenerator::finalize_short_circuit(BasicBlock *end_block,
+                                           std::vector<std::pair<BasicBlock *, Value *>> &incoming,
+                                           const char *phi_name) {
+    incoming.emplace_back(builder.GetInsertBlock(), last_value);
+    emit_br(end_block);
+    auto *funct = builder.GetInsertBlock()->getParent();
+    insert_block(end_block, funct);
+    set_block(end_block);
+    auto *phi = builder.CreatePHI(TypeTable::BoolType->get_llvm(), incoming.size(), phi_name);
+    for (auto const &[block, value] : incoming) {
+        phi->addIncoming(value, block);
+    }
+    last_value = phi;
+}
+
+bool CodeGenerator::try_short_circuit(TokenType op, TokenType target, BasicBlock *end_block,
+                                      std::vector<std::pair<BasicBlock *, Value *>> &incoming,
+                                      const char *next_name, bool is_or,
+                                      std::function<void()> eval_right, Value *&L) {
+    if (op != target || !builder.GetInsertBlock()) {
+        return false;
+    }
+    incoming.emplace_back(builder.GetInsertBlock(), last_value);
+    emit_short_circuit_step(last_value, end_block, next_name, is_or);
+    eval_right();
+    L = last_value;
+    return true;
+}
+
+Value *CodeGenerator::emit_index_i32(ASTSimpleExpr const &expr) {
+    const auto was_var = is_var;
+    is_var = false;
+    visit(expr);
+    is_var = was_var;
+    if (last_value->getType() != llvm::Type::getInt32Ty(context)) {
+        last_value = builder.CreateSExtOrTrunc(last_value, llvm::Type::getInt32Ty(context), "idx");
+    }
+    return last_value;
+}
+
+std::vector<Value *> CodeGenerator::build_index_list(ArrayRef const &indices,
+                                                     const bool      with_leading_zero) {
+    std::vector<Value *> index;
+    if (with_leading_zero) {
+        auto *zero = ConstantInt::get(llvm::Type::getInt32Ty(context), 0);
+        index.push_back(zero);
+    }
+    for (const auto &iter : std::ranges::reverse_view(indices)) {
+        index.push_back(emit_index_i32(iter));
+    }
+    return index;
+}
+
 void CodeGenerator::setup_builtins() const {
     debug("setup_builtins");
 
@@ -1925,6 +2022,18 @@ std::string CodeGenerator::get_nested_name() const {
 GlobalVariable *CodeGenerator::generate_global(std::string const &name, llvm::Type *t) const {
     module->getOrInsertGlobal(name, t);
     return module->getNamedGlobal(name);
+}
+
+GlobalVariable *CodeGenerator::emit_global(const std::string &name, llvm::Type *type,
+                                           llvm::Constant *init, bool is_const,
+                                           GlobalValue::LinkageTypes linkage) const {
+    GlobalVariable *gVar = generate_global(name, type);
+    gVar->setLinkage(linkage);
+    if (init) {
+        gVar->setInitializer(init);
+    }
+    gVar->setConstant(is_const);
+    return gVar;
 }
 
 FunctionCallee CodeGenerator::generate_function(std::string const &name, llvm::Type *return_type,
