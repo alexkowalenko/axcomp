@@ -13,6 +13,9 @@
 
 namespace ax {
 
+class ASTSimpleExpr_;
+using ASTSimpleExpr = std::shared_ptr<ASTSimpleExpr_>;
+
 /**
  * @brief "(" ident { [","] ident } ")"
  *
@@ -51,8 +54,8 @@ class ASTArray_ : public ASTBase_, public std::enable_shared_from_this<ASTArray_
 
     void accept(ASTVisitor *v) override { v->visit(shared_from_this()); };
 
-    std::vector<ASTInteger> dimensions;
-    ASTType                 type;
+    std::vector<ASTSimpleExpr> dimensions;
+    ASTType                     type;
 };
 using ASTArray = std::shared_ptr<ASTArray_>;
 

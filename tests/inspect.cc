@@ -2580,11 +2580,11 @@ TEST(Inspector, Arrays) {
             END alpha.)",
          "", "[2,30]: Unknown type: complex"},
         {R"(MODULE alpha;
-            VAR x : ARRAY TRUE OF complex;
+            VAR x : ARRAY TRUE OF INTEGER;
             BEGIN
                 RETURN 0 
             END alpha.)",
-         "", "[2,30]: Unexpected token: TRUE - expecting integer"},
+         "", "[2,25]: ARRAY expecting numeric size for dimension 0"},
     };
     do_inspect_tests(tests);
 }

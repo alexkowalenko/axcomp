@@ -7,6 +7,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <set>
 #include <utility>
 
@@ -44,6 +45,7 @@ class Symbol {
     Type           type = nullptr;
     std::set<Attr> attrs;
     llvm::Value   *value = nullptr;
+    std::optional<Int> const_value;
 };
 
 using SymbolPtr = std::shared_ptr<Symbol>;

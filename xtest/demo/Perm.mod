@@ -6,7 +6,7 @@ CONST
     permrange = 10;
 
 VAR i: LONGINT;
-    permarray : ARRAY 10 (*permrange*) OF LONGINT;
+    permarray : ARRAY permrange OF LONGINT;
     pctr: LONGINT;
 
 

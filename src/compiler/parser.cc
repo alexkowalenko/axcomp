@@ -1110,7 +1110,7 @@ ASTType Parser::parse_type() {
 }
 
 /**
- * @brief "ARRAY" (expr "[" , expr "]") "OF" type
+ * @brief "ARRAY" (simpleExpr "[" , simpleExpr "]") "OF" type
  *
  * @return ASTArrayPtr
  */
@@ -1120,7 +1120,7 @@ ASTArray Parser::parse_array() {
     get_token(TokenType::ARRAY);
     auto tok = lexer.peek_token();
     while (tok.type != TokenType::OF) {
-        auto expr = parse_integer();
+        auto expr = parse_simpleexpr();
         ast->dimensions.push_back(expr);
         tok = lexer.peek_token();
         if (tok.type == TokenType::COMMA) {

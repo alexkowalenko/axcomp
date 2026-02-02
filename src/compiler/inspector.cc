@@ -99,6 +99,11 @@ void Inspector::visit(ASTConst const &ast) {
         type->type = make<ASTQualident_>(last_type->get_name());
         debug("ASTConst type: {0}", last_type->get_name());
         auto sym = mkSym(last_type, Attr::cnst);
+        if (is_const && last_type->equiv(TypeTable::IntType)) {
+            if (const auto const_val = eval_const_int(value)) {
+                sym->const_value = const_val;
+            }
+        }
         sym->set(variable_type);
         symboltable.put(ident->value, sym);
     }
@@ -986,6 +991,7 @@ void Inspector::visit(ASTType const &ast) {
 
 void Inspector::visit(ASTArray const &ast) {
     int i = 0;
+    std::vector<Int> dimensions;
     for (auto &expr : ast->dimensions) {
         visit(expr);
         if (!is_const) {
@@ -998,6 +1004,14 @@ void Inspector::visit(ASTArray const &ast) {
                                "ARRAY expecting numeric size for dimension {0}", i);
             errors.add(e);
         }
+        if (const auto dim_value = eval_const_int(expr)) {
+            dimensions.push_back(*dim_value);
+        } else if (!ast->dimensions.empty()) {
+            auto e = TypeError(ast->get_location(),
+                               "ARRAY expecting integer constant expression for dimension {0}",
+                               i);
+            errors.add(e);
+        }
         i++;
     }
 
@@ -1008,14 +1022,98 @@ void Inspector::visit(ASTArray const &ast) {
         array_type = std::make_shared<ax::OpenArrayType>(last_type);
     } else {
         const auto at = std::make_shared<ax::ArrayType>(last_type);
-        for (const auto &dim_expr : ast->dimensions) {
-            at->dimensions.push_back(dim_expr->value);
+        for (const auto dim_value : dimensions) {
+            at->dimensions.push_back(dim_value);
         }
         array_type = at;
     }
     last_type = array_type;
     ast->set_type(last_type);
     types.put(last_type->get_name(), last_type);
+}
+
+std::optional<Int> Inspector::eval_const_int(ASTExpr const &expr) const {
+    if (expr->relation) {
+        return std::nullopt;
+    }
+    return eval_const_int(expr->expr);
+}
+
+std::optional<Int> Inspector::eval_const_int(ASTSimpleExpr const &expr) const {
+    auto value = eval_const_int(expr->term);
+    if (!value) {
+        return std::nullopt;
+    }
+    if (expr->first_sign && *expr->first_sign == TokenType::DASH) {
+        *value = -(*value);
+    }
+    for (auto const &[op, term] : expr->rest) {
+        auto rhs = eval_const_int(term);
+        if (!rhs) {
+            return std::nullopt;
+        }
+        if (op == TokenType::PLUS) {
+            *value += *rhs;
+        } else if (op == TokenType::DASH) {
+            *value -= *rhs;
+        } else {
+            return std::nullopt;
+        }
+    }
+    return value;
+}
+
+std::optional<Int> Inspector::eval_const_int(ASTTerm const &expr) const {
+    auto value = eval_const_int(expr->factor);
+    if (!value) {
+        return std::nullopt;
+    }
+    for (auto const &[op, factor] : expr->rest) {
+        auto rhs = eval_const_int(factor);
+        if (!rhs) {
+            return std::nullopt;
+        }
+        if (op == TokenType::ASTÉRIX) {
+            *value *= *rhs;
+        } else if (op == TokenType::DIV) {
+            if (*rhs == 0) {
+                return std::nullopt;
+            }
+            *value /= *rhs;
+        } else if (op == TokenType::MOD) {
+            if (*rhs == 0) {
+                return std::nullopt;
+            }
+            *value %= *rhs;
+        } else {
+            return std::nullopt;
+        }
+    }
+    return value;
+}
+
+std::optional<Int> Inspector::eval_const_int(ASTFactor const &expr) const {
+    if (expr->is_not) {
+        return std::nullopt;
+    }
+    return std::visit(
+        overloaded{[this](ASTDesignator const &arg) { return eval_const_int(arg); },
+                   [](ASTInteger const &arg) { return std::optional<Int>(arg->value); },
+                   [this](ASTExpr const &arg) { return eval_const_int(arg); },
+                   [](auto const & /*unused*/) { return std::optional<Int>(); }},
+        expr->factor);
+}
+
+std::optional<Int> Inspector::eval_const_int(ASTDesignator const &expr) const {
+    if (!expr->selectors.empty()) {
+        return std::nullopt;
+    }
+    const auto name = get_Qualident(expr->ident);
+    const auto res = symboltable.find(name);
+    if (!res || !res->is(Attr::cnst) || !res->const_value) {
+        return std::nullopt;
+    }
+    return res->const_value;
 }
 
 void Inspector::visit(ASTRecord const &ast) {

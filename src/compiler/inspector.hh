@@ -14,6 +14,8 @@
 #include "types/all.hh"
 #include "typetable.hh"
 
+#include <optional>
+
 namespace ax {
 
 class Inspector : ASTVisitor {
@@ -69,6 +71,11 @@ class Inspector : ASTVisitor {
     void visit(ASTNil const & /*not used*/) override;
 
     std::string get_Qualident(ASTQualident const &ast) const;
+    std::optional<Int> eval_const_int(ASTExpr const &expr) const;
+    std::optional<Int> eval_const_int(ASTSimpleExpr const &expr) const;
+    std::optional<Int> eval_const_int(ASTTerm const &expr) const;
+    std::optional<Int> eval_const_int(ASTFactor const &expr) const;
+    std::optional<Int> eval_const_int(ASTDesignator const &expr) const;
 
     SymbolFrameTable &symboltable;
     TypeTable        &types;
