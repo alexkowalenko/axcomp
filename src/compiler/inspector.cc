@@ -61,11 +61,11 @@ void Inspector::visit(ASTModule const &ast) {
 }
 
 void Inspector::visit(ASTDeclaration const &ast) {
-    if (ast->type) {
-        visit(ast->type);
-    }
     if (ast->cnst) {
         visit(ast->cnst);
+    }
+    if (ast->type) {
+        visit(ast->type);
     }
     if (ast->var) {
         visit(ast->var);
