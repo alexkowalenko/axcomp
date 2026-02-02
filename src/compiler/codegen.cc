@@ -1503,8 +1503,15 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     visitPtr(ast->ident, true);
     auto *arg_ptr = last_value;
 
-    const auto ident_type = ast->ident->get_type();
+    auto ident_type = ast->ident->get_type();
     const bool is_string_type = ident_type->id == TypeId::STRING || ident_type->id == TypeId::STR1;
+    bool       implicit_ptr_deref = false;
+
+    auto current_type = ident_type;
+    bool is_array = current_type->is_array();
+    bool is_record = current_type->id == TypeId::RECORD;
+    bool is_pointer = current_type->id == TypeId::POINTER;
+    bool is_string = is_string_type;
 
     std::vector<Value *> index;
     if (ident_type->id != TypeId::OPENARRAY && !is_string_type) {
@@ -1514,7 +1521,7 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 
     for (auto const &s : ast->selectors) {
         std::visit(
-                       overloaded{[this, &index](ArrayRef const &s) {
+            overloaded{[this, &index, &is_array, &is_string, &current_type](ArrayRef const &s) {
                            for (const auto &iter : std::ranges::reverse_view(s)) {
                                const auto was_var = is_var;
                                is_var = false;
@@ -1528,8 +1535,32 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                                }
                                index.push_back(last_value);
                            }
+                           if (is_array) {
+                               if (const auto array_type =
+                                       std::dynamic_pointer_cast<ArrayType>(current_type)) {
+                                   current_type = array_type->base_type;
+                               }
+                           } else if (is_string) {
+                               current_type = TypeTable::CharType;
+                           }
+                           is_array = current_type->is_array();
+                           is_string = current_type->id == TypeId::STRING ||
+                                       current_type->id == TypeId::STR1;
                        },
-                       [this, &index](FieldRef const &s) {
+                       [this, &index, &arg_ptr, &current_type, &is_record, &is_pointer,
+                        &implicit_ptr_deref](FieldRef const &s) {
+                           if (!is_record && is_pointer) {
+                               if (const auto ptr_type =
+                                       std::dynamic_pointer_cast<PointerType>(current_type)) {
+                                   if (ptr_type->get_reference()->id == TypeId::RECORD) {
+                                       arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+                                       current_type = ptr_type->get_reference();
+                                       is_record = true;
+                                       is_pointer = false;
+                                       implicit_ptr_deref = true;
+                                   }
+                               }
+                           }
                            // calculate index
                            // extract the field index
                            debug("get_index record index {0} for {1}", s.second, s.first->value);
@@ -1539,8 +1570,18 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
                            auto *idx = ConstantInt::get(llvm::Type::getInt32Ty(context), s.second);
                            index.push_back(idx);
                        },
-                       [this, &arg_ptr](PointerRef /* unused */) {
+                       [this, &arg_ptr, &current_type, &is_record, &is_pointer, &is_array,
+                        &is_string](PointerRef /* unused */) {
                            arg_ptr = builder.CreateLoad(arg_ptr->getType(), arg_ptr);
+                           if (const auto ptr_type =
+                                   std::dynamic_pointer_cast<PointerType>(current_type)) {
+                               current_type = ptr_type->get_reference();
+                               is_record = current_type->id == TypeId::RECORD;
+                               is_array = current_type->is_array();
+                               is_string = current_type->id == TypeId::STRING ||
+                                           current_type->id == TypeId::STR1;
+                               is_pointer = current_type->id == TypeId::POINTER;
+                           }
                        }},
             s);
     }
@@ -1598,6 +1639,10 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
     auto *gep_type = ast->ident->get_type()->get_llvm();
     if (is_string_type) {
         gep_type = TypeTable::CharType->get_llvm();
+    } else if (implicit_ptr_deref) {
+        if (auto ptr_type = std::dynamic_pointer_cast<PointerType>(ident_type)) {
+            gep_type = ptr_type->get_reference()->get_llvm();
+        }
     }
     last_value = builder.CreateGEP(gep_type, arg_ptr, index, "idx");
 }

@@ -43,6 +43,18 @@ To build and run a simple program:
 bin/ax -m --run prog.mod
 ```
 
+Running the compiler directly
+
+```shell
+bin/axcomp -L lib prog.mod
+```
+
+where `lib` is where the runtime library .def files are.
+Other options:
+
+* `-l` - generate LLVM IR `.ll` file only.
+* `-dg` - compiler debug info options here are `parser`,`inspector`,`codegen`,`builtin`,`parser`.
+
 ## Coding Style & Naming Conventions
 
 * `.clang-format` (LLVM base, four spaces, 99-column limit) and `.clang-tidy` guard the C++ style; run
@@ -75,3 +87,7 @@ bin/ax -m --run prog.mod
   locally.
 * Sanitiser, analyser, fuzzer, and PCH toggles live near the top of `CMakeLists.txt`.
 * Tools like `fd` and `rg` are installed.
+
+## Agent Instructions
+
+* Use the `demo` directory as a workspace for testing and compiling files with the ax compiler.

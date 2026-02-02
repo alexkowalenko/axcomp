@@ -912,6 +912,13 @@ void Inspector::visit(ASTDesignator const &ast) {
             // do RECORD type
             debug("ASTDesignator record field");
             auto &s = std::get<FieldRef>(ss);
+            if (!is_record && is_pointer) {
+                auto ptr_type = std::dynamic_pointer_cast<PointerType>(b_type);
+                if (ptr_type && ptr_type->get_reference()->id == TypeId::RECORD) {
+                    b_type = ptr_type->get_reference();
+                    is_record = true;
+                }
+            }
             if (!is_record) {
                 auto e = TypeError(s.first->get_location(), "value not RECORD: {0}",
                                    last_type->get_name());

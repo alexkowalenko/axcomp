@@ -49,12 +49,14 @@ llvm::Type *RecordType::get_llvm() const {
     if (cache) {
         return cache;
     }
-    const auto fs = get_fieldTypes();
+    auto &ctx = TypeTable::IntType->get_llvm()->getContext();
     if (identified.empty()) {
-        cache = llvm::StructType::create(fs);
+        cache = llvm::StructType::create(ctx);
     } else {
-        cache = llvm::StructType::create(fs, identified);
+        cache = llvm::StructType::create(ctx, identified);
     }
+    const auto fs = get_fieldTypes();
+    llvm::dyn_cast<llvm::StructType>(cache)->setBody(fs, false);
     return cache;
 }
 
