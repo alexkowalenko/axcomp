@@ -1514,9 +1514,12 @@ void CodeGenerator::get_index(ASTDesignator const &ast) {
 
     for (auto const &s : ast->selectors) {
         std::visit(
-            overloaded{[this, &index](ArrayRef const &s) {
+                       overloaded{[this, &index](ArrayRef const &s) {
                            for (const auto &iter : std::ranges::reverse_view(s)) {
-                               (visit(iter));
+                               const auto was_var = is_var;
+                               is_var = false;
+                               visit(iter);
+                               is_var = was_var;
                                debug("GEP index is Int: {0}",
                                      last_value->getType()->isIntegerTy());
                                if (last_value->getType() != llvm::Type::getInt32Ty(context)) {

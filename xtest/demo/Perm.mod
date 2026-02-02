@@ -48,13 +48,13 @@ BEGIN
 		INC(i)
 	END ;
 	IF ( pctr # 43300 ) THEN
-	    Out.String("Error in Perm.$"); Out.Ln;
+	    Out.String("Error in Perm."); Out.Ln;
 	ELSE
-	    Out.String("Perm.$ OK"); Out.Ln;
+	    Out.String("Perm OK"); Out.Ln;
 	END
 END Perm.
 
 (*
 RUN: %comp %s | filecheck %s
-CHECK: 0
+CHECK: Perm OK
 )
