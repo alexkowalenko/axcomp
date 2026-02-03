@@ -1255,7 +1255,7 @@ TEST(Inspector, Const) {
                 BEGIN
                     RETURN time
                 END alpha.)",
-         "", "[5,21]: CONST y is not a constant expression"},
+         "", "[5,25]: CONST y is not a constant expression"},
     };
     do_inspect_tests(tests);
 }
@@ -2584,7 +2584,7 @@ TEST(Inspector, Arrays) {
             BEGIN
                 RETURN 0 
             END alpha.)",
-         "", "[2,25]: ARRAY expecting numeric size for dimension 0"},
+         "", "[2,30]: ARRAY expecting numeric size for dimension 0"},
     };
     do_inspect_tests(tests);
 }

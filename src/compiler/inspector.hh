@@ -71,6 +71,14 @@ class Inspector : ASTVisitor {
     void visit(ASTNil const & /*not used*/) override;
 
     std::string get_Qualident(ASTQualident const &ast) const;
+    void        report_call_type_error(ASTCall const &ast, std::string const &name, Type got,
+                                       Type expected) const;
+    bool        require_const_expr(ASTBase_ const &node, std::string const &context) const;
+    bool        require_numeric_type(ASTBase_ const &node, int idx,
+                                     std::string const &context) const;
+    bool        is_case_compatible(Type const &t) const;
+    void        update_designator_state(Type const &t, bool &is_array, bool &is_record,
+                                        bool &is_string, bool &is_pointer) const;
     std::optional<Int> eval_const_int(ASTExpr const &expr) const;
     std::optional<Int> eval_const_int(ASTSimpleExpr const &expr) const;
     std::optional<Int> eval_const_int(ASTTerm const &expr) const;

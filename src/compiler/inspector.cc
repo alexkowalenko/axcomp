@@ -85,11 +85,8 @@ void Inspector::visit(ASTConst const &ast) {
     debug("ASTConst");
     for (auto &[ident, value, type] : ast->consts) {
         visit(value);
-        if (!is_const) {
-            auto e = TypeError(ast->get_location(), "CONST {0} is not a constant expression",
-                               ident->value);
-            errors.add(e);
-        }
+        require_const_expr(*value,
+                           std::format("CONST {0} is not a constant expression", ident->value));
         if (ident->is(Attr::read_only)) {
             auto e = TypeError(ast->get_location(), "CONST {0} is always read only", ident->value);
             errors.add(e);
@@ -516,11 +513,7 @@ void Inspector::visit(ASTCall const &ast) {
         if (!proc_base->equiv(base_last)) {
             std::ranges::replace(name, '_', '.');
             debug("incorrect parameter");
-            auto e = TypeError(ast->get_location(),
-                               "procedure call {0} has incorrect "
-                               "type {1} for parameter {2}",
-                               name, last_type->get_name(), (*proc_iter).first->get_name());
-            errors.add(e);
+            report_call_type_error(ast, name, last_type, (*proc_iter).first);
         }
     }
 
@@ -580,6 +573,33 @@ void Inspector::visit(ASTCall const &ast) {
     ast->set_type(last_type);
 }
 
+void Inspector::report_call_type_error(ASTCall const &ast, std::string const &name, Type got,
+                                       Type expected) const {
+    auto e = TypeError(ast->get_location(),
+                       "procedure call {0} has incorrect type {1} for parameter {2}", name,
+                       got->get_name(), expected->get_name());
+    errors.add(e);
+}
+
+bool Inspector::require_const_expr(ASTBase_ const &node, std::string const &context) const {
+    if (!is_const) {
+        auto e = TypeError(node.get_location(), context);
+        errors.add(e);
+        return false;
+    }
+    return true;
+}
+
+bool Inspector::require_numeric_type(ASTBase_ const &node, int idx,
+                                     std::string const &context) const {
+    if (!last_type->is_numeric()) {
+        auto e = TypeError(node.get_location(), std::vformat(context, std::make_format_args(idx)));
+        errors.add(e);
+        return false;
+    }
+    return true;
+}
+
 void Inspector::visit(ASTIf const &ast) {
     ast->if_clause.expr->accept(this);
     if (last_type != TypeTable::BoolType) {
@@ -618,8 +638,7 @@ void Inspector::visit(ASTCaseElement const &ast) {
 void Inspector::visit(ASTCase const &ast) {
 
     visit(ast->expr);
-    if (!last_type->equiv(TypeTable::IntType) && !last_type->equiv(TypeTable::CharType) &&
-        last_type->id != TypeId::ENUMERATION) {
+    if (!is_case_compatible(last_type)) {
         auto ex = TypeError(ast->expr->get_location(),
                             "CASE expression has to be INTEGER, CHAR, or enumeration");
         errors.add(ex);
@@ -666,6 +685,19 @@ void Inspector::visit(ASTCase const &ast) {
     for (auto &stmt : ast->else_stats) {
         stmt->accept(this);
     }
+}
+
+bool Inspector::is_case_compatible(Type const &t) const {
+    return t->equiv(TypeTable::IntType) || t->equiv(TypeTable::CharType) ||
+           t->id == TypeId::ENUMERATION;
+}
+
+void Inspector::update_designator_state(Type const &t, bool &is_array, bool &is_record,
+                                        bool &is_string, bool &is_pointer) const {
+    is_array = t->is_array();
+    is_record = t->id == TypeId::RECORD;
+    is_string = t->id == TypeId::STRING;
+    is_pointer = t->id == TypeId::POINTER;
 }
 
 void Inspector::visit(ASTFor const &ast) {
@@ -850,10 +882,11 @@ void Inspector::visit(ASTDesignator const &ast) {
         // null - error in identifier
         return;
     }
-    bool       is_array = last_type->is_array();
-    bool       is_record = last_type->id == TypeId::RECORD;
-    bool       is_string = last_type->id == TypeId::STRING;
-    bool const is_pointer = last_type->id == TypeId::POINTER;
+    bool is_array{false};
+    bool is_record{false};
+    bool is_string{false};
+    bool is_pointer{false};
+    update_designator_state(last_type, is_array, is_record, is_string, is_pointer);
     auto       b_type = last_type;
     if (!(is_array || is_record || is_string || is_pointer) && !ast->selectors.empty()) {
         auto e = TypeError(ast->get_location(), "variable {0} is not an indexable type",
@@ -959,9 +992,7 @@ void Inspector::visit(ASTDesignator const &ast) {
             ast->set_type(last_type);
         }
         b_type = types.resolve(last_type->get_name());
-        is_array = b_type->is_array();
-        is_record = b_type->id == TypeId::RECORD;
-        is_string = b_type->id == TypeId::STRING;
+        update_designator_state(b_type, is_array, is_record, is_string, is_pointer);
     }
 } // namespace ax
 
@@ -1001,16 +1032,10 @@ void Inspector::visit(ASTArray const &ast) {
     std::vector<Int> dimensions;
     for (auto &expr : ast->dimensions) {
         visit(expr);
-        if (!is_const) {
-            auto e = TypeError(ast->get_location(),
-                               "ARRAY expecting constant expression for dimension {0}", i);
-            errors.add(e);
-        }
-        if (!last_type->is_numeric()) {
-            auto e = TypeError(ast->get_location(),
-                               "ARRAY expecting numeric size for dimension {0}", i);
-            errors.add(e);
-        }
+        require_const_expr(*expr,
+                           std::format("ARRAY expecting constant expression for dimension {0}",
+                                       i));
+        require_numeric_type(*expr, i, "ARRAY expecting numeric size for dimension {0}");
         if (const auto dim_value = eval_const_int(expr)) {
             dimensions.push_back(*dim_value);
         } else if (!ast->dimensions.empty()) {
